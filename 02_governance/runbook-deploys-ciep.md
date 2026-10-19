@@ -728,9 +728,9 @@ mismo para las 32 en una sola sesión y corre los gates por script.
 nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-v8.13a-<fecha> \
      --refs <carpeta con output.txt y sankey-*.json de la última release> > corrida.out 2>&1 &
 ```
-Tiempos (StataNow 19.5, Mac, 1 procesador): SIM.do ≈ 32 min; `compuertas-entidad.do` ≈ 4 min;
-`contrato-32.do` ≈ 1–1.5 min por entidad (Sankeys con banda ≈ 25 s, ciclo ≈ 10 s, TE ≈ 10 s,
-Población ≈ 2 s) ≈ 40–50 min; Python < 1 min. **Total ≈ 80–90 min.** Salida: `<evidencia>/contrato-32.md`
+Tiempos medidos (2026-10-19, StataNow 19.5, Mac, 1 procesador): SIM.do ≈ 32 min; `compuertas-entidad.do`
+≈ 4 min; `contrato-32.do` ≈ 12 s por entidad (5 Sankeys con banda + ciclo + TE + Población) ≈ 6.5 min;
+Python < 1 min. **Total ≈ 42–45 min.** Salida de las 32: ≈ 100 KB por entidad (7 JSON), 3.3 MB en total. Salida: `<evidencia>/contrato-32.md`
 (paridad, aditividad del ciclo, consistencia de las TE, tabla de las 32), `compuertas-entidad.md`
 (Sankeys: Σ32 = nacional, testigo NL, sellos), `contrato-32.tsv`, `entidades/<ABREV>.log`.
 Tolerante a fallos: si una entidad truena en un paso, queda su rc en la tabla y sigue la siguiente.
