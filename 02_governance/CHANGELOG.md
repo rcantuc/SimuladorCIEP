@@ -16,6 +16,36 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.12.1] — 2026-10-18
+
+### Correcciones — el deployment embarca lo que el motor lee + «Calcular» de humo automático
+
+- **Incidente (2026-10-18, deploy v8.12):** `_precache_manifest.ado` lee `data_updated` de
+  `${SIMROOT}/05_scripts/manifest.json`; `publicar-vps.sh` nunca embarcó `05_scripts/` y en el VPS
+  «Calcular» abortó con `r(601)` (el candado hizo lo correcto) hasta copiar el archivo a mano.
+  Health check y esqueleto habían pasado: segundo deploy consecutivo que rompe el run interactivo y
+  solo lo cacha un clic humano.
+- `publicar-vps.sh`: la Fase 3a embarca `05_scripts/manifest.json` al deployment; **Gate 5-remoto**
+  nuevo, antes del swap: cada ruta que el motor web lee bajo `${SIMROOT}/` (`MOTOR_LECTURAS_VPS`,
+  inventario en el runbook §12) existe en el destino y `manifest.json` es idéntico al local; si
+  falta algo, muere con `current` intacto.
+- **Fase 6 — «Calcular» de humo real** (`05_scripts/humo-calcular.sh`, nuevo): tras el swap y 125 s
+  de espera por el caché de realpath de PHP, POST del escenario default a `calculaStata.php` como
+  lo hace el JS (campos armados desde `cargaDefault.php` con el mapeo de `perfilar-web.py
+  escenario`), timeout 120 s, sondeo de `checkStataStatus.php` como señal de vida; aserta números
+  en la respuesta (el `output.txt` de la sesión) y los 5 `jsonSankey*.php` **de esa sesión** (no el
+  fallback `ciepmx`). Si falla → rollback automático (Fase 7) con la cola del log de Stata de la
+  sesión. Cronometrado y reportado. Flags `--skip-humo` y `--sin-espera-realpath`.
+- `test-humo-calcular.sh` (nuevo, corre en CI en el job `sitio-seguridad`): rojo/verde del humo con
+  `php -S` + Stata falso — verde con `output.txt` + 5 sankeys; rojo si el motor aborta sin
+  `output.txt` (el incidente) y rojo si deja `output.txt` sin sankeys.
+- `perfilar-web.py escenario` acepta un archivo (`output.txt` o el JSON de `cargaDefault.php`).
+- Runbook: §6 (el clic «Calcular» ya es del pipeline; el gate humano queda para lo que el humo no
+  prueba), **§12 regla nueva** — un `.ado` del motor solo lee lo que `publicar-vps.sh` embarca; lo
+  que no embarca, se embarca o no se lee — con el inventario completo de lecturas bajo `${SIMROOT}/`.
+  FLAG: `checkStataStatus.php` depende de un `<id>.done` que nadie escribe (el JS no lo usa).
+- Sin cambios al motor ni a los números: `manifest.json` → v8.12.1, `data_updated` sin cambio.
+
 ## [v8.12.0] — 2026-10-18
 
 ### Institucional — sitio: triage de Dependabot y freno de abuso de CPU (v8.11c, 2026-10-18)

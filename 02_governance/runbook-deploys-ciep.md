@@ -214,7 +214,7 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
 | 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
-| 7 | Gate humano | §6 | Ricardo |
+| 7 | «Calcular» de humo automático (Fase 6) + gate humano de lo que el humo no prueba | §6 | pipeline + Ricardo |
 | 8 | Pull en la Carpeta de investigadores (Dropbox) | manual | Ricardo |
 
 **¿Por qué no anclar los assets a una Release fija y dejar de subir 1.3 GB
@@ -379,7 +379,15 @@ done
 
 ---
 
-## 6. Gate humano (navegador — el release NO está cerrado sin esto)
+## 6. Gate humano (navegador) — desde v8.12.1 el «Calcular» lo da el pipeline
+
+**El clic «Calcular» ya es automático**: la Fase 6 de `publicar-vps.sh` corre
+`05_scripts/humo-calcular.sh` tras el swap (y tras 125 s de espera por el caché de
+realpath de PHP): POST del escenario default a `calculaStata.php` como lo hace el
+JS, números en la respuesta (el `output.txt` de la sesión) y los 5 `jsonSankey*.php`
+de ESA sesión (no el fallback `ciepmx`). Si falla → rollback automático (Fase 7) con
+la cola del log de Stata de la sesión en pantalla. Lo que sigue abajo es lo que el
+humo NO prueba (interacción, módulos, brecha fiscal con inputs distintos al default).
 
 En Chrome (o Firefox sin VPN):
 1. **Abrir la página**: los defaults y Sankeys iniciales muestran la corrida
@@ -649,18 +657,58 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
 | `test-maquina-virgen.sh --download` (1.3 GB desde la Release) | **no** | después de `publicar.sh`, antes de anunciar | assets |
 | `publicar-vps.sh` (gates con VPS, rsync, health) | **no** | ritual de deploy | credenciales, SSH, producción |
-| Gate humano del navegador (§6) | **no** | Ricardo | humano |
+| «Calcular» de humo (`humo-calcular.sh`, Fase 6 de `publicar-vps.sh`) | rojo/verde con Stata falso (`test-humo-calcular.sh`, job `sitio-seguridad`) | el real, contra el VPS, en cada deploy | Stata + producción |
+| Gate humano del navegador (§6, lo que el humo no prueba) | **no** | Ricardo | humano |
 
 Correr lo mismo que CI, localmente, antes de abrir el PR (todo en segundos):
 ```bash
 shellcheck -S error 05_scripts/*.sh && bash 05_scripts/verify_gitignore.sh && \
 for f in 04_1_simuladorfiscal.ciep.mx/*.php; do php -l "$f" >/dev/null || echo "ERR $f"; done && \
-bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
+bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
 Branches → `master` → *Require status checks to pass before merging* → marcar los seis checks de
 `gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`, `publicar-check`).
+
+---
+
+## 12. Regla: el motor solo lee lo que `publicar-vps.sh` embarca (v8.12.1)
+
+**Incidente 2026-10-18 (deploy v8.12).** `_precache_manifest.ado` (candado 2 del cache de
+Precache) lee `data_updated` de `${SIMROOT}/05_scripts/manifest.json`. En el VPS `SIMROOT` es el
+deployment (`/SIM/OUT/8.12`) y `publicar-vps.sh` nunca había embarcado `05_scripts/`: «Calcular»
+abortó con `r(601)` — el candado hizo lo correcto — hasta copiar el archivo a mano. Health check
+y esqueleto habían pasado. Segundo deploy consecutivo (v8.10: sitio sin css/js; v8.12: motor sin su
+insumo) que rompe el run interactivo y solo lo cacha un clic humano. Los candados se habían
+probado en el worktree del agente, nunca contra el layout del deployment.
+
+**Regla.** Un `.ado`/`.do` del motor web solo puede leer, bajo `${SIMROOT}/`, lo que la Fase 3
+(motor), 3b (`master/`), 3b-bis (`users/ricardo/bootstraps`, `users/ricardo/cache`) y 3b-ter
+(`users/ciepmx`) de `publicar-vps.sh` embarcan. Lo que no embarca, **se embarca** (se añade a la
+fase y a `MOTOR_LECTURAS_VPS`) **o no se lee**. El **Gate 5-remoto** de `publicar-vps.sh` comprueba
+en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y que
+`05_scripts/manifest.json` es idéntico al local); la Fase 6 da el clic «Calcular» real.
+
+**Inventario (2026-10-18)** — `grep -rnoE '\$\{?SIMROOT\}?/…' *.ado *.do 01_modulos/` excluyendo
+`master/`, `users/`, `raw/`:
+
+| Ruta bajo `${SIMROOT}/` | Quién la lee | Flujo | Decisión |
+|---|---|---|---|
+| `05_scripts/manifest.json` | `_precache_manifest.ado` | **web** y batch | **embarcar** (Fase 3a, v8.12.1) |
+| `01_modulos/{ISR_Mod,IVA_Mod,output}.do`, `01_modulos/visualizations/SankeySF.do` | `Web.Stata.do` | **web** | ya embarcado (Fase 3a `01_modulos/***`) |
+| `*.ado`, `*.scheme` del root | `Web.Stata.do` vía SITE | **web** | ya embarcado (Fase 3a) |
+| `01_modulos/PerfilesSim.do` | `GastoPC.ado`, `TasasEfectivas.ado` | solo si falta `master/perfiles<año>.dta` (en el VPS existe: Fase 3b) | ya embarcado; no debe correr en el VPS |
+| `01_modulos/{Expenditure,Households,PerfilesSim,…}.do`, `visualizations/{Graphs_*,CicloEntidad}.do`, `nodos/*.do` | `SIM.do`, batch | batch | embarcado por `01_modulos/***`; no se leen en web |
+| `set_token.do`, `simulador.stpr` | `SIM.do`, `profile.do` | batch / GUI local | **no se lee** en web; `set_token.do` es secreto y no viaja (correcto) |
+| `01_raw/CONEVAL/2022/Base` | `Expenditure.do` | batch | no se lee en web (FLAG: ruta `01_raw/`, ¿alias viejo de `raw/`?) |
+| `02_governance/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
+| `05_scripts/compuertas-entidad.do` | sesión `compuertas-entidad.sh` | sesión | no se lee en web |
+
+FLAG (hallazgo del humo): `checkStataStatus.php` solo reporta `completed` cuando existe
+`<id>.done`, y nada en el motor ni en `Web.Stata.do` lo escribe; el JS no lo consulta (el POST a
+`calculaStata.php` es síncrono). `humo-calcular.sh` hace lo que el JS: espera el POST y usa
+`checkStataStatus.php` solo como señal de vida (`process_alive`).
 
 ---
 

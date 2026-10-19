@@ -144,10 +144,20 @@ def leer_output(path):
 
 
 def cmd_escenario(root):
-    src = os.path.join(root, 'users', 'ricardo', 'output.txt')
-    if not os.path.isfile(src):
-        fail('no existe ' + src + ' (escenario default publicado; publicar-vps.sh Fase 3b-ter lo copia a users/ciepmx/)')
-    d = leer_output(src)
+    """root = raíz del repo (lee users/ricardo/output.txt) o, desde v8.12.1, un ARCHIVO: un output.txt
+    o el JSON que devuelve cargaDefault.php ({NOMBRE: [valores]}) — así humo-calcular.sh arma el
+    escenario default exactamente como lo hace el JS del sitio, a partir de lo que el sitio sirve."""
+    if os.path.isfile(root):
+        src = root
+    else:
+        src = os.path.join(root, 'users', 'ricardo', 'output.txt')
+        if not os.path.isfile(src):
+            fail('no existe ' + src + ' (escenario default publicado; publicar-vps.sh Fase 3b-ter lo copia a users/ciepmx/)')
+    if src.endswith('.json'):
+        d = json.load(open(src, encoding='utf-8'))
+        d = {k: ([str(x) for x in v] if isinstance(v, list) else [str(v)]) for k, v in d.items()}
+    else:
+        d = leer_output(src)
     for k in ('INGRESOS', 'GASTOS', 'CRECPIB', 'CRECDEF', 'DEUDAPARAM', 'ISRSUBS', 'ISRDEDU', 'ISRMORA',
               'CSSIMSS', 'CSSISSSTE', 'IVA', 'GASTOSPC'):
         if k not in d:
