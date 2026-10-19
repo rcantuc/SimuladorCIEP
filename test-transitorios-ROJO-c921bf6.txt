@@ -1,0 +1,31 @@
+# [ES] secuencia (ms desde el clic: tablas con blink-1 / animación blink-1 viva), tras el fin del POST:
+# 4235:0  4544:0  4852:0  5164:0  5472:0  5777:0  6084:0  6391:0  6698:0  7006:0  7313:0
+OK     T1 [ES] hay tablas (.table) en la página (11)
+FALLO  T1 [ES] tras el POST las tablas adquieren la clase blink-1
+FALLO  T1 [ES] parpadean TODAS las tablas, como el original (0/11)
+FALLO  T1 [ES] la animación CSS blink-1 está corriendo (document.getAnimations)
+FALLO  T1 [ES] y luego pierden la clase (el parpadeo termina)
+FALLO  T2 [ES] tras el POST se refrescan los 5 Sankeys (ninguno)
+FALLO  T3 [ES] moduloCambio/moduloCambioIva vuelven a 0 tras un cálculo exitoso (1,)
+OK     T4 [ES] el aviso «Calculando…» se apaga al terminar
+# [EN] secuencia (ms desde el clic: tablas con blink-1 / animación blink-1 viva), tras el fin del POST:
+# 4136:0  4443:0  4751:0  5058:0  5366:0  5674:0  5980:0  6288:0  6593:0  6898:0  7205:0
+OK     T1 [EN] hay tablas (.table) en la página (11)
+FALLO  T1 [EN] tras el POST las tablas adquieren la clase blink-1
+FALLO  T1 [EN] parpadean TODAS las tablas, como el original (0/11)
+FALLO  T1 [EN] la animación CSS blink-1 está corriendo (document.getAnimations)
+FALLO  T1 [EN] y luego pierden la clase (el parpadeo termina)
+FALLO  T2 [EN] tras el POST se refrescan los 5 Sankeys (ninguno)
+FALLO  T3 [EN] moduloCambio/moduloCambioIva vuelven a 0 tras un cálculo exitoso (1,)
+OK     T4 [EN] el aviso «Calculando…» se apaga al terminar
+OK     T4 flujo principal: el reloj arranca en 25 (CIEP_TIEMPOS = 25)
+OK     T4 flujo isr: el reloj arranca en 40 (CIEP_TIEMPOS = 40)
+OK     T4 flujo iva: el reloj arranca en 40 (CIEP_TIEMPOS = 40)
+OK     T4 flujo isr_iva: el reloj arranca en 50 (CIEP_TIEMPOS = 50)
+OK     T4 si la cuenta se acaba antes que el run: «Finalizando…» (sin cifra) y el aviso sigue encendido
+OK     T4 y se apaga al llegar la respuesta
+OK     T5 con un 429 el aviso «Calculando…» queda apagado (no hay spinner eterno)
+OK     T5 con un 429 se conserva moduloCambio para el reintento (1)
+OK     T5 el mensaje del servidor se muestra al usuario (El simulador está ocupado con otros cálculos. Vuelve a intentarlo en 30 segundos.)
+RESULTADO: 12 fallo(s) en los efectos transitorios del «Calcular»
+rc=1
