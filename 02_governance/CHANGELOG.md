@@ -16,6 +16,25 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.12.2] — 2026-10-19
+
+### Sitio — el cronómetro del «Calcular» dice la verdad
+
+- La cuenta regresiva mostraba 35 s en todos los casos (literales en `index.php`/`index-en.php`
+  y en `stataCalcula{,-en}.js`) cuando el «Calcular» principal tarda ~20 s en el VPS y los
+  submódulos ISR/IVA ~30–40 s. Ahora: **una constante por flujo en un solo archivo**,
+  `js/config-tiempos.js` (`CIEP_TIEMPOS`: principal 25, isr 40, iva 40, isr_iva 50; valor =
+  tiempo medido + ~25 %), y el flujo se elige por los flags que el clic manda (`moduloCambio`,
+  `moduloCambioIva`). Medición por flujo (3 corridas con Stata real) e inventario de botones en
+  `02_governance/perf/cronometro-calcular-2026-10-19.md`.
+- **El reloj es cosmético; el fin lo dicta la respuesta.** Si el run termina antes, los
+  resultados aparecen y el reloj se corta; si tarda más que la cuenta pasa a «Finalizando…» /
+  «Finishing…» (antes se quedaba en «1s»). Corrige además que el aviso solo se apagaba en la rama de
+  éxito: ante un error (p. ej. el 429 del freno) quedaba encendido. Los mensajes del 429 no cambian.
+- `05_scripts/verify_cronometro_unico.sh` (en CI): falla si reaparece un literal de segundos
+  suelto o si una página carga `stataCalcula*.js` sin `config-tiempos.js` antes.
+- Solo front-end: sin cambios al motor ni a los números. `manifest.json` → v8.12.2.
+
 ## [v8.12.1] — 2026-10-18
 
 ### Correcciones — el deployment embarca lo que el motor lee + «Calcular» de humo automático

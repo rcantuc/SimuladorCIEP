@@ -415,6 +415,7 @@ SITE_SMOKE_ASSETS=(
     css/custom.css
     css/admin2.css
     js/stataCalcula.js
+    js/config-tiempos.js
     js/connect.js
     plugins/bootstrap/css/bootstrap.min.css
     plugins/font-awesome/css/all.min.css
