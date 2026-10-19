@@ -1,0 +1,33 @@
+pos	abrev	clave	nombre	poblacion_rc	pib_rc	pib_nota	sankeys_ok	sankeys_rc	ciclo_rc	te_rc	segundos	banda
+1	Ags	01	Aguascalientes	0	.	sin base master/PIBDeflactorAgs.dta (receta: PIBDeflactor if entidad == \"Aguascalientes\", update  — baja series del BISE con token)	5		0	0	12	si
+2	BC	02	Baja California	0	.	sin base master/PIBDeflactorBC.dta (receta: PIBDeflactor if entidad == \"Baja California\", update  — baja series del BISE con token)	5		0	0	12	si
+3	BCS	03	Baja California Sur	0	.	sin base master/PIBDeflactorBCS.dta (receta: PIBDeflactor if entidad == \"Baja California Sur\", update  — baja series del BISE con token)	5		0	0	12	si
+4	Camp	04	Campeche	0	0	con base	5		0	0	13	si
+5	Coah	05	Coahuila	0	.	sin base master/PIBDeflactorCoah.dta (receta: PIBDeflactor if entidad == \"Coahuila\", update  — baja series del BISE con token)	5		0	0	12	si
+6	Col	06	Colima	0	.	sin base master/PIBDeflactorCol.dta (receta: PIBDeflactor if entidad == \"Colima\", update  — baja series del BISE con token)	5		0	0	13	si
+7	Chis	07	Chiapas	0	.	sin base master/PIBDeflactorChis.dta (receta: PIBDeflactor if entidad == \"Chiapas\", update  — baja series del BISE con token)	5		0	0	13	si
+8	Chih	08	Chihuahua	0	.	sin base master/PIBDeflactorChih.dta (receta: PIBDeflactor if entidad == \"Chihuahua\", update  — baja series del BISE con token)	5		0	0	12	si
+9	CDMX	09	Ciudad de México	0	.	sin base master/PIBDeflactorCDMX.dta (receta: PIBDeflactor if entidad == \"Ciudad de México\", update  — baja series del BISE con token)	5		0	0	13	si
+10	Dgo	10	Durango	0	.	sin base master/PIBDeflactorDgo.dta (receta: PIBDeflactor if entidad == \"Durango\", update  — baja series del BISE con token)	5		0	0	11	si
+11	Gto	11	Guanajuato	0	.	sin base master/PIBDeflactorGto.dta (receta: PIBDeflactor if entidad == \"Guanajuato\", update  — baja series del BISE con token)	5		0	0	12	si
+12	Gro	12	Guerrero	0	.	sin base master/PIBDeflactorGro.dta (receta: PIBDeflactor if entidad == \"Guerrero\", update  — baja series del BISE con token)	5		0	0	12	si
+13	Hgo	13	Hidalgo	0	.	sin base master/PIBDeflactorHgo.dta (receta: PIBDeflactor if entidad == \"Hidalgo\", update  — baja series del BISE con token)	5		0	0	13	si
+14	Jal	14	Jalisco	0	0	con base	5		0	0	12	si
+15	EdoMex	15	Estado de México	0	.	sin base master/PIBDeflactorEdoMex.dta (receta: PIBDeflactor if entidad == \"Estado de México\", update  — baja series del BISE con token)	5		0	0	13	si
+16	Mich	16	Michoacán	0	.	sin base master/PIBDeflactorMich.dta (receta: PIBDeflactor if entidad == \"Michoacán\", update  — baja series del BISE con token)	5		0	0	12	si
+17	Mor	17	Morelos	0	.	sin base master/PIBDeflactorMor.dta (receta: PIBDeflactor if entidad == \"Morelos\", update  — baja series del BISE con token)	5		0	0	12	si
+18	Nay	18	Nayarit	0	.	sin base master/PIBDeflactorNay.dta (receta: PIBDeflactor if entidad == \"Nayarit\", update  — baja series del BISE con token)	5		0	0	12	si
+19	NL	19	Nuevo León	0	0	con base	5		0	0	13	si
+20	Oax	20	Oaxaca	0	.	sin base master/PIBDeflactorOax.dta (receta: PIBDeflactor if entidad == \"Oaxaca\", update  — baja series del BISE con token)	5		0	0	12	si
+21	Pue	21	Puebla	0	.	sin base master/PIBDeflactorPue.dta (receta: PIBDeflactor if entidad == \"Puebla\", update  — baja series del BISE con token)	5		0	0	12	si
+22	Qro	22	Querétaro	0	.	sin base master/PIBDeflactorQro.dta (receta: PIBDeflactor if entidad == \"Querétaro\", update  — baja series del BISE con token)	5		0	0	12	si
+23	QRoo	23	Quintana Roo	0	.	sin base master/PIBDeflactorQRoo.dta (receta: PIBDeflactor if entidad == \"Quintana Roo\", update  — baja series del BISE con token)	5		0	0	12	si
+24	SLP	24	San Luis Potosí	0	.	sin base master/PIBDeflactorSLP.dta (receta: PIBDeflactor if entidad == \"San Luis Potosí\", update  — baja series del BISE con token)	5		0	0	13	si
+25	Sin	25	Sinaloa	0	.	sin base master/PIBDeflactorSin.dta (receta: PIBDeflactor if entidad == \"Sinaloa\", update  — baja series del BISE con token)	5		0	0	12	si
+26	Son	26	Sonora	0	.	sin base master/PIBDeflactorSon.dta (receta: PIBDeflactor if entidad == \"Sonora\", update  — baja series del BISE con token)	5		0	0	12	si
+27	Tab	27	Tabasco	0	.	sin base master/PIBDeflactorTab.dta (receta: PIBDeflactor if entidad == \"Tabasco\", update  — baja series del BISE con token)	5		0	0	12	si
+28	Tamps	28	Tamaulipas	0	.	sin base master/PIBDeflactorTamps.dta (receta: PIBDeflactor if entidad == \"Tamaulipas\", update  — baja series del BISE con token)	5		0	0	12	si
+29	Tlax	29	Tlaxcala	0	.	sin base master/PIBDeflactorTlax.dta (receta: PIBDeflactor if entidad == \"Tlaxcala\", update  — baja series del BISE con token)	5		0	0	13	si
+30	Ver	30	Veracruz	0	.	sin base master/PIBDeflactorVer.dta (receta: PIBDeflactor if entidad == \"Veracruz\", update  — baja series del BISE con token)	5		0	0	12	si
+31	Yuc	31	Yucatán	0	.	sin base master/PIBDeflactorYuc.dta (receta: PIBDeflactor if entidad == \"Yucatán\", update  — baja series del BISE con token)	5		0	0	12	si
+32	Zac	32	Zacatecas	0	.	sin base master/PIBDeflactorZac.dta (receta: PIBDeflactor if entidad == \"Zacatecas\", update  — baja series del BISE con token)	5		0	0	12	si

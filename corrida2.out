@@ -1,0 +1,16 @@
+== Bases precedentes (runbook §13)
+  banda de vintages: sí (5 bases).
+  testigo NL: /Users/ricardo/CIEP_Simuladores/diag-v8.11b-retiro-capa-2026-10-16/statajson_entidad-nl-2026-10-08.json (ca453062c0e6…)
+== Stata: SIM.do (entidad testigo: Nuevo León) + compuertas-entidad.do + contrato-32.do → /Users/ricardo/CIEP_Simuladores/diag-v8.13a-contrato-32-2026-10-19/corrida2
+   Stata: 42 min.
+== compuertas-entidad.py (Sankeys: aditividad Σ32, testigo NL, sellos)
+
+**TODAS EN VERDE**
+== contrato-32.py (paridad, tabla de las 32, ciclo de vida, tasas efectivas, sellos)
+
+## 5 Veredicto
+
+- FLAG TE ISAN: la tasa es IDÉNTICA en las 32 (1.693 %): numerador y denominador se imputan con el mismo relativo (Distribucion); por entidad no aporta información — metodología, Ricardo decide si se publica
+- FLAG TE IMPORT: la tasa es IDÉNTICA en las 32 (0.797 %): numerador y denominador se imputan con el mismo relativo (Distribucion); por entidad no aporta información — metodología, Ricardo decide si se publica
+- **PASÓ** (paridad + aditividad del ciclo de vida; los Sankeys los dicta compuertas-entidad.md; TE y sellos solo se reportan)
+== reporte: /Users/ricardo/CIEP_Simuladores/diag-v8.13a-contrato-32-2026-10-19/corrida2/contrato-32.md

@@ -1,0 +1,16 @@
+== Bases precedentes (runbook §13)
+  banda de vintages: sí (5 bases).
+  testigo NL: /Users/ricardo/CIEP_Simuladores/diag-v8.11b-retiro-capa-2026-10-16/statajson_entidad-nl-2026-10-08.json (ca453062c0e6…)
+== Stata: SIM.do (entidad testigo: Nuevo León) + compuertas-entidad.do + contrato-32.do → /Users/ricardo/CIEP_Simuladores/diag-v8.13a-contrato-32-2026-10-19/corrida1
+   Stata: 41 min.
+== compuertas-entidad.py (Sankeys: aditividad Σ32, testigo NL, sellos)
+**FALLAS:**
+- banda ENIGH (bmin/bmax) solo en la entidad de la corrida (NL): ['Ags', 'BC', 'BCS', 'CDMX', 'Camp', 'Chih', 'Chis', 'Coah', 'Col', 'Dgo', 'EdoMex', 'Gro', 'Gto', 'Hgo', 'Jal', 'Mich', 'Mor', 'NL', 'Nay', 'Oax', 'Pue', 'QRoo', 'Qro', 'SLP', 'Sin', 'Son', 'Tab', 'Tamps', 'Tlax', 'Ver', 'Yuc', 'Zac']
+== contrato-32.py (paridad, tabla de las 32, ciclo de vida, tasas efectivas, sellos)
+- Entidades con el contrato completo (población + 5 sankeys + ciclo + tasas efectivas): **32/32**
+
+## 5 Veredicto
+
+- FLAG TE: reldif máximo 8.19e-08 > 1e-9 (ver §3)
+- **PASÓ** (paridad + aditividad del ciclo de vida; los Sankeys los dicta compuertas-entidad.md; TE y sellos solo se reportan)
+== reporte: /Users/ricardo/CIEP_Simuladores/diag-v8.13a-contrato-32-2026-10-19/corrida1/contrato-32.md
