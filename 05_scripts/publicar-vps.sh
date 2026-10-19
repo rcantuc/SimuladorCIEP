@@ -110,7 +110,7 @@ die()       { log_error "$*"; exit 1; }
 usage() {
     cat <<'EOF'
 Uso:
-  ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health]
+  ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health] [--skip-humo] [--sin-espera-realpath]
   ./publicar-vps.sh <version-deployment> --limpiar-master-vps
 
 Argumentos:
@@ -126,6 +126,12 @@ Opciones:
   --skip-health         Salta la verificación post-deploy (el rollback
                         automático también se salta). Solo para debugging,
                         NUNCA en producción real.
+  --skip-humo           Salta SOLO el «Calcular» de humo de la Fase 6 (v8.12.1);
+                        health check y esqueleto siguen. Para el primer deploy
+                        de una máquina sin Stata o para debugging.
+  --sin-espera-realpath Fase 6: no espera los 125 s del caché de realpath de
+                        PHP antes del humo (solo si Apache/PHP-FPM se
+                        reiniciaron a mano o realpath_cache_ttl es 0).
   --limpiar-master-vps  NO despliega. Inspecciona master/ en el VPS y propone
                         (imprime, NUNCA ejecuta) los comandos rm para borrar
                         años y perfiles que NO están en la whitelist vigente
@@ -142,6 +148,8 @@ VERSION_ARG=""
 DRY_RUN=0
 FORCE=0
 SKIP_HEALTH=0
+SKIP_HUMO=0
+ESPERA_REALPATH=1
 LIMPIAR_MASTER=0
 
 for arg in "$@"; do
@@ -149,6 +157,8 @@ for arg in "$@"; do
         --dry-run)     DRY_RUN=1 ;;
         --force)       FORCE=1 ;;
         --skip-health) SKIP_HEALTH=1 ;;
+        --skip-humo)   SKIP_HUMO=1 ;;
+        --sin-espera-realpath) ESPERA_REALPATH=0 ;;
         --limpiar-master-vps) LIMPIAR_MASTER=1 ;;
         --help|-h)     usage ;;
         -*)            log_error "Opción desconocida: $arg"; usage ;;
@@ -658,7 +668,12 @@ log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
 # Alcance del motor (aprobado 2026-07-10): árbol completo que el canal web
 # necesita para correr — .ado/.do/.scheme del root del repo + 01_modulos/
 # (incluye Web.Stata.do y output.do). NO se propaga governance, help, sitio,
-# scripts, users/ ni raw/.
+# users/ ni raw/. De 05_scripts/ viaja SOLO manifest.json (v8.12.1): es lo que
+# _precache_manifest.ado lee en ${SIMROOT}/05_scripts/manifest.json para el
+# candado 2 del cache (data_updated). Incidente 2026-10-18: el deploy v8.12 no
+# lo embarcó y «Calcular» abortó con r(601) hasta copiarlo a mano. Regla
+# (runbook §12): un .ado del motor solo lee lo que esta fase embarca; el
+# inventario de lecturas bajo ${SIMROOT}/ está en MOTOR_LECTURAS_VPS (Gate 5-remoto).
 # --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
 # Fase 2; la garantía real es la Fase 3c porque openrsync ignora --chmod).
 # Los --exclude explícitos de abajo son redundantes con el catch-all final
@@ -679,6 +694,8 @@ RSYNC_ENGINE_OPTS=(
     --include='/*.do'
     --include='/*.scheme'
     --include='/01_modulos/***'
+    --include='/05_scripts/'
+    --include='/05_scripts/manifest.json'
     --exclude='*'
 )
 [[ $DRY_RUN -eq 1 ]] && RSYNC_ENGINE_OPTS+=(--dry-run)
@@ -958,8 +975,7 @@ if run_rsync_default; then
     # apunta al deployment anterior (un curl a cargaDefault.php probaría el
     # default viejo) y en dry-run nada viajó. Queda para el gate humano
     # post-deploy, junto con la prueba de humo en navegador:
-    log_info "Gate humano post-deploy: curl -s '${VPS_HEALTH_URL%/*}/cargaDefault.php' | head -c 300"
-    log_info "                        curl -s '${VPS_HEALTH_URL%/*}/jsonSankey.php' | head -c 300"
+    log_info "Post-swap (v8.12.1): la Fase 6 corre el «Calcular» de humo automático (humo-calcular.sh); el clic humano ya no es el gate."
     log_info "(deben regresar JSON con los números de la corrida local fresca, no los fósiles)."
 else
     if [[ $DRY_RUN -eq 1 ]]; then
@@ -1014,6 +1030,59 @@ if [[ $DRY_RUN -eq 1 ]]; then
 else
     ssh_vps "$WWWDATA_WRITE_DIRS_CMD"
     log_ok "Fase 3c: directorios de escritura de www-data garantizados (users/, raw/temp/, logs/)."
+fi
+
+# =============================================================================
+# Gate 5-remoto — Lo que el motor LEE existe en el deployment, ANTES del swap
+# =============================================================================
+# (v8.12.1, incidente 2026-10-18.) Las fases 3/3b/3b-bis dejan en el VPS el
+# motor, master/ y users/ricardo/; este gate comprueba, en el destino y antes de
+# tocar `current`, que cada ruta que el motor web lee bajo ${SIMROOT}/ está
+# puesta. La lista es el inventario del motor (grep de ${SIMROOT}/ en .ado/.do
+# del flujo web; tabla en el runbook §12). Si falta algo, el deploy muere aquí
+# con el código en el VPS pero sin activar: el candado de _precache_usa habría
+# tronado igual, pero en la cara del usuario.
+MOTOR_LECTURAS_VPS=(
+    "05_scripts/manifest.json"                       # _precache_manifest.ado (candado 2 del cache)
+    "01_modulos/Web.Stata.do"                        # calculaStata.php: la plantilla del .do
+    "01_modulos/ISR_Mod.do"                          # Web.Stata.do §3.1
+    "01_modulos/IVA_Mod.do"
+    "01_modulos/output.do"                           # Web.Stata.do §8
+    "01_modulos/visualizations/SankeySF.do"          # Web.Stata.do §7.2
+    "Precache.ado" "_precache_usa.ado" "_precache_bytes.ado" "_precache_manifest.ado"
+    "FiscalGap.ado" "GastoPC.ado" "PEF.ado" "TasasEfectivas.ado" "Simulador.ado" "PIBDeflactor.ado"
+    "scheme-ciep.scheme"
+    "master/PEF.dta"                                 # PEF.ado §1 (use in 1) + insumo del sello
+    "master/${WEB_PERFIL}"                           # insumo del sello (GastoPC_base)
+    "master/${WEB_MASTER_YEAR}/households.dta"       # insumo del sello
+    "users/ricardo/cache/sello.txt"                  # Fase 3b-bis: cache de lo invariante
+    "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
+    "users/ciepmx/output.txt"                        # Fase 3b-ter: escenario default (cargaDefault.php)
+)
+_GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
+for _f in "${MOTOR_LECTURAS_VPS[@]}"; do _GATE5R_CMD+=" '$_f'"; done
+_GATE5R_CMD+="; do [ -e \"\$f\" ] || echo \"FALTA \$f\"; done; sha256sum 05_scripts/manifest.json 2>/dev/null | cut -c1-64"
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Gate 5-remoto: se verificarían ${#MOTOR_LECTURAS_VPS[@]} rutas que el motor lee bajo $VPS_SIM_ROOT/$VPS_SIM_VERSION/ (y el sha256 de 05_scripts/manifest.json == local)."
+else
+    _G5R_OUT="$(ssh_vps "$_GATE5R_CMD" 2>&1 || true)"
+    _G5R_FALTAN="$(printf '%s
+' "$_G5R_OUT" | grep '^FALTA ' || true)"
+    _G5R_SHA="$(printf '%s
+' "$_G5R_OUT" | grep -E '^[0-9a-f]{64}$' | tail -1 || true)"
+    _LOCAL_SHA="$(shasum -a 256 "$LOCAL_REPO_ROOT/05_scripts/manifest.json" | cut -c1-64)"
+    if printf '%s
+' "$_G5R_OUT" | grep -q 'NO-EXISTE-DEPLOYMENT'; then
+        die "Gate 5-remoto: no existe $VPS_SIM_ROOT/$VPS_SIM_VERSION en el VPS (¿falló la Fase 3?)."
+    elif [[ -n "$_G5R_FALTAN" ]]; then
+        log_error "Gate 5-remoto: el motor leería rutas que NO están en $VPS_SIM_ROOT/$VPS_SIM_VERSION/:"
+        printf '%s
+' "$_G5R_FALTAN" | while IFS= read -r _l; do log_error "  $_l"; done
+        die "Gate 5-remoto FALLÓ. Nada se ha activado (current intacto). Revisa las fases 3/3b/3b-bis/3b-ter y la regla del runbook §12."
+    elif [[ "$_G5R_SHA" != "$_LOCAL_SHA" ]]; then
+        die "Gate 5-remoto: 05_scripts/manifest.json del deployment (sha ${_G5R_SHA:-ausente}) ≠ local ($_LOCAL_SHA). Nada se ha activado."
+    fi
+    log_ok "Gate 5-remoto: las ${#MOTOR_LECTURAS_VPS[@]} rutas que el motor lee existen en el deployment; manifest.json idéntico al local."
 fi
 
 # =============================================================================
@@ -1194,6 +1263,7 @@ if [[ $SKIP_HEALTH -eq 1 ]]; then
 elif [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Fase 6: se verificaría HTTP 200 y 'Commit: ${CURRENT_COMMIT_SHORT}...' en $VPS_HEALTH_URL"
     log_info "[dry-run] Fase 6: y HTTP 200 en ${#SITE_SMOKE_ASSETS[@]} activos del esqueleto bajo ${VPS_HEALTH_URL%/*}/: ${SITE_SMOKE_ASSETS[*]}"
+    log_info "[dry-run] Fase 6: y, tras $( [[ $ESPERA_REALPATH -eq 1 ]] && echo '125 s de espera (caché de realpath)' || echo '0 s' ), el «Calcular» de humo: bash 05_scripts/humo-calcular.sh ${VPS_HEALTH_URL%/*} --timeout 120$( [[ $SKIP_HUMO -eq 1 ]] && echo ' (SALTADO por --skip-humo)' )"
 else
     log_info "Fase 6: verificación post-deploy contra $VPS_HEALTH_URL"
     if health_check; then
@@ -1213,6 +1283,39 @@ else
             log_error "El sitio cargaría sin estilos/JS (incidente v8.10, 2026-10-16). Revisa la Fase 2 (rsync del sitio) y los permisos (Fase 3c)."
             HEALTH_PASSED=0
         fi
+        # --- «Calcular» de humo real (v8.12.1) -----------------------------------------
+        # health.php, el commit y el esqueleto no prueban el motor: el deploy v8.12
+        # (2026-10-18) pasó los tres y «Calcular» abortaba con r(601). Desde aquí el
+        # clic lo da humo-calcular.sh: POST del escenario default a calculaStata.php
+        # (como el JS), números en la respuesta y los 5 sankeys de la sesión. Si
+        # falla, HEALTH_PASSED=0 → la Fase 7 hace el rollback.
+        if [[ $HEALTH_PASSED -eq 1 && $SKIP_HUMO -eq 0 ]]; then
+            if [[ $ESPERA_REALPATH -eq 1 ]]; then
+                # PHP cachea realpath() 120 s (realpath_cache_ttl): tras el swap de
+                # `current`, los workers de Apache pueden seguir resolviendo el
+                # deployment ANTERIOR hasta 2 min; un humo antes de eso probaría el
+                # motor viejo. 125 s = TTL + margen.
+                log_info "Fase 6: esperando 125 s el caché de realpath de PHP antes del «Calcular» de humo (--sin-espera-realpath lo salta)…"
+                sleep 125
+            fi
+            HUMO_ID="humo$(date +%Y%m%d%H%M%S)"
+            HUMO_EVID="$(dirname "$LOG_FILE")/humo-$VERSION_ARG-$HUMO_ID"
+            _t_humo0=$(date +%s)
+            # (set -e: el rc se captura con ||, y el tee no decide nada)
+            _rc_humo=0
+            bash "$LOCAL_REPO_ROOT/05_scripts/humo-calcular.sh" "${VPS_HEALTH_URL%/*}" --timeout 120 --id "$HUMO_ID" --evidencia "$HUMO_EVID" > "$HUMO_EVID.out" 2>&1 || _rc_humo=$?
+            tee -a "$LOG_FILE" < "$HUMO_EVID.out"
+            if [[ $_rc_humo -eq 0 ]]; then
+                log_ok "Fase 6: «Calcular» de humo VERDE en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID; evidencia $HUMO_EVID)."
+            else
+                log_error "Fase 6: «Calcular» de humo ROJO en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID). El motor del deployment $VERSION_ARG no produce números o sankeys."
+                log_error "Cola del log de Stata de la sesión ($VPS_SIM_ROOT/$VPS_SIM_VERSION/users/$HUMO_ID/$HUMO_ID.log):"
+                { ssh_vps "tail -n 40 '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/$HUMO_ID/$HUMO_ID.log' 2>/dev/null || echo '(sin log de sesión: Stata no llegó a arrancar o la sesión no se creó)'" 2>&1 || true; } | sed 's/^/    /' | tee -a "$LOG_FILE" || true
+                HEALTH_PASSED=0
+            fi
+        elif [[ $SKIP_HUMO -eq 1 ]]; then
+            log_warn "Fase 6: «Calcular» de humo SALTADO por --skip-humo. Da el clic a mano: ${VPS_HEALTH_URL%/*}/ → Calcular."
+        fi
     else
         if [[ "$HEALTH_LAST_CODE" == "000" ]]; then
             log_error "Health check falló: no se pudo conectar (red, SSL o timeout). Verifica conectividad y el certificado."
@@ -1229,7 +1332,7 @@ fi
 # =============================================================================
 if [[ $HEALTH_PASSED -eq 0 ]]; then
     if [[ -n "$PREVIOUS_DEPLOYMENT" ]]; then
-        log_warn "Fase 7: rollback automático al deployment anterior ($PREVIOUS_DEPLOYMENT)."
+        log_warn "Fase 7: rollback automático al deployment anterior ($PREVIOUS_DEPLOYMENT) — health check, esqueleto o «Calcular» de humo fallaron."
         ssh_vps "ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'"
         if health_check; then
             log_ok "Rollback verificado: el sitio responde HTTP 200 con $PREVIOUS_DEPLOYMENT."

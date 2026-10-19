@@ -69,6 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash 05_scripts/test-sitio-seguridad.sh
+      - run: bash 05_scripts/test-humo-calcular.sh
 
   sitio-autocontenido:
     name: "sitio auto-contenido (docroot == git ls-files 04_1/)"
