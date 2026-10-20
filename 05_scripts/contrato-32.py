@@ -196,6 +196,24 @@ def main():
     if tot_ok < 32: flags.append(f'{32 - tot_ok} entidad(es) con algún paso fallido (ver tabla)')
     P()
 
+    # ---------------- (f) PIBE por entidad: base presente y «% del PIBE» (vista previa para v8.13b) ----------------
+    con_base = [f for f in filas if f['pib_rc'] == '0']
+    sin_base = [f['abrev'] for f in filas if f['pib_rc'] != '0']
+    P('## 4b PIB estatal (PIBE): bases `master/PIBDeflactor<ABREV>.dta` y «% del PIBE» (vista previa de v8.13b)')
+    P(); P(f'- Entidades con base y `PIBDeflactor` por entidad sin error: **{len(con_base)}/32**' + (f' (sin base o con rc: {", ".join(sin_base)})' if sin_base else ''))
+    if len(con_base) < 32: fallas.append(f'PIBE: {32 - len(con_base)} entidad(es) sin base o con rc != 0 en PIBDeflactor ({", ".join(sin_base)})')
+    P('- Los productos JSON de entidad aún NO escriben «% del PIBE» (`CicloEntidad.do` y `SankeySF.do` llaman `PIBDeflactor` nacional: `pibY` del `nacional`); eso es v8.13b. Esta tabla solo prueba que la base lo permite: neto del ciclo de vida de la entidad (`ciclo-vida.json` `totales.entidad.neto`, pesos → mdp) ÷ `pibY<ABREV>` (escalar de `PIBDeflactor` por entidad, año de valor presente).')
+    P(); P('| # | entidad | PIBE (mdp) | share PIBE / Σ32 | neto ciclo (mdp) | neto / PIBE (%) | share población |'); P('|---:|---|---:|---:|---:|---:|---:|')
+    pibes = {f['abrev']: float(f['pibe_pesos']) / 1e6 for f in filas if f.get('pibe_pesos', '.') not in ('.', '')}
+    sp = sum(pibes.values())
+    for f in filas:
+        ab = f['abrev']; cic = ciclos.get(ab); pb = pibes.get(ab)
+        net = cic['totales']['entidad']['neto'] / 1e6 if cic else None   # el JSON va en pesos; aquí mdp, como el PIBE
+        shp = cic['totales']['nacional']['share_pob'] if cic else None
+        P(f'| {f["pos"]} | {f["nombre"]} ({ab}) | {f"{pb:,.0f}" if pb else "—"} | {f"{pb / sp * 100:.2f} %" if pb else "—"} | {f"{net:,.0f}" if net is not None else "—"} | {f"{net / pb * 100:.3f}" if (net is not None and pb) else "—"} | {f"{shp * 100:.2f} %" if shp is not None else "—"} |')
+    P(); P(f'- Σ32 PIBE = {sp:,.0f} mdp (año de valor presente; informativo: no se gatea contra el PIB nacional de `output.txt`).')
+    P()
+
     # ---------------- veredicto ----------------
     P('## 5 Veredicto')
     P()

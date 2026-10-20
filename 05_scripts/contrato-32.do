@@ -41,7 +41,7 @@ noisily di _newline in g "{bf:contrato-32: las 32 entidades}" _newline in g "  b
 
 tempname tsv
 file open `tsv' using `"`evidencia'/contrato-32.tsv"', write replace text
-file write `tsv' "pos" _tab "abrev" _tab "clave" _tab "nombre" _tab "poblacion_rc" _tab "pib_rc" _tab "pib_nota" _tab "sankeys_ok" _tab "sankeys_rc" _tab "ciclo_rc" _tab "te_rc" _tab "segundos" _tab "banda" _n
+file write `tsv' "pos" _tab "abrev" _tab "clave" _tab "nombre" _tab "poblacion_rc" _tab "pib_rc" _tab "pib_nota" _tab "sankeys_ok" _tab "sankeys_rc" _tab "ciclo_rc" _tab "te_rc" _tab "segundos" _tab "banda" _tab "pibe_pesos" _n
 
 local j = 1
 foreach ent of global entidadesL {
@@ -61,6 +61,7 @@ foreach ent of global entidadesL {
 
 	* §2 PIB/Deflactor: solo con base; la fracción SCN y el BISE quedan fuera (declarado) *
 	local rc_pib = .
+	local pibe_pesos "."
 	local nota_pib "sin base master/PIBDeflactor`abrev'.dta (receta: PIBDeflactor if entidad == \"`ent'\", update  — baja series del BISE con token)"
 	capture confirm file "${SIMROOT}/master/PIBDeflactor`abrev'.dta"
 	if _rc == 0 {
@@ -68,6 +69,8 @@ foreach ent of global entidadesL {
 		capture noisily PIBDeflactor if entidad == "`ent'", aniovp(`=aniovp') aniomax(2032) nographs nooutput
 		local rc_pib = _rc
 		local nota_pib "con base"
+		capture confirm scalar pibY`abrev'
+		if _rc == 0 local pibe_pesos = trim(string(scalar(pibY`abrev'), "%20.0f"))
 	}
 
 	* §8.2 Sankeys (5 cortes) *
@@ -89,7 +92,7 @@ foreach ent of global entidadesL {
 
 	local seg = (clock("$S_DATE $S_TIME", "DMYhms") - `t0')/1000
 	quietly log close ent32
-	file write `tsv' "`j'" _tab "`abrev'" _tab "`clave'" _tab `"`ent'"' _tab "`rc_pob'" _tab "`rc_pib'" _tab `"`nota_pib'"' _tab "`ok_sk'" _tab "`=trim("`rc_sk'")'" _tab "`rc_ciclo'" _tab "`rc_te'" _tab "`seg'" _tab "`=cond("`vint'" == "", "si", "no")'" _n
+	file write `tsv' "`j'" _tab "`abrev'" _tab "`clave'" _tab `"`ent'"' _tab "`rc_pob'" _tab "`rc_pib'" _tab `"`nota_pib'"' _tab "`ok_sk'" _tab "`=trim("`rc_sk'")'" _tab "`rc_ciclo'" _tab "`rc_te'" _tab "`seg'" _tab "`=cond("`vint'" == "", "si", "no")'" _tab "`pibe_pesos'" _n
 	noisily di in g "     poblacion rc=" in y "`rc_pob'" in g "  pib rc=" in y "`rc_pib'" in g "  sankeys " in y "`ok_sk'/5" in g "  ciclo rc=" in y "`rc_ciclo'" in g "  te rc=" in y "`rc_te'" in g "  (" in y "`seg'" in g " s)"
 	local ++j
 }

@@ -40,6 +40,26 @@ Formato de cada entrada:
   decisión de Ricardo (FLAG de #26 sigue abierto, ahora escrito).
 - Cero visualización, cero template: qué se muestra y cómo es v8.13b (Ricardo).
 
+### Datos — v8.13a-2: bases de PIB/Deflactor para las 32 entidades (fuentes vivas, BISE)
+
+- **`master/PIBDeflactor<ABREV>.dta` × 32**, regeneradas el mismo día (vintage uniforme: las tablas BIE
+  por área se bajan una vez por sesión y sirven a las 32), con la receta de siempre sin tocarla:
+  `PIBDeflactor if entidad == "<nombre>"` (PIBE 750453 e índice de precios implícitos 753357 del BIE;
+  ocupados/desocupados ENOE 6200093954/6200093973 del BISE vía API con token; ITAEE 741177/741180; INPC
+  estatal; población CONAPO). Antes: solo NL, Jal y Camp; las otras 29 corrían «sin base». Las bases son
+  datos (gitignored); viajan al VPS por la Fase 3b del deploy.
+- **`05_scripts/pibe-32.{sh,do,py}` y `sellar-pibe-32.do`** (nuevos): compuerta de arranque (catálogo con 32,
+  `set_token.do` válido con una consulta BISE de prueba, `PIBDeflactorNL.dta` de referencia; el token nunca
+  se imprime), una sesión de Stata que recorre el catálogo con pausa entre entidades y tolera fallos (rc por
+  entidad en `pibe-32.tsv`, log por entidad, reintento de las fallidas), **sello de procedencia por base**
+  (`master/PIBDeflactor<ABREV>.meta` y `char _dta[sello_*]` dentro del `.dta`: series BIE/BISE, estructura,
+  fecha de consulta, último periodo, n), diff de las bases previas contra las nuevas y tabla de las 32 con
+  SHA-256 y tamaño en `pibe-32.md`. Las copias previas se respaldan en `<evidencia>/bases-previas/` antes de pisar.
+- `contrato-32.do` registra `pibe_pesos` (`pibY<ABREV>`) por entidad y `contrato-32.py` agrega la sección
+  «4b PIBE»: gate de que las 32 corren con base y una vista previa de «% del PIBE» (neto del ciclo ÷ PIBE).
+  Los JSON de entidad todavía NO escriben «% del PIBE»: es v8.13b.
+- Runbook §13: receta y tiempo medido de `pibe-32.sh`.
+
 ## [v8.12.3] — 2026-10-19
 
 ### Sitio — se restaura el parpadeo de las tablas, el refresco de los Sankeys y el reinicio de flags tras «Calcular»
