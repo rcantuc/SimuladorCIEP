@@ -743,13 +743,44 @@ Tolerante a fallos: si una entidad truena en un paso, queda su rc en la tabla y 
 |---|---|---|---|
 | `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | son los `aportaciones.dta` de corridas completas de `SIM.do` con la ENIGH de cada vintage (horas cada una; `raw/ENIGH/<año>/` completo). Hoy viven en el worktree `SimuladorCIEP-NL/users/ricardo-v<año>/`; se clonan: `for v in 2016 2018 2020 2022 2024; do mkdir -p users/ricardo-v$v; cp -c …/SimuladorCIEP-NL/users/ricardo-v$v/aportaciones.dta users/ricardo-v$v/; done`. Fabricarlas desde cero es decisión de Ricardo (qué vintages, con qué parámetros) |
 | `statajson_entidad-nl.json` (testigo NL, 2026-10-08, sha `ca453062…`) | el gate 3 de `compuertas-entidad.py` (90 celdas `dis<fam>nle<dec>` a 1e-12) | el gate queda "no verificable" (declarado) | `--statajson <ruta>`; el driver lo busca en `users/$id/nodos/` y en `diag-v8.11b-retiro-capa-2026-10-16/`. Es un sello histórico del sprint NL: no se regenera |
-| `master/PIBDeflactor<ABREV>.dta` (hoy: NL, Jal, Camp) | PIB/Deflactor por entidad (§2) | la entidad va `PIB sin base` en la tabla | `PIBDeflactor if entidad == "<nombre>", update` baja las series del BISE (token en `set_token.do`); una por entidad, con red |
+| `master/PIBDeflactor<ABREV>.dta` (las 32 desde v8.13a-2) | PIB/Deflactor por entidad (§2) y el «% del PIBE» de v8.13b | la entidad va `PIB sin base` en la tabla (y `contrato-32.py` §4b falla) | `05_scripts/pibe-32.sh` (§13.1): `PIBDeflactor if entidad == "<nombre>", update` por entidad; BISE con token |
 
 **Gates que corren por script y su estado:** paridad (sha256 de `output.txt` y 5 sankeys
 nacionales vs `--refs`), aditividad de Sankeys (Σ32 = nacional, 1e-9) y del ciclo de vida (Σ32
 `pct_nac` = `APORT*`, 0.0005), testigo NL, sellos (n < 100, top-1 > 25 %: solo se cuentan). Las
 tasas efectivas no son aditivas: el reporte PROPONE el gate de consistencia (Σ32 montos = nacional
 ⇒ la tasa nacional es el promedio ponderado por base) y lo mide; **Ricardo decide si se vuelve gate**.
+
+### 13.1 Las 32 bases de PIB/Deflactor (v8.13a-2): receta, tiempo y qué se lleva al VPS
+
+**Receta (un comando, en un worktree con `master/`, `raw/` y `set_token.do`; `master/*.dta` es gitignored):**
+```bash
+nohup bash 05_scripts/pibe-32.sh --evidencia ~/CIEP_Simuladores/diag-<fecha> > pibe-32.out 2>&1 &
+# subconjunto: --entidades "NL Jal"   pausa entre entidades: --pausa 5 (s, default)   sin reintento: --sin-reintento
+```
+Hace, en orden: (1) compuerta de arranque (catálogo `SIMentidad` con 32, `set_token.do` presente y una
+consulta BISE de prueba que responde, `master/PIBDeflactorNL.dta` existe; el token no se imprime ni se
+escribe); (2) respalda las bases existentes en `<evidencia>/bases-previas/` (nunca las borra); (3) una
+sesión de Stata recorre el catálogo e invoca por entidad la receta de siempre, sin tocarla
+(`PIBDeflactor if entidad == "<nombre>", update`: PIBE 750453 + deflactor 753357 del BIE por área, ocupados
+y desocupados ENOE 6200093954/6200093973 del BISE vía API con token, ITAEE 741177/741180, INPC estatal,
+población CONAPO), con pausa, tolerante a fallos (rc por entidad en `pibe-32.tsv`, `entidades/<ABREV>.log`) y
+**un reintento** de las que no queden frescas; (4) sellos: `master/PIBDeflactor<ABREV>.meta` y
+`char _dta[sello_*]` dentro del `.dta` (`char list _dta[]`); (5) `pibe-32.md`: tabla de procedencia de las
+32, diff de las bases previas (serie, último periodo, valores) y SHA-256/tamaño de los 32 archivos.
+Sale con 0 solo si hay 32/32 bases frescas con sello.
+
+**Tiempo medido (2026-10-19, StataNow 19.5, red doméstica):** ≈ 3 min 47 s en total. La primera entidad
+tarda ≈ 7 s (baja las tablas BIE por área, una vez por sesión); las demás 1–3 s (BISE ×2 + INPC);
+la pausa de 5 s entre entidades es el 70 % del tiempo.
+
+**Fuentes vivas (D3a):** cada corrida consulta a INEGI; no se congela nada. Lo que se declara es la fecha de
+consulta de cada fuente (en el sello y en la tabla): es lo que distingue un vintage de otro. Las 32 se
+regeneran juntas para que el vintage sea uniforme; si INEGI revisó algo, aparece en el diff de las bases previas.
+
+**Al VPS:** los `.dta` van por la Fase 3b del deploy (son datos, no código). Para rescatarlos del worktree
+de sesión al de publicación: `rsync -a master/PIBDeflactor*.dta <worktree de publicación>/master/`
+(los `.meta` son opcionales: el mismo sello ya viaja dentro del `.dta`).
 
 ---
 
