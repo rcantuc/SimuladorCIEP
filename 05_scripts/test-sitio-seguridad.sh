@@ -56,6 +56,9 @@ chmod +x "$H/fake-stata"
 printf 'INGRESOS:[3.855,0.244]\nGASTOS:[0.000,2.080]\nPIBY:[39415135710357.34]\n' > "$H/canned-output.txt"
 cp "$H/canned-output.txt" "$H/users/ciepmx/output.txt"
 for k in decil escol grupoedad rural sexo; do printf '{"chart": {"caption": " "}, "nodes": [], "links": []}\n' > "$H/users/ciepmx/sankey-$k.json"; done
+# Sankey NTA (/NTA, jsonSankeyNTA.php): users/ciepmx/SankeyNTA/sankey-<corte>.json, con la forma que escribe SankeySumSim
+mkdir -p "$H/users/ciepmx/SankeyNTA"
+printf '$(document).ready(function() {const dataSource={chart:{caption:""},\nnodes:[{label:"De 0 a 4"},{label:"Ing Laboral"}],\nlinks:[{to:"Ing Laboral",value:"28803723154.81406",from:"De 0 a 4"}]};\nFusionCharts.ready(function() {});});\n' > "$H/users/ciepmx/SankeyNTA/sankey-grupoedad.json"
 # config.php de la COPIA: cualquier ruta de Stata que config.php conozca -> el falso. La detección
 # local/VPS de config.php es por HTTP_HOST (localhost) y la primera rama exige que exista el
 # binario de StataNow: se sustituye la ruta de esa rama por el falso, que sí existe.
@@ -127,6 +130,16 @@ chk 200 "jsonSankey.php traversal con %00"          "$U/jsonSankey.php?idSession
 aserta 'grep -q "ciepmx/sankey-decil.json" "$H/body"' "el traversal sirvió users/ciepmx/, no otra ruta"
 chk 200 "jsonSankeyEscol.php?idSession=0noexiste"   "$U/jsonSankeyEscol.php?idSession=0noexiste"
 chk 200 "jsonSankeyRural.php sin idSession"         "$U/jsonSankeyRural.php"
+
+echo "## jsonSankeyNTA.php (/NTA: corte en lista blanca; idSession inválido cae al default ciepmx)"
+chk 200 "jsonSankeyNTA.php?corte=grupoedad"         "$U/jsonSankeyNTA.php?corte=grupoedad"
+aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"links\"][0][\"value\"] == \"28803723154.81406\"" "$H/body"' "la respuesta es JSON válido y el valor viaja sin transformar"
+chk 400 "jsonSankeyNTA.php?corte=../../etc/passwd"  "$U/jsonSankeyNTA.php?corte=../../etc/passwd"
+chk 400 "jsonSankeyNTA.php?corte=grupoedad%00"       "$U/jsonSankeyNTA.php?corte=grupoedad%00"
+chk 200 "jsonSankeyNTA.php traversal en idSession"   "$U/jsonSankeyNTA.php?corte=grupoedad&idSession=../../../../etc/passwd%00"
+aserta 'grep -q "ciepmx/SankeyNTA/sankey-grupoedad.json" "$H/body"' "el traversal sirvió users/ciepmx/SankeyNTA/, no otra ruta"
+chk 404 "jsonSankeyNTA.php?corte=sexo (sin archivo)"  "$U/jsonSankeyNTA.php?corte=sexo"
+chk 200 "GET /NTA/ (página de método)"               "$U/NTA/"
 
 echo "## cargaDefault.php (sin eval) y logCalcular.php (sin inyección de renglones)"
 chk 200 "cargaDefault.php"                          "$U/cargaDefault.php"
