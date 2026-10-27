@@ -2100,7 +2100,7 @@ if "`altimir'" == "yes" {
 	replace ing_estim_alqu = ing_estim_alqu*TaltimirHouse
 	replace ing_remesas = ing_remesas*TaltimirROWTrans
 
-	foreach k of varlist ing_subor *_t4_cap4 *_t4_cap5 *_t4_cap6 *_t4_cap7 *_t4_cap8 *_t4_cap9 {
+	foreach k of varlist ing_subor *_t4_cap4 {
 		replace `k' = `k'*TaltimirSal
 	}
 	foreach k of varlist ing_mixto* *_t4_cap2pf *_t4_cap3pf *_t4_cap5 *_t4_cap6 *_t4_cap7 *_t4_cap8 *_t4_cap9 {
