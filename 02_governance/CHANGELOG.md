@@ -18,6 +18,50 @@ Formato de cada entrada:
 
 ## [Unreleased]
 
+### Correcciones — datos: tres FLAGs de `Households.do` que movían números publicados (sesión FIX-NTA0, 2026-10-27)
+
+Tres hallazgos del memo `02_governance/nta-0-inventario-2026-10-27.md`, corregidos con el diff mínimo
+(un commit cada uno) y medidos con cuatro corridas completas de `SIM.do` (defaults + `nographs` +
+`output`, StataNow 19.5, 1 procesador, ~33 min cada una): baseline `07b9d5c` y una por corrección
+acumulada. El gate de números de v8.12 (`output.txt` byte-idéntico, sankeys dentro de 1e-9) queda
+**ROJO por diseño** en las tres: son correcciones de datos, no refactors. Los números nuevos son los
+que se publican a partir del siguiente release; el detalle enlace por enlace está en el PR.
+
+- **`infonavit` sumado dos veces en `cuotasTPF`** (`Households.do` l. 1541 + l. 1549). `cuotasF =
+  rsum(*F) + infonavit` y luego `cuotasTPF = rsum(cuotasP cuotasT cuotasF) + infonavit`: 221 bn de más
+  en las contribuciones a la seguridad social de 2024 (Σ TPF 1,690 → 1,469 bn, −13 %). Se quita la suma
+  a `cuotasF` (INFONAVIT es aportación patronal, no federal; `ISR_Mod.do` l. 129 también construye
+  `cuotasF` sin él); `cuotasTPF` queda P + T + F + infonavit una vez. Mueve el gross-up de `ing_subor`
+  (l. 1709) por persona — el total sigue anclado a RemSal por Altimir, pero cambia su reparto —, `isrE`
+  (+6.5 bn), la base gravable, los cortes de formalidad, `ISR_asalariados` (−0.5 bn), y con ello los
+  deciles de `ingbrutotot` (re-ranking): **cambian las 389 de 519 líneas de `output.txt` en los 44
+  bloques** (todo lo que es "por decil"), incluidos `INCD`/`INCD2`/`INCD3`/`APORT*`/`PROY` que pinta el
+  sitio (Δ típicas de 0.1–2 pp en las aportaciones netas por decil; `INCD` decil I −87,882 → −89,705),
+  y **los 10 sankeys** (SF: Δ rel. máx 0.12 en `I → Imp al trabajo` y 0.40 en `De 5 a 17 → Imp al
+  trabajo`, que caen 12 % y 40 % porque los asalariados jóvenes/pobres ya no cargan el INFONAVIT doble;
+  NTA: Δ máx 0.02, por el re-ranking de deciles y el reparto de `Yl`). `TasasEfectivasMicro`
+  (`BaseCSS ∝ cuotasTPF`) hereda la nueva forma.
+- **Altimir escalaba `ing/exen_t4_cap5–9` dos veces** (`Households.do` l. 2105 × `TaltimirSal` y
+  l. 2108 × `TaltimirSelf`). Las componentes de `ing_mixto` quedaban × Sal × Self (Sal ≈ 0.978). Se
+  dejan solo en el bucle Self. `ing_mixto`, `Yl`, `Yk`, `ingbrutotot`, deciles y `Ahorro` **no
+  cambian** (se escalaban una vez); lo que sí lee las componentes es §10: `ing_bruto_tax` (+103 bn,
+  +0.6 %) y `exen_tot` (+100 bn, +1.7 %) → ISR recalculado, cortes de formalidad, `ISR_asalariados`
+  (−0.5 bn), `ISR_PF`, `ISR_PM`. En `output.txt` cambian 59 líneas en 9 bloques (`ing_bruto_tax`,
+  `ISRAS`, `ISRPF`, `Laboral`, `ISRPM`, `OTROSK`, `KPrivado`, `ImpuestosAportaciones`,
+  `AportacionesNetas` ★); en el sitio, `INCD` ±0.2 % e `INCD3` decil IX 9.9 → 9.8; los 5 sankeys SF se
+  mueven ≤ 7.7e-4 relativo; los 5 sankeys NTA quedan byte-idénticos. FLAG (no se corrige aquí):
+  `*_t4_cap4` sigue en el bucle Sal — escala única, pero debería ser Self como parte de `ing_mixto`.
+- **`ing_remesas` sumado otra vez en `Ahorro`** (`Households.do` l. 2678). `ingbrutotot` (l. 2462) ya
+  trae `ing_remesas`; la línea lo volvía a sumar: Σ `Ahorro` 2,851 → 1,665 bn (−1,186 bn = ROWTrans
+  2024). Solo cambia `Ahorro` (perfil, incidencia, ciclo y proyección de `Simulador`: el bloque 6 de
+  `output.txt`, 10 líneas que el sitio **no** muestra porque lee la última aparición de cada llave;
+  los archivos `Ahorro{PC,PERF,INCI,CICLO,REC,RECprom}.dta` de `bootstraps/250`; las barras
+  `Usos.png`; los escalares `Ahorro*` del textbook). `output.txt` deja de ser byte-idéntico (gate
+  ROJO) pero ninguna llave que pinte el sitio ni ningún sankey se mueve. FLAG (no se corrige aquí):
+  las remesas siguen también dentro de `ing_mixto` vía `ing_t4_cap9` (l. 544), así que `Ahorro`,
+  `ingbrutotot`, `Yl`/`Yk` y `Ciclodevida` (l. 2673, que además las suma explícitamente) las cuentan
+  dos veces; sacarlas de cap9 cambia Altimir y los deciles: decisión de NTA-1.
+
 ### Comandos — v8.13a: el contrato de entidad corre para las 32 (motor, sin visualización)
 
 - **`TasasEfectivasMicro.ado` deja de ser huérfano** (v1.1.0, no se toca por dentro): `SIM.do` §4.7 lo
