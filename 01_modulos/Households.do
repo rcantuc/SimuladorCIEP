@@ -2673,7 +2673,7 @@ label var Ciclodevida "Ciclo de vida"
 *noisily Perfiles Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida")
 noisily Simulador Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida") reboot boot($bootstrap)
 
-g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
+g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro (anual)"
 *noisily Perfiles Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro")
