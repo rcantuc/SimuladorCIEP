@@ -1538,8 +1538,6 @@ label var cuotasP "Seguridad social (patrón)"
 egen double cuotasF = rsum(*F)
 label var cuotasF "Seguridad social (federación)"
 
-replace cuotasF = cuotasF + infonavit
-
 egen double cuotasTP = rsum(cuotasP cuotasT)
 label var cuotasTP "Seguridad social (trabajadores y patrón)"
 
