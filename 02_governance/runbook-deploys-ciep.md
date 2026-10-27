@@ -282,8 +282,9 @@ receta en el mensaje; todos corren también en `--dry-run`):
 
 Y tras el cutover, la **Fase 6** exige HTTP 200 de `health.php`, el commit
 desplegado **y un activo por clase del esqueleto** (css, js, plugins, imagen,
-favicon, `cargaDefault.php`, `jsonSankey.php`); si alguno falla, rollback
-automático. Correr desde el clon cuyo `04_1_simuladorfiscal.ciep.mx/` es el
+favicon, `cargaDefault.php`, `jsonSankey.php`, y la ruta `/NTA` de la sección
+de método — 15 entradas; una sin extensión es una ruta servida por
+`<entrada>/index.php`); si alguno falla, rollback automático. Correr desde el clon cuyo `04_1_simuladorfiscal.ciep.mx/` es el
 del repo (credentials `LOCAL_SITE_ROOT` = `LOCAL_REPO_ROOT/04_1_…`); si
 apunta a otro sitio, el Gate 7 solo verifica existencia y lo avisa.
 
@@ -647,6 +648,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `php -l` de los PHP del sitio | **sí** | — | estático |
 | Harness de seguridad del sitio (`test-sitio-seguridad.sh`: `php -S` + Stata falso; payloads de inyección/traversal → 400, válido → 200 con `.do` limpio) | **sí** | — | no necesita Stata: el falso registra la llamada y el `.do` nunca se ejecuta |
 | Sitio auto-contenido (`verify_sitio_autocontenido.sh`: docroot == `git ls-files 04_1/`, sin fantasmas, activos referenciados existen; roturas conocidas en `05_scripts/sitio-referencias-rotas-conocidas.txt`) | **sí** | el Gate 7 de `publicar-vps.sh` lo repite sobre el worktree de publicación antes del rsync | estático; en CI protege contra el enlace a un archivo que no viaja en git |
+| `/NTA` (`test-sitio-nta.sh`: `php -S` + el JSON del motor como fixture; la ruta responde, `jsonSankeyNTA.php` valida el corte, la página no trae números y lo que FusionCharts dibuja es idéntico, como cadena, al JSON de origen; `--png` exporta la captura) | **sí** (Chrome headless) | con `--json users/ricardo/SankeyNTA/sankey-grupoedad.json` sobre la corrida local, antes de desplegar | no necesita Stata: lee el JSON ya emitido |
 | `publicar.sh` Gate 1 (CHANGELOG tiene la versión del manifest) | **sí** (`--ci`) | — | estático |
 | `publicar.sh` Gate 2 (tag anotado) | **no** | `publicar.sh vX.Y.Z --check` en el worktree de publicación, tras crear el tag | el tag lo crea el ritual; un PR de release lleva el manifest bumpeado antes del tag |
 | `publicar.sh` Gate 3 (manifest sincronizado) | **sí** | — | estático |
@@ -666,7 +668,7 @@ Correr lo mismo que CI, localmente, antes de abrir el PR (todo en segundos):
 ```bash
 shellcheck -S error 05_scripts/*.sh && bash 05_scripts/verify_gitignore.sh && \
 for f in 04_1_simuladorfiscal.ciep.mx/*.php; do php -l "$f" >/dev/null || echo "ERR $f"; done && \
-bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh && bash 05_scripts/test-sitio-transitorios.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
+bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh && bash 05_scripts/test-sitio-transitorios.sh && bash 05_scripts/test-sitio-nta.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
@@ -708,6 +710,7 @@ en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y q
 | `01_raw/CONEVAL/2022/Base` | `Expenditure.do` | batch | no se lee en web (FLAG: ruta `01_raw/`, ¿alias viejo de `raw/`?) |
 | `02_governance/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
 | `05_scripts/compuertas-entidad.do` | sesión `compuertas-entidad.sh` | sesión | no se lee en web |
+| `users/ciepmx/SankeyNTA/sankey-grupoedad.json` | `jsonSankeyNTA.php` (página de método `/NTA`; lo escribe `Households.do` §"Sankeys NTA" → `visualizations/Sankey.do` → `SankeySumSim folder(SankeyNTA)` en `users/ricardo/SankeyNTA/`) | **web** (lectura PHP, sin Stata) | **embarcar** (Fase 3b-ter, `DEFAULT_MANIFEST` admite subcarpetas; en `MOTOR_LECTURAS_VPS`) |
 
 FLAG (hallazgo del humo): `checkStataStatus.php` solo reporta `completed` cuando existe
 `<id>.done`, y nada en el motor ni en `Web.Stata.do` lo escribe; el JS no lo consulta (el POST a

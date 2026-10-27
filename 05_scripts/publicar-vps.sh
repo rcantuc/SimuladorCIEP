@@ -407,10 +407,12 @@ else
 fi
 
 # Activos de humo del sitio: uno por clase (css, js, plugin, imagen, favicon,
-# PHP de datos). Los lee la Fase 6 contra el VPS (HTTP 200) — hoy el health
-# check de PHPs declaró sano un sitio sin esqueleto — y aquí se exige que
-# existan en el docroot local, para que la lista no envejezca en silencio si
-# un archivo se renombra.
+# PHP de datos, ruta de la sección de método). Los lee la Fase 6 contra el VPS
+# (HTTP 200) — hoy el health check de PHPs declaró sano un sitio sin esqueleto —
+# y aquí se exige que existan en el docroot local, para que la lista no
+# envejezca en silencio si un archivo se renombra. Una entrada sin extensión
+# (NTA) es una RUTA servida por <entrada>/index.php: local se exige ese
+# index.php; remoto, curl -L sigue el 301 de Apache a /NTA/ y pide 200.
 SITE_SMOKE_ASSETS=(
     css/custom.css
     css/admin2.css
@@ -426,9 +428,10 @@ SITE_SMOKE_ASSETS=(
     favicon.ico
     cargaDefault.php
     jsonSankey.php
+    NTA
 )
 for _a in "${SITE_SMOKE_ASSETS[@]}"; do
-    [[ -f "$LOCAL_SITE_ROOT/$_a" ]] || die "Gate 7: el activo de humo $_a no existe en $LOCAL_SITE_ROOT.
+    [[ -f "$LOCAL_SITE_ROOT/$_a" || -f "$LOCAL_SITE_ROOT/$_a/index.php" ]] || die "Gate 7: el activo de humo $_a no existe en $LOCAL_SITE_ROOT.
         Si se renombró, actualiza SITE_SMOKE_ASSETS en este script; si falta, el sitio está incompleto."
 done
 log_ok "Gate 7: ${#SITE_SMOKE_ASSETS[@]} activos de humo presentes en el docroot local."
@@ -860,13 +863,17 @@ fi
 #       sankey-grupoedad.json ← jsonSankeyGrupoedad.php:28
 #       sankey-rural.json     ← jsonSankeyRural.php:22
 #       sankey-sexo.json      ← jsonSankeySexo.php:22
+#       SankeyNTA/sankey-grupoedad.json ← jsonSankeyNTA.php (página de método /NTA)
 # Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
 # SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
 # investigador). El contrato del PHP no se toca: se publica EN users/ciepmx/.
 #
 # Fuente local de verdad, CONFIRMADA en el código: la corrida completa de
-# SIM.do escribe los 6 en users/ricardo/ — output.txt vía el log que llena
-# 01_modulos/output.do, y los sankey-*.json vía SankeySF.do→SankeySumSim.
+# SIM.do escribe los 7 en users/ricardo/ — output.txt vía el log que llena
+# 01_modulos/output.do, los sankey-*.json vía SankeySF.do→SankeySumSim, y
+# SankeyNTA/sankey-<corte>.json vía Households.do §"Sankeys NTA"→
+# visualizations/Sankey.do→SankeySumSim folder(SankeyNTA). Una entrada con
+# subcarpeta viaja a users/ciepmx/<subcarpeta>/ (misma ruta relativa que local).
 DEFAULT_MANIFEST=(
     output.txt
     sankey-decil.json
@@ -874,6 +881,7 @@ DEFAULT_MANIFEST=(
     sankey-grupoedad.json
     sankey-rural.json
     sankey-sexo.json
+    SankeyNTA/sankey-grupoedad.json
 )
 log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
 
@@ -899,7 +907,7 @@ for _art in "${DEFAULT_MANIFEST[@]}"; do
         default)."
     fi
 done
-log_ok "Fase 3b-ter: manifiesto local fresco (${#DEFAULT_MANIFEST[@]}/6 archivos, mtime >= master/PEF.dta)."
+log_ok "Fase 3b-ter: manifiesto local fresco (${#DEFAULT_MANIFEST[@]}/${#DEFAULT_MANIFEST[@]} archivos, mtime >= master/PEF.dta)."
 
 # Gate de CONTENIDO del output.txt (2026-10-01, deploy v8.4). El gate de
 # frescura solo mira mtime: el default del 28-sep era de una corrida que se
@@ -942,22 +950,39 @@ RSYNC_DEFAULT_OPTS=(
 [[ $DRY_RUN -eq 1 ]] && RSYNC_DEFAULT_OPTS+=(--dry-run)
 
 run_rsync_default() {
-    # rsync no crea los directorios padre del destino: se garantizan primero.
-    if [[ $DRY_RUN -eq 0 ]]; then
-        ssh_vps "mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx'" || return 1
-    fi
-    local _srcs=()
-    local _art
+    # rsync no crea los directorios padre del destino: se garantizan primero —
+    # users/ciepmx/ y cada subcarpeta que aparezca en el manifiesto (SankeyNTA/).
+    # Las entradas se agrupan por subcarpeta y cada grupo va a su destino, sin
+    # depender de --relative (openrsync de macOS no lo garantiza).
+    local _dest_base="$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx"
+    local _subdirs=() _art _sub _d
     for _art in "${DEFAULT_MANIFEST[@]}"; do
-        if [[ "$_art" == "output.txt" ]]; then
-            _srcs+=("$DEFAULT_OUTPUT_SRC")
-        else
-            _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
-        fi
+        _sub="$(dirname "$_art")"
+        [[ "$_sub" == "." ]] && continue
+        local _ya=0; for _d in ${_subdirs[@]+"${_subdirs[@]}"}; do [[ "$_d" == "$_sub" ]] && _ya=1; done
+        (( _ya )) || _subdirs+=("$_sub")
     done
-    rsync "${RSYNC_DEFAULT_OPTS[@]}" -e "$RSYNC_SSH" \
-        "${_srcs[@]}" \
-        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/" 2>&1 | tee -a "$LOG_FILE"
+    if [[ $DRY_RUN -eq 0 ]]; then
+        local _mk="mkdir -p '$_dest_base'"
+        for _sub in ${_subdirs[@]+"${_subdirs[@]}"}; do _mk+=" '$_dest_base/$_sub'"; done
+        ssh_vps "$_mk" || return 1
+    fi
+    for _sub in . ${_subdirs[@]+"${_subdirs[@]}"}; do
+        local _srcs=()
+        for _art in "${DEFAULT_MANIFEST[@]}"; do
+            [[ "$(dirname "$_art")" == "$_sub" ]] || continue
+            if [[ "$_art" == "output.txt" ]]; then
+                _srcs+=("$DEFAULT_OUTPUT_SRC")
+            else
+                _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
+            fi
+        done
+        (( ${#_srcs[@]} > 0 )) || continue
+        local _dest="$_dest_base"; [[ "$_sub" != "." ]] && _dest="$_dest_base/$_sub"
+        rsync "${RSYNC_DEFAULT_OPTS[@]}" -e "$RSYNC_SSH" \
+            "${_srcs[@]}" \
+            "${VPS_USER}@${VPS_HOST}:$_dest/" 2>&1 | tee -a "$LOG_FILE" || return 1
+    done
 }
 if run_rsync_default; then
     if [[ $DRY_RUN -eq 0 ]]; then
@@ -965,11 +990,12 @@ if run_rsync_default; then
         # todo lo creado en el VPS después de la normalización nace ilegible
         # para Apache (www-data lee como "others"). chmod explícito,
         # independiente del cliente rsync (openrsync ignora --chmod en
-        # silencio) y del orden de fases: o=rx en el directorio, o=r en el
-        # archivo. (La Fase 3c corre después y también lo cubriría — la
-        # garantía explícita evita depender del orden, como con
-        # DEPLOYED_COMMIT en la Fase 4.)
-        ssh_vps "chmod u=rwx,g=rwx,o=rx '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx' && chmod u=rw,g=rw,o=r '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/'*"
+        # silencio) y del orden de fases: o=rx en los directorios (ciepmx/ y
+        # sus subcarpetas del manifiesto), o=r en los archivos — la X
+        # mayúscula da la x solo a directorios. (La Fase 3c corre después y
+        # también lo cubriría — la garantía explícita evita depender del
+        # orden, como con DEPLOYED_COMMIT en la Fase 4.)
+        ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx'"
     fi
     log_ok "Fase 3b-ter: manifiesto default propagado y legible para Apache$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
     # Verificación funcional: aquí NO se puede — el symlink current todavía
@@ -1059,6 +1085,7 @@ MOTOR_LECTURAS_VPS=(
     "users/ricardo/cache/sello.txt"                  # Fase 3b-bis: cache de lo invariante
     "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
     "users/ciepmx/output.txt"                        # Fase 3b-ter: escenario default (cargaDefault.php)
+    "users/ciepmx/SankeyNTA/sankey-grupoedad.json"   # Fase 3b-ter: Sankey NTA de /NTA (jsonSankeyNTA.php)
 )
 _GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
 for _f in "${MOTOR_LECTURAS_VPS[@]}"; do _GATE5R_CMD+=" '$_f'"; done
@@ -1103,8 +1130,10 @@ log_info "Fase 4: escribir DEPLOYED_COMMIT."
 # inmune a formato/orden de campos. Cualquier falla (archivo ausente, JSON
 # inválido, campo faltante) colapsa a cadena vacía SIN abortar el deploy —
 # el sitio no pinta versión y usa su fecha de respaldo; nunca rompe.
-# Una sola pasada: imprime tres líneas (version, data_updated, release_url_prefix).
-MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n\n'
+# `enigh_vintage` (año de la ENIGH precargada) → línea "EnighVintage:" (la pinta
+# la sección de método: /NTA cita "ENIGH <vintage>" sin un literal en el PHP).
+# Una sola pasada: imprime cuatro líneas (version, data_updated, release_url_prefix, enigh_vintage).
+MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n\n\n'
 import json, sys
 try:
     with open(sys.argv[1], encoding="utf-8") as f:
@@ -1114,11 +1143,13 @@ except Exception:
 print(m.get("version", "") or "")
 print(m.get("data_updated", "") or "")
 print(m.get("release_url_prefix", "") or "")
+print(m.get("enigh_vintage", "") or "")
 PYEOF
 )
 ENGINE_VERSION=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '1p')
 DATA_UPDATED=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '2p')
 RELEASE_PREFIX=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '3p')
+ENIGH_VINTAGE=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '4p')
 
 # URL del GitHub Release de la versión del motor (bitácora v1.32): el número
 # de versión del hero/footer enlaza a su release exacto — señal de código
@@ -1149,6 +1180,7 @@ Deployment: $VERSION_ARG
 Version: $ENGINE_VERSION
 DataUpdated: $DATA_UPDATED
 ReleaseUrl: $RELEASE_URL
+EnighVintage: $ENIGH_VINTAGE
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
 
@@ -1161,6 +1193,10 @@ if [[ -z "$DATA_UPDATED" ]]; then
     log_warn "Fase 4: no pude leer 'data_updated' de 05_scripts/manifest.json — la línea
 DataUpdated: queda VACÍA (el hero usará su fecha de respaldo hardcodeada, que
 puede estar VIEJA). El deploy continúa, pero revisa el campo en el manifest."
+fi
+if [[ -z "$ENIGH_VINTAGE" ]]; then
+    log_warn "Fase 4: no pude leer 'enigh_vintage' de 05_scripts/manifest.json — la línea
+EnighVintage: queda VACÍA (/NTA citará la ENIGH sin año). El deploy continúa."
 fi
 
 if [[ $DRY_RUN -eq 1 ]]; then

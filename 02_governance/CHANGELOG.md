@@ -18,6 +18,25 @@ Formato de cada entrada:
 
 ## [Unreleased]
 
+### Institucional — página de método `/NTA`: el Sankey NTA de los hogares, como lo emite el motor
+
+- **`/NTA`** (`04_1_simuladorfiscal.ciep.mx/NTA/index.php`, primera página de la futura sección de
+  método; plantilla compartida en `metodo/plantilla.php`, hermanas = carpeta + entrada en
+  `$METODO_PAGINAS` + ruta en el esqueleto): explica en inglés cómo se construye el Sankey NTA de
+  los hogares (`Households.do` §"Sankeys NTA" → `visualizations/Sankey.do` → `SankeySumSim`), lista
+  nodos y enlaces con su definición, y dibuja el corte por grupo de edad con la misma receta de los
+  Sankeys de la portada (FusionCharts, `js/metodo-sankey.js`). Estática: sin «Calcular» ni selector;
+  los datos los sirve **`jsonSankeyNTA.php`** (corte en lista blanca, lectura de
+  `users/<id>/SankeyNTA/sankey-<corte>.json`, misma transformación que `jsonSankey*.php`). Cero
+  números en el HTML/JS; el pie cita versión, ENIGH y fecha desde `DEPLOYED_COMMIT`.
+- **Deploy**: `SankeyNTA/sankey-grupoedad.json` entra al manifiesto del default (Fase 3b-ter, que ahora
+  admite subcarpetas y hace `chmod -R …X`), a `MOTOR_LECTURAS_VPS` (Gate 5-remoto) y `/NTA` al
+  esqueleto de la Fase 6 (14 → 15). `manifest.json` gana `enigh_vintage` (→ `EnighVintage:` en
+  `DEPLOYED_COMMIT`, Fase 4). Gates: `test-sitio-nta.sh` (+ job `sitio-nta` en CI: ruta, endpoint,
+  sin literales, Sankey byte-idéntico al JSON del motor con Chrome headless, `--png`), casos de
+  `jsonSankeyNTA.php` en el harness de seguridad, `verify_sitio_autocontenido.sh` con la ruta.
+  El motor (`.ado`/`.do`) no cambia.
+
 ### Comandos — v8.13a: el contrato de entidad corre para las 32 (motor, sin visualización)
 
 - **`TasasEfectivasMicro.ado` deja de ser huérfano** (v1.1.0, no se toca por dentro): `SIM.do` §4.7 lo
