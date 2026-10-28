@@ -1,4 +1,4 @@
-*! version 8.2 CIEP 27oct2026 (NTA-1: series S.14 hogares de CSI_115 -> escalares AhorroHog, AhorroHogB, TransfEspecie; aditivo)
+*! version 8.3 CIEP 27oct2026 (NTA-1b: anclas S.14 adicionales de CSI_115/CSI_103 -> CuotasHogS14 y siguientes; aditivo)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -55,22 +55,28 @@ quietly {
 
 	**************************
 	** 1.1b. Sector hogares S.14 (NTA-1, 2026-10-27; aditivo) **
-	* Un master/SCN.dta construido antes de NTA-1 no trae B.8b/B.8n ni P.3/P.4 del sector hogares.
-	* Se leen UNA vez del tabulado ya descargado (raw/temp/SCN/CSI_115.xlsx, el mismo de §17/§22 de
-	* UpdateSCN) y se guardan en master/SCN.dta; no se vuelve a correr UpdateSCN ni se toca el BIE.
+	* Un master/SCN.dta construido antes de NTA-1 no trae B.8b/B.8n ni P.3/P.4 del sector hogares (ni, desde
+	* NTA-1b, D.61/D.614, D.8, D.62, D.759 de S.14 y D.21/D.31 de la economía total). Se leen UNA vez de los
+	* tabulados ya descargados (raw/temp/SCN/CSI_115.xlsx y CSI_103.xlsx, los mismos de §17/§22 de UpdateSCN)
+	* y se guardan en master/SCN.dta; no se vuelve a correr UpdateSCN ni se toca el BIE. Si falta cualquiera
+	* de las series de la lista se releen todas (update replace: una base enriquecida por NTA-1 se completa).
 	* Si el tabulado no está, las series faltan y los escalares de abajo no se definen (FLAG, no se inventa).
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
-	capture confirm variable AhorroHogN
-	if _rc != 0 {
+	local faltaS14 = 0
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 {
+		capture confirm variable `v'
+		if _rc != 0 local faltaS14 = 1
+	}
+	if `faltaS14' {
 		capture noisily SCNHogaresS14
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
-			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match)
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14, before(IngDisp)
+			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
-			noisily di as err "  FLAG SCN (NTA-1): sin series S.14 hogares (CSI_115.xlsx); AhorroHog, AhorroHogB y TransfEspecie no se definen."
+			noisily di as err "  FLAG SCN (NTA-1): sin series S.14 hogares (CSI_115.xlsx / CSI_103.xlsx); AhorroHog, AhorroHogB, TransfEspecie y las anclas NTA-1b no se definen."
 		}
 	}
 
@@ -591,6 +597,15 @@ quietly {
 		escalar mxn ConHogS14 = ConHogS14[`obs']
 		escalar mxn TransfEspecie = ConEfecHogS14[`obs'] - ConHogS14[`obs']
 		escalar pctpib TransfEspeciePIB = (ConEfecHogS14[`obs'] - ConHogS14[`obs'])/PIB[`obs']*100
+	}
+	* NTA-1b: CuotasHogS14 = D.61 − D.614 (CSI_115 filas 117 y 127, U/A): contribuciones sociales que los hogares
+	* pagan a los sistemas (D.611 efectivas de empleadores + D.612 imputadas + D.613 de los hogares − D.615 cargos
+	* por servicio); se excluye D.614 (complementarias = D.442 renta sobre derechos de pensión, que no está en Yk).
+	capture confirm variable CuotasHogS14
+	if _rc == 0 {
+		escalar mxn CuotasHogS14 = CuotasHogS14[`obs']
+		escalar pctpib CuotasHogS14PIB = CuotasHogS14[`obs']/PIB[`obs']*100
+		escalar mxn ContribSocHog = ContribSocHog[`obs']
 	}
 
 	** R.3. Graph **
@@ -2664,7 +2679,7 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14, before(IngDisp)
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14, before(IngDisp)
 	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
@@ -2685,50 +2700,68 @@ program define SCNHogaresS14
 * columna de años sea la que se asume (2003 + k); si algo no cuadra, exit 459 con FLAG: el que
 * llama no define los escalares. Verificación interna: P.4 - P.3 debe ser igual a D.63 (fila 157,
 * columna R/P del último año); si difiere, FLAG (no se fuerza). Guarda raw/temp/HogaresS14.dta.
-	local f "${SIMROOT}/raw/temp/SCN/CSI_115.xlsx"
-	capture confirm file "`f'"
-	if _rc != 0 {
-		noisily di as err "  FLAG SCNHogaresS14: no existe `f'"
-		exit 459
-	}
-
-	* Encabezado de años: la última columna U/A (AR) debe ser el último año de la serie *
-	import excel using "`f'", cellrange(A5:AS5) clear
-	capture confirm string variable AR
-	if _rc == 0 local ultimo = trim(AR[1])
-	else local ultimo = string(AR[1])
-	local esperado = 2003 + (c(k) - 1)/2 - 1
-	if "`ultimo'" != "`esperado'" {
-		noisily di as err "  FLAG SCNHogaresS14: la última columna de años es `ultimo' y se esperaba `esperado'; no se leen las series S.14."
-		exit 459
+* NTA-1b (2026-10-27): el lector se generaliza a <cuadro> <fila> <variable> <código> <lado> (U = columna
+* U/A, R = columna R/P del año) y se agregan, de CSI_115 (S.14): 117 D.61 contribuciones sociales netas (U/A)
+* y 127 D.614 contribuciones complementarias (U/A) -> CuotasHogS14 = D.61 − D.614.
+	local specs `""CSI_115 170 AhorroHogB B.8b U" "CSI_115 171 AhorroHogN B.8n U" "CSI_115 166 ConHogS14 P.3 U" "CSI_115 176 ConEfecHogS14 P.4 U""'
+	local specs `"`specs' "CSI_115 117 ContribSocHog D.61 U" "CSI_115 127 ContribComplHog D.614 U""'
+	local dir "${SIMROOT}/raw/temp/SCN"
+	foreach cuadro in CSI_115 {
+		local f "`dir'/`cuadro'.xlsx"
+		capture confirm file "`f'"
+		if _rc != 0 {
+			noisily di as err "  FLAG SCNHogaresS14: no existe `f'"
+			exit 459
+		}
+		* Encabezado de años: la última columna U/A (AR) debe ser el último año de la serie y la fila 7 debe
+		* empezar con U/A (en CSI_100 el orden es R/P, U/A: no se usa aquí) *
+		import excel using "`f'", cellrange(A5:AS5) clear
+		capture confirm string variable AR
+		if _rc == 0 local ultimo = trim(AR[1])
+		else local ultimo = string(AR[1])
+		local esperado = 2003 + (c(k) - 1)/2 - 1
+		if "`ultimo'" != "`esperado'" {
+			noisily di as err "  FLAG SCNHogaresS14: en `cuadro' la última columna de años es `ultimo' y se esperaba `esperado'; no se leen las series S.14."
+			exit 459
+		}
+		import excel using "`f'", cellrange(A7:B7) clear
+		if strpos(trim(B[1]), "U/A") != 1 {
+			noisily di as err "  FLAG SCNHogaresS14: en `cuadro' la primera columna de cada año no es U/A; no se leen las series S.14."
+			exit 459
+		}
 	}
 
 	tempfile acc
 	local first = 1
-	foreach par in "170 AhorroHogB B.8b" "171 AhorroHogN B.8n" "166 ConHogS14 P.3" "176 ConEfecHogS14 P.4" {
-		gettoken fila par : par
-		gettoken var cod : par
-		local cod = trim("`cod'")
-		import excel using "`f'", cellrange(A`fila':AS`fila') clear
+	foreach spec of local specs {
+		gettoken cuadro spec : spec
+		gettoken fila spec : spec
+		gettoken var spec : spec
+		gettoken cod spec : spec
+		local lado = trim("`spec'")
+		import excel using "`dir'/`cuadro'.xlsx", cellrange(A`fila':AS`fila') clear
 		local rotulo = trim(A[1])
 		if strpos("`rotulo'", "`cod' ") != 1 {
-			noisily di as err `"  FLAG SCNHogaresS14: la fila `fila' de CSI_115 dice "`rotulo'" y se esperaba `cod' (memo nta-0); no se leen las series S.14."'
+			noisily di as err `"  FLAG SCNHogaresS14: la fila `fila' de `cuadro' dice "`rotulo'" y se esperaba `cod'; no se leen las series S.14."'
 			exit 459
 		}
 		drop A
 		local anio = 2003
-		local dos = 1
+		local col = 1
 		foreach k of varlist _all {
-			if `dos' == 2 {
+			if ("`lado'" == "U" & `col' == 2) | ("`lado'" == "R" & `col' == 1) {
 				drop `k'
-				local dos = 1
-				continue
 			}
-			capture confirm string variable `k'
-			if _rc == 0 destring `k', replace force
-			rename `k' `var'_`anio'
-			local ++anio
-			local ++dos
+			else {
+				capture confirm string variable `k'
+				if _rc == 0 destring `k', replace force
+				rename `k' `var'_`anio'
+			}
+			if `col' == 2 {
+				local ++anio
+				local col = 1
+			}
+			else local col = 2
 		}
 		g id = _n
 		reshape long `var'_, i(id) j(anio) string
@@ -2747,7 +2780,7 @@ program define SCNHogaresS14
 	}
 
 	* Verificación: P.4 - P.3 = D.63 (fila 157, columna R/P del último año) *
-	import excel using "`f'", cellrange(A157:AS157) clear
+	import excel using "`dir'/CSI_115.xlsx", cellrange(A157:AS157) clear
 	local rotulo = trim(A[1])
 	local d63 = .
 	if strpos("`rotulo'", "D.63 ") == 1 {
@@ -2756,16 +2789,23 @@ program define SCNHogaresS14
 		local d63 = AS[1]*1000000
 	}
 	use `acc', clear
+	sort anio
 	label var AhorroHogB "Ahorro bruto de los hogares (S.14 B.8b)"
 	label var AhorroHogN "Ahorro neto de los hogares (S.14 B.8n)"
 	label var ConHogS14 "Gasto de consumo final de los hogares (S.14 P.3)"
 	label var ConEfecHogS14 "Consumo final efectivo de los hogares (S.14 P.4)"
+	label var ContribSocHog "Contribuciones sociales netas pagadas por los hogares (S.14 D.61)"
+	label var ContribComplHog "Contribuciones sociales complementarias de los hogares (S.14 D.614)"
+	g double CuotasHogS14 = ContribSocHog - ContribComplHog
+	format CuotasHogS14 %20.0fc
+	label var CuotasHogS14 "Cuotas pagadas por los hogares a los sistemas (S.14 D.61 - D.614)"
 	summarize anio, meanonly
 	local u = r(max)
 	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]
 	if `d63' != . & reldif(`p4p3', `d63') > 1e-9 {
 		noisily di as err "  FLAG SCNHogaresS14: P.4 - P.3 (`u') = " %20.0fc `p4p3' " difiere de D.63 = " %20.0fc `d63'
 	}
-	noisily di in g "  S.14 hogares `u': B.8n " in y %20.0fc AhorroHogN[_N] in g "  B.8b " in y %20.0fc AhorroHogB[_N] in g "  P.4-P.3 " in y %20.0fc `p4p3'
+	noisily di in g "  S.14 hogares `u': B.8n " in y %20.0fc AhorroHogN[_N] in g "  B.8b " in y %20.0fc AhorroHogB[_N] in g "  P.4-P.3 " in y %20.0fc `p4p3' ///
+		in g "  D.61-D.614 " in y %20.0fc CuotasHogS14[_N]
 	save "${SIMROOT}/raw/temp/HogaresS14.dta", replace
 end
