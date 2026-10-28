@@ -63,7 +63,7 @@ quietly {
 	* Si el tabulado no está, las series faltan y los escalares de abajo no se definen (FLAG, no se inventa).
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -72,7 +72,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -606,6 +606,14 @@ quietly {
 		escalar mxn CuotasHogS14 = CuotasHogS14[`obs']
 		escalar pctpib CuotasHogS14PIB = CuotasHogS14[`obs']/PIB[`obs']*100
 		escalar mxn ContribSocHog = ContribSocHog[`obs']
+	}
+	* NTA-1b: ImpNetosProd = D.21 − D.31 de la economía total (CSI_103 cuenta I, filas 25 y 26, R/P): el componente
+	* que lleva el ingreso nacional de costo de factores a precios de mercado; el BIE (ImpNet, serie 723656) trae
+	* el mismo concepto en otro vintage, se conservan los dos.
+	capture confirm variable ImpNetosProdS1
+	if _rc == 0 {
+		escalar mxn ImpNetosProd = ImpNetosProdS1[`obs']
+		escalar pctpib ImpNetosProdPIB = ImpNetosProdS1[`obs']/PIB[`obs']*100
 	}
 
 	** R.3. Graph **
@@ -2679,7 +2687,7 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14, before(IngDisp)
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1, before(IngDisp)
 	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
@@ -2705,8 +2713,9 @@ program define SCNHogaresS14
 * y 127 D.614 contribuciones complementarias (U/A) -> CuotasHogS14 = D.61 − D.614.
 	local specs `""CSI_115 170 AhorroHogB B.8b U" "CSI_115 171 AhorroHogN B.8n U" "CSI_115 166 ConHogS14 P.3 U" "CSI_115 176 ConEfecHogS14 P.4 U""'
 	local specs `"`specs' "CSI_115 117 ContribSocHog D.61 U" "CSI_115 127 ContribComplHog D.614 U""'
+	local specs `"`specs' "CSI_103 25 ImpProductosS1 D.21 R" "CSI_103 26 SubProductosS1 D.31 R""'
 	local dir "${SIMROOT}/raw/temp/SCN"
-	foreach cuadro in CSI_115 {
+	foreach cuadro in CSI_115 CSI_103 {
 		local f "`dir'/`cuadro'.xlsx"
 		capture confirm file "`f'"
 		if _rc != 0 {
@@ -2799,6 +2808,13 @@ program define SCNHogaresS14
 	g double CuotasHogS14 = ContribSocHog - ContribComplHog
 	format CuotasHogS14 %20.0fc
 	label var CuotasHogS14 "Cuotas pagadas por los hogares a los sistemas (S.14 D.61 - D.614)"
+	* D.21 y D.31 de la economía total (CSI_103, cuenta I de producción, filas 25 y 26, columna R/P): el tabulado
+	* trae los subsidios con signo negativo ("D.3 - Subsidios (-)"); se toma el valor absoluto para restar *
+	label var ImpProductosS1 "Impuestos sobre los productos, economía total (S.1 D.21)"
+	label var SubProductosS1 "Subsidios a los productos, economía total (S.1 D.31; signo del tabulado)"
+	g double ImpNetosProdS1 = ImpProductosS1 - abs(SubProductosS1)
+	format ImpNetosProdS1 %20.0fc
+	label var ImpNetosProdS1 "Impuestos netos a los productos, economía total (S.1 D.21 - D.31)"
 	summarize anio, meanonly
 	local u = r(max)
 	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]
