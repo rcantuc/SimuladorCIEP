@@ -63,7 +63,7 @@ quietly {
 	* Si el tabulado no está, las series faltan y los escalares de abajo no se definen (FLAG, no se inventa).
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -72,7 +72,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -614,6 +614,13 @@ quietly {
 	if _rc == 0 {
 		escalar mxn ImpNetosProd = ImpNetosProdS1[`obs']
 		escalar pctpib ImpNetosProdPIB = ImpNetosProdS1[`obs']/PIB[`obs']*100
+	}
+	* NTA-1b: AjustePension = D.8 del sector hogares (CSI_115 cuenta II.4.1, fila 169, R/P): lo que el SCN suma al
+	* ahorro de los hogares por la variación de sus derechos de pensión; no tiene contraparte micro.
+	capture confirm variable AjustePensHog
+	if _rc == 0 {
+		escalar mxn AjustePension = AjustePensHog[`obs']
+		escalar pctpib AjustePensionPIB = AjustePensHog[`obs']/PIB[`obs']*100
 	}
 
 	** R.3. Graph **
@@ -2687,7 +2694,7 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1, before(IngDisp)
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog, before(IngDisp)
 	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
@@ -2714,6 +2721,7 @@ program define SCNHogaresS14
 	local specs `""CSI_115 170 AhorroHogB B.8b U" "CSI_115 171 AhorroHogN B.8n U" "CSI_115 166 ConHogS14 P.3 U" "CSI_115 176 ConEfecHogS14 P.4 U""'
 	local specs `"`specs' "CSI_115 117 ContribSocHog D.61 U" "CSI_115 127 ContribComplHog D.614 U""'
 	local specs `"`specs' "CSI_103 25 ImpProductosS1 D.21 R" "CSI_103 26 SubProductosS1 D.31 R""'
+	local specs `"`specs' "CSI_115 169 AjustePensHog D.8 R""'
 	local dir "${SIMROOT}/raw/temp/SCN"
 	foreach cuadro in CSI_115 CSI_103 {
 		local f "`dir'/`cuadro'.xlsx"
@@ -2815,6 +2823,7 @@ program define SCNHogaresS14
 	g double ImpNetosProdS1 = ImpProductosS1 - abs(SubProductosS1)
 	format ImpNetosProdS1 %20.0fc
 	label var ImpNetosProdS1 "Impuestos netos a los productos, economía total (S.1 D.21 - D.31)"
+	label var AjustePensHog "Ajuste por cambio en los derechos de pensiones de los hogares (S.14 D.8, cuenta II.4.1 fila 169, R/P)"
 	summarize anio, meanonly
 	local u = r(max)
 	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]

@@ -76,6 +76,11 @@ if !inlist("$nta_anclaS", "off", "aditivo", "multiplicativo") {
 	exit 198
 }
 if "$nta_cuotas" == "" global nta_cuotas "S14"
+if "$nta_d8" == "" global nta_d8 "yl_cotizantes"
+if !inlist("$nta_d8", "yl_cotizantes", "per_capita_adultos") {
+	noisily di as err `"NTA: nta_d8 = "$nta_d8" no es yl_cotizantes | per_capita_adultos"'
+	exit 198
+}
 if "$nta_alqu" == "" global nta_alqu "jefe"
 if "$nta_tauCash" == "" global nta_tauCash "PEF"
 if "$nta_otorgado" == "" global nta_otorgado "efectivo"
@@ -115,6 +120,12 @@ else {
 		global nta_cuotas "LIF"
 		local flags `"`flags' "SCN sin CuotasHogS14 (D.61-D.614 de CSI_115): nta_cuotas cae a LIF""'
 	}
+}
+capture confirm scalar AjustePension
+if _rc == 0 local AjustePension = scalar(AjustePension)
+else {
+	local AjustePension = 0
+	local flags `"`flags' "SCN sin AjustePension (D.8 de CSI_115): YA sin D.8""'
 }
 local ImpNetBIE = scalar(ImpNet)
 capture confirm scalar ImpNetosProd
@@ -367,6 +378,16 @@ label var TmenInd "τ⁻ público indirecto (IVA, ISAN, IEPS, importaciones; LIF
 label var TmenFuera "Fuera de τ⁻ (informativo): ISR_PM + OTROSK, pagados por sociedades en el SCN"
 label var Tmen "τ⁻ público = directos + indirectos"
 
+** 4.6b D.8 como escalar (NTA-1b pieza 4): AjustePension = D.8 del sector hogares entra a YA ∝ YL de las personas con
+**      cuotas > 0 (quienes acumulan derechos; nta_d8 = yl_cotizantes) o per cápita entre adultos (per_capita_adultos). **
+tempvar rel_d8
+if "$nta_d8" == "yl_cotizantes" g double `rel_d8' = cond(`cuo' > 0, max(YL, 0), 0)
+else g double `rel_d8' = nta_adulto
+Distribucion YA_d8, relativo(`rel_d8') macro(`AjustePension')
+label var YA_d8 "Ajuste por cambio en derechos de pensión (D.8 S.14) como ingreso de activos ($nta_d8)"
+count if `cuo' > 0
+local Ncotiz = r(N)
+
 ** 4.7 τ⁺ público en efectivo **
 if "$nta_tauCash" == "PEF" {
 	tempvar jubpub
@@ -411,7 +432,7 @@ g double InterOtor = nta_otor_hog*nta_share
 label var InterOtor "τ⁻ inter-hogar otorgado (efectivo; del hogar a sus adultos con ingreso ∝ YL+YA)"
 
 ** 4.10 S: residual del hogar, a los adultos ∝ (YL + YA) **
-g double nta_yd = YL + ImpProd + YA_motor + Tpub + InterRec + Remesas - Tmen - InterOtor
+g double nta_yd = YL + ImpProd + YA_motor + YA_d8 + Tpub + InterRec + Remesas - Tmen - InterOtor
 egen double nta_S_hog = total(nta_yd - C), by(nta_hhid)
 g double S_sinancla = nta_S_hog*nta_share
 label var S_sinancla "Ahorro: residual del hogar repartido a adultos ∝ (YL+YA), antes del ancla"
@@ -438,9 +459,9 @@ else {
 	g double S = S_sinancla
 }
 label var YA_ajuste "Ajuste por ancla aditiva Σ S = AhorroHog (0 salvo nta_anclaS = aditivo); contrapartida de S"
-g double YA = YA_motor + YA_ajuste
+g double YA = YA_motor + YA_d8 + YA_ajuste
 label var S "Ahorro NTA (residual del hogar a adultos ∝ YL+YA; ancla: $nta_anclaS)"
-label var YA "Ingreso de activos NTA (neto de depreciación)"
+label var YA "Ingreso de activos NTA (neto de depreciación; con D.8)"
 
 ** 4.12 Intra-hogar: el único residual **
 g double Intra = C - YL - ImpProd - YA - Tpub + Tmen - InterRec - Remesas + InterOtor + S
@@ -476,6 +497,9 @@ escalar pct NTAFactorIndirectos = r(StatTotal)[1,3]/`ImpNetosProd'*100
 noisily di in g "  Impuestos a productos: ImpNetosProd (D.21−D.31 CSI_103) " in y %16.0fc `ImpNetosProd' in g "  ImpNet BIE " in y %16.0fc `ImpNetBIE' ///
 	in g "  embebido por Altimir en Yk (sacado) " in y %16.0fc r(StatTotal)[1,2] in g "  Σ indirectos micro (τ⁻) " in y %16.0fc r(StatTotal)[1,3] ///
 	in g "  factor indirectos/ImpNetosProd " in y %7.4f r(StatTotal)[1,3]/`ImpNetosProd'
+quietly tabstat YA_d8 [fw=factor], stat(sum) save
+escalar mxn NTAD8Nac = r(StatTotal)[1,1]
+noisily di in g "  D.8 (AjustePension) " in y %16.0fc `AjustePension' in g " → YA_d8 ($nta_d8; " in y `Ncotiz' in g " personas con cuotas > 0 en la base): Σ " in y %16.0fc r(StatTotal)[1,1]
 noisily di in g "  S micro (residual de hogares, sin ajuste): " in y %16.0fc `S_micro' in g "  AhorroHog (B.8n): " in y %16.0fc `AhorroHog' ///
 	in g "  factor implícito " in y %8.4f `fS' in g "  brecha " in y %7.1f scalar(NTABrechaSPct) in g " %  nta_anclaS=" in y "$nta_anclaS"
 
@@ -538,7 +562,7 @@ noisily di in g "  Especie: Σ Cpub " in y %16.0fc `TOT'[1,4] in g " vs TransfEs
 **********************************
 **# 6. Agregados: grupo de edad (escalares) y quinquenio × sexo
 **********************************
-local vars "C Cpriv Cpub YL ImpProd YA YA_ajuste S S_sinancla Tpub TpubEf TpubPens TpubPAM TpubProg Tmen TmenDir TmenCuotas TmenInd TmenFuera InterRec Remesas InterOtor Intra Resid ALQ"
+local vars "C Cpriv Cpub YL ImpProd YA YA_d8 YA_ajuste S S_sinancla Tpub TpubEf TpubPens TpubPAM TpubProg Tmen TmenDir TmenCuotas TmenInd TmenFuera InterRec Remesas InterOtor Intra Resid ALQ"
 quietly g double TmenCuotas = nta_CUOTAS
 preserve
 quietly {
@@ -614,21 +638,22 @@ file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTAS_si
 file write `fh' "B.8n (AhorroHog) " `f1' (`AhorroHog'/1e9) "; factor implícito B.8n / Σ S sin ajuste " %8.4f (`fS') "; brecha (Σ S − B.8n)/B.8n " %7.1f (scalar(NTABrechaSPct)) " %; ajuste aditivo que exigiría el ancla " `f1' (`D'/1e9) "; nta_anclaS=$nta_anclaS" _n _n
 file write `fh' "Identidad por grupo de edad: C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = R   (ImpProd = impuestos netos a los productos como ingreso ∝ Cpriv)" _n
 file write `fh' "τ⁺ = público efectivo + público especie + inter recibido + remesas; τ⁻ = público (ISR PF+asalariados, cuotas $nta_cuotas, indirectos LIF) + inter otorgado. Fuera de τ⁻ (informativo): ISR_PM + OTROSK." _n
-file write `fh' "Parámetros: nta_anclaS=$nta_anclaS nta_cuotas=$nta_cuotas nta_alqu=$nta_alqu nta_tauCash=$nta_tauCash nta_otorgado=$nta_otorgado nta_mixto=$nta_mixto" _n _n
-file write `fh' %-12s ("Grupo") %9s ("Pob(M)") %10s ("Cpriv") %10s ("Cpub") %10s ("C") %10s ("YL") %10s ("ImpProd") %10s ("YA") %10s ("S") %10s ("tau-pub") %10s ("  cuotas") %10s ("  indir") %10s ("fuera") %10s ("tau+efec") %10s ("tau+esp") %10s ("interRec") %10s ("remesas") %10s ("interOtor") %10s ("intra") %10s ("R") _n
+file write `fh' "Parámetros: nta_anclaS=$nta_anclaS nta_cuotas=$nta_cuotas nta_d8=$nta_d8 nta_alqu=$nta_alqu nta_tauCash=$nta_tauCash nta_otorgado=$nta_otorgado nta_mixto=$nta_mixto" _n _n
+file write `fh' %-12s ("Grupo") %9s ("Pob(M)") %10s ("Cpriv") %10s ("Cpub") %10s ("C") %10s ("YL") %10s ("ImpProd") %10s ("YA") %10s ("  YA d8") %10s ("S") %10s ("tau-pub") %10s ("  cuotas") %10s ("  indir") %10s ("fuera") %10s ("tau+efec") %10s ("tau+esp") %10s ("interRec") %10s ("remesas") %10s ("interOtor") %10s ("intra") %10s ("R") _n
 forvalues g = 1/5 {
 	local lab : label grupoedad `g'
 	file write `fh' %-12s ("`lab'") %9.1f (scalar(NTAPob`g')/1e6) `f1' (scalar(NTACpriv`g')/1e9) `f1' (scalar(NTACpub`g')/1e9) `f1' (scalar(NTAC`g')/1e9) ///
-		`f1' (scalar(NTAYL`g')/1e9) `f1' (scalar(NTAImpProd`g')/1e9) `f1' (scalar(NTAYA`g')/1e9) `f1' (scalar(NTAS`g')/1e9) `f1' (scalar(NTATmen`g')/1e9) `f1' (scalar(NTATmenCuotas`g')/1e9) `f1' (scalar(NTATmenInd`g')/1e9) `f1' (scalar(NTATmenFuera`g')/1e9) ///
+		`f1' (scalar(NTAYL`g')/1e9) `f1' (scalar(NTAImpProd`g')/1e9) `f1' (scalar(NTAYA`g')/1e9) `f1' (scalar(NTAYA_d8`g')/1e9) `f1' (scalar(NTAS`g')/1e9) `f1' (scalar(NTATmen`g')/1e9) `f1' (scalar(NTATmenCuotas`g')/1e9) `f1' (scalar(NTATmenInd`g')/1e9) `f1' (scalar(NTATmenFuera`g')/1e9) ///
 		`f1' (scalar(NTATpubEf`g')/1e9) `f1' (scalar(NTACpub`g')/1e9) `f1' (scalar(NTAInterRec`g')/1e9) `f1' (scalar(NTARemesas`g')/1e9) ///
 		`f1' (scalar(NTAInterOtor`g')/1e9) `f1' (scalar(NTAIntra`g')/1e9) %10.6f (scalar(NTAResid`g')/1e9) _n
 }
 file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTACpriv0)/1e9) `f1' (scalar(NTACpub0)/1e9) `f1' (scalar(NTAC0)/1e9) ///
-	`f1' (scalar(NTAYL0)/1e9) `f1' (scalar(NTAImpProd0)/1e9) `f1' (scalar(NTAYA0)/1e9) `f1' (scalar(NTAS0)/1e9) `f1' (scalar(NTATmen0)/1e9) `f1' (scalar(NTATmenCuotas0)/1e9) `f1' (scalar(NTATmenInd0)/1e9) `f1' (scalar(NTATmenFuera0)/1e9) ///
+	`f1' (scalar(NTAYL0)/1e9) `f1' (scalar(NTAImpProd0)/1e9) `f1' (scalar(NTAYA0)/1e9) `f1' (scalar(NTAYA_d80)/1e9) `f1' (scalar(NTAS0)/1e9) `f1' (scalar(NTATmen0)/1e9) `f1' (scalar(NTATmenCuotas0)/1e9) `f1' (scalar(NTATmenInd0)/1e9) `f1' (scalar(NTATmenFuera0)/1e9) ///
 	`f1' (scalar(NTATpubEf0)/1e9) `f1' (scalar(NTACpub0)/1e9) `f1' (scalar(NTAInterRec0)/1e9) `f1' (scalar(NTARemesas0)/1e9) ///
 	`f1' (scalar(NTAInterOtor0)/1e9) `f1' (scalar(NTAIntra0)/1e9) %10.6f (scalar(NTAResid0)/1e9) _n _n
 file write `fh' "S y intra-hogar por sexo (bn): hombres S " `f1' (scalar(NTASH)/1e9) " intra " `f1' (scalar(NTAIntraH)/1e9) "; mujeres S " `f1' (scalar(NTASM)/1e9) " intra " `f1' (scalar(NTAIntraM)/1e9) _n
 file write `fh' "Impuestos a productos: ImpNetosProd (D.21−D.31) " `f1' (`ImpNetosProd'/1e9) "; ImpNet BIE " `f1' (`ImpNetBIE'/1e9) "; embebido por Altimir en Yk (sacado de YA) " `f1' (scalar(NTAImpProdMotor)/1e9) "; Σ indirectos micro τ⁻ " `f1' (scalar(NTATmenInd0)/1e9) " (factor " %7.4f (scalar(NTAFactorIndirectos)/100) ")" _n
+file write `fh' "D.8 AjustePension " `f1' (`AjustePension'/1e9) " → YA_d8 ($nta_d8) Σ " `f1' (scalar(NTAD8Nac)/1e9) _n
 file write `fh' "Σ Cpub (especie) " `f1' (scalar(NTACpubNac)/1e9) " vs TransfEspecie " `f1' (`TransfEspecie'/1e9) " (brecha " %6.1f (scalar(NTABrechaEspeciePct)) " %)" _n
 file write `fh' "Σ Cpriv " `f1' (scalar(NTACprivNac)/1e9) " vs P.3 S.14 " `f1' (`ConHogS14'/1e9) "; ConHog (BIE) " `f1' (`ConHog'/1e9) "; ComprasN " `f1' (`ComprasN'/1e9) _n
 file write `fh' "Gates: residual máx por persona " %9.2e (`maxres') " MXN; Σ intra nacional " %12.2f (`Intra_nac') " MXN; Σ S − AhorroHog " %12.2f (`S_nac' - `AhorroHog') " MXN -> `okstr'" _n
@@ -641,10 +666,11 @@ local fm "%20.4f"
 file open `fh' using `"`dirnta'/nta-grupoedad.json"', write replace text
 file write `fh' `"{"esquema":"nta/v1","anio":`anio',"unidad":"MXN corrientes de `anio', sumas [fw=factor]","corte":"grupoedad","' _n
 file write `fh' `""identidad":"C - YL - ImpProd - (tau_mas - tau_menos) - (YA - S) - intra = residual; ImpProd = impuestos netos a los productos como ingreso (∝ Cpriv); tau_mas = tau_pub_efectivo + tau_pub_especie + inter_recibido + remesas; tau_menos = tau_pub + inter_otorgado","' _n
-file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_cuotas":"$nta_cuotas","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","adulto":`adulto',"tolerancia":1e-9},"' _n
+file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_cuotas":"$nta_cuotas","nta_d8":"$nta_d8","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","adulto":`adulto',"tolerancia":1e-9},"' _n
 file write `fh' `""anclas":{"AhorroHog_B8n":`=trim(string(`AhorroHog', "`fm'"))',"AhorroHogB_B8b":`=trim(string(`AhorroHogB', "`fm'"))',"TransfEspecie_D63":`=trim(string(`TransfEspecie', "`fm'"))',"ConHogS14_P3":`=trim(string(`ConHogS14', "`fm'"))',"ConHog":`=trim(string(`ConHog', "`fm'"))',"ConGob":`=trim(string(`ConGob', "`fm'"))',"SerEGob":`=trim(string(`SerEGob', "`fm'"))',"SaluGob":`=trim(string(`SaluGob', "`fm'"))',"ComprasN":`=trim(string(`ComprasN', "`fm'"))',"ROWTrans":`=trim(string(`ROWTrans', "`fm'"))',"ROWRem":`=trim(string(`ROWRem', "`fm'"))',"ROWProp":`=trim(string(`ROWProp', "`fm'"))',"CapFij":`=trim(string(`CapFij', "`fm'"))',"IngDisp":`=trim(string(`IngDisp', "`fm'"))',"AhorroN":`=trim(string(`AhorroN', "`fm'"))',"OyE":`=trim(string(`OyE', "`fm'"))',"PEF_Pensiones":`=trim(string(`Pensiones', "`fm'"))',"PEF_PensionAM":`=trim(string(`PenBienestar', "`fm'"))',"TaltimirSelf":`=trim(string(`TSelf', "%12.8f"))',"TaltimirSal":`=trim(string(`TSal', "%12.8f"))'},"' _n
 file write `fh' `""S_vs_B8n":{"S_sin_ajuste":`=trim(string(`S_micro', "`fm'"))',"AhorroHog":`=trim(string(`AhorroHog', "`fm'"))',"factor_implicito":`=trim(string(`fS', "%12.8f"))',"brecha_pct":`=trim(string(scalar(NTABrechaSPct), "%12.6f"))',"ajuste_aditivo_que_exigiria":`=trim(string(`D', "`fm'"))',"S_final":`=trim(string(`S_nac', "`fm'"))',"modo":"$nta_anclaS","mixto_motor":`=trim(string(scalar(NTAMixtoMotor), "`fm'"))',"mixto_transf_fin_escalado":`=trim(string(scalar(NTAMixtoTransfFin), "`fm'"))',"pensiones_en_Yl":`=trim(string(scalar(NTAPensEnYl), "`fm'"))',"regla":"off: S residual sin tapón; aditivo: suma ∝ (YL+YA) de adultos con contrapartida en YA_ajuste; multiplicativo: S × factor, sin contrapartida (cae a intra)"},"' _n
 file write `fh' `""impuestos_productos":{"ImpNetosProd_D21_D31":`=trim(string(`ImpNetosProd', "`fm'"))',"ImpNet_BIE":`=trim(string(`ImpNetBIE', "`fm'"))',"ImpProd_micro":`=trim(string(scalar(NTAImpProdNac), "`fm'"))',"embebido_Altimir_sacado_de_YA":`=trim(string(scalar(NTAImpProdMotor), "`fm'"))',"indirectos_micro_tau_menos":`=trim(string(scalar(NTATmenInd0), "`fm'"))',"factor_indirectos_sobre_ImpNetosProd":`=trim(string(scalar(NTAFactorIndirectos)/100, "%12.8f"))',"regla":"ImpProd ∝ Cpriv; el ImpNet que Altimir embebe en Yk (∝ ing_mixtoK, ing_capital, ing_estim_alqu) se saca de YA"},"' _n
+file write `fh' `""d8":{"AjustePension_D8":`=trim(string(`AjustePension', "`fm'"))',"YA_d8_micro":`=trim(string(scalar(NTAD8Nac), "`fm'"))',"nta_d8":"$nta_d8","personas_con_cuotas":`Ncotiz'},"' _n
 file write `fh' `""tau_menos":{"directos":`=trim(string(scalar(NTATmenDir0), "`fm'"))',"cuotas":`=trim(string(scalar(NTACuotasNac), "`fm'"))',"cuotas_ancla":"$nta_cuotas","CuotasHogS14_D61_menos_D614":`=trim(string(`CuotasHogS14', "`fm'"))',"LIF_CUOTAS":`=trim(string(`CUOTAS', "`fm'"))',"indirectos":`=trim(string(scalar(NTATmenInd0), "`fm'"))',"fuera_ISRPM_OTROSK":`=trim(string(scalar(NTATmenFueraNac), "`fm'"))',"LIF_ISRPM":`=trim(string(`ISRPM', "`fm'"))',"LIF_OTROSK":`=trim(string(`OTROSK', "`fm'"))'},"' _n
 file write `fh' `""especie":{"Cpub":`=trim(string(scalar(NTACpubNac), "`fm'"))',"TransfEspecie":`=trim(string(`TransfEspecie', "`fm'"))',"brecha":`=trim(string(scalar(NTABrechaEspecie), "`fm'"))',"brecha_pct":`=trim(string(scalar(NTABrechaEspeciePct), "%12.6f"))'},"' _n
 file write `fh' `""grupos":["' _n
@@ -717,8 +743,8 @@ quietly {
 	save `per2'
 
 	* --- Eje 1: perceptores → tipos de ingreso (+ El mundo → Remesas, OyE → capital) --- *
-	g double nta_YK = YA_motor - ALQ
-	collapse (sum) ing_Ing_laboral=YL ing_Ing_capital=nta_YK ing_Alquiler_propio=ALQ ing_Impuestos_a_productos=ImpProd ing_Ajuste_ancla_S_14=YA_ajuste ing_Remesas=Remesas [fw=factor], by(grupoedad)
+	g double nta_YK = YA - YA_d8 - YA_ajuste - ALQ
+	collapse (sum) ing_Ing_laboral=YL ing_Ing_capital=nta_YK ing_Alquiler_propio=ALQ ing_Impuestos_a_productos=ImpProd ing_Derechos_de_pensión_D8=YA_d8 ing_Ajuste_ancla_S_14=YA_ajuste ing_Remesas=Remesas [fw=factor], by(grupoedad)
 	reshape long ing_, i(grupoedad) j(tipo) string
 	rename ing_ profile
 	replace grupoedad = -1 if tipo == "Remesas"
@@ -905,7 +931,7 @@ noisily di in g "  Sankey v2: balance Gobierno " in y %20.0fc `BG' in g " (τ⁻
 **********************************
 quietly {
 	keep folioviv foliohog numren factor edad sexo grupoedad quinq decil nta_hhid nta_jefe nta_adulto ///
-		YL ImpProd YA YA_motor YA_ajuste ALQ Cpriv Cpub CpubEduc CpubSalud CpubOtros C ///
+		YL ImpProd YA YA_motor YA_d8 YA_ajuste ALQ Cpriv Cpub CpubEduc CpubSalud CpubOtros C ///
 		Tmen TmenDir TmenCuotas TmenInd TmenFuera nta_ISRAS nta_ISRPF nta_CUOTAS nta_ISRPM nta_OTROSK nta_IVA nta_ISAN nta_IEPSNP nta_IEPSP nta_IMPORT ///
 		Tpub TpubEf TpubPens TpubPAM TpubProg InterRec Remesas InterOtor S S_sinancla Intra Resid ///
 		nta_pens_enYl nta_mixto_transf nta_mixto_fin nta_rem_raw nta_share
@@ -920,7 +946,7 @@ quietly {
 	char _dta[nta_anio] "`anio'"
 	char _dta[nta_AhorroHog] "`AhorroHog'"
 	char _dta[nta_TransfEspecie] "`TransfEspecie'"
-	char _dta[nta_parametros] "nta_anclaS=$nta_anclaS nta_cuotas=$nta_cuotas nta_alqu=$nta_alqu nta_tauCash=$nta_tauCash nta_otorgado=$nta_otorgado nta_mixto=$nta_mixto"
+	char _dta[nta_parametros] "nta_anclaS=$nta_anclaS nta_cuotas=$nta_cuotas nta_d8=$nta_d8 nta_alqu=$nta_alqu nta_tauCash=$nta_tauCash nta_otorgado=$nta_otorgado nta_mixto=$nta_mixto"
 	compress
 	save `"`dirnta'/nta-persona.dta"', replace
 }
