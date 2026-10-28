@@ -151,6 +151,38 @@ hasta ±7 %. Queda fuera; evidencia en PR #39.
   B.8n 1,901 bn); el 61 % de `ing_mixto` (4,571 de 7,524 bn) son transferencias y flujos financieros escalados
   × `TaltimirSelf` = 6.15. Nada del `output.txt` ni de los 10 sankeys publicados cambia (gate de números verde).
 
+### Comandos — NTA-1b: definiciones alineadas con S.14 antes de anclar; sin tapón (mismo PR #40)
+
+La brecha Σ S micro vs B.8n era de definición, no de escala. Un commit por pieza, con Σ S medido tras cada una
+(bn MXN 2024): antes −3,147 → (2) τ⁻ de hogares −2,509 → (3) impuestos a productos como ingreso −2,508 →
+(4) D.8 −1,238 → (5) τ⁺ efectivo a D.62 + D.759 **+201** → (6) `ConGob` partido +201. Brecha final −89 % de
+B.8n (> 15 %): **no se aplica ancla**; la descomposición restante va en el PR.
+
+- **`NTA.do` v1.1**: `nta_anclaS` default **`off`** (el aditivo de NTA-1 queda como variante `aditivo`; nueva
+  `multiplicativo`: factor sobre S de adultos sin contrapartida, cae a intra); el reporte abre con Σ S sin ajuste
+  por grupo vs B.8n y el factor implícito. **τ⁻** = lo que los hogares pagan en S.14: ISR de personas físicas
+  (asalariados + PF, LIF), cuotas (`cuotasTP` + infonavit una vez; `nta_cuotas` = `S14` D.61 − D.614 = 1,729 bn
+  | `LIF` 566) e indirectos LIF; **fuera** ISR_PM y OTROSK (1,802 bn; `TmenFuera`, informativo). **`ImpProd`** =
+  `ImpNetosProd` (D.21 − D.31, 2,176 bn) ∝ consumo privado entra a la identidad como ingreso
+  (`C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0`); de YA se saca lo que Altimir embebía de ImpNet en Yk.
+  **`YA_d8`** = `AjustePension` (D.8, 1,270 bn) ∝ YL de quienes cotizan (`nta_d8`). **τ⁺ efectivo** × un factor
+  global 1.717 a D.62 + D.759 (`nta_anclaTau` on). **`ConGob` partido**: individual = D.63 con perfil de edad
+  (educación matrícula, salud ∝ gasto privado, resto per cápita) = τ⁺ en especie; colectivo = `ConGob` − D.63
+  per cápita = τ⁺ colectivo; ambos en C público. `nta-identidad.txt` agrega S e intra por quinquenio × sexo.
+- **Sankey v2.1** (`sankey-v2-grupoedad.json`, 50 nodos / 169 enlaces): tipos de ingreso + «Impuestos a
+  productos» y «Derechos de pensión D8»; «Otros bienes públicos» → «Otros en especie» (con Educación y Salud
+  públicas suma D.63) y «Colectivo per cápita»; «Ajuste ancla S.14» solo con `nta_anclaS = aditivo`.
+- **`SCN.ado` v8.3 (aditivo)**: `SCNHogaresS14` generalizado a cuadro/fila/lado; lee además de `CSI_115.xlsx`
+  D.61 (f. 117), D.614 (f. 127), D.8 (f. 169), D.62 (f. 131), D.759 (f. 151) y de `CSI_103.xlsx` D.21 (f. 25),
+  D.31 (f. 26) → escalares `CuotasHogS14`, `ImpNetosProd`, `AjustePension`, `PrestSocHog`, `OtrasTransfHog`,
+  `TauPubS14` (+ `*PIB`). Un `master/SCN.dta` de NTA-1 se completa solo (`update replace`).
+- **Gate `test-nta-identidad.{do,sh}` v1.1**: identidad con `ImpProd` (5 + 36 celdas), Σ intra = 0, **sin ajuste
+  de S activo** (un ancla es ROJO), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31,
+  Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759) y nodos del contrato v2.1. `output.txt` y los 10 sankeys no cambian.
+- FLAG al frente para v8.14: `TaltimirSelf` = 6.15 escala como ingreso mixto 4,571 bn de transferencias y flujos
+  financieros (`ing_dona`, `ing_heren`, `ing_benef`, remesas crudas, `ing_prest`, `ing_otrocap`, `ing_ahorro`);
+  `nta_mixto` default `crudo` se mantiene.
+
 ### Institucional — página de método `/NTA`: el Sankey NTA de los hogares, como lo emite el motor
 
 - **`/NTA`** (`04_1_simuladorfiscal.ciep.mx/NTA/index.php`, primera página de la futura sección de
