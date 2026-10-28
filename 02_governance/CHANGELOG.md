@@ -18,50 +18,6 @@ Formato de cada entrada:
 
 ## [Unreleased]
 
-### Correcciones — datos: tres FLAGs de `Households.do` que movían números publicados (sesión FIX-NTA0, 2026-10-27)
-
-Tres hallazgos del memo `02_governance/nta-0-inventario-2026-10-27.md`, corregidos con el diff mínimo
-(un commit cada uno) y medidos con cuatro corridas completas de `SIM.do` (defaults + `nographs` +
-`output`, StataNow 19.5, 1 procesador, ~33 min cada una): baseline `07b9d5c` y una por corrección
-acumulada. El gate de números de v8.12 (`output.txt` byte-idéntico, sankeys dentro de 1e-9) queda
-**ROJO por diseño** en las tres: son correcciones de datos, no refactors. Los números nuevos son los
-que se publican a partir del siguiente release; el detalle enlace por enlace está en el PR.
-
-- **`infonavit` sumado dos veces en `cuotasTPF`** (`Households.do` l. 1541 + l. 1549). `cuotasF =
-  rsum(*F) + infonavit` y luego `cuotasTPF = rsum(cuotasP cuotasT cuotasF) + infonavit`: 221 bn de más
-  en las contribuciones a la seguridad social de 2024 (Σ TPF 1,690 → 1,469 bn, −13 %). Se quita la suma
-  a `cuotasF` (INFONAVIT es aportación patronal, no federal; `ISR_Mod.do` l. 129 también construye
-  `cuotasF` sin él); `cuotasTPF` queda P + T + F + infonavit una vez. Mueve el gross-up de `ing_subor`
-  (l. 1709) por persona — el total sigue anclado a RemSal por Altimir, pero cambia su reparto —, `isrE`
-  (+6.5 bn), la base gravable, los cortes de formalidad, `ISR_asalariados` (−0.5 bn), y con ello los
-  deciles de `ingbrutotot` (re-ranking): **cambian las 389 de 519 líneas de `output.txt` en los 44
-  bloques** (todo lo que es "por decil"), incluidos `INCD`/`INCD2`/`INCD3`/`APORT*`/`PROY` que pinta el
-  sitio (Δ típicas de 0.1–2 pp en las aportaciones netas por decil; `INCD` decil I −87,882 → −89,705),
-  y **los 10 sankeys** (SF: Δ rel. máx 0.12 en `I → Imp al trabajo` y 0.40 en `De 5 a 17 → Imp al
-  trabajo`, que caen 12 % y 40 % porque los asalariados jóvenes/pobres ya no cargan el INFONAVIT doble;
-  NTA: Δ máx 0.02, por el re-ranking de deciles y el reparto de `Yl`). `TasasEfectivasMicro`
-  (`BaseCSS ∝ cuotasTPF`) hereda la nueva forma.
-- **Altimir escalaba `ing/exen_t4_cap5–9` dos veces** (`Households.do` l. 2105 × `TaltimirSal` y
-  l. 2108 × `TaltimirSelf`). Las componentes de `ing_mixto` quedaban × Sal × Self (Sal ≈ 0.978). Se
-  dejan solo en el bucle Self. `ing_mixto`, `Yl`, `Yk`, `ingbrutotot`, deciles y `Ahorro` **no
-  cambian** (se escalaban una vez); lo que sí lee las componentes es §10: `ing_bruto_tax` (+103 bn,
-  +0.6 %) y `exen_tot` (+100 bn, +1.7 %) → ISR recalculado, cortes de formalidad, `ISR_asalariados`
-  (−0.5 bn), `ISR_PF`, `ISR_PM`. En `output.txt` cambian 59 líneas en 9 bloques (`ing_bruto_tax`,
-  `ISRAS`, `ISRPF`, `Laboral`, `ISRPM`, `OTROSK`, `KPrivado`, `ImpuestosAportaciones`,
-  `AportacionesNetas` ★); en el sitio, `INCD` ±0.2 % e `INCD3` decil IX 9.9 → 9.8; los 5 sankeys SF se
-  mueven ≤ 7.7e-4 relativo; los 5 sankeys NTA quedan byte-idénticos. FLAG (no se corrige aquí):
-  `*_t4_cap4` sigue en el bucle Sal — escala única, pero debería ser Self como parte de `ing_mixto`.
-- **`ing_remesas` sumado otra vez en `Ahorro`** (`Households.do` l. 2678). `ingbrutotot` (l. 2462) ya
-  trae `ing_remesas`; la línea lo volvía a sumar: Σ `Ahorro` 2,851 → 1,665 bn (−1,186 bn = ROWTrans
-  2024). Solo cambia `Ahorro` (perfil, incidencia, ciclo y proyección de `Simulador`: el bloque 6 de
-  `output.txt`, 10 líneas que el sitio **no** muestra porque lee la última aparición de cada llave;
-  los archivos `Ahorro{PC,PERF,INCI,CICLO,REC,RECprom}.dta` de `bootstraps/250`; las barras
-  `Usos.png`; los escalares `Ahorro*` del textbook). `output.txt` deja de ser byte-idéntico (gate
-  ROJO) pero ninguna llave que pinte el sitio ni ningún sankey se mueve. FLAG (no se corrige aquí):
-  las remesas siguen también dentro de `ing_mixto` vía `ing_t4_cap9` (l. 544), así que `Ahorro`,
-  `ingbrutotot`, `Yl`/`Yk` y `Ciclodevida` (l. 2673, que además las suma explícitamente) las cuentan
-  dos veces; sacarlas de cap9 cambia Altimir y los deciles: decisión de NTA-1.
-
 ### Comandos — v8.13a: el contrato de entidad corre para las 32 (motor, sin visualización)
 
 - **`TasasEfectivasMicro.ado` deja de ser huérfano** (v1.1.0, no se toca por dentro): `SIM.do` §4.7 lo
@@ -103,6 +59,116 @@ que se publican a partir del siguiente release; el detalle enlace por enlace est
   «4b PIBE»: gate de que las 32 corren con base y una vista previa de «% del PIBE» (neto del ciclo ÷ PIBE).
   Los JSON de entidad todavía NO escriben «% del PIBE»: es v8.13b.
 - Runbook §13: receta y tiempo medido de `pibe-32.sh`.
+
+## [v8.12.4] — 2026-10-27 — Corrección de datos
+
+Hotfix sobre v8.12.3: tres FLAGs de `01_modulos/Households.do` detectados en el inventario NTA-0
+(`02_governance/nta-0-inventario-2026-10-27.md`) que **movían números publicados**. Un commit por
+corrección con el diff mínimo; medidos con corridas completas de `SIM.do` (defaults + `nographs` +
+`output`, StataNow 19.5, 1 procesador, ~33 min c/u): baseline `07b9d5c` (reproduce al 1e-9 los
+sankeys publicados) y una por corrección acumulada; evidencia y deltas enlace por enlace en PR #39.
+El gate de números (`05_scripts/gate-numeros.sh`: `output.txt` byte-idéntico + 10 sankeys ≤ 1e-9)
+queda **ROJO contra `07b9d5c` y VERDE contra el baseline nuevo** (`05_scripts/fixtures/output-default.txt`
+y `fixtures/sankeys-default/`, commit "baseline: v8.12.4 corrección de datos"). `manifest.json` →
+v8.12.4 y `data_updated` 2026-10-27 (los datos precargados se reprocesaron; el hero lo pinta).
+Solo cambian `Households.do`, el CHANGELOG, el manifest y el baseline del gate. El `.do`/`.ado` del motor web (`Web.Stata.do`, `ISR_Mod.do`) no cambia.
+
+**Lectura para el usuario del sitio.** Los valores precargados (Paquete Económico 2027) cambian poco
+pero cambian: las aportaciones netas por decil (`APORT*`) se mueven hasta ±2 pp del PIB por celda y
+el ingreso neto per cápita por decil (`INCD`) hasta ±2.5 %; en los Sankeys del sistema fiscal **la
+cuota al trabajo del decil I baja 12 %** (49.2 → 43.1 mil millones) y la de los menores de 18 baja
+40 % (7.5 → 4.5 mil millones), porque esos asalariados cargaban el INFONAVIT dos veces; el resto de
+los enlaces se mueve < 2 %. Los totales nacionales (ingreso laboral, de capital, consumo) **no**
+cambian: están anclados a Cuentas Nacionales.
+
+**«Calcular» web vs batch (FLAG-5).** La distancia entre el `output.txt` del «Calcular» default
+(`Web.Stata.do`) y el `output.txt` publicado se midió antes y después: en `07b9d5c` difieren 5 de 46
+llaves (`GASTOSPC` 1.8e-3, `INCD` 1.5e-4, `PIBY` 1.1e-4, `PROYSHRFSP2/3` ≈ 1e-4: redondeo de
+`CRECPIB`/`CRECDEF` a un decimal y el `if k != 0` de `SIM.do` §7); con v8.12.4 la distancia es
+**la misma** (ver PR #39), así que la diferencia de `ISR_Mod.do` (`cuotasTPF` sin infonavit, FLAG
+abajo) no amplifica la divergencia web/batch.
+
+#### Fix 1 — `infonavit` sumado dos veces en `cuotasTPF` (`4a425d1`)
+- **Línea:** `Households.do` l. 1541 `replace cuotasF = cuotasF + infonavit` (borrada); l. 1549
+  `replace cuotasTPF = cuotasTPF + infonavit` se conserva. `cuotasF = rsum(*F)` + infonavit y luego
+  `cuotasTPF = rsum(cuotasP cuotasT cuotasF)` + infonavit: 221 bn de más en las contribuciones a la
+  seguridad social de 2024 (Σ `cuotasTPF` 1,690.6 → 1,469.2 bn, −13.1 %). INFONAVIT es aportación
+  patronal, no federal (`ISR_Mod.do` l. 129 construye `cuotasF` sin él).
+- **En producción desde:** la suma a `cuotasTPF` existe desde `1ebd71e` (2025-06-18, "Simulador v7
+  final"); la segunda, a `cuotasF`, desde `76d3cd5` (2025-07-21, "Pre-ENIGH 2024"). Doble conteo en
+  **todas las versiones publicadas (v7.0, 2026-05-23 → v8.12.3)**.
+- **Qué mueve:** el gross-up de `ing_subor` por persona (l. 1709; el total lo re-ancla Altimir a
+  RemSal, así que Σ `Yl`, Σ `Yk`, Σ `ingbrutotot` no cambian), `isrE` +6.5 bn, la base gravable y los
+  cortes de formalidad, `ISR_asalariados` −0.5 bn, y por el re-ranking de `ingbrutotot` **el decil de
+  cada persona**: 389 de 519 líneas de `output.txt` (los 44 bloques de `Simulador`) y los 10 sankeys.
+  `TasasEfectivasMicro` (`BaseCSS ∝ cuotasTPF`) hereda la nueva forma.
+
+| número publicado | antes (`07b9d5c`) | después | Δ |
+|---|---|---|---|
+| `INCD` decil I … X, promedio (MXN/persona) | −87,882 … 483,532; 30,987 | −89,705 … 483,164; 30,987 | hasta −2.5 % en decil III |
+| `INCD2` (% del promedio) decil I | −28.4 | −29.0 | −0.6 pp |
+| `APORTHIV`, `APORTMIV` … (% PIB por celda edad × decil) | — | — | hasta ±0.4 pp (`APORTMVIIX`), típico 0.02–0.1 pp |
+| `PROY` (ciclo fiscal) | 0.800 … −1.002 | 0.799 … −0.998 | ≤ 0.004 |
+| Sankey SF `I → Imp al trabajo` | 49,203,202,515 | 43,160,499,085 | −12.3 % |
+| Sankey SF `De 5 a 17 → Imp al trabajo` | 7,455,177,497 | 4,482,138,784 | −39.9 % |
+| Sankey SF `Indígena → Imp al trabajo` | 44,152,525,344 | 40,447,425,879 | −8.4 % |
+| Sankey SF `Pensiones → VI` / `→ VIII` | 284.0 / 293.7 bn | 279.2 / 297.6 bn | −1.7 % / +1.3 % (re-ranking) |
+| Sankey NTA `Salud → VI` (decil) | 72,484,693,107 | 71,021,673,094 | −2.0 % (máximo NTA) |
+| Sankey NTA `De 65 y más → Ing Laboral` | 1,920,774,303,829 | 1,930,851,744,154 | +0.5 % |
+
+#### Fix 2 — Altimir escalaba `ing/exen_t4_cap5–9` dos veces (`06db1e2`)
+- **Línea:** l. 2105 `foreach k of varlist ing_subor *_t4_cap4 *_t4_cap5 *_t4_cap6 *_t4_cap7
+  *_t4_cap8 *_t4_cap9 { × TaltimirSal }` → `foreach k of varlist ing_subor *_t4_cap4 { … }`; cap5–9
+  quedan solo en el bucle × `TaltimirSelf` (l. 2108), como componentes de `ing_mixto` (l. 1046).
+- **En producción desde:** el bucle con `*_t4_cap5 … *_t4_cap9` existe desde `9f7982f` (2021-06-11,
+  "Reporte Ingresos"). **Todas las versiones publicadas.**
+- **Qué mueve:** `ing_mixto`, `Yl`, `Yk`, `ingbrutotot`, deciles y `Ahorro` **no** cambian (se
+  escalaban una vez). Cambian las componentes que lee §10: `ing_bruto_tax` +103 bn (+0.6 %),
+  `exen_tot` +100 bn (+1.7 %) → ISR recalculado, cortes de formalidad, `ISR_asalariados` −0.5 bn,
+  `ISR_PF` −0.01, `ISR_PM` −0.01. (`TaltimirSal` ≈ 0.978: quitarlo **sube** cap5–9 un 2.2 %.)
+
+| número publicado | antes (fix 1) | después | Δ |
+|---|---|---|---|
+| `output.txt` | — | 59 líneas en 9 bloques (`ing_bruto_tax`, `ISRAS`, `ISRPF`, `Laboral`, `ISRPM`, `OTROSK`, `KPrivado`, `ImpuestosAportaciones`, `AportacionesNetas`) | — |
+| `INCD` (sitio) | −89,705 … | −89,708 … | ≤ 0.2 % |
+| `INCD3` decil IX | 9.9 | 9.8 | −0.1 pp |
+| `APORTMVIIX` | — | — | ≤ 1.7 % relativo por celda |
+| Sankeys SF (5 cortes) | — | 48 enlaces se mueven | Δ rel. máx 7.7e-4 (`Sin escolaridad → Imp al trabajo`) |
+| Sankeys NTA (5 cortes) | — | idénticos | 0 |
+
+#### Fix 3 — `ing_remesas` sumado otra vez en `Ahorro` (`0c712a7`)
+- **Línea:** l. 2678 `g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas − gastoanualTOT`
+  → sin `+ ing_remesas` (`ingbrutotot`, l. 2462, ya lo trae).
+- **En producción desde:** `05325a2` (2020-10-22, "Capítulo 3") / `36f7a96` (2021-03-04, "5.0").
+  **Todas las versiones publicadas.**
+- **Qué mueve:** Σ `Ahorro` 2,851.2 → 1,665.1 bn (−1,186.1 bn = ROWTrans 2024). Solo `Ahorro`: el
+  bloque 6 de `output.txt` (10 líneas que el sitio **no** pinta: `cargaDefault.php` lee la última
+  aparición de cada llave, bloque 43), `Ahorro{PC,PERF,INCI,CICLO,REC,RECprom}.dta` de
+  `bootstraps/250` (Δ rel. máx `AhorroPC` 0.53, `AhorroRECprom` 1.28), las barras `Usos.png`/
+  `Recursos.png` (`Ahorro_dec`) y los escalares `Ahorro*` del textbook. `output.txt` deja de ser
+  byte-idéntico (gate ROJO), pero ninguna llave del sitio ni ningún sankey se mueve.
+
+| número publicado | antes | después | Δ |
+|---|---|---|---|
+| `output.txt` bloque 6 (`Ahorro`): `INCD` decil I … X | −169,392 … 1,326,812 | −169,014 … 1,108,624 | decil X −16 % |
+| `output.txt` bloque 6: `INCD2` decil I | −23.0 | −39.4 | el ahorro cae y la incidencia relativa se amplifica |
+| Llaves del sitio, sankeys SF y NTA | — | idénticos | 0 |
+
+#### Pendiente (FLAG, decisión de Ricardo): `*_t4_cap4` escalado × `TaltimirSal` en vez de × `TaltimirSelf`
+Se probó como cuarto commit (`90c7c96`, revertido en `407749f`): `ing_t4_cap4` 93.8 → 590.4 bn
+(`TaltimirSelf` ≈ 6.3 vs `TaltimirSal` ≈ 0.98), `ing_bruto_tax` +497 bn (+2.9 %), `exen_tot` +319 bn
+(+5.3 %), `ISR_asalariados` −2.1 bn; `Yl`/`Yk`/deciles/sankeys NTA sin cambio, pero los sankeys SF se
+mueven hasta **1.5e-2** (`De 65 y más → Imp al trabajo` +1.5 %) y 4.7e-3 en decil (`VIII → Imp al
+capital`), por encima del umbral 1e-3 fijado para este hotfix; en el sitio `INCD` ±1.5 %, `APORT*`
+hasta ±7 %. Queda fuera; evidencia en PR #39.
+
+#### FLAGs registrados, no corregidos
+1. Remesas siguen dentro de `ing_mixto` vía `ing_t4_cap9` (l. 544): `Ahorro`, `ingbrutotot`, `Yl`/`Yk`
+   las cuentan dos veces y `Ciclodevida` (l. 2673) las suma además explícitamente. Cambia Altimir y
+   deciles: NTA-1.
+2. `ISR_Mod.do` l. 130 construye `cuotasTPF = cuotasF + CUOTAS` **sin** infonavit (el batch sí lo
+   incluye): web y batch no definen igual la variable; medido, no amplifica FLAG-5.
+3. `SankeyNTA/` y la página `/NTA` (PR #37) heredan los números nuevos al regenerar `users/ricardo/`.
 
 ## [v8.12.3] — 2026-10-19
 
