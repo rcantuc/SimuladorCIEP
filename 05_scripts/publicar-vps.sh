@@ -863,17 +863,24 @@ fi
 #       sankey-grupoedad.json ← jsonSankeyGrupoedad.php:28
 #       sankey-rural.json     ← jsonSankeyRural.php:22
 #       sankey-sexo.json      ← jsonSankeySexo.php:22
-#       SankeyNTA/sankey-grupoedad.json ← jsonSankeyNTA.php (página de método /NTA)
+#       SankeyNTA/sankey-v2-grupoedad.json ← jsonSankeyNTA.php?corte=v2-grupoedad (default; página de método /NTA, v8.12.5)
+#       SankeyNTA/sankey-grupoedad.json ← jsonSankeyNTA.php?corte=grupoedad (v1; /NTA ya no lo dibuja, el endpoint lo conserva)
+#       NTA/nta-grupoedad.json          ← jsonSankeyNTA.php?cuenta=grupoedad (cifras de «Anchoring and residual» en /NTA)
+#       NTA/nta-quinquenio-sexo.json    ← jsonSankeyNTA.php?cuenta=quinquenio-sexo
+#       NTA/nta-identidad.txt           ← jsonSankeyNTA.php?cuenta=identidad (reporte enlazado desde /NTA)
 # Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
 # SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
 # investigador). El contrato del PHP no se toca: se publica EN users/ciepmx/.
 #
 # Fuente local de verdad, CONFIRMADA en el código: la corrida completa de
-# SIM.do escribe los 7 en users/ricardo/ — output.txt vía el log que llena
-# 01_modulos/output.do, los sankey-*.json vía SankeySF.do→SankeySumSim, y
+# SIM.do escribe los 11 en users/ricardo/ — output.txt vía el log que llena
+# 01_modulos/output.do, los sankey-*.json vía SankeySF.do→SankeySumSim,
 # SankeyNTA/sankey-<corte>.json vía Households.do §"Sankeys NTA"→
-# visualizations/Sankey.do→SankeySumSim folder(SankeyNTA). Una entrada con
-# subcarpeta viaja a users/ciepmx/<subcarpeta>/ (misma ruta relativa que local).
+# visualizations/Sankey.do→SankeySumSim folder(SankeyNTA), y NTA/* más
+# SankeyNTA/sankey-v2-grupoedad.json vía 01_modulos/NTA.do (SIM.do §3.2b; la
+# cuenta NTA por individuo). nta-persona.dta (130 MB) NO viaja: el web no lo
+# lee. Una entrada con subcarpeta viaja a users/ciepmx/<subcarpeta>/ (misma
+# ruta relativa que local).
 DEFAULT_MANIFEST=(
     output.txt
     sankey-decil.json
@@ -882,6 +889,10 @@ DEFAULT_MANIFEST=(
     sankey-rural.json
     sankey-sexo.json
     SankeyNTA/sankey-grupoedad.json
+    SankeyNTA/sankey-v2-grupoedad.json
+    NTA/nta-grupoedad.json
+    NTA/nta-quinquenio-sexo.json
+    NTA/nta-identidad.txt
 )
 log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
 
@@ -1085,7 +1096,10 @@ MOTOR_LECTURAS_VPS=(
     "users/ricardo/cache/sello.txt"                  # Fase 3b-bis: cache de lo invariante
     "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
     "users/ciepmx/output.txt"                        # Fase 3b-ter: escenario default (cargaDefault.php)
-    "users/ciepmx/SankeyNTA/sankey-grupoedad.json"   # Fase 3b-ter: Sankey NTA de /NTA (jsonSankeyNTA.php)
+    "users/ciepmx/SankeyNTA/sankey-grupoedad.json"   # Fase 3b-ter: Sankey NTA v1 (jsonSankeyNTA.php?corte=grupoedad)
+    "users/ciepmx/SankeyNTA/sankey-v2-grupoedad.json" # Fase 3b-ter: Sankey NTA v2, el que dibuja /NTA (v8.12.5)
+    "users/ciepmx/NTA/nta-grupoedad.json"            # Fase 3b-ter: cuenta NTA por grupo (cifras de /NTA, ?cuenta=grupoedad)
+    "users/ciepmx/NTA/nta-identidad.txt"             # Fase 3b-ter: reporte de identidad enlazado desde /NTA
 )
 _GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
 for _f in "${MOTOR_LECTURAS_VPS[@]}"; do _GATE5R_CMD+=" '$_f'"; done
