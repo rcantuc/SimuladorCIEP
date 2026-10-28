@@ -2,16 +2,18 @@
 # test-nta-identidad.sh — gate de sesión de la cuenta NTA por individuo (NTA-1, 2026-10-27; NTA-1b: sin tapón).
 #
 # Dos mitades:
-#   A. Stata (test-nta-identidad.do): identidad C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0 por grupo de edad y
-#      por quinquenio × sexo (1e-9 relativo), Σ intra-hogar = 0 (nacional y por hogar), SIN ajuste de S activo
-#      (nta_anclaS = off; Σ S se reporta vs B.8n S.14 con factor y brecha), las anclas S.14 por construcción
-#      (Σ CpubInd = D.63, Σ ImpProd = D.21 − D.31, Σ YA_d8 = D.8, Σ τ⁺ efectivo = D.62 + D.759 si nta_anclaTau = on) y
+#   A. Stata (test-nta-identidad.do): identidad SIN ancla C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0
+#      por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, el residual con ancla = S_ajuste declarado),
+#      Σ intra-hogar = 0 (nacional y por hogar), Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla Σ S = B.8n), las anclas
+#      S.14 por construcción (Σ CpubInd = D.63, Σ ImpProd = D.21 − D.31, Σ YA_d8 = D.8, Σ τ⁺ efectivo = D.62 + D.759 si
+#      nta_anclaTau = on, Σ YA_base = B.2n + ⅓B.3n + D.4 neto si nta_YA = S14) y
 #      el JSON por grupo igual a la base. Requiere Stata y master/SCN.dta: por eso NO va en publicar.sh --ci
 #      (runbook §11: gate de sesión).
 #   B. Python (sin Stata): el Sankey v2 (users/<id>/SankeyNTA/sankey-v2-grupoedad.json) conserva flujo en TODO nodo
 #      intermedio (entradas = salidas a 1e-9 relativo), no tiene enlaces negativos ni duplicados, los nodos de grupo
 #      (Ingreso <g>, Consumo <g>) balancean, trae los nodos del contrato v2.1 («Impuestos a productos», «Derechos de
-#      pensión D8», «Otros en especie», «Colectivo per cápita») y se imprime el conteo nodos/enlaces (aparte del 31/79 de v1).
+#      pensión D8», «Otros en especie», «Colectivo per cápita»; con ancla multiplicativa «Ancla S14 recorte» / «complemento»)
+#      y se imprime el conteo nodos/enlaces (aparte del 31/79 de v1).
 #
 # Uso: bash 05_scripts/test-nta-identidad.sh [--dir <users/<id>>] [--stata <ruta stata-se>] [--sin-stata]
 #      Exit 0 = VERDE; 1 = ROJO; 2 = faltan archivos.
@@ -43,13 +45,13 @@ if [[ "$SIN_STATA" == "false" ]]; then
     TMP="$(mktemp -d)"
     printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nadopath ++ "${SIMROOT}"\ncapture run "${SIMROOT}/set_token.do"\nglobal id "%s"\nscalar aniovp = 2024\nscalar anioenigh = 2024\nset scheme ciep\ndo "${SIMROOT}/05_scripts/test-nta-identidad.do" "%s"\n' "$REPO_ROOT" "$ID" "$DTA" > "$TMP/wrap.do"
     ( cd "$TMP" && "$STATA" -b do "$TMP/wrap.do" < /dev/null )
-    grep -E '^\s+(identidad|Σ intra|Σ S|Σ CpubInd|Σ ImpProd|Σ YA_d8|Σ TpubEf|nta-grupoedad)' "$TMP/wrap.log" | sed 's/^/  /'
+    grep -E '^\s+(identidad|Σ intra|Σ S|Σ CpubInd|Σ ImpProd|Σ YA_d8|Σ TpubEf|Σ YA_base|nta-grupoedad)' "$TMP/wrap.log" | sed 's/^/  /'
     if grep -qE '^r\([0-9]+\);' "$TMP/wrap.log"; then
         echo "ROJO   Stata: $(grep -E '^r\([0-9]+\);' "$TMP/wrap.log" | head -1) — ver $TMP/wrap.log"
         grep -B4 -E '^r\([0-9]+\);' "$TMP/wrap.log" | head -12
         rojo=1
     elif grep -q "test-nta-identidad: VERDE" "$TMP/wrap.log"; then
-        echo "OK     identidad por grupo y quinquenio×sexo, Σ intra = 0, sin ajuste de S, anclas S.14 por construcción, JSON = base (Stata)"
+        echo "OK     identidad sin ancla por grupo y quinquenio×sexo, Σ intra = 0, Σ S vs B.8n, anclas S.14 por construcción, JSON = base (Stata)"
     else
         echo "ROJO   Stata no llegó a VERDE — ver $TMP/wrap.log"; rojo=1
     fi
@@ -93,8 +95,9 @@ contrato = ['Impuestos a productos', 'Derechos de pensión D8', 'Educación púb
 faltan_c = [n for n in contrato if n not in nodes]
 if faltan_c:
     print(f'ROJO   Sankey v2: faltan nodos del contrato v2.1: {faltan_c}'); rojo = True
-if 'Ajuste ancla S 14' in nodes or 'Ajuste ancla S.14' in nodes:
-    print('ROJO   Sankey v2: hay nodo «Ajuste ancla S.14»: el ancla de S está activa (el gate exige nta_anclaS = off)'); rojo = True
+ancla = [n for n in nodes if n.startswith('Ancla S14') or n.startswith('Ajuste ancla')]
+if ancla:
+    print(f'       ancla de S declarada en el Sankey: {", ".join(ancla)} ({", ".join(f"{(inn[n] or out[n])/1e9:,.1f} bn" for n in ancla)})')
 if mx > 1e-9:
     print(f'ROJO   Sankey v2: nodo {peor} no conserva (|in−out|/max = {mx:.3e})'); rojo = True
 else:

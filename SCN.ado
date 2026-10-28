@@ -1,4 +1,4 @@
-*! version 8.3 CIEP 27oct2026 (NTA-1b: anclas S.14 adicionales de CSI_115/CSI_103 -> CuotasHogS14 y siguientes; aditivo)
+*! version 8.4 CIEP 28oct2026 (NTA-1c: YAHogS14 = B.2n + 1/3 B.3n + D.4 neto del sector hogares; aditivo)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -63,7 +63,7 @@ quietly {
 	* Si el tabulado no está, las series faltan y los escalares de abajo no se definen (FLAG, no se inventa).
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -72,7 +72,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -630,6 +630,16 @@ quietly {
 		escalar mxn OtrasTransfHog = OtrasTransfHog[`obs']
 		escalar mxn TauPubS14 = PrestSocHog[`obs'] + OtrasTransfHog[`obs']
 		escalar pctpib TauPubS14PIB = (PrestSocHog[`obs'] + OtrasTransfHog[`obs'])/PIB[`obs']*100
+	}
+	* NTA-1c: YAHogS14 = B.2n + 1/3 B.3n + (D.4 recibida − D.4 pagada) del sector hogares (CSI_115 filas 69, 70 y 95):
+	* el ingreso de activos NTA de los hogares; ancla del total de YA en NTA.do (nta_YA = S14).
+	capture confirm variable YAHogS14
+	if _rc == 0 {
+		escalar mxn YAHogS14 = YAHogS14[`obs']
+		escalar pctpib YAHogS14PIB = YAHogS14[`obs']/PIB[`obs']*100
+		escalar mxn ExNOpHogS14 = ExNOpHogS14[`obs']
+		escalar mxn MixNHogS14 = MixNHogS14[`obs']
+		escalar mxn RentaPropHogNeta = RentaPropHogR[`obs'] - RentaPropHogU[`obs']
 	}
 
 	** R.3. Graph **
@@ -2703,7 +2713,7 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog, before(IngDisp)
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14, before(IngDisp)
 	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
@@ -2731,6 +2741,7 @@ program define SCNHogaresS14
 	local specs `"`specs' "CSI_115 117 ContribSocHog D.61 U" "CSI_115 127 ContribComplHog D.614 U""'
 	local specs `"`specs' "CSI_103 25 ImpProductosS1 D.21 R" "CSI_103 26 SubProductosS1 D.31 R""'
 	local specs `"`specs' "CSI_115 169 AjustePensHog D.8 R" "CSI_115 131 PrestSocHog D.62 R" "CSI_115 151 OtrasTransfHog D.759 R""'
+	local specs `"`specs' "CSI_115 69 ExNOpHogS14 B.2n R" "CSI_115 70 MixNHogS14 B.3n R" "CSI_115 95 RentaPropHogR D.4 R" "CSI_115 95 RentaPropHogU D.4 U""'
 	local dir "${SIMROOT}/raw/temp/SCN"
 	foreach cuadro in CSI_115 CSI_103 {
 		local f "`dir'/`cuadro'.xlsx"
@@ -2835,6 +2846,15 @@ program define SCNHogaresS14
 	label var AjustePensHog "Ajuste por cambio en los derechos de pensiones de los hogares (S.14 D.8, cuenta II.4.1 fila 169, R/P)"
 	label var PrestSocHog "Prestaciones sociales distintas de las transferencias en especie recibidas por los hogares (S.14 D.62, fila 131, R/P)"
 	label var OtrasTransfHog "Otras transferencias corrientes diversas recibidas por los hogares (S.14 D.759, fila 151, R/P)"
+	* NTA-1c: ingreso de activos del sector hogares = B.2n (excedente neto, vivienda; cuenta II.1.2 fila 69 R/P) + 1/3 de B.3n
+	* (ingreso mixto neto, fila 70 R/P; la convención NTA) + D.4 renta de la propiedad recibida menos pagada (fila 95, R/P − U/A) *
+	label var ExNOpHogS14 "Excedente neto de operación de los hogares (S.14 B.2n, fila 69, R/P)"
+	label var MixNHogS14 "Ingreso mixto neto de los hogares (S.14 B.3n, fila 70, R/P)"
+	label var RentaPropHogR "Renta de la propiedad recibida por los hogares (S.14 D.4, fila 95, R/P)"
+	label var RentaPropHogU "Renta de la propiedad pagada por los hogares (S.14 D.4, fila 95, U/A)"
+	g double YAHogS14 = ExNOpHogS14 + MixNHogS14/3 + RentaPropHogR - RentaPropHogU
+	format YAHogS14 %20.0fc
+	label var YAHogS14 "Ingreso de activos NTA del sector hogares (S.14 B.2n + 1/3 B.3n + D.4 neto)"
 	summarize anio, meanonly
 	local u = r(max)
 	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]
