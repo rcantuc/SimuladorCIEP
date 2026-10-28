@@ -137,6 +137,9 @@ noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
 
+** 3.2b Cuenta de Transferencias Nacionales por individuo (NTA-1; año ENIGH, anclas SCN/LIF/PEF de ese año)
+noisily run "${SIMROOT}/01_modulos/NTA.do" `=anioenigh'
+
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'

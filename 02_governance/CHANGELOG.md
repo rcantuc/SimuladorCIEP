@@ -128,6 +128,29 @@ hasta ±7 %. Queda fuera; evidencia en PR #39.
 
 ## [Unreleased]
 
+### Comandos — NTA-1: `01_modulos/NTA.do`, la cuenta de Transferencias Nacionales por individuo (2024)
+
+- **`NTA.do`** (nuevo; `SIM.do` §3.2b, después de `Households.do`, con `anioenigh`): construye por persona la
+  identidad NTA `C − YL = (τ⁺ − τ⁻) + (YA − S)` con lo que el motor ya tiene por persona (`households.dta`
+  2024, anclado a SCN/LIF/PEF 2024) y las decisiones firmadas el 2026-10-27 sobre el memo NTA-0 (#38):
+  S = residual del hogar repartido a adultos con ingreso ∝ (YL+YA) y anclado a `AhorroHog` (B.8n S.14);
+  intra-hogar = único residual por persona (Σ por hogar = 0); especie (`SerEGob` por matrícula, `SaluGob`
+  ∝ gasto privado en salud, resto de `ConGob` per cápita) como τ⁺ público; τ⁻ anclado a la recaudación LIF
+  2024 (indirectos una sola vez, C a precios de comprador); pensiones fuera de YL hacia τ⁺ (PEF 2024);
+  flujos financieros de `ing_mixto` fuera; alquiler imputado al jefe del hogar; remesas una vez. Parámetros
+  declarados (`nta_anclaS`, `nta_alqu`, `nta_tauCash`, `nta_otorgado`, `nta_mixto`). Salidas en
+  `users/<id>/NTA/` (`nta-persona.dta`, `nta-grupoedad.json`, `nta-quinquenio-sexo.json`,
+  `nta-identidad.txt`) y el **Sankey v2** `users/<id>/SankeyNTA/sankey-v2-grupoedad.json` (contrato nuevo,
+  48 nodos / 156 enlaces, conservación en todo nodo; el 31/79 de v1 y `/NTA` no cambian).
+- **`SCN.ado` v8.2 (aditivo)**: lee del tabulado S.14 Hogares (`CSI_115.xlsx`, cuenta II.4) B.8b, B.8n, P.3 y
+  P.4 (verificando el rótulo de cada fila y P.4 − P.3 = D.63) y registra `AhorroHog`, `AhorroHogB`,
+  `TransfEspecie`, `ConHogS14` (+ `*PIB`). Un `master/SCN.dta` previo se enriquece una vez sin tocar el BIE.
+- **Gate de sesión `05_scripts/test-nta-identidad.{do,sh}`** (runbook §11): identidad a 1e-9 relativo por grupo
+  de edad y quinquenio × sexo, Σ intra = 0, Σ S = `AhorroHog`, JSON = base, y conservación por nodo del Sankey v2.
+- Hallazgo (FLAG al motor, v9.x): el ancla de S exige un ajuste aditivo de 5,048 bn (Σ S micro = −3,147 bn vs
+  B.8n 1,901 bn); el 61 % de `ing_mixto` (4,571 de 7,524 bn) son transferencias y flujos financieros escalados
+  × `TaltimirSelf` = 6.15. Nada del `output.txt` ni de los 10 sankeys publicados cambia (gate de números verde).
+
 ### Institucional — página de método `/NTA`: el Sankey NTA de los hogares, como lo emite el motor
 
 - **`/NTA`** (`04_1_simuladorfiscal.ciep.mx/NTA/index.php`, primera página de la futura sección de
