@@ -16,50 +16,6 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
-
-### Comandos — v8.13a: el contrato de entidad corre para las 32 (motor, sin visualización)
-
-- **`TasasEfectivasMicro.ado` deja de ser huérfano** (v1.1.0, no se toca por dentro): `SIM.do` §4.7 lo
-  invoca, solo con `global entidad`, vía `01_modulos/TasasEfectivasEntidad.do` (nuevo), que traduce
-  nombre → clave con `SIMentidad`, pide `entidad(<clave>) sufijo(<abrev minúscula>)`, calcula una vez
-  el espejo nacional micro/micro (referencia de `Rel<IMP>TE<suf>`), mide los sellos de muestra con la
-  regla P5 (n de la muestra de la entidad; top-1 del numerador por impuesto) y escribe
-  `users/$id/<ABREV>/tasas-efectivas.json` (montos, bases, tasas, dif. vs oficial, rel. vs nacional,
-  sellos, procedencia). Una línea en `SIM.do`; con el global vacío no corre: nacional byte-idéntico.
-- **`05_scripts/contrato-32.{sh,do,py}`** (nuevos): una sesión de Stata recorre el catálogo
-  `SIMentidad` y produce para cada entidad Población, PIB/Deflactor (solo con base), los 5 Sankeys
-  (con banda si hay vintages), `ciclo-vida.json` y `tasas-efectivas.json`; tolerante a fallos (rc por
-  paso en `contrato-32.tsv`, log por entidad). Gates por script: paridad (sha256 vs `--refs`),
-  aditividad del ciclo de vida (port de `gate-aditividad.py`, F3), Sankeys y testigo NL
-  (`compuertas-entidad.py`, reuso), sellos (solo reportados) y la **tabla de las 32** en
-  `contrato-32.md`. Para las tasas efectivas (no aditivas) se PROPONE el gate de consistencia —
-  Σ32 montos = nacional ⇒ tasa nacional = promedio ponderado por base — y se mide; es FLAG, no gate.
-- Runbook §13: cómo correr las 32, cuánto tarda, y la receta/validación de las bases precedentes
-  (vintages, testigo NL, `PIBDeflactor<ABREV>.dta`): se validan y se imprime la receta; fabricarlas es
-  decisión de Ricardo (FLAG de #26 sigue abierto, ahora escrito).
-- Cero visualización, cero template: qué se muestra y cómo es v8.13b (Ricardo).
-
-### Datos — v8.13a-2: bases de PIB/Deflactor para las 32 entidades (fuentes vivas, BISE)
-
-- **`master/PIBDeflactor<ABREV>.dta` × 32**, regeneradas el mismo día (vintage uniforme: las tablas BIE
-  por área se bajan una vez por sesión y sirven a las 32), con la receta de siempre sin tocarla:
-  `PIBDeflactor if entidad == "<nombre>"` (PIBE 750453 e índice de precios implícitos 753357 del BIE;
-  ocupados/desocupados ENOE 6200093954/6200093973 del BISE vía API con token; ITAEE 741177/741180; INPC
-  estatal; población CONAPO). Antes: solo NL, Jal y Camp; las otras 29 corrían «sin base». Las bases son
-  datos (gitignored); viajan al VPS por la Fase 3b del deploy.
-- **`05_scripts/pibe-32.{sh,do,py}` y `sellar-pibe-32.do`** (nuevos): compuerta de arranque (catálogo con 32,
-  `set_token.do` válido con una consulta BISE de prueba, `PIBDeflactorNL.dta` de referencia; el token nunca
-  se imprime), una sesión de Stata que recorre el catálogo con pausa entre entidades y tolera fallos (rc por
-  entidad en `pibe-32.tsv`, log por entidad, reintento de las fallidas), **sello de procedencia por base**
-  (`master/PIBDeflactor<ABREV>.meta` y `char _dta[sello_*]` dentro del `.dta`: series BIE/BISE, estructura,
-  fecha de consulta, último periodo, n), diff de las bases previas contra las nuevas y tabla de las 32 con
-  SHA-256 y tamaño en `pibe-32.md`. Las copias previas se respaldan en `<evidencia>/bases-previas/` antes de pisar.
-- `contrato-32.do` registra `pibe_pesos` (`pibY<ABREV>`) por entidad y `contrato-32.py` agrega la sección
-  «4b PIBE»: gate de que las 32 corren con base y una vista previa de «% del PIBE» (neto del ciclo ÷ PIBE).
-  Los JSON de entidad todavía NO escriben «% del PIBE»: es v8.13b.
-- Runbook §13: receta y tiempo medido de `pibe-32.sh`.
-
 ## [v8.12.4] — 2026-10-27 — Corrección de datos
 
 Hotfix sobre v8.12.3: tres FLAGs de `01_modulos/Households.do` detectados en el inventario NTA-0
@@ -169,6 +125,69 @@ hasta ±7 %. Queda fuera; evidencia en PR #39.
 2. `ISR_Mod.do` l. 130 construye `cuotasTPF = cuotasF + CUOTAS` **sin** infonavit (el batch sí lo
    incluye): web y batch no definen igual la variable; medido, no amplifica FLAG-5.
 3. `SankeyNTA/` y la página `/NTA` (PR #37) heredan los números nuevos al regenerar `users/ricardo/`.
+
+## [Unreleased]
+
+### Institucional — página de método `/NTA`: el Sankey NTA de los hogares, como lo emite el motor
+
+- **`/NTA`** (`04_1_simuladorfiscal.ciep.mx/NTA/index.php`, primera página de la futura sección de
+  método; plantilla compartida en `metodo/plantilla.php`, hermanas = carpeta + entrada en
+  `$METODO_PAGINAS` + ruta en el esqueleto): explica en inglés cómo se construye el Sankey NTA de
+  los hogares (`Households.do` §"Sankeys NTA" → `visualizations/Sankey.do` → `SankeySumSim`), lista
+  nodos y enlaces con su definición, y dibuja el corte por grupo de edad con la misma receta de los
+  Sankeys de la portada (FusionCharts, `js/metodo-sankey.js`). Estática: sin «Calcular» ni selector;
+  los datos los sirve **`jsonSankeyNTA.php`** (corte en lista blanca, lectura de
+  `users/<id>/SankeyNTA/sankey-<corte>.json`, misma transformación que `jsonSankey*.php`). Cero
+  números en el HTML/JS; el pie cita versión, ENIGH y fecha desde `DEPLOYED_COMMIT`.
+- **Deploy**: `SankeyNTA/sankey-grupoedad.json` entra al manifiesto del default (Fase 3b-ter, que ahora
+  admite subcarpetas y hace `chmod -R …X`), a `MOTOR_LECTURAS_VPS` (Gate 5-remoto) y `/NTA` al
+  esqueleto de la Fase 6 (14 → 15). `manifest.json` gana `enigh_vintage` (→ `EnighVintage:` en
+  `DEPLOYED_COMMIT`, Fase 4). Gates: `test-sitio-nta.sh` (+ job `sitio-nta` en CI: ruta, endpoint,
+  sin literales, Sankey byte-idéntico al JSON del motor con Chrome headless, `--png`), casos de
+  `jsonSankeyNTA.php` en el harness de seguridad, `verify_sitio_autocontenido.sh` con la ruta.
+  El motor (`.ado`/`.do`) no cambia.
+
+### Comandos — v8.13a: el contrato de entidad corre para las 32 (motor, sin visualización)
+
+- **`TasasEfectivasMicro.ado` deja de ser huérfano** (v1.1.0, no se toca por dentro): `SIM.do` §4.7 lo
+  invoca, solo con `global entidad`, vía `01_modulos/TasasEfectivasEntidad.do` (nuevo), que traduce
+  nombre → clave con `SIMentidad`, pide `entidad(<clave>) sufijo(<abrev minúscula>)`, calcula una vez
+  el espejo nacional micro/micro (referencia de `Rel<IMP>TE<suf>`), mide los sellos de muestra con la
+  regla P5 (n de la muestra de la entidad; top-1 del numerador por impuesto) y escribe
+  `users/$id/<ABREV>/tasas-efectivas.json` (montos, bases, tasas, dif. vs oficial, rel. vs nacional,
+  sellos, procedencia). Una línea en `SIM.do`; con el global vacío no corre: nacional byte-idéntico.
+- **`05_scripts/contrato-32.{sh,do,py}`** (nuevos): una sesión de Stata recorre el catálogo
+  `SIMentidad` y produce para cada entidad Población, PIB/Deflactor (solo con base), los 5 Sankeys
+  (con banda si hay vintages), `ciclo-vida.json` y `tasas-efectivas.json`; tolerante a fallos (rc por
+  paso en `contrato-32.tsv`, log por entidad). Gates por script: paridad (sha256 vs `--refs`),
+  aditividad del ciclo de vida (port de `gate-aditividad.py`, F3), Sankeys y testigo NL
+  (`compuertas-entidad.py`, reuso), sellos (solo reportados) y la **tabla de las 32** en
+  `contrato-32.md`. Para las tasas efectivas (no aditivas) se PROPONE el gate de consistencia —
+  Σ32 montos = nacional ⇒ tasa nacional = promedio ponderado por base — y se mide; es FLAG, no gate.
+- Runbook §13: cómo correr las 32, cuánto tarda, y la receta/validación de las bases precedentes
+  (vintages, testigo NL, `PIBDeflactor<ABREV>.dta`): se validan y se imprime la receta; fabricarlas es
+  decisión de Ricardo (FLAG de #26 sigue abierto, ahora escrito).
+- Cero visualización, cero template: qué se muestra y cómo es v8.13b (Ricardo).
+
+### Datos — v8.13a-2: bases de PIB/Deflactor para las 32 entidades (fuentes vivas, BISE)
+
+- **`master/PIBDeflactor<ABREV>.dta` × 32**, regeneradas el mismo día (vintage uniforme: las tablas BIE
+  por área se bajan una vez por sesión y sirven a las 32), con la receta de siempre sin tocarla:
+  `PIBDeflactor if entidad == "<nombre>"` (PIBE 750453 e índice de precios implícitos 753357 del BIE;
+  ocupados/desocupados ENOE 6200093954/6200093973 del BISE vía API con token; ITAEE 741177/741180; INPC
+  estatal; población CONAPO). Antes: solo NL, Jal y Camp; las otras 29 corrían «sin base». Las bases son
+  datos (gitignored); viajan al VPS por la Fase 3b del deploy.
+- **`05_scripts/pibe-32.{sh,do,py}` y `sellar-pibe-32.do`** (nuevos): compuerta de arranque (catálogo con 32,
+  `set_token.do` válido con una consulta BISE de prueba, `PIBDeflactorNL.dta` de referencia; el token nunca
+  se imprime), una sesión de Stata que recorre el catálogo con pausa entre entidades y tolera fallos (rc por
+  entidad en `pibe-32.tsv`, log por entidad, reintento de las fallidas), **sello de procedencia por base**
+  (`master/PIBDeflactor<ABREV>.meta` y `char _dta[sello_*]` dentro del `.dta`: series BIE/BISE, estructura,
+  fecha de consulta, último periodo, n), diff de las bases previas contra las nuevas y tabla de las 32 con
+  SHA-256 y tamaño en `pibe-32.md`. Las copias previas se respaldan en `<evidencia>/bases-previas/` antes de pisar.
+- `contrato-32.do` registra `pibe_pesos` (`pibY<ABREV>`) por entidad y `contrato-32.py` agrega la sección
+  «4b PIBE»: gate de que las 32 corren con base y una vista previa de «% del PIBE» (neto del ciclo ÷ PIBE).
+  Los JSON de entidad todavía NO escriben «% del PIBE»: es v8.13b.
+- Runbook §13: receta y tiempo medido de `pibe-32.sh`.
 
 ## [v8.12.3] — 2026-10-19
 
