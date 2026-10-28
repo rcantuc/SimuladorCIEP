@@ -1,4 +1,4 @@
-*! version 8.1 CIEP 06oct2026
+*! version 8.4 CIEP 28oct2026 (NTA-1c: YAHogS14 = B.2n + 1/3 B.3n + D.4 neto del sector hogares; aditivo)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -52,6 +52,33 @@ quietly {
 	save `"`basepib'"', replace
 
 
+
+	**************************
+	** 1.1b. Sector hogares S.14 (NTA-1, 2026-10-27; aditivo) **
+	* Un master/SCN.dta construido antes de NTA-1 no trae B.8b/B.8n ni P.3/P.4 del sector hogares (ni, desde
+	* NTA-1b, D.61/D.614, D.8, D.62, D.759 de S.14 y D.21/D.31 de la economía total). Se leen UNA vez de los
+	* tabulados ya descargados (raw/temp/SCN/CSI_115.xlsx y CSI_103.xlsx, los mismos de §17/§22 de UpdateSCN)
+	* y se guardan en master/SCN.dta; no se vuelve a correr UpdateSCN ni se toca el BIE. Si falta cualquiera
+	* de las series de la lista se releen todas (update replace: una base enriquecida por NTA-1 se completa).
+	* Si el tabulado no está, las series faltan y los escalares de abajo no se definen (FLAG, no se inventa).
+	use in 1 using "${SIMROOT}/master/SCN.dta", clear
+	local faltaS14 = 0
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 {
+		capture confirm variable `v'
+		if _rc != 0 local faltaS14 = 1
+	}
+	if `faltaS14' {
+		capture noisily SCNHogaresS14
+		if _rc == 0 {
+			use "${SIMROOT}/master/SCN.dta", clear
+			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14, before(IngDisp)
+			save "${SIMROOT}/master/SCN.dta", replace
+		}
+		else {
+			noisily di as err "  FLAG SCN (NTA-1): sin series S.14 hogares (CSI_115.xlsx / CSI_103.xlsx); AhorroHog, AhorroHogB, TransfEspecie y las anclas NTA-1b no se definen."
+		}
+	}
 
 	**************************
 	** 1.1. Merge databases **
@@ -556,6 +583,64 @@ quietly {
 	escalar mxn AhorroN = (AhorroN[`obs']-CapFij[`obs'])
 	escalar pctpib AhorroNPIB = (AhorroN[`obs']-CapFij[`obs'])/PIB[`obs']*100
 	escalar mxnpc AhorroNPC = (AhorroN[`obs']-CapFij[`obs'])/poblacion[`obs']
+
+	** R.2b. Sector hogares S.14 (NTA-1): anclas de NTA.do **
+	* AhorroHog = B.8n (cuenta II.4.1, CSI_115 fila 171), AhorroHogB = B.8b (fila 170),
+	* TransfEspecie = P.4 - P.3 (filas 176 y 166) = D.63 transferencias sociales en especie.
+	* Para años sin observación la serie viene proyectada como las demás (1.2 Forecast).
+	capture confirm variable AhorroHogN
+	if _rc == 0 {
+		escalar mxn AhorroHog = AhorroHogN[`obs']
+		escalar pctpib AhorroHogPIB = AhorroHogN[`obs']/PIB[`obs']*100
+		escalar mxn AhorroHogB = AhorroHogB[`obs']
+		escalar pctpib AhorroHogBPIB = AhorroHogB[`obs']/PIB[`obs']*100
+		escalar mxn ConHogS14 = ConHogS14[`obs']
+		escalar mxn TransfEspecie = ConEfecHogS14[`obs'] - ConHogS14[`obs']
+		escalar pctpib TransfEspeciePIB = (ConEfecHogS14[`obs'] - ConHogS14[`obs'])/PIB[`obs']*100
+	}
+	* NTA-1b: CuotasHogS14 = D.61 − D.614 (CSI_115 filas 117 y 127, U/A): contribuciones sociales que los hogares
+	* pagan a los sistemas (D.611 efectivas de empleadores + D.612 imputadas + D.613 de los hogares − D.615 cargos
+	* por servicio); se excluye D.614 (complementarias = D.442 renta sobre derechos de pensión, que no está en Yk).
+	capture confirm variable CuotasHogS14
+	if _rc == 0 {
+		escalar mxn CuotasHogS14 = CuotasHogS14[`obs']
+		escalar pctpib CuotasHogS14PIB = CuotasHogS14[`obs']/PIB[`obs']*100
+		escalar mxn ContribSocHog = ContribSocHog[`obs']
+	}
+	* NTA-1b: ImpNetosProd = D.21 − D.31 de la economía total (CSI_103 cuenta I, filas 25 y 26, R/P): el componente
+	* que lleva el ingreso nacional de costo de factores a precios de mercado; el BIE (ImpNet, serie 723656) trae
+	* el mismo concepto en otro vintage, se conservan los dos.
+	capture confirm variable ImpNetosProdS1
+	if _rc == 0 {
+		escalar mxn ImpNetosProd = ImpNetosProdS1[`obs']
+		escalar pctpib ImpNetosProdPIB = ImpNetosProdS1[`obs']/PIB[`obs']*100
+	}
+	* NTA-1b: AjustePension = D.8 del sector hogares (CSI_115 cuenta II.4.1, fila 169, R/P): lo que el SCN suma al
+	* ahorro de los hogares por la variación de sus derechos de pensión; no tiene contraparte micro.
+	capture confirm variable AjustePensHog
+	if _rc == 0 {
+		escalar mxn AjustePension = AjustePensHog[`obs']
+		escalar pctpib AjustePensionPIB = AjustePensHog[`obs']/PIB[`obs']*100
+	}
+	* NTA-1b: transferencias públicas en efectivo que reciben los hogares en S.14: D.62 prestaciones sociales en dinero
+	* (CSI_115 fila 131, R/P) + D.759 otras transferencias corrientes diversas (fila 151, R/P) → TauPubS14.
+	capture confirm variable PrestSocHog
+	if _rc == 0 {
+		escalar mxn PrestSocHog = PrestSocHog[`obs']
+		escalar mxn OtrasTransfHog = OtrasTransfHog[`obs']
+		escalar mxn TauPubS14 = PrestSocHog[`obs'] + OtrasTransfHog[`obs']
+		escalar pctpib TauPubS14PIB = (PrestSocHog[`obs'] + OtrasTransfHog[`obs'])/PIB[`obs']*100
+	}
+	* NTA-1c: YAHogS14 = B.2n + 1/3 B.3n + (D.4 recibida − D.4 pagada) del sector hogares (CSI_115 filas 69, 70 y 95):
+	* el ingreso de activos NTA de los hogares; ancla del total de YA en NTA.do (nta_YA = S14).
+	capture confirm variable YAHogS14
+	if _rc == 0 {
+		escalar mxn YAHogS14 = YAHogS14[`obs']
+		escalar pctpib YAHogS14PIB = YAHogS14[`obs']/PIB[`obs']*100
+		escalar mxn ExNOpHogS14 = ExNOpHogS14[`obs']
+		escalar mxn MixNHogS14 = MixNHogS14[`obs']
+		escalar mxn RentaPropHogNeta = RentaPropHogR[`obs'] - RentaPropHogU[`obs']
+	}
 
 	** R.3. Graph **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
@@ -2588,6 +2673,13 @@ program define UpdateSCN
 
 
 	***
+	**# 25b. Sector hogares S.14 (NTA-1): B.8b, B.8n, P.3 y P.4 de CSI_115 -> raw/temp/HogaresS14.dta
+	***
+	capture noisily SCNHogaresS14
+	local hogS14 = _rc
+
+
+	***
 	**# 26. Merge bases
 	***
 	use "${SIMROOT}/raw/temp/GenIng.dta", clear
@@ -2619,6 +2711,10 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/ExNOpGob.dta", nogen
 	merge 1:1 anio using "${SIMROOT}/raw/temp/AhorroB.dta", nogen
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
+	if `hogS14' == 0 {
+		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14, before(IngDisp)
+	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
 	drop periodo
@@ -2627,4 +2723,145 @@ program define UpdateSCN
 	tsset anio
 	capture mkdir "${SIMROOT}/master/"
 	save "${SIMROOT}/master/SCN.dta", replace
+end
+
+
+program define SCNHogaresS14
+* NTA-1 (2026-10-27). Lee del tabulado S.14 Hogares (CSI_115.xlsx, cuenta II.4 utilización del
+* ingreso) cuatro filas: 170 B.8b Ahorro bruto, 171 B.8n Ahorro neto, 166 P.3 Gastos de consumo
+* final, 176 P.4 Consumo final efectivo. Misma mecánica que §17/§22 (columnas U/A por año, se
+* descartan las R/P). Antes de usar cada fila comprueba su rótulo (columna A) y que la última
+* columna de años sea la que se asume (2003 + k); si algo no cuadra, exit 459 con FLAG: el que
+* llama no define los escalares. Verificación interna: P.4 - P.3 debe ser igual a D.63 (fila 157,
+* columna R/P del último año); si difiere, FLAG (no se fuerza). Guarda raw/temp/HogaresS14.dta.
+* NTA-1b (2026-10-27): el lector se generaliza a <cuadro> <fila> <variable> <código> <lado> (U = columna
+* U/A, R = columna R/P del año) y se agregan, de CSI_115 (S.14): 117 D.61 contribuciones sociales netas (U/A)
+* y 127 D.614 contribuciones complementarias (U/A) -> CuotasHogS14 = D.61 − D.614.
+	local specs `""CSI_115 170 AhorroHogB B.8b U" "CSI_115 171 AhorroHogN B.8n U" "CSI_115 166 ConHogS14 P.3 U" "CSI_115 176 ConEfecHogS14 P.4 U""'
+	local specs `"`specs' "CSI_115 117 ContribSocHog D.61 U" "CSI_115 127 ContribComplHog D.614 U""'
+	local specs `"`specs' "CSI_103 25 ImpProductosS1 D.21 R" "CSI_103 26 SubProductosS1 D.31 R""'
+	local specs `"`specs' "CSI_115 169 AjustePensHog D.8 R" "CSI_115 131 PrestSocHog D.62 R" "CSI_115 151 OtrasTransfHog D.759 R""'
+	local specs `"`specs' "CSI_115 69 ExNOpHogS14 B.2n R" "CSI_115 70 MixNHogS14 B.3n R" "CSI_115 95 RentaPropHogR D.4 R" "CSI_115 95 RentaPropHogU D.4 U""'
+	local dir "${SIMROOT}/raw/temp/SCN"
+	foreach cuadro in CSI_115 CSI_103 {
+		local f "`dir'/`cuadro'.xlsx"
+		capture confirm file "`f'"
+		if _rc != 0 {
+			noisily di as err "  FLAG SCNHogaresS14: no existe `f'"
+			exit 459
+		}
+		* Encabezado de años: la última columna U/A (AR) debe ser el último año de la serie y la fila 7 debe
+		* empezar con U/A (en CSI_100 el orden es R/P, U/A: no se usa aquí) *
+		import excel using "`f'", cellrange(A5:AS5) clear
+		capture confirm string variable AR
+		if _rc == 0 local ultimo = trim(AR[1])
+		else local ultimo = string(AR[1])
+		local esperado = 2003 + (c(k) - 1)/2 - 1
+		if "`ultimo'" != "`esperado'" {
+			noisily di as err "  FLAG SCNHogaresS14: en `cuadro' la última columna de años es `ultimo' y se esperaba `esperado'; no se leen las series S.14."
+			exit 459
+		}
+		import excel using "`f'", cellrange(A7:B7) clear
+		if strpos(trim(B[1]), "U/A") != 1 {
+			noisily di as err "  FLAG SCNHogaresS14: en `cuadro' la primera columna de cada año no es U/A; no se leen las series S.14."
+			exit 459
+		}
+	}
+
+	tempfile acc
+	local first = 1
+	foreach spec of local specs {
+		gettoken cuadro spec : spec
+		gettoken fila spec : spec
+		gettoken var spec : spec
+		gettoken cod spec : spec
+		local lado = trim("`spec'")
+		import excel using "`dir'/`cuadro'.xlsx", cellrange(A`fila':AS`fila') clear
+		local rotulo = trim(A[1])
+		if strpos("`rotulo'", "`cod' ") != 1 {
+			noisily di as err `"  FLAG SCNHogaresS14: la fila `fila' de `cuadro' dice "`rotulo'" y se esperaba `cod'; no se leen las series S.14."'
+			exit 459
+		}
+		drop A
+		local anio = 2003
+		local col = 1
+		foreach k of varlist _all {
+			if ("`lado'" == "U" & `col' == 2) | ("`lado'" == "R" & `col' == 1) {
+				drop `k'
+			}
+			else {
+				capture confirm string variable `k'
+				if _rc == 0 destring `k', replace force
+				rename `k' `var'_`anio'
+			}
+			if `col' == 2 {
+				local ++anio
+				local col = 1
+			}
+			else local col = 2
+		}
+		g id = _n
+		reshape long `var'_, i(id) j(anio) string
+		rename `var'_ `var'
+		replace `var' = `var'*1000000
+		replace anio = substr(anio,1,4)
+		destring anio, replace
+		drop id
+		order anio
+		format `var' %20.0fc
+		if `first' == 0 {
+			merge 1:1 anio using `acc', nogen
+		}
+		save `acc', replace
+		local first = 0
+	}
+
+	* Verificación: P.4 - P.3 = D.63 (fila 157, columna R/P del último año) *
+	import excel using "`dir'/CSI_115.xlsx", cellrange(A157:AS157) clear
+	local rotulo = trim(A[1])
+	local d63 = .
+	if strpos("`rotulo'", "D.63 ") == 1 {
+		capture confirm string variable AS
+		if _rc == 0 destring AS, replace force
+		local d63 = AS[1]*1000000
+	}
+	use `acc', clear
+	sort anio
+	label var AhorroHogB "Ahorro bruto de los hogares (S.14 B.8b)"
+	label var AhorroHogN "Ahorro neto de los hogares (S.14 B.8n)"
+	label var ConHogS14 "Gasto de consumo final de los hogares (S.14 P.3)"
+	label var ConEfecHogS14 "Consumo final efectivo de los hogares (S.14 P.4)"
+	label var ContribSocHog "Contribuciones sociales netas pagadas por los hogares (S.14 D.61)"
+	label var ContribComplHog "Contribuciones sociales complementarias de los hogares (S.14 D.614)"
+	g double CuotasHogS14 = ContribSocHog - ContribComplHog
+	format CuotasHogS14 %20.0fc
+	label var CuotasHogS14 "Cuotas pagadas por los hogares a los sistemas (S.14 D.61 - D.614)"
+	* D.21 y D.31 de la economía total (CSI_103, cuenta I de producción, filas 25 y 26, columna R/P): el tabulado
+	* trae los subsidios con signo negativo ("D.3 - Subsidios (-)"); se toma el valor absoluto para restar *
+	label var ImpProductosS1 "Impuestos sobre los productos, economía total (S.1 D.21)"
+	label var SubProductosS1 "Subsidios a los productos, economía total (S.1 D.31; signo del tabulado)"
+	g double ImpNetosProdS1 = ImpProductosS1 - abs(SubProductosS1)
+	format ImpNetosProdS1 %20.0fc
+	label var ImpNetosProdS1 "Impuestos netos a los productos, economía total (S.1 D.21 - D.31)"
+	label var AjustePensHog "Ajuste por cambio en los derechos de pensiones de los hogares (S.14 D.8, cuenta II.4.1 fila 169, R/P)"
+	label var PrestSocHog "Prestaciones sociales distintas de las transferencias en especie recibidas por los hogares (S.14 D.62, fila 131, R/P)"
+	label var OtrasTransfHog "Otras transferencias corrientes diversas recibidas por los hogares (S.14 D.759, fila 151, R/P)"
+	* NTA-1c: ingreso de activos del sector hogares = B.2n (excedente neto, vivienda; cuenta II.1.2 fila 69 R/P) + 1/3 de B.3n
+	* (ingreso mixto neto, fila 70 R/P; la convención NTA) + D.4 renta de la propiedad recibida menos pagada (fila 95, R/P − U/A) *
+	label var ExNOpHogS14 "Excedente neto de operación de los hogares (S.14 B.2n, fila 69, R/P)"
+	label var MixNHogS14 "Ingreso mixto neto de los hogares (S.14 B.3n, fila 70, R/P)"
+	label var RentaPropHogR "Renta de la propiedad recibida por los hogares (S.14 D.4, fila 95, R/P)"
+	label var RentaPropHogU "Renta de la propiedad pagada por los hogares (S.14 D.4, fila 95, U/A)"
+	g double YAHogS14 = ExNOpHogS14 + MixNHogS14/3 + RentaPropHogR - RentaPropHogU
+	format YAHogS14 %20.0fc
+	label var YAHogS14 "Ingreso de activos NTA del sector hogares (S.14 B.2n + 1/3 B.3n + D.4 neto)"
+	summarize anio, meanonly
+	local u = r(max)
+	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]
+	if `d63' != . & reldif(`p4p3', `d63') > 1e-9 {
+		noisily di as err "  FLAG SCNHogaresS14: P.4 - P.3 (`u') = " %20.0fc `p4p3' " difiere de D.63 = " %20.0fc `d63'
+	}
+	noisily di in g "  S.14 hogares `u': B.8n " in y %20.0fc AhorroHogN[_N] in g "  B.8b " in y %20.0fc AhorroHogB[_N] in g "  P.4-P.3 " in y %20.0fc `p4p3' ///
+		in g "  D.61-D.614 " in y %20.0fc CuotasHogS14[_N]
+	save "${SIMROOT}/raw/temp/HogaresS14.dta", replace
 end

@@ -128,6 +128,87 @@ hasta ±7 %. Queda fuera; evidencia en PR #39.
 
 ## [Unreleased]
 
+### Comandos — NTA-1: `01_modulos/NTA.do`, la cuenta de Transferencias Nacionales por individuo (2024)
+
+- **`NTA.do`** (nuevo; `SIM.do` §3.2b, después de `Households.do`, con `anioenigh`): construye por persona la
+  identidad NTA `C − YL = (τ⁺ − τ⁻) + (YA − S)` con lo que el motor ya tiene por persona (`households.dta`
+  2024, anclado a SCN/LIF/PEF 2024) y las decisiones firmadas el 2026-10-27 sobre el memo NTA-0 (#38):
+  S = residual del hogar repartido a adultos con ingreso ∝ (YL+YA) y anclado a `AhorroHog` (B.8n S.14);
+  intra-hogar = único residual por persona (Σ por hogar = 0); especie (`SerEGob` por matrícula, `SaluGob`
+  ∝ gasto privado en salud, resto de `ConGob` per cápita) como τ⁺ público; τ⁻ anclado a la recaudación LIF
+  2024 (indirectos una sola vez, C a precios de comprador); pensiones fuera de YL hacia τ⁺ (PEF 2024);
+  flujos financieros de `ing_mixto` fuera; alquiler imputado al jefe del hogar; remesas una vez. Parámetros
+  declarados (`nta_anclaS`, `nta_alqu`, `nta_tauCash`, `nta_otorgado`, `nta_mixto`). Salidas en
+  `users/<id>/NTA/` (`nta-persona.dta`, `nta-grupoedad.json`, `nta-quinquenio-sexo.json`,
+  `nta-identidad.txt`) y el **Sankey v2** `users/<id>/SankeyNTA/sankey-v2-grupoedad.json` (contrato nuevo,
+  48 nodos / 156 enlaces, conservación en todo nodo; el 31/79 de v1 y `/NTA` no cambian).
+- **`SCN.ado` v8.2 (aditivo)**: lee del tabulado S.14 Hogares (`CSI_115.xlsx`, cuenta II.4) B.8b, B.8n, P.3 y
+  P.4 (verificando el rótulo de cada fila y P.4 − P.3 = D.63) y registra `AhorroHog`, `AhorroHogB`,
+  `TransfEspecie`, `ConHogS14` (+ `*PIB`). Un `master/SCN.dta` previo se enriquece una vez sin tocar el BIE.
+- **Gate de sesión `05_scripts/test-nta-identidad.{do,sh}`** (runbook §11): identidad a 1e-9 relativo por grupo
+  de edad y quinquenio × sexo, Σ intra = 0, Σ S = `AhorroHog`, JSON = base, y conservación por nodo del Sankey v2.
+- Hallazgo (FLAG al motor, v9.x): el ancla de S exige un ajuste aditivo de 5,048 bn (Σ S micro = −3,147 bn vs
+  B.8n 1,901 bn); el 61 % de `ing_mixto` (4,571 de 7,524 bn) son transferencias y flujos financieros escalados
+  × `TaltimirSelf` = 6.15. Nada del `output.txt` ni de los 10 sankeys publicados cambia (gate de números verde).
+
+### Comandos — NTA-1b: definiciones alineadas con S.14 antes de anclar; sin tapón (mismo PR #40)
+
+La brecha Σ S micro vs B.8n era de definición, no de escala. Un commit por pieza, con Σ S medido tras cada una
+(bn MXN 2024): antes −3,147 → (2) τ⁻ de hogares −2,509 → (3) impuestos a productos como ingreso −2,508 →
+(4) D.8 −1,238 → (5) τ⁺ efectivo a D.62 + D.759 **+201** → (6) `ConGob` partido +201. Brecha final −89 % de
+B.8n (> 15 %): **no se aplica ancla**; la descomposición restante va en el PR.
+
+- **`NTA.do` v1.1**: `nta_anclaS` default **`off`** (el aditivo de NTA-1 queda como variante `aditivo`; nueva
+  `multiplicativo`: factor sobre S de adultos sin contrapartida, cae a intra); el reporte abre con Σ S sin ajuste
+  por grupo vs B.8n y el factor implícito. **τ⁻** = lo que los hogares pagan en S.14: ISR de personas físicas
+  (asalariados + PF, LIF), cuotas (`cuotasTP` + infonavit una vez; `nta_cuotas` = `S14` D.61 − D.614 = 1,729 bn
+  | `LIF` 566) e indirectos LIF; **fuera** ISR_PM y OTROSK (1,802 bn; `TmenFuera`, informativo). **`ImpProd`** =
+  `ImpNetosProd` (D.21 − D.31, 2,176 bn) ∝ consumo privado entra a la identidad como ingreso
+  (`C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0`); de YA se saca lo que Altimir embebía de ImpNet en Yk.
+  **`YA_d8`** = `AjustePension` (D.8, 1,270 bn) ∝ YL de quienes cotizan (`nta_d8`). **τ⁺ efectivo** × un factor
+  global 1.717 a D.62 + D.759 (`nta_anclaTau` on). **`ConGob` partido**: individual = D.63 con perfil de edad
+  (educación matrícula, salud ∝ gasto privado, resto per cápita) = τ⁺ en especie; colectivo = `ConGob` − D.63
+  per cápita = τ⁺ colectivo; ambos en C público. `nta-identidad.txt` agrega S e intra por quinquenio × sexo.
+- **Sankey v2.1** (`sankey-v2-grupoedad.json`, 50 nodos / 169 enlaces): tipos de ingreso + «Impuestos a
+  productos» y «Derechos de pensión D8»; «Otros bienes públicos» → «Otros en especie» (con Educación y Salud
+  públicas suma D.63) y «Colectivo per cápita»; «Ajuste ancla S.14» solo con `nta_anclaS = aditivo`.
+- **`SCN.ado` v8.3 (aditivo)**: `SCNHogaresS14` generalizado a cuadro/fila/lado; lee además de `CSI_115.xlsx`
+  D.61 (f. 117), D.614 (f. 127), D.8 (f. 169), D.62 (f. 131), D.759 (f. 151) y de `CSI_103.xlsx` D.21 (f. 25),
+  D.31 (f. 26) → escalares `CuotasHogS14`, `ImpNetosProd`, `AjustePension`, `PrestSocHog`, `OtrasTransfHog`,
+  `TauPubS14` (+ `*PIB`). Un `master/SCN.dta` de NTA-1 se completa solo (`update replace`).
+- **Gate `test-nta-identidad.{do,sh}` v1.1**: identidad con `ImpProd` (5 + 36 celdas), Σ intra = 0, **sin ajuste
+  de S activo** (un ancla es ROJO), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31,
+  Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759) y nodos del contrato v2.1. `output.txt` y los 10 sankeys no cambian.
+- FLAG al frente para v8.14: `TaltimirSelf` = 6.15 escala como ingreso mixto 4,571 bn de transferencias y flujos
+  financieros (`ing_dona`, `ing_heren`, `ing_benef`, remesas crudas, `ing_prest`, `ing_otrocap`, `ing_ahorro`);
+  `nta_mixto` default `crudo` se mantiene.
+
+### Comandos — NTA-1c: YA anclado a S.14 dentro de `NTA.do`; ancla multiplicativa de S declarada (mismo PR #40)
+
+- **`NTA.do` v1.2**: `nta_YA` ∈ {`motor`, `S14`} (default **`S14`**): el total de YA del motor (7,067 bn: neto de
+  depreciación, sin el ImpNet embebido —pieza 3— y sin D.8 —pieza 4, que entra aparte—) se re-ancla a
+  `YAHogS14` = B.2n + ⅓ B.3n + D.4 neto del sector hogares = **8,832 bn**, repartido ∝ YA del motor (misma
+  distribución, otro nivel; factor 1.2498; el alquiler imputado se escala igual). Σ S sin ancla pasa de +201 a
+  **+1,966.5 bn vs B.8n 1,901.0: brecha +3.4 %** (≤ 15 %), así que `nta_anclaS` = `auto` (default nuevo) resuelve
+  a **`multiplicativo`** (factor **0.9667**); si la brecha superara 15 % resolvería a `off` con FLAG. El ancla queda
+  **declarada, no escondida**: intra se calcula con S sin ancla (Σ intra = 0 en todos los modos), `S_ajuste` =
+  S − S sin ancla (−65.5 bn) es el residual explícito de la identidad con ancla y en el Sankey v2.1 aparece como
+  «Ancla S14 recorte» (66.9) / «Ancla S14 complemento» (1.4). Reporte: YA motor vs re-anclado por decil
+  (D1 124→155, D10 2,709→3,386 bn) y S e intra por sexo y quinquenio.
+- **`SCN.ado` v8.4 (aditivo)**: `SCNHogaresS14` lee además `CSI_115.xlsx` filas 69 B.2n (R/P), 70 B.3n (R/P) y
+  95 D.4 (R/P y U/A) → `YAHogS14`, `ExNOpHogS14`, `MixNHogS14`, `RentaPropHogNeta` (+ `YAHogS14PIB`).
+- **Gate `test-nta-identidad.{do,sh}` v1.2**: identidad **sin ancla** (5 + 36 celdas) y, con ancla, residual =
+  `S_ajuste` declarado; Σ intra = 0; Σ S = B.8n cuando hay ancla; Σ `YA_base` = `YAHogS14` con `nta_YA = S14`;
+  nodos del ancla reportados. `output.txt` y los 10 sankeys publicados no cambian (gate de números verde).
+- **Decisión de Ricardo para v8.14 (FLAG del motor, registrado aquí)**: `Yk` de `Households.do` lleva el excedente
+  de sociedades `ExNOpSoc` bruto (y resta la depreciación de toda la economía ∝ `ing_capital`) donde el sector
+  hogares S.14 tiene B.2n + ⅓ B.3n + D.4 neto: **−1,765 bn** en el YA de los hogares (7,067 vs 8,832; factor 1.25).
+  Magnitud en el Sistema Fiscal / deciles (YA del motor → re-anclado, bn): D1 124→155, D2 191→239, D3 257→322,
+  D4 332→416, D5 418→523, D6 504→629, D7 640→800, D8 799→999, D9 1,092→1,365, D10 2,709→3,386 (misma
+  distribución: el Gini de YA no cambia, el nivel sí). Junto con `TaltimirSelf` = 6.15 (4,571 bn de transferencias y
+  flujos financieros dentro de `ing_mixto`), los dos se corrigen en el motor en v8.14; mientras, `NTA.do` los
+  re-ancla localmente (`nta_YA = S14`) y los registra (`nta_mixto = crudo`).
+
 ### Institucional — página de método `/NTA`: el Sankey NTA de los hogares, como lo emite el motor
 
 - **`/NTA`** (`04_1_simuladorfiscal.ciep.mx/NTA/index.php`, primera página de la futura sección de
