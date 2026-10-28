@@ -6,7 +6,9 @@
 *********************************************************************
 * NTA-1 (2026-10-27). Base: memo 02_governance/nta-0-inventario-2026-10-27.md (#38) y las decisiones firmadas por
 * Ricardo el 2026-10-27. NTA-1b (2026-10-27, mismo PR #40): se alinean las definiciones con el sector hogares S.14
-* del SCN ANTES de cualquier ancla de S; el ajuste de S queda como variante, no como default. Llamada (SIM.do §3.2b):
+* del SCN ANTES de cualquier ancla de S; el ajuste de S queda como variante, no como default. NTA-1c (2026-10-28): el total
+* de YA se re-ancla a S.14 (nta_YA = S14) y, si |Σ S − B.8n|/B.8n ≤ 15 %, el ancla multiplicativa de S se activa DECLARADA
+* (nta_anclaS = auto -> multiplicativo; intra y la identidad se exigen sin ancla). Llamada (SIM.do §3.2b):
 *   run NTA.do <anioenigh>        (2024: el único año con households.dta anclado a SCN/LIF/PEF 2024)
 *
 * IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):
@@ -22,7 +24,8 @@
 *   raw/ENIGH/<anio>/ingresos.dta  (P101-P103, P106-P108: programas que Households.do no lee; memo FLAG 4)
 *   raw/ENIGH/<anio>/gastohogar.dta (transferencias en efectivo otorgadas a otros hogares e instituciones)
 *   SCN, LIF, PEF del año. Anclas S.14 (SCN.ado v8.3, de CSI_115.xlsx y CSI_103.xlsx con rótulo verificado): AhorroHog (B.8n),
-*   TransfEspecie (D.63), CuotasHogS14 (D.61 − D.614), ImpNetosProd (D.21 − D.31 de S.1), AjustePension (D.8), TauPubS14 (D.62 + D.759).
+*   TransfEspecie (D.63), CuotasHogS14 (D.61 − D.614), ImpNetosProd (D.21 − D.31 de S.1), AjustePension (D.8), TauPubS14 (D.62 + D.759),
+*   YAHogS14 (B.2n + 1/3 B.3n + D.4 neto: filas 69, 70 y 95 de CSI_115).
 *
 * CONVENCIONES (decisiones firmadas NTA-1 y NTA-1b; no se reabren aquí):
 *   C          = consumo privado a PRECIOS DE COMPRADOR (gas_pc_*, anclado a ConHog) + gasto_anualComprasN (la corrección del
@@ -38,9 +41,11 @@
 *                no contarlo dos veces. Así los indirectos de τ⁻ ya no son doble resta. D.29 − D.39 sigue en Yl/Yk (FLAG).
 *   YL         = Yl del motor − pensiones (ing_jubila × TaltimirSal, lo que Households.do metió a Yl: FLAG motor v9.x)
 *                − 2/3 de las transferencias y flujos financieros que viajan dentro de ing_mixto (× TaltimirSelf) + ing_suborROW.
-*   YA         = Yk − depreciación (CapFij: base NETA, consistente con S = B.8n) − ImpNet embebido − 1/3 de lo mismo de ing_mixto
-*                + ing_capitalROW + alquiler imputado reasignado al jefe del hogar (ingreso) + YA_d8 (D.8 ∝ YL de quienes cotizan;
-*                nta_d8) [+ YA_ajuste solo con nta_anclaS = aditivo].
+*   YA         = YA_base + YA_d8 [+ YA_ajuste solo con nta_anclaS = aditivo]. YA_motor = Yk − depreciación (CapFij: base NETA,
+*                consistente con S = B.8n) − ImpNet embebido − 1/3 de lo mismo de ing_mixto + ing_capitalROW + alquiler imputado
+*                reasignado al jefe del hogar (ingreso). YA_base = YA_motor × YAHogS14/Σ YA_motor con nta_YA = S14 (NTA-1c: el total
+*                de YA al del sector hogares B.2n + 1/3 B.3n + D.4 neto, misma distribución; el alquiler se escala igual) o = YA_motor
+*                con nta_YA = motor. YA_d8 = D.8 ∝ YL de quienes cotizan (nta_d8). FLAG motor v8.14: Yk lleva ExNOpSoc bruto (−1,765 bn).
 *   τ⁺ público = EFECTIVO: pensiones contributivas y Pensión Bienestar ancladas al PEF del año (∝ ing_jubila jubilados, ∝ ing_PAM,
 *                como PerfilesSim.do) + becas/programas observados en la ENIGH (ing_benef + P101-P103/P106-P108), todo × UN factor
 *                global TauPubS14 / Σ para anclar a D.62 + D.759 de S.14 (nta_anclaTau, default on);
@@ -50,15 +55,19 @@
 *                adultos mayores/discapacidad, 173417 donativos a instituciones), del hogar a sus adultos con ingreso ∝ (YL+YA).
 *                Los regalos en especie (T901-T915) quedan en C del que los compra, como en el SCN (parámetro nta_otorgado).
 *   S          = residual del HOGAR: Σ_h (YL + ImpProd + YA + τ⁺ + τ⁺inter − τ⁻ − τ⁻inter) − Σ_h C, repartido a los adultos con
-*                ingreso ∝ (YL+YA). SIN tapón (nta_anclaS = off): se reporta Σ S por grupo vs AhorroHog (B.8n S.14), el factor
-*                implícito y la brecha. Variantes: aditivo (NTA-1: suma ∝ al mismo reparto con contrapartida en YA_ajuste) y
-*                multiplicativo (factor sobre S de adultos, sin contrapartida: cae a intra). Si |Σ S − B.8n|/B.8n > 15 % no se ancla.
-*   intra      = residual por persona después de todo lo anterior; Σ por hogar = 0 (y nacional) por construcción.
+*                ingreso ∝ (YL+YA) = S_sinancla. Se reporta Σ S_sinancla por grupo vs AhorroHog (B.8n S.14), el factor implícito y
+*                la brecha. nta_anclaS = auto (default NTA-1c): si |brecha| ≤ 15 % → multiplicativo (S = f·S_sinancla de los adultos,
+*                sin contrapartida en YA; la diferencia S_ajuste = S − S_sinancla queda DECLARADA: residual explícito de la identidad
+*                con ancla y nodos «Ancla S14 recorte»/«complemento» del Sankey); si no → off con FLAG (se para y se descompone).
+*                Variantes: off; aditivo (NTA-1: suma ∝ al mismo reparto con contrapartida en YA_ajuste; no sirve con D < 0).
+*   intra      = residual por persona con S SIN ancla; Σ por hogar = 0 (y nacional) por construcción en todos los modos.
 *   Flujos financieros de ing_mixto (préstamos, retiros, hipotecas, seguros: cap9) quedan FUERA de la identidad (FLAG motor).
 *   Flujos brutos; año 2024; desahorro como dos nodos en el Sankey v2 (grupo que ahorra → Futuro; Desahorro → grupo).
 *
 * PARÁMETROS (globals nta_*; default entre paréntesis; se declaran en la salida):
-*   nta_anclaS   ("off") | "aditivo" | "multiplicativo".      nta_cuotas ("S14") D.61 − D.614 | "LIF" CUOTAS IMSS como PerfilesSim.
+*   nta_anclaS   ("auto") multiplicativo si |Σ S − B.8n|/B.8n ≤ 15 %, si no off | "off" | "aditivo" | "multiplicativo".
+*   nta_YA       ("S14") total de YA a B.2n + 1/3 B.3n + D.4 neto ∝ YA del motor | "motor".
+*   nta_cuotas   ("S14") D.61 − D.614 | "LIF" CUOTAS IMSS como PerfilesSim.
 *   nta_d8       ("yl_cotizantes") D.8 ∝ YL de personas con cuotas > 0 | "per_capita_adultos".
 *   nta_anclaTau ("on") τ⁺ efectivo × factor a D.62 + D.759 | "off" PEF/ENIGH.      nta_alqu ("jefe") | "motor".
 *   nta_tauCash  ("PEF") pensiones y PAM al PEF | "ENIGH" observadas.   nta_otorgado ("efectivo") | "todo" (incluye T901-T915).
@@ -826,7 +835,7 @@ foreach f of local flags {
 	file write `fh' `"`=cond(`nf' > 1, ",", "")'"`f'""'
 }
 file write `fh' `"],"' _n
-file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.1 (NTA-1b)","base":"master/`anio'/households.dta + raw/ENIGH/`anio'/{poblacion,ingresos,gastohogar}.dta","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","generado_el":"`fecha' $S_TIME","stata":"`c(stata_version)' `c(edition_real)'"}}"' _n
+file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.2 (NTA-1c)","base":"master/`anio'/households.dta + raw/ENIGH/`anio'/{poblacion,ingresos,gastohogar}.dta","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","generado_el":"`fecha' $S_TIME","stata":"`c(stata_version)' `c(edition_real)'"}}"' _n
 file close `fh'
 
 * 6.3 JSON quinquenio × sexo (desde el colapsado) *
@@ -845,7 +854,7 @@ forvalues i = 1/`=_N' {
 	}
 	file write `fh' "}" _n
 }
-file write `fh' `"],"procedencia":{"modulo":"01_modulos/NTA.do v1.1 (NTA-1b)","generado_el":"`fecha' $S_TIME"}}"' _n
+file write `fh' `"],"procedencia":{"modulo":"01_modulos/NTA.do v1.2 (NTA-1c)","generado_el":"`fecha' $S_TIME"}}"' _n
 file close `fh'
 * 6.3b S e intra-hogar por quinquenio × sexo al reporte de texto (NTA-1b pieza 7) *
 file open `fh' using `"`dirnta'/nta-identidad.txt"', write append text

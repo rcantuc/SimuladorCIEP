@@ -183,6 +183,32 @@ B.8n (> 15 %): **no se aplica ancla**; la descomposición restante va en el PR.
   financieros (`ing_dona`, `ing_heren`, `ing_benef`, remesas crudas, `ing_prest`, `ing_otrocap`, `ing_ahorro`);
   `nta_mixto` default `crudo` se mantiene.
 
+### Comandos — NTA-1c: YA anclado a S.14 dentro de `NTA.do`; ancla multiplicativa de S declarada (mismo PR #40)
+
+- **`NTA.do` v1.2**: `nta_YA` ∈ {`motor`, `S14`} (default **`S14`**): el total de YA del motor (7,067 bn: neto de
+  depreciación, sin el ImpNet embebido —pieza 3— y sin D.8 —pieza 4, que entra aparte—) se re-ancla a
+  `YAHogS14` = B.2n + ⅓ B.3n + D.4 neto del sector hogares = **8,832 bn**, repartido ∝ YA del motor (misma
+  distribución, otro nivel; factor 1.2498; el alquiler imputado se escala igual). Σ S sin ancla pasa de +201 a
+  **+1,966.5 bn vs B.8n 1,901.0: brecha +3.4 %** (≤ 15 %), así que `nta_anclaS` = `auto` (default nuevo) resuelve
+  a **`multiplicativo`** (factor **0.9667**); si la brecha superara 15 % resolvería a `off` con FLAG. El ancla queda
+  **declarada, no escondida**: intra se calcula con S sin ancla (Σ intra = 0 en todos los modos), `S_ajuste` =
+  S − S sin ancla (−65.5 bn) es el residual explícito de la identidad con ancla y en el Sankey v2.1 aparece como
+  «Ancla S14 recorte» (66.9) / «Ancla S14 complemento» (1.4). Reporte: YA motor vs re-anclado por decil
+  (D1 124→155, D10 2,709→3,386 bn) y S e intra por sexo y quinquenio.
+- **`SCN.ado` v8.4 (aditivo)**: `SCNHogaresS14` lee además `CSI_115.xlsx` filas 69 B.2n (R/P), 70 B.3n (R/P) y
+  95 D.4 (R/P y U/A) → `YAHogS14`, `ExNOpHogS14`, `MixNHogS14`, `RentaPropHogNeta` (+ `YAHogS14PIB`).
+- **Gate `test-nta-identidad.{do,sh}` v1.2**: identidad **sin ancla** (5 + 36 celdas) y, con ancla, residual =
+  `S_ajuste` declarado; Σ intra = 0; Σ S = B.8n cuando hay ancla; Σ `YA_base` = `YAHogS14` con `nta_YA = S14`;
+  nodos del ancla reportados. `output.txt` y los 10 sankeys publicados no cambian (gate de números verde).
+- **Decisión de Ricardo para v8.14 (FLAG del motor, registrado aquí)**: `Yk` de `Households.do` lleva el excedente
+  de sociedades `ExNOpSoc` bruto (y resta la depreciación de toda la economía ∝ `ing_capital`) donde el sector
+  hogares S.14 tiene B.2n + ⅓ B.3n + D.4 neto: **−1,765 bn** en el YA de los hogares (7,067 vs 8,832; factor 1.25).
+  Magnitud en el Sistema Fiscal / deciles (YA del motor → re-anclado, bn): D1 124→155, D2 191→239, D3 257→322,
+  D4 332→416, D5 418→523, D6 504→629, D7 640→800, D8 799→999, D9 1,092→1,365, D10 2,709→3,386 (misma
+  distribución: el Gini de YA no cambia, el nivel sí). Junto con `TaltimirSelf` = 6.15 (4,571 bn de transferencias y
+  flujos financieros dentro de `ing_mixto`), los dos se corrigen en el motor en v8.14; mientras, `NTA.do` los
+  re-ancla localmente (`nta_YA = S14`) y los registra (`nta_mixto = crudo`).
+
 ### Institucional — página de método `/NTA`: el Sankey NTA de los hogares, como lo emite el motor
 
 - **`/NTA`** (`04_1_simuladorfiscal.ciep.mx/NTA/index.php`, primera página de la futura sección de
