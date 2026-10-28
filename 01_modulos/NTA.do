@@ -70,6 +70,9 @@
 *   nta_cuotas   ("S14") D.61 − D.614 | "LIF" CUOTAS IMSS como PerfilesSim.
 *   nta_d8       ("yl_cotizantes") D.8 ∝ YL de personas con cuotas > 0 | "per_capita_adultos".
 *   nta_anclaTau ("on") τ⁺ efectivo × factor a D.62 + D.759 | "off" PEF/ENIGH.      nta_alqu ("jefe") | "motor".
+*                nta_alqu es solo el lado INGRESO del alquiler imputado (al jefe | como lo deja Households por persona). El lado
+*                CONSUMO no se re-reparte aquí: gas_pc_Alqu llega de Expenditure.do ya repartido entre los miembros del hogar por
+*                perfilpc.ado (perfil edad-sexo, punto fijo; NO per cápita) y entra a Cpriv tal cual (verificado NTA-2, 2026-10-28).
 *   nta_tauCash  ("PEF") pensiones y PAM al PEF | "ENIGH" observadas.   nta_otorgado ("efectivo") | "todo" (incluye T901-T915).
 *   nta_mixto    ("crudo") las transferencias y flujos financieros que viajan dentro de ing_mixto se restan de YL/YA a su valor
 *                CRUDO ENIGH (el que citan las decisiones: 273 bn financieros, 260 donativos...) y el anclaje de ing_mixto a Cuentas
