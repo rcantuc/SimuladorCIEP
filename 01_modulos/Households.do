@@ -1538,8 +1538,6 @@ label var cuotasP "Seguridad social (patrón)"
 egen double cuotasF = rsum(*F)
 label var cuotasF "Seguridad social (federación)"
 
-replace cuotasF = cuotasF + infonavit
-
 egen double cuotasTP = rsum(cuotasP cuotasT)
 label var cuotasTP "Seguridad social (trabajadores y patrón)"
 
@@ -2102,7 +2100,7 @@ if "`altimir'" == "yes" {
 	replace ing_estim_alqu = ing_estim_alqu*TaltimirHouse
 	replace ing_remesas = ing_remesas*TaltimirROWTrans
 
-	foreach k of varlist ing_subor *_t4_cap4 *_t4_cap5 *_t4_cap6 *_t4_cap7 *_t4_cap8 *_t4_cap9 {
+	foreach k of varlist ing_subor *_t4_cap4 {
 		replace `k' = `k'*TaltimirSal
 	}
 	foreach k of varlist ing_mixto* *_t4_cap2pf *_t4_cap3pf *_t4_cap5 *_t4_cap6 *_t4_cap7 *_t4_cap8 *_t4_cap9 {
@@ -2675,7 +2673,7 @@ label var Ciclodevida "Ciclo de vida"
 *noisily Perfiles Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida")
 noisily Simulador Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida") reboot boot($bootstrap)
 
-g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
+g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro (anual)"
 *noisily Perfiles Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro")
