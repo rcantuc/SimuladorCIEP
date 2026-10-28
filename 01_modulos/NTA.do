@@ -750,7 +750,7 @@ foreach f of local flags {
 	file write `fh' `"`=cond(`nf' > 1, ",", "")'"`f'""'
 }
 file write `fh' `"],"' _n
-file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.0 (NTA-1)","base":"master/`anio'/households.dta + raw/ENIGH/`anio'/{poblacion,ingresos,gastohogar}.dta","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx via SCN.ado","generado_el":"`fecha' $S_TIME","stata":"`c(stata_version)' `c(edition_real)'"}}"' _n
+file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.1 (NTA-1b)","base":"master/`anio'/households.dta + raw/ENIGH/`anio'/{poblacion,ingresos,gastohogar}.dta","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","generado_el":"`fecha' $S_TIME","stata":"`c(stata_version)' `c(edition_real)'"}}"' _n
 file close `fh'
 
 * 6.3 JSON quinquenio × sexo (desde el colapsado) *
@@ -769,7 +769,17 @@ forvalues i = 1/`=_N' {
 	}
 	file write `fh' "}" _n
 }
-file write `fh' `"],"procedencia":{"modulo":"01_modulos/NTA.do v1.0 (NTA-1)","generado_el":"`fecha' $S_TIME"}}"' _n
+file write `fh' `"],"procedencia":{"modulo":"01_modulos/NTA.do v1.1 (NTA-1b)","generado_el":"`fecha' $S_TIME"}}"' _n
+file close `fh'
+* 6.3b S e intra-hogar por quinquenio × sexo al reporte de texto (NTA-1b pieza 7) *
+file open `fh' using `"`dirnta'/nta-identidad.txt"', write append text
+file write `fh' _n "S e intra-hogar por quinquenio × sexo (bn; S sin ajuste salvo nta_anclaS ≠ off). |R|/C máx " %9.2e (`maxres_qs'/`Ctot') _n
+file write `fh' %-8s ("Edad") %-9s ("Sexo") %8s ("Pob(M)") %10s ("C") %10s ("YL") %10s ("YA") %10s ("tau-pub") %10s ("tau+pub") %10s ("S") %10s ("intra") %10s ("R") _n
+forvalues i = 1/`=_N' {
+	local ql : label quinq `=quinq[`i']'
+	local sl : label sexo `=sexo[`i']'
+	file write `fh' %-8s ("`ql'") %-9s ("`sl'") %8.1f (pobw[`i']/1e6) `f1' (C[`i']/1e9) `f1' (YL[`i']/1e9) `f1' (YA[`i']/1e9) `f1' (Tmen[`i']/1e9) `f1' (Tpub[`i']/1e9) `f1' (S[`i']/1e9) `f1' (Intra[`i']/1e9) %10.6f (resid_chk[`i']/1e9) _n
+}
 file close `fh'
 restore
 
@@ -785,8 +795,14 @@ restore
 * privadas y públicas) → Sinks (grupos como consumidores, Futuro por grupo, Resto del gasto público).
 * Todo flujo ≥ 0; cada nodo intermedio conserva entradas = salidas (lo verifica test-nta-identidad.sh).
 * Intra-hogar y S van NETOS por grupo (brutos entre grupos: un grupo entra o sale de Familias/Activos);
-* los brutos por persona (IntraPos/IntraNeg) quedan en nta-grupoedad.json. El ajuste del ancla de S es un
-* tipo de ingreso aparte ("Ajuste ancla S.14"), no se esconde en el capital.
+* los brutos por persona (IntraPos/IntraNeg) quedan en nta-grupoedad.json. El ajuste del ancla de S (solo con
+* nta_anclaS = aditivo) es un tipo de ingreso aparte ("Ajuste ancla S.14"), no se esconde en el capital; con el
+* default off vale 0 y SankeySumSim no emite el nodo.
+* NTA-1b (contrato v2.1): en la columna de tipos de ingreso se agregan «Impuestos a productos» (ImpProd ∝ Cpriv) y
+* «Derechos de pensión D8» (YA_d8); «Ing capital» es YA sin D.8, sin ajuste y sin alquiler. Las categorías públicas
+* son «Educación pública», «Salud pública», «Otros en especie» (las tres suman D.63: en especie con edad) y
+* «Colectivo per cápita» (ConGob − D.63). Con ISR_PM y OTROSK fuera de τ⁻, el balance del gobierno suele ser
+* negativo: entra como fuente «Déficit público». test-nta-identidad.sh exige estos nodos.
 * Compras netas de no residentes: ya restadas de C (gasto_anualComprasN), por eso no hay nodo "Turistas".
 local BF = scalar(NTAInterRec0) - scalar(NTAInterOtor0)
 local BG = scalar(NTATmen0) + `OyE' - scalar(NTATpubEf0) - scalar(NTACpub0)

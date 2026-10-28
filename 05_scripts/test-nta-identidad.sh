@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# test-nta-identidad.sh — gate de sesión de la cuenta NTA por individuo (NTA-1, 2026-10-27).
+# test-nta-identidad.sh — gate de sesión de la cuenta NTA por individuo (NTA-1, 2026-10-27; NTA-1b: sin tapón).
 #
 # Dos mitades:
-#   A. Stata (test-nta-identidad.do): identidad C − YL − (τ⁺ − τ⁻) − (YA − S) − intra = 0 por grupo de edad y por
-#      quinquenio × sexo (1e-9 relativo), Σ intra-hogar = 0 (nacional y por hogar), Σ S = AhorroHog (B.8n S.14) y
+#   A. Stata (test-nta-identidad.do): identidad C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0 por grupo de edad y
+#      por quinquenio × sexo (1e-9 relativo), Σ intra-hogar = 0 (nacional y por hogar), SIN ajuste de S activo
+#      (nta_anclaS = off; Σ S se reporta vs B.8n S.14 con factor y brecha), las anclas S.14 por construcción
+#      (Σ CpubInd = D.63, Σ ImpProd = D.21 − D.31, Σ YA_d8 = D.8, Σ τ⁺ efectivo = D.62 + D.759 si nta_anclaTau = on) y
 #      el JSON por grupo igual a la base. Requiere Stata y master/SCN.dta: por eso NO va en publicar.sh --ci
 #      (runbook §11: gate de sesión).
 #   B. Python (sin Stata): el Sankey v2 (users/<id>/SankeyNTA/sankey-v2-grupoedad.json) conserva flujo en TODO nodo
 #      intermedio (entradas = salidas a 1e-9 relativo), no tiene enlaces negativos ni duplicados, los nodos de grupo
-#      (Ingreso <g>, Consumo <g>) balancean, y se imprime el conteo nodos/enlaces (contrato nuevo, aparte del 31/79 de v1).
+#      (Ingreso <g>, Consumo <g>) balancean, trae los nodos del contrato v2.1 («Impuestos a productos», «Derechos de
+#      pensión D8», «Otros en especie», «Colectivo per cápita») y se imprime el conteo nodos/enlaces (aparte del 31/79 de v1).
 #
 # Uso: bash 05_scripts/test-nta-identidad.sh [--dir <users/<id>>] [--stata <ruta stata-se>] [--sin-stata]
 #      Exit 0 = VERDE; 1 = ROJO; 2 = faltan archivos.
@@ -40,13 +43,13 @@ if [[ "$SIN_STATA" == "false" ]]; then
     TMP="$(mktemp -d)"
     printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nadopath ++ "${SIMROOT}"\ncapture run "${SIMROOT}/set_token.do"\nglobal id "%s"\nscalar aniovp = 2024\nscalar anioenigh = 2024\nset scheme ciep\ndo "${SIMROOT}/05_scripts/test-nta-identidad.do" "%s"\n' "$REPO_ROOT" "$ID" "$DTA" > "$TMP/wrap.do"
     ( cd "$TMP" && "$STATA" -b do "$TMP/wrap.do" < /dev/null )
-    grep -E '^\s+(identidad|Σ intra|Σ S|nta-grupoedad)' "$TMP/wrap.log" | sed 's/^/  /'
+    grep -E '^\s+(identidad|Σ intra|Σ S|Σ CpubInd|Σ ImpProd|Σ YA_d8|Σ TpubEf|nta-grupoedad)' "$TMP/wrap.log" | sed 's/^/  /'
     if grep -qE '^r\([0-9]+\);' "$TMP/wrap.log"; then
         echo "ROJO   Stata: $(grep -E '^r\([0-9]+\);' "$TMP/wrap.log" | head -1) — ver $TMP/wrap.log"
         grep -B4 -E '^r\([0-9]+\);' "$TMP/wrap.log" | head -12
         rojo=1
     elif grep -q "test-nta-identidad: VERDE" "$TMP/wrap.log"; then
-        echo "OK     identidad por grupo y quinquenio×sexo, Σ intra = 0, Σ S = AhorroHog, JSON = base (Stata)"
+        echo "OK     identidad por grupo y quinquenio×sexo, Σ intra = 0, sin ajuste de S, anclas S.14 por construcción, JSON = base (Stata)"
     else
         echo "ROJO   Stata no llegó a VERDE — ver $TMP/wrap.log"; rojo=1
     fi
@@ -86,6 +89,12 @@ if len(grupos) != 10:
 for n in grupos:
     if not (inn[n] and out[n]):
         print(f'ROJO   Sankey v2: nodo de grupo {n} sin entradas o sin salidas'); rojo = True
+contrato = ['Impuestos a productos', 'Derechos de pensión D8', 'Educación pública', 'Salud pública', 'Otros en especie', 'Colectivo per cápita', 'Ing laboral', 'Ing capital', 'Gobierno', 'Familias', 'Activos', 'Ing nacional']
+faltan_c = [n for n in contrato if n not in nodes]
+if faltan_c:
+    print(f'ROJO   Sankey v2: faltan nodos del contrato v2.1: {faltan_c}'); rojo = True
+if 'Ajuste ancla S 14' in nodes or 'Ajuste ancla S.14' in nodes:
+    print('ROJO   Sankey v2: hay nodo «Ajuste ancla S.14»: el ancla de S está activa (el gate exige nta_anclaS = off)'); rojo = True
 if mx > 1e-9:
     print(f'ROJO   Sankey v2: nodo {peor} no conserva (|in−out|/max = {mx:.3e})'); rojo = True
 else:
