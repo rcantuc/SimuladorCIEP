@@ -1,12 +1,15 @@
-// test-sitio-nta.js <urlBase> <jsonOrigen> [<png>] — la página /NTA con Chrome headless (puppeteer-core).
+// test-sitio-nta.js <urlBase> <jsonOrigen> <cuentaOrigen> [<png>] — la página /NTA con Chrome headless (puppeteer-core).
 // La abre, espera al Sankey de FusionCharts y comprueba que lo que se dibuja es EXACTAMENTE lo que el
 // motor emitió: cada enlace (from, to, value) del dataSource que recibió el navegador es igual, como
-// cadena, al del users/…/SankeyNTA/sankey-grupoedad.json de origen (sin redondeo en PHP ni en JS), y los
-// nodos son los mismos y en el mismo orden. Si se pasa <png>, guarda la captura de la página completa.
+// cadena, al del users/…/SankeyNTA/sankey-v2-grupoedad.json de origen (sin redondeo en PHP ni en JS), los
+// nodos son los mismos y en el mismo orden, y lo que FusionCharts tiene cargado (getJSONData) trae esos
+// mismos valores. Además: las cifras de «Anchoring and residual» (<span data-nta>) se llenaron desde
+// users/…/NTA/nta-grupoedad.json (ninguna quedó vacía ni en «n/a») y la primera coincide con el archivo.
+// Si se pasa <png>, guarda la captura de la página completa.
 // Salida: 0 todo verde; 1 algún aserto falló. Imprime una línea por aserto.
 const fs = require('fs');
 const puppeteer = require('puppeteer-core');
-const [urlBase, jsonOrigen, png] = process.argv.slice(2);
+const [urlBase, jsonOrigen, cuentaOrigen, png] = process.argv.slice(2);
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let fallos = 0;
@@ -24,6 +27,8 @@ function leerOrigen(ruta) {
 (async () => {
   const origen = leerOrigen(jsonOrigen);
   ok(origen.enlaces.length > 0 && origen.nodos.length > 0, `origen leído: ${origen.nodos.length} nodos, ${origen.enlaces.length} enlaces (${jsonOrigen})`);
+  const cuenta = JSON.parse(fs.readFileSync(cuentaOrigen, 'utf8'));
+  ok(cuenta && cuenta.S_vs_B8n && typeof cuenta.S_vs_B8n.S_sin_ajuste === 'number', `cuenta leída: esquema ${cuenta.esquema}, ${(cuenta.grupos || []).length} grupos (${cuentaOrigen})`);
 
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--no-sandbox', '--hide-scrollbars'] });
   const page = await browser.newPage();
@@ -58,10 +63,29 @@ function leerOrigen(ruta) {
     // y lo que FusionCharts tiene cargado es ese mismo dataSource (sin transformación intermedia)
     const enChart = await page.evaluate(() => {
       const c = FusionCharts.items['sankey-nta-chart'];
-      return c ? c.getJSONData().links.map(l => String(l.value)) : null;
+      if (!c) return null;
+      const d = c.getJSONData();
+      return { values: d.links.map(l => String(l.value)), froms: d.links.map(l => l.from), tos: d.links.map(l => l.to), labels: d.nodes.map(n => n.label) };
     });
-    ok(Array.isArray(enChart) && enChart.every((v, i) => v === origen.enlaces[i].value), 'FusionCharts.getJSONData() devuelve los mismos valores que el origen');
+    ok(enChart && enChart.values.every((v, i) => v === origen.enlaces[i].value) && enChart.froms.every((v, i) => v === origen.enlaces[i].from) && enChart.tos.every((v, i) => v === origen.enlaces[i].to) && JSON.stringify(enChart.labels) === JSON.stringify(origen.nodos),
+      'FusionCharts.getJSONData() devuelve los mismos nodos y enlaces (from, to, value) que el origen');
   }
+
+  // las cifras de «Anchoring and residual» se llenaron desde la cuenta
+  let cifras = null;
+  for (let i = 0; i < 50; i++) {
+    cifras = await page.evaluate(() => [...document.querySelectorAll('[data-nta]')].map(el => ({ ruta: el.getAttribute('data-nta'), unidad: el.getAttribute('data-nta-unidad') || 'bn', texto: el.textContent })));
+    if (cifras.length && cifras.every(c => c.texto !== '')) break;
+    await sleep(200);
+  }
+  const vacias = (cifras || []).filter(c => c.texto === '' || c.texto === 'n/a');
+  ok(cifras && cifras.length > 0 && vacias.length === 0, `las ${(cifras || []).length} cifras <span data-nta> se llenaron desde la cuenta${vacias.length ? ' (vacías o n/a: ' + vacias.map(c => c.ruta).join(', ') + ')' : ''}`);
+  const esperado = (cuenta.S_vs_B8n.S_sin_ajuste / 1e9).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const primera = (cifras || []).find(c => c.ruta === 'S_vs_B8n.S_sin_ajuste');
+  ok(primera && primera.texto === esperado, `Σ S sin ancla en la página = ${primera && primera.texto} bn (archivo: ${esperado})`);
+  const enCuenta = await page.evaluate(() => window.metodoCuentaData && window.metodoCuentaData.procedencia && window.metodoCuentaData.procedencia.modulo);
+  ok(enCuenta === cuenta.procedencia.modulo, `la cuenta recibida es la del archivo (procedencia: ${enCuenta})`);
+
   const fuente = await page.evaluate(() => (document.querySelector('.metodo-fuente') || {}).textContent || '');
   ok(/Source/.test(fuente) && /ENIGH/.test(fuente), `pie de fuente presente (${fuente.trim().replace(/\s+/g, ' ').slice(0, 110)}…)`);
   ok(errores.length === 0, `sin errores de JS en la página${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`);

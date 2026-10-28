@@ -59,6 +59,9 @@ for k in decil escol grupoedad rural sexo; do printf '{"chart": {"caption": " "}
 # Sankey NTA (/NTA, jsonSankeyNTA.php): users/ciepmx/SankeyNTA/sankey-<corte>.json, con la forma que escribe SankeySumSim
 mkdir -p "$H/users/ciepmx/SankeyNTA"
 printf '$(document).ready(function() {const dataSource={chart:{caption:""},\nnodes:[{label:"De 0 a 4"},{label:"Ing Laboral"}],\nlinks:[{to:"Ing Laboral",value:"28803723154.81406",from:"De 0 a 4"}]};\nFusionCharts.ready(function() {});});\n' > "$H/users/ciepmx/SankeyNTA/sankey-grupoedad.json"
+printf '$(document).ready(function() {const dataSource={chart:{caption:""},\nnodes:[{label:"De 0 a 4"},{label:"Ing laboral"},{label:"Ingreso 0 a 4"}],\nlinks:[{to:"Ing laboral",value:"28803723154.81406",from:"De 0 a 4"},{to:"Ingreso 0 a 4",value:"28803723154.81406",from:"Ing laboral"}]};\nFusionCharts.ready(function() {});});\n' > "$H/users/ciepmx/SankeyNTA/sankey-v2-grupoedad.json"
+mkdir -p "$H/users/ciepmx/NTA"
+printf '{"esquema":"nta/v1","S_vs_B8n":{"S_sin_ajuste":1.0}}\n' > "$H/users/ciepmx/NTA/nta-grupoedad.json"
 # config.php de la COPIA: cualquier ruta de Stata que config.php conozca -> el falso. La detección
 # local/VPS de config.php es por HTTP_HOST (localhost) y la primera rama exige que exista el
 # binario de StataNow: se sustituye la ruta de esa rama por el falso, que sí existe.
@@ -140,6 +143,11 @@ chk 200 "jsonSankeyNTA.php traversal en idSession"   "$U/jsonSankeyNTA.php?corte
 aserta 'grep -q "ciepmx/SankeyNTA/sankey-grupoedad.json" "$H/body"' "el traversal sirvió users/ciepmx/SankeyNTA/, no otra ruta"
 chk 404 "jsonSankeyNTA.php?corte=sexo (sin archivo)"  "$U/jsonSankeyNTA.php?corte=sexo"
 chk 200 "GET /NTA/ (página de método)"               "$U/NTA/"
+chk 200 "jsonSankeyNTA.php sin corte (default v2)"       "$U/jsonSankeyNTA.php"
+aserta 'grep -q "ciepmx/SankeyNTA/sankey-v2-grupoedad.json" "$H/body"' "el default sirve users/ciepmx/SankeyNTA/sankey-v2-grupoedad.json (v8.12.5)"
+chk 200 "jsonSankeyNTA.php?cuenta=grupoedad"              "$U/jsonSankeyNTA.php?cuenta=grupoedad"
+chk 400 "jsonSankeyNTA.php?cuenta=../../etc/passwd"       "$U/jsonSankeyNTA.php?cuenta=../../etc/passwd"
+chk 404 "jsonSankeyNTA.php?cuenta=identidad (sin archivo)" "$U/jsonSankeyNTA.php?cuenta=identidad"
 
 echo "## cargaDefault.php (sin eval) y logCalcular.php (sin inyección de renglones)"
 chk 200 "cargaDefault.php"                          "$U/cargaDefault.php"
