@@ -108,6 +108,11 @@ body.metodo {
 	padding-right: 4%;
 	background: #fff;
 }
+/* v2 (NTA-2): ocho capas y 50+ nodos; más alto que los Sankeys de la portada para que
+   los nodos chicos (0 a 4, desahorro, ancla) sigan siendo legibles. */
+.metodo-sankey.metodo-sankey-alto {
+	height: 900px;
+}
 .metodo-sankey * {
 	font-size: 13px;
 	letter-spacing: -1px;
@@ -130,4 +135,58 @@ body.metodo {
 	padding: 10px 15px 28px;
 	font-size: 12px;
 	color: #7d7d83;
+}
+
+/* Notas al pie numeradas (metodo_nota_ref / metodo_notas en metodo/plantilla.php): tamaño menor,
+   mismo ancho de columna que el texto, enlace de ida (superíndice) y vuelta (↩). */
+.metodo-nota-ref {
+	font-size: 70%;
+	line-height: 0;
+	vertical-align: super;
+}
+.metodo-nota-ref a {
+	color: #c7254e;
+	text-decoration: none;
+	padding: 0 1px;
+}
+.metodo-nota-ref a:hover,
+.metodo-notas li:target {
+	background: #fff3cd;
+}
+.metodo-notas {
+	font-size: 12.5px;
+	line-height: 1.55;
+	color: #444;
+	text-align: justify;
+	margin: 0 0 18px;
+	padding-left: 1.6em;
+	border-top: 1px solid #e3e6ea;
+	padding-top: 10px;
+}
+.metodo-notas li {
+	margin-bottom: 8px;
+}
+.metodo-notas li::marker {
+	color: #c7254e;
+	font-weight: 600;
+}
+.metodo-nota-volver {
+	color: #7d7d83;
+	text-decoration: none;
+	margin-left: 4px;
+}
+.metodo-nota-volver:hover {
+	color: #000;
+}
+
+/* Cifras leídas en runtime del JSON de la cuenta (metodoCifras): mientras cargan, un guion. */
+[data-nta] {
+	font-variant-numeric: tabular-nums;
+}
+[data-nta]:empty::before {
+	content: "—";
+	color: #aaa;
+}
+.metodo-cifra-error {
+	color: #a94442;
 }

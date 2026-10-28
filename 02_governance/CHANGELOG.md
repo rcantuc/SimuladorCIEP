@@ -126,6 +126,61 @@ hasta ±7 %. Queda fuera; evidencia en PR #39.
    incluye): web y batch no definen igual la variable; medido, no amplifica FLAG-5.
 3. `SankeyNTA/` y la página `/NTA` (PR #37) heredan los números nuevos al regenerar `users/ricardo/`.
 
+## [v8.12.5] — 2026-10-28 — `/NTA` dibuja el Sankey v2 (cuenta NTA por individuo, S.14)
+
+Release de sitio y deploy sobre v8.12.4 más NTA-1/1b/1c (PR #40; lo registrado bajo `[Unreleased]` abajo
+queda incluido en este tag). **Nada del Sankey SF ni de deciles cambia**: `output.txt` y los 10 sankeys
+publicados son los de v8.12.4 (gate de números verde; `data_updated` se queda en 2026-10-27: los datos no
+cambiaron, cambió la cuenta que se dibuja). El motor no cambia salvo tres líneas de documentación en
+`01_modulos/NTA.do` (verificación del punto 1, abajo).
+
+### Institucional — página de método `/NTA` v2 (PR NTA-2)
+
+- **`jsonSankeyNTA.php`**: el default es el **Sankey v2** (`?corte=v2-grupoedad` →
+  `users/<id>/SankeyNTA/sankey-v2-grupoedad.json`, 52 nodos / 174 enlaces, contrato v2.1); `?corte=`
+  conserva los cortes v1 (`decil|sexo|grupoedad|escol|rural`) mientras existan los archivos; nuevo
+  `?cuenta=grupoedad|quinquenio-sexo|identidad` sirve byte a byte `users/<id>/NTA/nta-*.{json,txt}`
+  (la cuenta por grupo, `NTA.do` §6.2-6.3, y el reporte de identidad). El bloque `chart` trae
+  `plotToolText`/`linkToolText` (hover con valor, macros de FusionCharts) y, solo en el v2, un `toolText`
+  en los nodos de grupo («Ingreso <g>», «Consumo <g>»: *inflows = outflows*). Nodos y enlaces viajan tal
+  cual; cero números en el PHP.
+- **`NTA/index.php`**: texto de método reescrito en inglés para la estructura nueva (misma extensión:
+  ~475 palabras frente a ~445 del v1; identidad, cada término definido como en S.14 y su ancla, S anclado y declarado, intra
+  como único residual); la frase *«split household-level items among the members of each household¹»*
+  lleva la **nota al pie 1** (textual, sobre el reparto intra-hogar por `perfilpc.ado`: punto fijo por
+  perfil edad-sexo, no per cápita; un niño de 0–4 recibe ~11 % del gasto en alimentos de un adulto de
+  30–64 frente al 0.4 → 1 de la escala NTA; el piso con la escala es opción explícita, no aplicada);
+  lista de nodos y enlaces del v2 con definición y escalar SCN de ancla (B.2n, B.3n, D.4, D.8, D.21−D.31,
+  D.61−D.614, D.62+D.759, D.63, B.8n); apartado **«Anchoring and residual»** con las cifras leídas en
+  runtime de `?cuenta=grupoedad` (Σ S sin ancla vs B.8n, brecha, modo, factor del recorte, S_ajuste =
+  recorte − complemento, YA del motor vs S.14, intra por grupo con suma cero, residual máximo, Cpriv vs
+  P.3, procedencia); pie con fuente, versión, vintage ENIGH y `data_updated`. La plantilla
+  `metodo/plantilla.php` admite **notas numeradas** (`metodo_nota_ref`, `metodo_notas`: superíndice con
+  ida y vuelta) y `cifras` (`metodoCifras` en `js/metodo-sankey.js` llena los `<span data-nta>`); estilos
+  en `css/metodo.css` (nota a tamaño menor y mismo ancho; Sankey a 900 px para las ocho capas).
+- **v1 retirado del sitio**: `/NTA` ya no pide `corte=grupoedad`; `SankeyNTA/sankey-grupoedad.json` lo
+  sigue emitiendo el motor (otros consumidores) y el endpoint lo sirve si existe. Nada del motor se borra.
+- **Punto 1 verificado (`nta_alqu`)**: `NTA.do` **no** re-reparte el consumo de alquiler imputado:
+  `gas_pc_Alqu` llega de `Expenditure.do` ya repartido entre los miembros del hogar por `perfilpc.ado`
+  (perfil edad-sexo, punto fijo) y entra a `Cpriv` tal cual (`gastoanualTOT`); `nta_alqu` (`jefe` |
+  `motor`) gobierna solo el lado **ingreso**. Default sin cambio; **Δ Σ por grupo = 0**; el JSON v2 no se
+  mueve. Queda documentado en el encabezado de `NTA.do`.
+- **Deploy**: la Fase 3b-ter de `publicar-vps.sh` embarca `SankeyNTA/sankey-v2-grupoedad.json` y
+  `NTA/{nta-grupoedad.json, nta-quinquenio-sexo.json, nta-identidad.txt}` (manifiesto del default
+  7 → 11 archivos; `nta-persona.dta` no viaja); Gate 5-remoto exige el v2, `NTA/nta-grupoedad.json` y
+  `nta-identidad.txt` (+3 rutas); el esqueleto de la Fase 6 sigue 15/15. `manifest.json` → v8.12.5,
+  `data_updated` igual.
+- **Gates**: `test-sitio-nta.{sh,js}` (job `sitio-nta`) valida el v2: ruta, default y `?corte=v2-grupoedad`,
+  mismo conteo de nodos/enlaces que el JSON de origen (**52/174** cuando el origen es el fixture),
+  `toolText` solo en nodos de grupo, `?cuenta=` byte a byte, 400/404 en lista blanca, cero literales en
+  cinco archivos, y en Chrome headless nodos/enlaces idénticos como cadena (también en
+  `getJSONData()`), cifras llenas desde la cuenta, nota al pie presente, `--png`. Fixtures:
+  `05_scripts/fixtures/sankey-nta-grupoedad.json` pasa a ser el **v2 real** (corrida completa de `SIM.do`
+  en `0f72606` que reprodujo el baseline v8.12.4; sha256 `fd2a699d…`), más `nta-grupoedad.json` y
+  `nta-identidad.txt` de la misma corrida. El harness de seguridad cubre el default v2 y `?cuenta=`.
+- **FLAG para v8.14 (no se toca aquí)**: el encabezado de `Households.do` debe mencionar el reparto por
+  `perfilpc` (perfil edad-sexo, punto fijo), no «per cápita».
+
 ## [Unreleased]
 
 ### Comandos — NTA-1: `01_modulos/NTA.do`, la cuenta de Transferencias Nacionales por individuo (2024)
