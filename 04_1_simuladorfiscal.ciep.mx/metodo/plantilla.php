@@ -96,10 +96,33 @@ HTML;
 HTML;
 }
 
+// Notas al pie numeradas (v8.12.5). En el texto, echo metodo_nota_ref(1) (en la plantilla
+// corta de PHP) pinta el superíndice ¹ como enlace a la nota (#nota-1) con ancla de regreso
+// (#ref-1); ojo: no escribir la etiqueta de cierre de PHP dentro de un comentario. Al final del
+// apartado: metodo_notas(array(1 => '<html de la nota>', …)) pinta la lista, cada nota con su
+// número y el enlace ↩ de regreso al superíndice. Estilo en css/metodo.css (.metodo-notas).
+// Las hermanas usan lo mismo: la numeración es por página.
+function metodo_nota_ref($n) {
+	$n = (int)$n;
+	return '<sup class="metodo-nota-ref" id="ref-' . $n . '"><a href="#nota-' . $n . '" aria-label="Note ' . $n . '">' . $n . '</a></sup>';
+}
+
+function metodo_notas(array $notas) {
+	if (!$notas) return;
+	echo "\t\t<ol class=\"metodo-notas\">\n";
+	foreach ($notas as $n => $html) {
+		$n = (int)$n;
+		echo "\t\t\t<li id=\"nota-{$n}\" value=\"{$n}\">{$html} <a class=\"metodo-nota-volver\" href=\"#ref-{$n}\" aria-label=\"Back to the text\">&#8617;</a></li>\n";
+	}
+	echo "\t\t</ol>\n";
+}
+
 // $p['sankeys']: lista de array('renderAt' => id del div, 'url' => endpoint JSON).
 // Cada uno se dibuja con FusionCharts desde /js/metodo-sankey.js (misma librería,
 // misma configuración que los Sankeys de la portada; los datos llegan del PHP,
 // aquí no hay números).
+// $p['cifras']: array('url' => endpoint JSON de la cuenta) → metodoCifras() llena los
+// <span data-nta="…"> de la página con los valores de ese JSON (cero números en el PHP).
 function metodo_pie(array $p = array()) {
 	$meta = metodo_meta_deploy();
 	$fuente = $p['fuente'] ?? null;
@@ -111,12 +134,13 @@ function metodo_pie(array $p = array()) {
 	if ($meta['version_html'] !== '') $copy .= ' | Versi&oacute;n ' . $meta['version_html'];
 	echo "\t<footer class=\"container metodo-pie\"><small>{$copy}</small></footer>\n";
 	$sankeys = json_encode($p['sankeys'] ?? array(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	$cifras = isset($p['cifras']) ? "\n\t<script>metodoCifras(" . json_encode($p['cifras'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ");</script>" : '';
 	echo <<<HTML
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
 	<script src="/plugins/jquery/jquery-3.4.1.min.js"></script>
 	<script src="/js/metodo-sankey.js"></script>
-	<script>metodoSankeys({$sankeys});</script>
+	<script>metodoSankeys({$sankeys});</script>{$cifras}
 </body>
 </html>
 
