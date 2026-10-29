@@ -2248,7 +2248,7 @@ g prop_moral = formal_accumMOR/formal_MOR
 
 ***********************
 ** 11.1 ISR SALARIOS **
-gsort -prob_salarios
+gsort -prob_salarios folioviv foliohog numren
 g ISR_asalariados = ISR*(ing_subor)/(ing_bruto_tax-cuotasTPF) if prob_salarios != .
 replace ISR_asalariados = 0 if ISR_asalariados == .
 label var ISR_asalariados "ISR (retenciones por salarios)"
