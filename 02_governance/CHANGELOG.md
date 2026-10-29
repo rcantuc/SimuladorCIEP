@@ -119,6 +119,70 @@ v2, Δ = 0. En las filas `INCD` (deciles I … X y promedio) se muestran el deci
   `nta-*.json` en el último bit → refrescar los fixtures NTA en el mismo commit. No se aplica aquí porque la
   compuerta de este PR cubre solo las seis líneas del memo; propuesto para v8.12.7.
 
+### Institucional — `/NTA` v3 simplificado + panel por grupo de edad × sexo (PR NTA-3, 2026-10-29)
+
+Decisión de Ricardo (29-oct): en `/NTA` el Sankey principal lleva las edades **solo al inicio y al final**; se
+eliminan los ejes «Ingreso por grupo» y «Consumo por grupo» y el hub «Familias». Como las transferencias en efectivo,
+inter e intra-hogar netean a cero nacionalmente (lo que un grupo recibe otro lo paga), el gráfico principal ya no las
+dibuja por grupo; la cuenta por grupo vive en un **panel de cinco mini-Sankeys** debajo, con selector Total / Hombres /
+Mujeres. **Ningún número cambia**: `gate-numeros.sh` y `test-nta-identidad.sh` verdes; `output.txt`, los 10 sankeys
+publicados, el v2 y `nta-persona.dta` son los de la corrida determinista de v8.12.6. En el motor solo cambia la emisión
+de JSON en `01_modulos/NTA.do` (dos archivos nuevos; v1.3). PR NTA-3 (el segundo de v8.12.6).
+
+- **`NTA.do` §7b — Sankey v3** (`users/<id>/SankeyNTA/sankey-v3-grupoedad.json`, contrato v3, **42 nodos / 118 enlaces**
+  en 2024; el v2 de §7 se sigue emitiendo: 52/174). Fuentes (5 grupos perceptores, OyE públicas, El mundo, Desahorro g,
+  balances declarados) → Tipos de ingreso (mismos ejes 1 y 2 del v2) → `Ing nacional` → `Gobierno` (entran τ⁻ + OyE;
+  salen Educación/Salud pública y Otros en especie por edad, `Colectivo` sin edad y terminal, y **`Transferencias en
+  efectivo`** a un nodo único) y `Activos` (entran el S sin ancla de los grupos que ahorran, Desahorro g y el complemento
+  del ancla; salen Futuro g, `Ancla S14 recorte` y el desahorro hacia las categorías) → Usos (7 categorías privadas, 3 en
+  especie, Colectivo, Transferencias en efectivo) → Sinks (5 grupos consumidores, Futuro g, Colectivo, recorte). El
+  consumo privado de cada categoría se financia desde `Ing nacional` (ingreso propio: Y − τ⁻ − S⁺ − recorte + inter
+  recibido + remesas + intra − inter otorgado), desde `Transferencias en efectivo` (τ⁺ efectivo) y desde `Activos`
+  (desahorro + complemento), cada flujo de cada grupo repartido por la **canasta del grupo** (Cpriv_gc / Cpriv_g): es el
+  reparto que v2 hacía implícitamente en «Consumo g», así que cada categoría conserva por la identidad. Balances como en
+  v2 (`Déficit público` → Gobierno; `Otras transferencias privadas` → Ing nacional). Conservación en todo nodo intermedio
+  (|in − out|/max ≤ 1.5e-14); `Ing nacional` 29,195.5 bn, `Gobierno` 7,361.5, `Activos` 2,048.5, `Transferencias en
+  efectivo` 3,445.1; desahorro + complemento a categorías 41.0; recorte 66.9, complemento 1.4.
+- **`NTA.do` §7c — panel** (`users/<id>/NTA/nta-panel-grupoedad-sexo.json`, esquema `nta-panel/v1`): 5 grupos ×
+  {Total, Hombres, Mujeres} = 15 celdas, cada una un mini-Sankey de dos columnas: entradas YL; YA (con D.8) + impuestos a
+  productos; τ⁺ efectivo, especie y colectivo; inter-hogar recibido (con remesas); intra-hogar recibido (Σ intra > 0 por
+  persona); desahorro; ancla complemento → salidas C privado; C público en especie; C colectivo; τ⁻; inter-hogar otorgado;
+  intra-hogar otorgado (Σ intra < 0); S; ancla recorte. **Cada celda balancea por la identidad del gate** con el ancla
+  declarada (|Δ|/C máx 1.1e-14); S es el anclado (Σ Total = Σ H + Σ M = B.8n). Trae además C, YL, **déficit de ciclo de
+  vida C − YL**, S, S sin ancla y los componentes por celda. Formato scalarjson: números crudos a 17 dígitos
+  significativos, nada de literales, `generado_el` aislado al final de `procedencia`.
+- **Sitio.** `jsonSankeyNTA.php`: default **`?corte=v3-grupoedad`**; `v2-grupoedad` y los v1 siguen en la lista blanca
+  (404 con pista si el archivo no viajó); nuevo `?cuenta=panel-grupoedad-sexo` (byte a byte); `toolText` «inflows =
+  outflows» en los cuatro hubs del v3 (en el v2, en los nodos de grupo). `NTA/index.php`: párrafo de método con las
+  columnas del v3 (nota ¹ intacta), tabla de nodos y enlaces del v3 (7 columnas), «Anchoring and residual» al v3 (el
+  ancla cuelga de `Activos`) con un punto nuevo que lee de la cuenta cuánto efectivo devuelve el gobierno y cuánto dan y
+  reciben los hogares, y la sección **«The account by age group»**: selector Total / Men / Women y cinco mini-Sankeys en
+  fila, cada uno con el título (etiqueta del motor) y al pie su déficit de ciclo de vida y su S leídos del JSON.
+  `js/metodo-sankey.js` gana `metodoPanel()` (una sola petición; el selector cambia los cinco con `setJSONData`, sin
+  recarga); `metodo/plantilla.php` admite `panel`; `css/metodo.css` (grid de 5 → 3 → 1 columnas; Sankey principal a
+  820 px). **v2 retirado del sitio**; el motor lo sigue emitiendo. Cero literales en los cinco archivos.
+- **Deploy.** Fase 3b-ter embarca `SankeyNTA/sankey-v3-grupoedad.json` y `NTA/nta-panel-grupoedad-sexo.json` y **deja de
+  exigir el v2** (manifiesto 11 → 12 archivos); Gate 5-remoto exige el v3 y el panel (+1 ruta neta).
+- **Gates.** `test-sitio-nta.{sh,js}`: default y `?corte=v3-grupoedad`, **42/118** fijados cuando el origen es el
+  fixture, `toolText` solo en hubs, sin Ingreso g / Consumo g / Familias, v2 y v1 sin archivo → 404, `?cuenta=` byte a
+  byte (cuenta y panel), 15 celdas balanceadas, cero literales, y en Chrome headless: enlaces del v3 idénticos como
+  cadena, cifras llenas, cinco paneles con las celdas Total, títulos del motor, pies iguales al archivo, selector Hombres
+  / Mujeres cambia los cinco paneles con una sola petición al endpoint, `--png` (página, v3 solo, panel Total).
+  `test-nta-identidad.sh` gana la mitad C (v3: conservación, hubs, sin nodos retirados, 5 + 5 grupos, `Colectivo`
+  terminal; panel: 15 celdas a 1e-9, Σ S = B.8n). Harness de seguridad con el default v3 y el panel. Fixtures:
+  `sankey-nta-grupoedad.json` pasa a ser el **v3 real** (sha256 `7bcafacb…`) de la corrida completa de `SIM.do` en esta
+  rama (`5b05979`; reproduce byte a byte el baseline v8.12.6: gate de números verde, `output.txt`, los 10 sankeys, el v2
+  y `nta-identidad.txt` idénticos a la corrida determinista de `acd8a8c`), más `nta-panel-grupoedad-sexo.json` (nuevo,
+  sha256 `2bff8f61…`) y `nta-grupoedad.json` refrescado (solo `procedencia.modulo` → v1.3; números idénticos).
+- **Hallazgo lateral (sitio).** A ~200 px de ancho FusionCharts trunca toda etiqueta de nodo de un sankey a ~35 px
+  («In…», «τ…») con cualquier `nodelabelposition`, márgenes a cero y fuente menor (medido con Chrome headless, ocho
+  variantes); por eso los mini-Sankeys del panel se dibujan con SVG propio y el Sankey principal sigue en FusionCharts.
+- **Interpretación del v3 (para el lector).** `El mundo` sigue siendo fuente de `Remesas` (columna 1); `Colectivo` es
+  terminal porque no tiene edad; FusionCharts coloca cada nodo por su profundidad desde las fuentes, así que las 7
+  categorías privadas quedan una columna a la derecha de las 3 en especie (reciben de `Transferencias en efectivo`), y
+  `Colectivo`, `Futuro g` y `Ancla S14 recorte` comparten columna con `Transferencias en efectivo`: la tabla de cabeceras
+  de la página lo refleja (7 columnas).
+
 ### Baseline y manifest
 
 - Commit «baseline: v8.12.6 reproducibilidad»: `05_scripts/fixtures/output-default.txt`, los 5
