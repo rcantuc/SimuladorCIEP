@@ -1,13 +1,16 @@
 <?php
-// /NTA — Sankey NTA v2 de los hogares, por grupo de edad, tal cual lo emite el motor
-// (01_modulos/NTA.do §7 → SankeySumSim folder(SankeyNTA) name(v2-grupoedad) →
-// users/<id>/SankeyNTA/sankey-v2-grupoedad.json; contrato v2.1, 05_scripts/test-nta-identidad.sh).
-// Página estática de lectura: el texto explica cómo se construye la cuenta por individuo y la
-// gráfica; la gráfica se lee en runtime de /jsonSankeyNTA.php?corte=v2-grupoedad y las cifras del
-// apartado «Anchoring and residual» de /jsonSankeyNTA.php?cuenta=grupoedad (users/<id>/NTA/
+// /NTA — Sankey NTA v3 de los hogares, por grupo de edad, tal cual lo emite el motor
+// (01_modulos/NTA.do §7b → SankeySumSim folder(SankeyNTA) name(v3-grupoedad) →
+// users/<id>/SankeyNTA/sankey-v3-grupoedad.json; contrato v3, 05_scripts/test-nta-identidad.sh), y debajo el panel
+// por grupo de edad × sexo (NTA.do §7c → users/<id>/NTA/nta-panel-grupoedad-sexo.json; cinco mini-Sankeys con
+// selector Total / Hombres / Mujeres que lee las tres variantes del mismo JSON, sin recarga).
+// Página estática de lectura: el texto explica cómo se construye la cuenta por individuo y la gráfica; la gráfica se
+// lee en runtime de /jsonSankeyNTA.php?corte=v3-grupoedad, el panel de /jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo
+// y las cifras del apartado «Anchoring and residual» de /jsonSankeyNTA.php?cuenta=grupoedad (users/<id>/NTA/
 // nta-grupoedad.json, NTA.do §6.2). Primera página de la sección de método (metodo/plantilla.php).
-// Sin números en este archivo: todo valor viene de esos dos JSON. v8.12.5 (NTA-2): el Sankey v1
-// (Households.do §"Sankeys NTA") ya no se dibuja aquí; el motor lo sigue emitiendo.
+// Sin números en este archivo: todo valor viene de esos tres JSON. v8.12.5 (NTA-2): el Sankey v1 ya no se dibuja aquí;
+// v8.12.6 (NTA-3): el v2 tampoco (decisión de Ricardo del 29-oct: edades solo al inicio y al final; las transferencias
+// en efectivo y familiares, que netean a cero nacionalmente, viven en el panel). El motor sigue emitiendo v1 y v2.
 require_once dirname(__DIR__) . '/metodo/plantilla.php';
 
 metodo_cabecera(array(
@@ -18,8 +21,8 @@ metodo_cabecera(array(
 ));
 ?>
 		<section class="metodo-texto">
-			<p>The chart is a Sankey of the National Transfer Accounts (<abbr title="National Transfer Accounts (Lee–Mason)">NTA</abbr>) of households for one survey year, built person by person from the <abbr title="Encuesta Nacional de Ingresos y Gastos de los Hogares (INEGI)">ENIGH</abbr> and closed on the household sector (S.14) of the national accounts. The Simulador's Households module has first annualized every income and expenditure item, split household-level items among the members of each household<?= metodo_nota_ref(1) ?>, and benchmarked each income and consumption component to the national accounts of the same year (Altimir-type scaling). The NTA module then rearranges those person-level amounts into the lifecycle identity <i>C − YL = (τ⁺ − τ⁻) + (YA − S)</i>: consumption not covered by labor income is financed by net transfers and by asset-based reallocations, each term defined as in the household sector and anchored to it. Labor income excludes pensions and the transfers the survey records inside mixed income. Asset income is net of depreciation, excludes the taxes on products the engine folds into capital income, is scaled to the sector's operating surplus, one third of its mixed income and its net property income, and adds the adjustment for pension entitlements (D.8); imputed rent is income of the household head. Taxes on products enter as income in proportion to consumption, so income is at market prices and consumption at purchasers' prices. Public transfers received are cash pensions and programs scaled to the sector's social benefits, in-kind consumption (education by enrolment, health by private health spending, the rest per capita) equal to social transfers in kind, and collective consumption per capita; public transfers paid are the income tax, social contributions and indirect taxes households pay (not corporate taxes). Private transfers are gifts, inheritances, remittances and cash given to other households. Saving is each household's residual, assigned to its adults in proportion to income and, since the survey total falls within tolerance of the sector's net saving (B.8n), scaled to it by one factor that the chart declares as two explicit nodes. The within-household transfer is the only residual; it sums to zero in every household. Every number is a survey-weighted sum in current pesos: no per-capita values, no single-year age profiles. Age enters only through five groups (0–4, 5–17, 18–24, 25–64, 65 and over); each group appears as an earner on the left, as holder of its income and consumption in the middle, and as a consumer on the right. Reading left to right: age groups, public enterprises and the rest of the world feed the income types, which collapse into national income; it returns to each group, which pays taxes, gives to other households, saves and consumes the rest; government, families and assets send cash transfers, private transfers and dissaving back to the consuming groups, and government buys in-kind and collective consumption; consumption splits into seven private and four public categories, each drawn back to the group that consumed it, while saving goes to a future node per group.</p>
-			<p class="lead-nota">Node labels are the ones the engine emits, in Spanish. FusionCharts identifies a node by its label, so the engine disambiguates a name that must appear in two columns by prefixing a space (<code>De 0 a 4</code> on the left as earner vs. <code>&nbsp;De 0 a 4</code> on the right as consumer), and a group's income and consumption nodes carry their own labels (<code>Ingreso 0 a 4</code>, <code>Consumo 0 a 4</code>). If you replicate the schema, keep node identifiers unique.</p>
+			<p>The chart is a Sankey of the National Transfer Accounts (<abbr title="National Transfer Accounts (Lee–Mason)">NTA</abbr>) of households for one survey year, built person by person from the <abbr title="Encuesta Nacional de Ingresos y Gastos de los Hogares (INEGI)">ENIGH</abbr> and closed on the household sector (S.14) of the national accounts. The Simulador's Households module has first annualized every income and expenditure item, split household-level items among the members of each household<?= metodo_nota_ref(1) ?>, and benchmarked each income and consumption component to the national accounts of the same year (Altimir-type scaling). The NTA module then rearranges those person-level amounts into the lifecycle identity <i>C − YL = (τ⁺ − τ⁻) + (YA − S)</i>: consumption not covered by labor income is financed by net transfers and by asset-based reallocations, each term defined as in the household sector and anchored to it. Labor income excludes pensions and the transfers the survey records inside mixed income. Asset income is net of depreciation, excludes the taxes on products the engine folds into capital income, is scaled to the sector's operating surplus, one third of its mixed income and its net property income, and adds the adjustment for pension entitlements (D.8); imputed rent is income of the household head. Taxes on products enter as income in proportion to consumption, so income is at market prices and consumption at purchasers' prices. Public transfers received are cash pensions and programs scaled to the sector's social benefits, in-kind consumption (education by enrolment, health by private health spending, the rest per capita) equal to social transfers in kind, and collective consumption per capita; public transfers paid are the income tax, social contributions and indirect taxes households pay (not corporate taxes). Private transfers are gifts, inheritances, remittances and cash given to other households. Saving is each household's residual, assigned to its adults in proportion to income and, since the survey total falls within tolerance of the sector's net saving (B.8n), scaled to it by one factor that the chart declares as two explicit nodes. The within-household transfer is the only residual; it sums to zero in every household. Every number is a survey-weighted sum in current pesos: no per-capita values, no single-year age profiles. Age enters only through five groups (0–4, 5–17, 18–24, 25–64, 65 and over) and only at the two ends of the chart: each group appears as an earner on the left and as a consumer on the right. Reading left to right: age groups, public enterprises and the rest of the world feed the income types, which collapse into national income; from there the taxes households pay go to government, the saving of the groups that save goes to assets, and the rest finances private consumption directly; government buys in-kind consumption, drawn back to the groups by age, and collective consumption, which has no age, and returns the remainder of what it collects as a single cash-transfers node; assets send each saving group's saving to its future node and the dissaving of the groups that dissave back into private consumption; private consumption splits into seven categories, each drawn back to the group that consumed it. Cash transfers, transfers between households and transfers within households net to zero across the nation, so the main chart does not draw them by age: the panel below does, group by group and by sex.</p>
+			<p class="lead-nota">Node labels are the ones the engine emits, in Spanish. FusionCharts identifies a node by its label, so the engine disambiguates a name that must appear in two columns by prefixing a space (<code>De 0 a 4</code> on the left as earner vs. <code>&nbsp;De 0 a 4</code> on the right as consumer), and the sources of dissaving and saving carry their own labels (<code>Desahorro 0 a 4</code>, <code>Futuro 0 a 4</code>). If you replicate the schema, keep node identifiers unique.</p>
 <?php
 metodo_notas(array(
 	1 => '<b>Within-household allocation.</b> The ENIGH records most expenditure at the household level and only part of it by person, so building age profiles requires splitting household spending among its members. Dividing equally is a poor assumption: an infant and an adult do not consume the same amount of the same category. Instead, the data decide the split. Each household’s spending in a category is allocated to its members in proportion to the average spending of a person of the same age and sex in that category; since that average depends on the allocation and the allocation on the average, the two are solved jointly as a fixed point, starting from the equal split and iterating until less than one millionth of the category’s spending changes age-sex cell (profiles stable to six significant figures; each category takes the iterations it needs, typically 100–600). Every iteration preserves each household’s total exactly, so the national aggregate never moves; only its distribution within households does. Income is recorded by person in the ENIGH and needs no allocation. A caveat the reader should know: identifying children’s consumption from how household spending varies with household composition tends to attribute little to them (shared goods, economies of scale): at the fixed point a child aged 0–4 is assigned about 11 % of the food spending of an adult aged 30–64, against the 0.4 → 1 equivalence scale that NTA imposes a priori. The chart shows the data-driven allocation; a floor based on the NTA scale is an explicit option in the Simulador, not applied here.',
@@ -29,7 +32,7 @@ metodo_notas(array(
 
 		<h2>Nodes and links</h2>
 		<section class="metodo-texto">
-			<p>Weighted sums use the ENIGH expansion factor (<code>factor</code>) over persons. Variable names are those of the Simulador's person-level NTA file (<code>users/&lt;id&gt;/NTA/nta-persona.dta</code>); the anchors are scalars of the household sector S.14 (INEGI, institutional sector accounts: B.2n, B.3n, D.4, D.8, D.61 − D.614, D.62 + D.759, D.63, B.8n), of the total economy (D.21 − D.31) and of the consumption accounts (<code>ConHog</code>, <code>ConGob</code>, <code>SerEGob</code>, <code>SaluGob</code>, <code>ComprasN</code>, <code>ROWTrans</code>); public-enterprise revenue comes from the federal revenue law (LIF) and the cash transfer profiles from the federal budget (PEF). A node that would carry a zero flow is not emitted (for instance a group with positive saving has no <code>Desahorro</code> node), so the number of nodes depends on the year.</p>
+			<p>Weighted sums use the ENIGH expansion factor (<code>factor</code>) over persons. Variable names are those of the Simulador's person-level NTA file (<code>users/&lt;id&gt;/NTA/nta-persona.dta</code>); the anchors are scalars of the household sector S.14 (INEGI, institutional sector accounts: B.2n, B.3n, D.4, D.8, D.61 − D.614, D.62 + D.759, D.63, B.8n), of the total economy (D.21 − D.31) and of the consumption accounts (<code>ConHog</code>, <code>ConGob</code>, <code>SerEGob</code>, <code>SaluGob</code>, <code>ComprasN</code>, <code>ROWTrans</code>); public-enterprise revenue comes from the federal revenue law (LIF) and the cash transfer profiles from the federal budget (PEF). A node that would carry a zero flow is not emitted (for instance a group with positive saving has no <code>Desahorro</code> node), so the number of nodes depends on the year. Private consumption is financed from three places and the chart keeps them apart: what the groups pay from their own income arrives from <code>Ing nacional</code>, what they pay with public cash transfers arrives from <code>Transferencias en efectivo</code>, and what they pay by dissaving arrives from <code>Activos</code>; each group's share of each flow is split across the seven private categories by that group's own basket (Σ <code>gas_pc_*</code> of the category over Σ private consumption of the group), the same split the previous version made inside a per-group consumption node.</p>
 		</section>
 		<div class="table-responsive">
 			<table class="table table-sm metodo-tabla">
@@ -55,23 +58,23 @@ metodo_notas(array(
 					</tr>
 					<tr>
 						<td><code>Desahorro &lt;group&gt;</code></td>
-						<td>A group whose saving is negative (emitted only then).</td>
+						<td>A group whose (anchored) saving is negative; emitted only then.</td>
 						<td>→ <code>Activos</code>: −Σ <code>S</code> of the group.</td>
 					</tr>
 					<tr>
 						<td><code>Otras transferencias privadas</code></td>
-						<td>Balance of the families hub when private transfers received exceed those given (gifts and inheritances received − cash given to other households and institutions); emitted only if positive.</td>
-						<td>→ <code>Familias</code>: that balance.</td>
+						<td>Balance of transfers between households when those recorded as received exceed those recorded as given (gifts and inheritances received − cash given to other households and institutions): a survey imbalance, entered as a resource; emitted only if positive (if negative it leaves <code>Ing nacional</code> as <code>Transferencias privadas netas</code>).</td>
+						<td>→ <code>Ing nacional</code>: Σ <code>InterRec</code> − Σ <code>InterOtor</code>.</td>
 					</tr>
 					<tr>
 						<td><code>Déficit público</code></td>
-						<td>Balance of the government hub when what households pay plus public-enterprise revenue falls short of cash transfers plus public consumption (corporate taxes are not in the account); emitted only if negative.</td>
+						<td>Balance of the government hub when what households pay plus public-enterprise revenue falls short of cash transfers plus public consumption (corporate taxes are not in the account); emitted only if negative (if positive, <code>Gobierno</code> sends it to <code>Resto del gasto público</code>).</td>
 						<td>→ <code>Gobierno</code>: −(Σ <code>Tmen</code> + OyE − Σ <code>TpubEf</code> − Σ <code>Cpub</code>).</td>
 					</tr>
 					<tr>
 						<td><code>Ancla S14 complemento</code></td>
-						<td>Declared anchor of saving: for a group whose anchored saving is larger than its unanchored saving (its dissaving shrinks), the difference enters its consumption from here.</td>
-						<td>→ <code>Consumo &lt;group&gt;</code>: max(<code>S_ajuste</code>, 0) of the group.</td>
+						<td>Declared anchor of saving, dissaving side: for a group whose anchored dissaving is smaller than its unanchored dissaving, the difference enters assets from here and goes on to consumption.</td>
+						<td>→ <code>Activos</code>: Σ over groups of max(<code>S_ajuste</code>, 0).</td>
 					</tr>
 					<tr>
 						<th>2 · Income types</th>
@@ -82,52 +85,41 @@ metodo_notas(array(
 					<tr>
 						<th>3 · Hub</th>
 						<td><code>Ing nacional</code></td>
-						<td>National income at market prices: the single pivot between resources and their holders. Inflows = outflows by construction.</td>
-						<td>→ <code>Ingreso &lt;group&gt;</code>: Σ (<code>YL</code> + <code>YA</code> + <code>ImpProd</code>) of the group.<br>→ <code>Gobierno</code>: the public-enterprise revenue.<br>→ <code>Familias</code>: the remittances.</td>
+						<td>National income at market prices (plus the private-transfer balance, if positive): the single pivot between resources and their uses. Inflows = outflows by construction (hover the node).</td>
+						<td>→ <code>Gobierno</code>: Σ <code>Tmen</code> + OyE, taxes paid by households (personal income tax of employees and of individuals, LIF; social contributions, anchor D.61 − D.614; VAT, excises, car and import taxes, LIF) and public-enterprise revenue.<br>→ <code>Activos</code>: Σ over the groups that save of their saving before the anchor (<code>S</code> + the anchor cut).<br>→ each private category: Σ over groups of the group's own-income financing of private consumption (Σ <code>YL</code> + <code>YA</code> + <code>ImpProd</code> − <code>Tmen</code> − max(<code>S</code>, 0) − cut + <code>InterRec</code> + <code>Remesas</code> + <code>Intra</code> − <code>InterOtor</code>), split by the group's basket.</td>
 					</tr>
 					<tr>
-						<th>4 · Income by group</th>
-						<td><code>Ingreso 0 a 4</code> … <code>Ingreso 65 y más</code></td>
-						<td>What each age group holds before reallocation. Inflows = outflows (hover the node).</td>
-						<td>→ <code>Gobierno</code>: Σ <code>Tmen</code>, taxes paid by households (personal income tax of employees and of individuals, LIF; social contributions, anchor D.61 − D.614; VAT, excises, car and import taxes, LIF).<br>→ <code>Familias</code>: Σ <code>InterOtor</code> (cash given to other households and institutions) + the group's negative net within-household transfer.<br>→ <code>Activos</code>: Σ <code>S</code> if positive.<br>→ <code>Ancla S14 recorte</code>: −min(<code>S_ajuste</code>, 0): the part of the group's unanchored saving that the anchor removes.<br>→ <code>Consumo &lt;group&gt;</code>: the remainder, the consumption the group pays from its own income.</td>
-					</tr>
-					<tr>
-						<th rowspan="3">5 · Reallocation hubs</th>
+						<th rowspan="2">4 · Reallocation hubs</th>
 						<td><code>Gobierno</code></td>
-						<td>General government. Inflows: taxes from the groups, public-enterprise revenue and, if needed, <code>Déficit público</code>.</td>
-						<td>→ <code>Consumo &lt;group&gt;</code>: Σ <code>TpubEf</code>, cash transfers (contributory pensions and Pensión Bienestar with PEF profiles, scholarships and programs from the ENIGH), all scaled by one factor to D.62 + D.759.<br>→ <code>Educación pública</code> (<code>SerEGob</code>, by enrolment), <code>Salud pública</code> (<code>SaluGob</code> ∝ private health spending), <code>Otros en especie</code> (the rest, per capita): together D.63, social transfers in kind, with an age dimension.<br>→ <code>Colectivo per cápita</code>: <code>ConGob</code> − D.63, collective consumption, per capita to everyone.</td>
-					</tr>
-					<tr>
-						<td><code>Familias</code></td>
-						<td>Transfers between households. Inflows: cash given by the groups, remittances and, if needed, <code>Otras transferencias privadas</code>.</td>
-						<td>→ <code>Consumo &lt;group&gt;</code>: Σ (<code>InterRec</code> + <code>Remesas</code>) received by the group + its positive net within-household transfer.</td>
+						<td>General government. Inflows: taxes and public-enterprise revenue from <code>Ing nacional</code> and, if needed, <code>Déficit público</code>. Inflows = outflows (hover the node).</td>
+						<td>→ <code>Educación pública</code> (<code>SerEGob</code>, by enrolment), <code>Salud pública</code> (<code>SaluGob</code> ∝ private health spending), <code>Otros en especie</code> (the rest, per capita): together D.63, social transfers in kind, with an age dimension.<br>→ <code>Colectivo</code>: <code>ConGob</code> − D.63, collective consumption; it has no age and ends there.<br>→ <code>Transferencias en efectivo</code>: Σ <code>TpubEf</code>, cash transfers (contributory pensions and Pensión Bienestar with PEF profiles, scholarships and programs from the ENIGH), all scaled by one factor to D.62 + D.759: what the government collects and does not consume, as a single node without age.</td>
 					</tr>
 					<tr>
 						<td><code>Activos</code></td>
-						<td>Asset-based reallocation. Inflows: the saving of the groups that save and the <code>Desahorro</code> of those that do not.</td>
-						<td>→ <code>Futuro &lt;group&gt;</code>: Σ <code>S</code> if positive (anchor: Σ over groups of saving minus dissaving = B.8n).<br>→ <code>Consumo &lt;group&gt;</code>: −Σ <code>S</code> if negative (the group's dissaving).</td>
+						<td>Asset-based reallocation. Inflows: the saving before the anchor of the groups that save, the <code>Desahorro</code> of those that do not and, if any, <code>Ancla S14 complemento</code>. Inflows = outflows (hover the node).</td>
+						<td>→ <code>Futuro &lt;group&gt;</code>: Σ <code>S</code> if positive (anchor: Σ over groups of saving minus dissaving = B.8n).<br>→ <code>Ancla S14 recorte</code>: Σ over groups of max(−<code>S_ajuste</code>, 0), the part of unanchored saving that the anchor removes.<br>→ each private category: the dissaving of the groups that dissave (plus the complement), split by their baskets.</td>
 					</tr>
 					<tr>
-						<th>6 · Consumption by group</th>
-						<td><code>Consumo 0 a 4</code> … <code>Consumo 65 y más</code></td>
-						<td>Private consumption of each age group at purchasers' prices, whoever paid for it. Inflows = outflows (hover the node).</td>
-						<td>→ the seven private categories: Σ over the persons of the group of <code>gas_pc_*</code>, including each person's share of net purchases of residents abroad (<code>ComprasN</code>): Alimentos = Agua + Alim + BebN; Vestido = Vest + Calz; Salud = SaluT; Educación = EducT + RecrT; Vivienda = Alqu + HogaT + ComuT + Elec; Transporte = Vehi + STra + FTra; Otros gastos = Taba + BebA + DiveT + RestT. Σ private consumption is reported against P.3 of S.14.</td>
+						<th>5 · Cash transfers</th>
+						<td><code>Transferencias en efectivo</code></td>
+						<td>Public cash transfers to persons, without age in this chart (the panel below shows who receives them). Inflows = outflows (hover the node).</td>
+						<td>→ each private category: Σ over groups of the group's cash transfers received, split by the group's basket.</td>
 					</tr>
 					<tr>
-						<th rowspan="2">7 · Uses</th>
+						<th rowspan="2">6 · Uses</th>
 						<td><code>Alimentos</code>, <code>Vestido</code>, <code>Salud</code>, <code>Educación</code>, <code>Vivienda</code>, <code>Transporte</code>, <code>Otros gastos</code></td>
-						<td>Private consumption categories.</td>
+						<td>Private consumption categories at purchasers' prices, whoever paid for them: Alimentos = Agua + Alim + BebN; Vestido = Vest + Calz; Salud = SaluT; Educación = EducT + RecrT; Vivienda = Alqu + HogaT + ComuT + Elec; Transporte = Vehi + STra + FTra; Otros gastos = Taba + BebA + DiveT + RestT, each including the person's share of net purchases of residents abroad (<code>ComprasN</code>). Σ private consumption is reported against P.3 of S.14. Inflows (own income + cash transfers + dissaving) = outflows by the identity.</td>
 						<td>→ <code>&nbsp;&lt;age group&gt;</code>: Σ of the category over the persons of that group.</td>
 					</tr>
 					<tr>
-						<td><code>Educación pública</code>, <code>Salud pública</code>, <code>Otros en especie</code>, <code>Colectivo per cápita</code></td>
-						<td>Public consumption: individual (D.63, by age) and collective (per capita).</td>
+						<td><code>Educación pública</code>, <code>Salud pública</code>, <code>Otros en especie</code></td>
+						<td>Public consumption in kind (D.63), by age.</td>
 						<td>→ <code>&nbsp;&lt;age group&gt;</code>: Σ of the category over the persons of that group.</td>
 					</tr>
 					<tr>
-						<th>8 · Sinks</th>
-						<td><code>&nbsp;De 0 a 4</code> … <code>&nbsp;De 65 y más</code>; <code>Futuro &lt;group&gt;</code>; <code>Ancla S14 recorte</code></td>
-						<td>The same five age groups as consumers; the future (saving of each group that saves); the declared cut of the saving anchor.</td>
+						<th>7 · Sinks</th>
+						<td><code>&nbsp;De 0 a 4</code> … <code>&nbsp;De 65 y más</code>; <code>Futuro &lt;group&gt;</code>; <code>Colectivo</code>; <code>Ancla S14 recorte</code></td>
+						<td>The same five age groups as consumers (private + in-kind consumption; collective consumption, with no age, ends in its own node); the future (saving of each group that saves); the declared cut of the saving anchor.</td>
 						<td>None (terminal nodes).</td>
 					</tr>
 				</tbody>
@@ -139,8 +131,9 @@ metodo_notas(array(
 			<p>The figures below are read from the engine's account file for this chart (<a href="/jsonSankeyNTA.php?cuenta=grupoedad">jsonSankeyNTA.php?cuenta=grupoedad</a>), in thousands of millions of current pesos (bn) unless stated; the full report, with the identity by age group and by five-year group and sex, is <a href="/jsonSankeyNTA.php?cuenta=identidad">nta-identidad.txt</a>.</p>
 			<ul class="metodo-cifras">
 				<li><b>Saving before the anchor.</b> The household residual sums to <span data-nta="S_vs_B8n.S_sin_ajuste"></span> bn against net saving of the household sector (B.8n) of <span data-nta="S_vs_B8n.AhorroHog"></span> bn: a gap of <span data-nta="S_vs_B8n.brecha_pct" data-nta-unidad="pct"></span> %, within the <span data-nta="S_vs_B8n.brecha_max_pct" data-nta-unidad="texto"></span> % tolerance, so the anchor mode resolves to <code><span data-nta="S_vs_B8n.modo" data-nta-unidad="texto"></span></code> (parameter <code><span data-nta="S_vs_B8n.modo_param" data-nta-unidad="texto"></span></code>).</li>
-				<li><b>The cut.</b> Saving is multiplied by <span data-nta="S_vs_B8n.factor_implicito" data-nta-unidad="factor"></span> (B.8n over the survey total), so Σ saving in the chart is <span data-nta="S_vs_B8n.S_final"></span> bn. The difference, <span data-nta="S_vs_B8n.S_ajuste"></span> bn, is not folded into any other term: it is what <code>Ancla S14 recorte</code> minus <code>Ancla S14 complemento</code> carries, group by group.</li>
+				<li><b>The cut.</b> Saving is multiplied by <span data-nta="S_vs_B8n.factor_implicito" data-nta-unidad="factor"></span> (B.8n over the survey total), so Σ saving in the chart is <span data-nta="S_vs_B8n.S_final"></span> bn. The difference, <span data-nta="S_vs_B8n.S_ajuste"></span> bn, is not folded into any other term: it is what <code>Ancla S14 recorte</code> (out of <code>Activos</code>) minus <code>Ancla S14 complemento</code> (into <code>Activos</code>) carries; the panel below shows it cell by cell.</li>
 				<li><b>Asset income.</b> The engine's household asset income, <span data-nta="ya_s14.YA_motor"></span> bn, is scaled by <span data-nta="ya_s14.factor" data-nta-unidad="factor"></span> to <span data-nta="ya_s14.YAHogS14"></span> bn (B.2n <span data-nta="ya_s14.B2n"></span> + ⅓ B.3n <span data-nta="ya_s14.tercio_B3n"></span> + net D.4 <span data-nta="ya_s14.D4_neto"></span>), keeping its distribution; the Simulador records the gap as a pending correction of the engine.</li>
+				<li><b>Cash and family transfers net to zero nationally.</b> Government returns <span data-nta="grupos.0.TpubEf"></span> bn in cash transfers out of <span data-nta="grupos.0.Tmen"></span> bn of taxes paid by households plus <span data-nta="anclas.OyE"></span> bn of public-enterprise revenue; households give <span data-nta="grupos.0.InterOtor"></span> bn to other households and record <span data-nta="grupos.0.InterRec"></span> bn received (plus <span data-nta="grupos.0.Remesas"></span> bn of remittances, which come from abroad and are income). Who receives and who pays, by age group and by sex, is the panel below; the main chart carries the cash as a single node and the family transfers inside each group's own-income financing.</li>
 				<li><b>The only residual is within the household.</b> By age group, the net within-household transfer is <span data-nta="grupos.1.Intra"></span> (0–4), <span data-nta="grupos.2.Intra"></span> (5–17), <span data-nta="grupos.3.Intra"></span> (18–24), <span data-nta="grupos.4.Intra"></span> (25–64) and <span data-nta="grupos.5.Intra"></span> bn (65 and over); it sums to <span data-nta="gates.intra_nacional" data-nta-unidad="mxn"></span> pesos nationally and the largest household total is <span data-nta="gates.intra_hogar_max" data-nta-unidad="mxn"></span> pesos. The identity without the anchor closes to <span data-nta="gates.residual_max_persona" data-nta-unidad="mxn"></span> pesos per person at most; with the anchor, its residual is exactly the cut above.</li>
 				<li><b>Consumption.</b> Σ private consumption is <span data-nta="grupos.0.Cpriv"></span> bn against P.3 of S.14 of <span data-nta="anclas.ConHogS14_P3"></span> bn (the engine anchors to the BIE figure, <span data-nta="anclas.ConHog"></span> bn, and subtracts net purchases of residents abroad); public consumption is <span data-nta="grupos.0.Cpub"></span> bn, of which <span data-nta="congob.individual_D63"></span> bn in kind (D.63) and <span data-nta="congob.colectivo_per_capita"></span> bn collective.</li>
 				<li><b>Provenance.</b> <span data-nta="procedencia.modulo" data-nta-unidad="texto"></span>, generated <span data-nta="procedencia.generado_el" data-nta-unidad="texto"></span>; parameters <code><span data-nta="parametros.nta_YA" data-nta-unidad="texto"></span></code>, <code><span data-nta="parametros.nta_cuotas" data-nta-unidad="texto"></span></code>, <code><span data-nta="parametros.nta_d8" data-nta-unidad="texto"></span></code>, <code><span data-nta="parametros.nta_alqu" data-nta-unidad="texto"></span></code>, <code><span data-nta="parametros.nta_mixto" data-nta-unidad="texto"></span></code> (see the header of <code>01_modulos/NTA.do</code>).</li>
@@ -152,28 +145,50 @@ metodo_notas(array(
 			<table class="metodo-titulos">
 				<tbody>
 					<tr>
-						<td style="text-align:left;">Sources: age groups (earners) · public enterprises · rest of the world · balances</td>
+						<td style="text-align:left;">Sources: age groups (earners) · public enterprises · rest of the world · dissaving · balances</td>
 						<td style="text-align:center;">Income types</td>
 						<td style="text-align:center;">National income (MXN, current)</td>
-						<td style="text-align:center;">Income by group</td>
-						<td style="text-align:center;">Government · Families · Assets</td>
-						<td style="text-align:center;">Consumption by group</td>
-						<td style="text-align:center;">Uses: private and public categories</td>
-						<td style="text-align:right;">Sinks: age groups (consumers) · future · anchor cut</td>
+						<td style="text-align:center;">Government · Assets</td>
+						<td style="text-align:center;">Cash transfers · in-kind categories · collective · future · anchor cut</td>
+						<td style="text-align:center;">Private categories</td>
+						<td style="text-align:right;">Sinks: age groups (consumers)</td>
 					</tr>
 				</tbody>
 			</table>
 			<div class="chart metodo-sankey metodo-sankey-alto" id="sankey-nta"></div>
 		</div>
 		<section class="metodo-texto">
-			<p class="lead-nota">Hover a link to read its value, and a group node (<code>Ingreso …</code>, <code>Consumo …</code>) to see that its inflows equal its outflows. The data behind the chart is served verbatim from the engine's output (<a href="/jsonSankeyNTA.php?corte=v2-grupoedad">jsonSankeyNTA.php?corte=v2-grupoedad</a>); the same engine run also emits the previous household Sankey by income decile, sex, age group, schooling and rural/urban/indigenous (<code>corte=decil|sexo|grupoedad|escol|rural</code>), which this page no longer draws.</p>
+			<p class="lead-nota">Hover a link to read its value, and a hub node (<code>Ing nacional</code>, <code>Gobierno</code>, <code>Activos</code>, <code>Transferencias en efectivo</code>) to see that its inflows equal its outflows. The data behind the chart is served verbatim from the engine's output (<a href="/jsonSankeyNTA.php?corte=v3-grupoedad">jsonSankeyNTA.php?corte=v3-grupoedad</a>); the same engine run also emits the previous version of this chart, with a per-group income and consumption node and a families hub (<code>corte=v2-grupoedad</code>), and the household Sankey by income decile, sex, age group, schooling and rural/urban/indigenous (<code>corte=decil|sexo|grupoedad|escol|rural</code>), which this page no longer draws.</p>
 		</section>
+
+		<h2>The account by age group</h2>
+		<section class="metodo-texto">
+			<p>What the main chart nets out is here, group by group: one mini-Sankey per age group with its inflows on the left (labor income; asset income with pension entitlements and taxes on products; public transfers in cash, in kind and collective; transfers received from other households, remittances included; transfers received within the household; dissaving) and its outflows on the right (private consumption; public consumption in kind and collective; taxes paid; transfers given to other households; transfers given within the household; saving). Within-household transfers are gross sums over persons (what the members who receive get, and what the members who give pay), so a group can appear on both sides; saving is the anchored one of the main chart, with the anchor declared (<code>Ancla S14 recorte</code> or <code>complemento</code>) so that each cell balances exactly by the lifecycle identity. Below each chart: the group's lifecycle deficit, consumption minus labor income (<i>C − YL</i>), and its saving, read from the same file. Choose Total, Men or Women: the three variants travel in one file (<a href="/jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo">jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo</a>) and the page redraws the five charts without reloading. Node labels are the engine's, in Spanish, as above.</p>
+		</section>
+		<div class="metodo-panel-wrap">
+			<div class="metodo-panel-selector" role="radiogroup" aria-label="Sex">
+				<span class="metodo-panel-selector-titulo">Sex</span>
+				<label><input type="radio" name="nta-sexo" value="T" checked> Total</label>
+				<label><input type="radio" name="nta-sexo" value="H"> Men</label>
+				<label><input type="radio" name="nta-sexo" value="M"> Women</label>
+			</div>
+			<div class="metodo-panel" id="nta-panel">
+<?php foreach (array(1, 2, 3, 4, 5) as $g): ?>
+				<div class="metodo-panel-celda">
+					<h3 class="metodo-panel-titulo"><span data-panel="grupo"></span></h3>
+					<div class="metodo-panel-sankey" id="nta-panel-<?= $g ?>"></div>
+					<p class="metodo-panel-pie">Lifecycle deficit (<i>C − YL</i>): <b><span data-panel="deficit_cv"></span></b> bn<br>Saving (<i>S</i>): <b><span data-panel="S"></span></b> bn</p>
+				</div>
+<?php endforeach; ?>
+			</div>
+		</div>
 <?php
 metodo_pie(array(
 	'sankeys' => array(
-		array('renderAt' => 'sankey-nta', 'url' => '/jsonSankeyNTA.php?corte=v2-grupoedad'),
+		array('renderAt' => 'sankey-nta', 'url' => '/jsonSankeyNTA.php?corte=v3-grupoedad'),
 	),
 	'cifras' => array('url' => '/jsonSankeyNTA.php?cuenta=grupoedad'),
+	'panel' => array('url' => '/jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo', 'contenedor' => 'nta-panel', 'selector' => 'nta-sexo'),
 	'fuente' => function ($meta) {
 		$enigh = $meta['enigh_vintage'] !== '' ? 'ENIGH ' . htmlspecialchars($meta['enigh_vintage']) : 'ENIGH';
 		$version = $meta['version_html'] !== '' ? ' ' . $meta['version_html'] : '';
