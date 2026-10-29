@@ -863,11 +863,13 @@ fi
 #       sankey-grupoedad.json ← jsonSankeyGrupoedad.php:28
 #       sankey-rural.json     ← jsonSankeyRural.php:22
 #       sankey-sexo.json      ← jsonSankeySexo.php:22
-#       SankeyNTA/sankey-v2-grupoedad.json ← jsonSankeyNTA.php?corte=v2-grupoedad (default; página de método /NTA, v8.12.5)
+#       SankeyNTA/sankey-v3-grupoedad.json ← jsonSankeyNTA.php?corte=v3-grupoedad (default; página de método /NTA, v8.12.6)
 #       SankeyNTA/sankey-grupoedad.json ← jsonSankeyNTA.php?corte=grupoedad (v1; /NTA ya no lo dibuja, el endpoint lo conserva)
 #       NTA/nta-grupoedad.json          ← jsonSankeyNTA.php?cuenta=grupoedad (cifras de «Anchoring and residual» en /NTA)
+#       NTA/nta-panel-grupoedad-sexo.json ← jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo (panel por grupo × sexo de /NTA, v8.12.6)
 #       NTA/nta-quinquenio-sexo.json    ← jsonSankeyNTA.php?cuenta=quinquenio-sexo
 #       NTA/nta-identidad.txt           ← jsonSankeyNTA.php?cuenta=identidad (reporte enlazado desde /NTA)
+#       (el v2, SankeyNTA/sankey-v2-grupoedad.json, lo sigue emitiendo el motor pero /NTA ya no lo dibuja: no viaja desde v8.12.6)
 # Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
 # SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
 # investigador). El contrato del PHP no se toca: se publica EN users/ciepmx/.
@@ -877,7 +879,7 @@ fi
 # 01_modulos/output.do, los sankey-*.json vía SankeySF.do→SankeySumSim,
 # SankeyNTA/sankey-<corte>.json vía Households.do §"Sankeys NTA"→
 # visualizations/Sankey.do→SankeySumSim folder(SankeyNTA), y NTA/* más
-# SankeyNTA/sankey-v2-grupoedad.json vía 01_modulos/NTA.do (SIM.do §3.2b; la
+# SankeyNTA/sankey-v3-grupoedad.json vía 01_modulos/NTA.do (SIM.do §3.2b; la
 # cuenta NTA por individuo). nta-persona.dta (130 MB) NO viaja: el web no lo
 # lee. Una entrada con subcarpeta viaja a users/ciepmx/<subcarpeta>/ (misma
 # ruta relativa que local).
@@ -889,8 +891,9 @@ DEFAULT_MANIFEST=(
     sankey-rural.json
     sankey-sexo.json
     SankeyNTA/sankey-grupoedad.json
-    SankeyNTA/sankey-v2-grupoedad.json
+    SankeyNTA/sankey-v3-grupoedad.json
     NTA/nta-grupoedad.json
+    NTA/nta-panel-grupoedad-sexo.json
     NTA/nta-quinquenio-sexo.json
     NTA/nta-identidad.txt
 )
@@ -1097,8 +1100,9 @@ MOTOR_LECTURAS_VPS=(
     "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
     "users/ciepmx/output.txt"                        # Fase 3b-ter: escenario default (cargaDefault.php)
     "users/ciepmx/SankeyNTA/sankey-grupoedad.json"   # Fase 3b-ter: Sankey NTA v1 (jsonSankeyNTA.php?corte=grupoedad)
-    "users/ciepmx/SankeyNTA/sankey-v2-grupoedad.json" # Fase 3b-ter: Sankey NTA v2, el que dibuja /NTA (v8.12.5)
+    "users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json" # Fase 3b-ter: Sankey NTA v3, el que dibuja /NTA (v8.12.6)
     "users/ciepmx/NTA/nta-grupoedad.json"            # Fase 3b-ter: cuenta NTA por grupo (cifras de /NTA, ?cuenta=grupoedad)
+    "users/ciepmx/NTA/nta-panel-grupoedad-sexo.json" # Fase 3b-ter: panel por grupo × sexo de /NTA (?cuenta=panel-grupoedad-sexo)
     "users/ciepmx/NTA/nta-identidad.txt"             # Fase 3b-ter: reporte de identidad enlazado desde /NTA
 )
 _GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
