@@ -2207,7 +2207,7 @@ estimates save "${SIMROOT}/master/`anioenigh'/formal_salarios", replace
 predict double prob_salarios if e(sample)
 
 * Seleccionar individuo formales (general) *
-gsort -formal_probit -prob_salarios
+gsort -formal_probit -prob_salarios folioviv foliohog numren
 g formal_accumSAL = sum(factor) if prob_salarios != .
 egen formal_SAL = sum(factor) if prob_salarios != .
 g prop_salarios = formal_accumSAL/formal_SAL
@@ -2224,7 +2224,7 @@ estimates save "${SIMROOT}/master/`anioenigh'/formal_fisicas", replace
 predict double prob_formal if e(sample)
 
 * Seleccionar individuo formales (general) *
-gsort -formal_probit -prob_formal
+gsort -formal_probit -prob_formal folioviv foliohog numren
 g formal_accum = sum(factor) if prob_formal != .
 egen formal_NAC = sum(factor) if prob_formal != .
 g prop_formal = formal_accum/formal_NAC
@@ -2240,7 +2240,7 @@ estimates save "${SIMROOT}/master/`anioenigh'/formal_morales", replace
 predict double prob_moral if e(sample)
 
 * Seleccionar individuo formales (general) *
-gsort -formal_probit -prob_moral
+gsort -formal_probit -prob_moral folioviv foliohog numren
 g formal_accumMOR = sum(factor) if prob_moral != .
 egen formal_MOR = sum(factor) if prob_moral != .
 g prop_moral = formal_accumMOR/formal_MOR
@@ -2248,7 +2248,7 @@ g prop_moral = formal_accumMOR/formal_MOR
 
 ***********************
 ** 11.1 ISR SALARIOS **
-gsort -prob_salarios
+gsort -prob_salarios folioviv foliohog numren
 g ISR_asalariados = ISR*(ing_subor)/(ing_bruto_tax-cuotasTPF) if prob_salarios != .
 replace ISR_asalariados = 0 if ISR_asalariados == .
 label var ISR_asalariados "ISR (retenciones por salarios)"
@@ -2270,7 +2270,7 @@ escalar mxn ISRSalarios = `ISRSalarios'
 
 *******************************
 ** 11.2 ISR PERSONAS FISICAS **
-gsort -prob_formal
+gsort -prob_formal folioviv foliohog numren
 g ISR_PF = ISR - ISR_asalariados if ISR - ISR_asalariados > 0 & prob_formal != .
 replace ISR_PF = 0 if ISR_PF == .
 label var ISR_PF "ISR (personas f{c i'}sicas)"
@@ -2297,7 +2297,7 @@ Distribucion gasto_anualDepreciacion, relativo(ing_capital) macro(`ConCapFij')
 Gini gasto_anualDepreciacion, hogar(folioviv foliohog) factor(factor)
 local gini_gasto_anualDepreciacion = r(gini_gasto_anualDepreciac)
 
-gsort -prob_moral
+gsort -prob_moral folioviv foliohog numren
 g ISR_PM = (ing_bruto_tpm+gasto_anualDepreciacion-exen_tpm)*.3 - SE_empresas
 replace ISR_PM = 0 if ISR_PM == .
 label var ISR_PM "ISR (personas morales)"

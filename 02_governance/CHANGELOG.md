@@ -16,6 +16,122 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.12.6] — 2026-10-29 — Reproducibilidad: el orden de los empates ya no depende del camino
+
+Cierre del memo REPRO-1 (`02_governance/repro-1-2026-10-28.md`, PR #42): dos corridas completas del mismo
+código (`8766c90`) con los mismos insumos daban `output.txt` distinto en 23 líneas porque `Households.do`
+ordenaba a las personas por probabilidades predichas (`gsort -prob_*`, 17,179 empates exactos en
+`prob_moral`) antes de los cut-offs de formalidad, y Stata rompe los empates de `sort` con un RNG propio
+que avanza con cada `sort` de la sesión (no lo gobierna `set seed`). El primer paso por `SCNHogaresS14`
+en un clon (NTA-1) añadía sorts antes de `Households.do` y cambiaba de bando a 2 de las 3 personas
+empatadas en el margen del cut-off de personas morales. **Seis `gsort` de `01_modulos/Households.do`
+llevan ahora la llave única `folioviv foliohog numren`** (la misma receta que FLAG-7 aplicó en
+`SankeySF.do` en v8.12.0); cero cambios de lógica, un commit por línea, cada uno medido con una corrida
+completa de `SIM.do` (defaults + `nographs` + `output`, StataNow 19.5, 1 procesador) en un worktree
+con los `raw/` y `master/` de `-datos`. Evidencia (corridas, diffs, gate): PR #43 y `~/CIEP_Simuladores/diag-repro-fix-2026-10-29/`.
+
+**Regla nueva (contrato del gate de números):** *el orden de los empates ya no depende del camino de la
+corrida.* Dos corridas completas con los seis fixes por caminos distintos — una con `master/SCN.dta` ya
+enriquecido con las series S.14 (`SCNHogaresS14` no corre) y otra con las 18 series borradas del
+`SCN.dta` (`SCNHogaresS14` corre: 15 `reshape`, 14 `merge`, 16 `save` extra antes de `Households.do`) —
+dan `output.txt` **byte-idéntico** (con `7338fa7` esos dos caminos difieren en 23 líneas) y los 10 sankeys
+del gate dentro de 1e-9 con **Δ rel. máx 1.3e-15**: 10 de los 11 JSON no son byte-idénticos (10 enlaces de
+`Imp al trabajo`, YL y S en el último bit) y la cuenta NTA difiere en 7 campos en el último bit. Ese
+residuo no es un cambio de bando sino **orden de suma en punto flotante**, y tiene un origen único
+(FLAG abajo).
+
+### Correcciones — `01_modulos/Households.do`, llave única en seis `gsort` (REPRO-FIX)
+
+| commit | línea | antes | después | qué decide | mueve vs commit anterior |
+|---|---|---|---|---|---|
+| `aa1fb75` | 2300 | `gsort -prob_moral` | `gsort -prob_moral folioviv foliohog numren` | cut-off `ISR_PM` (§11.3) | **14 líneas** de `output.txt`, 5 SankeySF (tabla abajo); NTA 0 |
+| `862eebb` | 2210 | `gsort -formal_probit -prob_salarios` | `… folioviv foliohog numren` | `prop_salarios` (§10.2) | 0 líneas, 11 JSON idénticos |
+| `3ea236a` | 2227 | `gsort -formal_probit -prob_formal` | `… folioviv foliohog numren` | `prop_formal` (§10.3) | 0 líneas, 11 JSON idénticos |
+| `19c8641` | 2243 | `gsort -formal_probit -prob_moral` | `… folioviv foliohog numren` | `prop_moral` (§10.4; el 66.75 % impreso) | 0 líneas, 11 JSON idénticos |
+| `03acb24` | 2251 | `gsort -prob_salarios` | `… folioviv foliohog numren` | cut-off `ISR_asalariados` (§11.1) | 0 líneas, 11 JSON idénticos |
+| `acd8a8c` | 2273 | `gsort -prob_formal` | `… folioviv foliohog numren` | cut-off `ISR_PF` (§11.2) | 0 líneas, 11 JSON idénticos |
+
+Las cinco hermanas no mueven nada hoy (su margen no cae en un empate, memo §5) pero quedan cerradas:
+cualquier `sort` extra antes de `Households.do` ya no puede moverlas. Los `gsort` continuos de §9
+(l. 1817/1828/1957, sobre ingreso) no se tocan: un empate exacto en ingreso con factor es improbable y
+no hay cut-off discreto detrás.
+
+### Qué mueve (`output.txt`, 14 de 519 líneas; `7338fa7` → v8.12.6)
+
+La llave única elige, dentro del grupo de 3 personas empatadas en el margen del cut-off de personas
+morales (410 M MXN de `ISR_PM` ponderado; memo §5), un subconjunto formal distinto del que tenía el
+baseline (y distinto del de la corrida del ritual del 28-10): el saldo neto cae en el decil VIII (+18.5 M) y,
+como el total de `ISR_PM` está anclado a la LIF, el resto de los deciles se reescala −8.8e-6. Nada fuera de
+los bloques que contienen `ISR_PM` (ISRPM, OTROSK, KPrivado, ImpuestosAportaciones, AportacionesNetas);
+los 39 bloques restantes y las 35 líneas de proyección/FiscalGap son byte-idénticos; los 5 SankeyNTA y el
+v2, Δ = 0. En las filas `INCD` (deciles I … X y promedio) se muestran el decil I, el X y el promedio.
+
+| línea | bloque | clave | posiciones | antes | después | Δ máx abs (Δ rel máx) |
+|---|---|---|---|---|---|---|
+| 188 | ISRPM | `INCD` | I … X; prom. | 86,927 … 1,661,669; 687,492 | 86,926 … 1,661,654; 687,481 | 15 (2.9e-05) |
+| 193 | ISRPM | `APORTHX` | 9 | 12.719 | 12.718 | 0.001 (7.9e-05) |
+| 195 | ISRPM | `APORTMVIIX` | 12 | 0.619 | 0.62 | 0.001 (1.6e-03) |
+| 199 | OTROSK | `INCD` | I, III … X; prom. | 33,800 … 646,108; 267,318 | 33,799 … 646,102; 267,314 | 6 (3.2e-05) |
+| 204 | OTROSK | `APORTHX` | 9 | 12.719 | 12.718 | 0.001 (7.9e-05) |
+| 206 | OTROSK | `APORTMVIIX` | 12 | 0.619 | 0.62 | 0.001 (1.6e-03) |
+| 210 | KPrivado | `INCD` | I … X; prom. | 120,726 … 2,307,777; 954,810 | 120,725 … 2,307,757; 954,795 | 20 (3.0e-05) |
+| 215 | KPrivado | `APORTHX` | 9 | 12.719 | 12.718 | 0.001 (7.9e-05) |
+| 217 | KPrivado | `APORTMVIIX` | 12 | 0.619 | 0.62 | 0.001 (1.6e-03) |
+| 353 | ImpuestosAportaciones | `INCD` | 7,8,9,10 | 156455,198288,277108,705012 | 156454,198293,277107,705009 | 5 (2.5e-05) |
+| 358 | ImpuestosAportaciones | `APORTHX` | 10 | 4.905 | 4.904 | 0.001 (2.0e-04) |
+| 474 | AportacionesNetas | `INCD` | 7,8,10 | 7232,41137,483164 | 7231,41140,483162 | 3 (1.4e-04) |
+| 479 | AportacionesNetas | `APORTHX` | 9,12 | 5.457,15.091 | 5.456,15.09 | 0.001 (1.8e-04) |
+| 481 | AportacionesNetas | `APORTMVIIX` | 13 | 5.333 | 5.334 | 0.001 (1.9e-04) |
+
+| enlace Sankey SF (decil) | antes | después | Δ (Δ rel) |
+|---|---|---|---|
+| `VIII → Imp al capital` | 217,413,979,633 | 217,432,507,822 | +18,528,189 (8.5e-05) |
+| `V → Imp al capital` | 75,934,567,782 | 75,933,899,714 | -668,069 (8.8e-06) |
+| `IV → Imp al capital` | 48,308,676,105 | 48,308,251,088 | -425,017 (8.8e-06) |
+| `III → Imp al capital` | 28,985,941,430 | 28,985,686,413 | -255,017 (8.8e-06) |
+| `VII → Imp al capital` | 131,116,764,970 | 131,115,611,411 | -1,153,559 (8.8e-06) |
+| `I → Imp al capital` | 7,883,672,610 | 7,883,603,250 | -69,360 (8.8e-06) |
+| `X → Imp al capital` | 1,356,957,510,192 | 1,356,945,571,747 | -11,938,446 (8.8e-06) |
+| `II → Imp al capital` | 18,475,002,106 | 18,474,839,564 | -162,542 (8.8e-06) |
+| `IX → Imp al capital` | 348,019,101,818 | 348,016,039,963 | -3,061,855 (8.8e-06) |
+| `VI → Imp al capital` | 90,285,122,246 | 90,284,327,922 | -794,324 (8.8e-06) |
+
+Δ relativo máximo en los sankeys: SankeySF/decil 8.5e-5 (`VIII → Imp al capital`); grupoedad y rural
+8.8e-6; sexo 4.1e-5; escol 4.1e-5. Informalidad impresa de personas morales: 66.75 % (igual que el baseline).
+
+### FLAG — el residuo de último bit: falta un `sort` fuera de la compuerta de este PR (para v8.12.7)
+
+- **Qué es.** `households.dta` de los dos caminos tiene el mismo orden de filas y las mismas personas en
+  cada bando, pero 49 variables difieren en ≤ 6e-16 relativo desde la primera (`ing_tri`, 6,892 personas):
+  `Households.do` l. 341–342 (`merge m:1` de las líneas de ingreso con `poblacion`/`concentrado`, que
+  reordena las líneas de una misma persona con el RNG de `sort`) y l. 551 `collapse (sum) ing_* …
+  by(folioviv foliohog numren id_trabajo)` suman las líneas de cada persona en un orden que depende del
+  camino. Después, l. 552 `sort folioviv foliohog numren` deja empatadas las filas de `id_trabajo`. De ahí
+  heredan `isrE`, `ISR`, `Yl`, `Ahorro` (≤ 3e-12), y en la salida solo lo que no se redondea: 10 enlaces
+  de sankeys (≤ 1.3e-15) y 7 campos de `nta-*.json`.
+- **Prueba.** (i) Aislado (`ulp-collapse.do`): la misma lectura con y sin un `sort` previo → 7,197
+  personas con `ing_tri` distinto; con `sort folioviv foliohog numren id_trabajo clave` antes del
+  `collapse` → 0. (ii) Dos corridas completas por los dos caminos en worktrees desechables de `acd8a8c`
+  más ese `sort` y `id_trabajo` en la l. 552 (2 líneas, **no commiteadas**): `output.txt` byte-idéntico,
+  **los 11 JSON byte-idénticos**, cuenta NTA idéntica salvo `generado_el`.
+- **Qué haría si se aplica.** Respecto a este baseline: `output.txt` byte-idéntico (0 líneas), sankeys
+  ≤ 3.9e-14 (dentro del gate), `nta-identidad.txt` cambia en los últimos dígitos impresos y
+  `nta-*.json` en el último bit → refrescar los fixtures NTA en el mismo commit. No se aplica aquí porque la
+  compuerta de este PR cubre solo las seis líneas del memo; propuesto para v8.12.7.
+
+### Baseline y manifest
+
+- Commit «baseline: v8.12.6 reproducibilidad»: `05_scripts/fixtures/output-default.txt`, los 5
+  `fixtures/sankeys-default/SankeySF/sankey-*.json` y `fixtures/nta-grupoedad.json` (su `TmenFuera`,
+  informativo, contiene `ISR_PM` por grupo; además su `procedencia.modulo` estaba en v1.1 y el motor emite
+  v1.2 desde NTA-1c) reemplazados por la salida determinista de `acd8a8c`; los 5 SankeyNTA v1,
+  `sankey-nta-grupoedad.json` (v2) y `nta-identidad.txt` no cambian (byte-idénticos). `gate-numeros.sh`
+  **VERDE contra la rama y ROJO contra `7338fa7`** (ambas salidas en el PR).
+- `manifest.json` → v8.12.6 y `data_updated` → 2026-10-29 (criterio de v8.12.4: cambian números
+  publicados aunque los insumos no; el hero lo pinta).
+- `master/SCN.dta` sigue sin versionar ni sellar (memo §9): el gate no ve si un clon tiene o no las series
+  S.14, pero desde esta versión ese estado ya no mueve ningún número.
+
 ## [v8.12.4] — 2026-10-27 — Corrección de datos
 
 Hotfix sobre v8.12.3: tres FLAGs de `01_modulos/Households.do` detectados en el inventario NTA-0
