@@ -2207,7 +2207,7 @@ estimates save "${SIMROOT}/master/`anioenigh'/formal_salarios", replace
 predict double prob_salarios if e(sample)
 
 * Seleccionar individuo formales (general) *
-gsort -formal_probit -prob_salarios
+gsort -formal_probit -prob_salarios folioviv foliohog numren
 g formal_accumSAL = sum(factor) if prob_salarios != .
 egen formal_SAL = sum(factor) if prob_salarios != .
 g prop_salarios = formal_accumSAL/formal_SAL
