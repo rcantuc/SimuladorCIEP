@@ -2224,7 +2224,7 @@ estimates save "${SIMROOT}/master/`anioenigh'/formal_fisicas", replace
 predict double prob_formal if e(sample)
 
 * Seleccionar individuo formales (general) *
-gsort -formal_probit -prob_formal
+gsort -formal_probit -prob_formal folioviv foliohog numren
 g formal_accum = sum(factor) if prob_formal != .
 egen formal_NAC = sum(factor) if prob_formal != .
 g prop_formal = formal_accum/formal_NAC
