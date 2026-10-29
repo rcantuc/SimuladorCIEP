@@ -127,8 +127,8 @@ v2, Δ = 0. En las filas `INCD` (deciles I … X y promedio) se muestran el deci
   v1.2 desde NTA-1c) reemplazados por la salida determinista de `acd8a8c`; los 5 SankeyNTA v1,
   `sankey-nta-grupoedad.json` (v2) y `nta-identidad.txt` no cambian (byte-idénticos). `gate-numeros.sh`
   **VERDE contra la rama y ROJO contra `7338fa7`** (ambas salidas en el PR).
-- `manifest.json` → v8.12.6. `data_updated` se queda en 2026-10-27: los insumos no cambiaron; cambia el
-  orden con que se rompe un empate (FLAG en el PR por si se prefiere bumpearlo como en v8.12.4).
+- `manifest.json` → v8.12.6 y `data_updated` → 2026-10-29 (criterio de v8.12.4: cambian números
+  publicados aunque los insumos no; el hero lo pinta).
 - `master/SCN.dta` sigue sin versionar ni sellar (memo §9): el gate no ve si un clon tiene o no las series
   S.14, pero desde esta versión ese estado ya no mueve ningún número.
 

@@ -1,6 +1,6 @@
 {
   "version": "v8.12.6",
-  "data_updated": "2026-10-27",
+  "data_updated": "2026-10-29",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
   "enigh_vintage": "2024",
   "enigh_vintage_regla": "Año de la ENIGH con la que corrió el motor (scalar anioenigh de SIM.do y Web.Stata.do). La Fase 4 de publicar-vps.sh la escribe como 'EnighVintage:' en DEPLOYED_COMMIT y la sección de método del sitio (/NTA) la cita en su línea de fuente. Se bumpea al cambiar de ENIGH.",
