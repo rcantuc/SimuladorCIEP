@@ -2270,7 +2270,7 @@ escalar mxn ISRSalarios = `ISRSalarios'
 
 *******************************
 ** 11.2 ISR PERSONAS FISICAS **
-gsort -prob_formal
+gsort -prob_formal folioviv foliohog numren
 g ISR_PF = ISR - ISR_asalariados if ISR - ISR_asalariados > 0 & prob_formal != .
 replace ISR_PF = 0 if ISR_PF == .
 label var ISR_PF "ISR (personas f{c i'}sicas)"
