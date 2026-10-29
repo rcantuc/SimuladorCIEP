@@ -2240,7 +2240,7 @@ estimates save "${SIMROOT}/master/`anioenigh'/formal_morales", replace
 predict double prob_moral if e(sample)
 
 * Seleccionar individuo formales (general) *
-gsort -formal_probit -prob_moral
+gsort -formal_probit -prob_moral folioviv foliohog numren
 g formal_accumMOR = sum(factor) if prob_moral != .
 egen formal_MOR = sum(factor) if prob_moral != .
 g prop_moral = formal_accumMOR/formal_MOR
