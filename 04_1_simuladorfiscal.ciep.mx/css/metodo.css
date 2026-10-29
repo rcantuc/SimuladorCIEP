@@ -108,10 +108,10 @@ body.metodo {
 	padding-right: 4%;
 	background: #fff;
 }
-/* v2 (NTA-2): ocho capas y 50+ nodos; más alto que los Sankeys de la portada para que
+/* v3 (NTA-3): siete capas y 40+ nodos; más alto que los Sankeys de la portada para que
    los nodos chicos (0 a 4, desahorro, ancla) sigan siendo legibles. */
 .metodo-sankey.metodo-sankey-alto {
-	height: 900px;
+	height: 820px;
 }
 .metodo-sankey * {
 	font-size: 13px;
@@ -189,4 +189,92 @@ body.metodo {
 }
 .metodo-cifra-error {
 	color: #a94442;
+}
+
+/* Panel por grupo de edad × sexo (v8.12.6, NTA-3): selector T/H/M arriba, cinco mini-Sankeys en fila
+   (dos columnas de flujos: entradas → grupo → salidas; SVG propio de js/metodo-sankey.js, no FusionCharts),
+   cada uno con su título y su pie leídos del JSON. */
+.metodo-panel-wrap {
+	margin: 14px 0 8px;
+}
+.metodo-panel-selector {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 14px;
+	font-size: 13px;
+	color: #333;
+	margin-bottom: 10px;
+}
+.metodo-panel-selector .metodo-panel-selector-titulo {
+	color: #7d7d83;
+	font-size: 12px;
+	text-transform: uppercase;
+}
+.metodo-panel-selector label {
+	margin: 0;
+	font-weight: 400;
+	cursor: pointer;
+}
+.metodo-panel-selector input {
+	margin-right: 5px;
+}
+.metodo-panel {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 10px;
+}
+.metodo-panel-celda {
+	background: #fff;
+	border: 1px solid #e3e6ea;
+	padding: 8px 8px 6px;
+	min-width: 0;
+}
+.metodo-panel-titulo {
+	font-size: 13px;
+	font-weight: 700;
+	color: #000;
+	margin: 0 0 6px;
+	text-align: center;
+}
+.metodo-panel-sankey {
+	height: 360px;
+	background: #fff;
+}
+.metodo-panel-sankey svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.metodo-panel-sankey .metodo-mini-etiqueta {
+	font-family: "Roboto Mono", monospace;
+	font-size: 10px;
+	letter-spacing: -0.5px;
+	fill: #000;
+	paint-order: stroke;
+	stroke: #fff;
+	stroke-width: 2px;
+	stroke-linejoin: round;
+}
+.metodo-panel-sankey .metodo-mini-flujo:hover {
+	fill-opacity: 0.6;
+}
+.metodo-panel-pie {
+	font-size: 12px;
+	color: #555;
+	margin: 6px 0 0;
+	line-height: 1.5;
+}
+.metodo-panel-pie b {
+	color: #000;
+}
+@media (max-width: 991px) {
+	.metodo-panel {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+@media (max-width: 767px) {
+	.metodo-panel {
+		grid-template-columns: 1fr;
+	}
 }

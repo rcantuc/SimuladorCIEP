@@ -123,6 +123,9 @@ function metodo_notas(array $notas) {
 // aquí no hay números).
 // $p['cifras']: array('url' => endpoint JSON de la cuenta) → metodoCifras() llena los
 // <span data-nta="…"> de la página con los valores de ese JSON (cero números en el PHP).
+// $p['panel'] (v8.12.6, NTA-3): array('url' => endpoint JSON del panel, 'contenedor' => id base de los
+// <div> de los mini-Sankeys, 'selector' => name de los radios T/H/M) → metodoPanel() dibuja los cinco
+// mini-Sankeys por grupo de edad y cambia de sexo sin recargar.
 function metodo_pie(array $p = array()) {
 	$meta = metodo_meta_deploy();
 	$fuente = $p['fuente'] ?? null;
@@ -135,12 +138,13 @@ function metodo_pie(array $p = array()) {
 	echo "\t<footer class=\"container metodo-pie\"><small>{$copy}</small></footer>\n";
 	$sankeys = json_encode($p['sankeys'] ?? array(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 	$cifras = isset($p['cifras']) ? "\n\t<script>metodoCifras(" . json_encode($p['cifras'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ");</script>" : '';
+	$panel = isset($p['panel']) ? "\n\t<script>metodoPanel(" . json_encode($p['panel'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ");</script>" : '';
 	echo <<<HTML
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
 	<script src="/plugins/jquery/jquery-3.4.1.min.js"></script>
 	<script src="/js/metodo-sankey.js"></script>
-	<script>metodoSankeys({$sankeys});</script>{$cifras}
+	<script>metodoSankeys({$sankeys});</script>{$cifras}{$panel}
 </body>
 </html>
 
