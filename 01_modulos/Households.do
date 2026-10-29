@@ -2297,7 +2297,7 @@ Distribucion gasto_anualDepreciacion, relativo(ing_capital) macro(`ConCapFij')
 Gini gasto_anualDepreciacion, hogar(folioviv foliohog) factor(factor)
 local gini_gasto_anualDepreciacion = r(gini_gasto_anualDepreciac)
 
-gsort -prob_moral
+gsort -prob_moral folioviv foliohog numren
 g ISR_PM = (ing_bruto_tpm+gasto_anualDepreciacion-exen_tpm)*.3 - SE_empresas
 replace ISR_PM = 0 if ISR_PM == .
 label var ISR_PM "ISR (personas morales)"
