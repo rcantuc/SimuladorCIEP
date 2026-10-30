@@ -1,0 +1,22 @@
+{"esquema":"tasas-efectivas/v1","entidad":{"nombre":"Colima","clave":"06","abrev":"Col","sufijo":"col"},
+"anio_politica":2027,"anio_vp":2027,"paquete":"CGPE 2027",
+"definicion":{"metodo":"TasasEfectivasMicro.ado v1.1.0: TE micro/micro, numerador = suma [aw=factor] de la variable de impuesto de master/perfiles<anio>.dta, denominador = suma de la base micro ajustada a Cuentas Nacionales (Distribucion, factores nacionales); la muestra se corta POR RESIDENCIA (substr(folioviv,1,2) == clave) DESPUES del ajuste nacional; aqui no se recalibra nada",
+"aditividad":"los MONTOS (rec, base, pob) suman al nacional entidad por entidad (misma base, misma ponderacion); las TASAS no son aditivas: tasa nacional = promedio de las 32 ponderado por su base (propuesta de gate de consistencia, FLAG v8.13a)",
+"unidades":{"rec":"pesos corrientes de anio_politica","base":"pesos corrientes","te":"porcentaje = rec/base*100","dif_vs_oficial":"porcentaje: (te_micro/te_oficial - 1)*100, vs TasasEfectivas.ado macro/macro","rel_vs_nac":"puntos porcentuales: te_entidad - te_nacional_micro"}},
+"parametros":{"sello_n":100,"sello_top1":25,"regla_sello":"n = personas de la muestra de la entidad en perfiles<anio> (sin ponderar) < sello_n, o una sola persona pone mas de sello_top1 % del numerador del impuesto (regla P5 de SankeySF.do)"},
+"muestra":{"n":10201,"pob":755998.00,"pob_nacional":135391415.00,"share_pob":0.005584,"ingbruto":249155966316.14,"impuestos_con_sello":1},
+"bases":{"Sal":{"entidad":85968904093.14,"nacional":12194903072825.24},"Mix":{"entidad":48260306780.54,"nacional":5444045160310.75},"KPriv":{"entidad":107884168382.75,"nacional":13273072793618.84},"Consu":{"entidad":200423800059.92,"nacional":29179372685795.39},"Vehic":{"entidad":13265764842.34,"nacional":1029339156990.97},"AlcTaba":{"entidad":4580396812.62,"nacional":616086402825.50},"Combu":{"entidad":5061970313.50,"nacional":717707329042.91}},
+"impuestos":[
+{"impuesto":"ISRAS","rec":10468316286.59,"rec_nacional":1519749972772.20,"te":12.176864,"te_nacional_micro":12.462173,"dif_vs_oficial":-3.971983,"rel_vs_nac":-0.285310,"top1":1.726428,"sello":0}
+,{"impuesto":"CUOTAS","rec":4952735581.30,"rec_nacional":702564700000.00,"te":5.761078,"te_nacional_micro":5.761134,"dif_vs_oficial":-1.715971,"rel_vs_nac":-0.000056,"top1":1.307640,"sello":0}
+,{"impuesto":"ISRPF","rec":633127150.87,"rec_nacional":96352833696.21,"te":1.311900,"te_nacional_micro":1.769876,"dif_vs_oficial":-27.030512,"rel_vs_nac":-0.457975,"top1":29.981754,"sello":1}
+,{"impuesto":"ISRPM","rec":14148418566.38,"rec_nacional":1672872493531.59,"te":13.114453,"te_nacional_micro":12.603506,"dif_vs_oficial":2.048788,"rel_vs_nac":0.510947,"top1":11.127173,"sello":0}
+,{"impuesto":"OTROSK","rec":5501341333.14,"rec_nacional":650464400000.00,"te":5.099304,"te_nacional_micro":4.900632,"dif_vs_oficial":2.061037,"rel_vs_nac":0.198672,"top1":11.127173,"sello":0}
+,{"impuesto":"IVA","rec":12334560209.67,"rec_nacional":1768017300000.00,"te":6.154239,"te_nacional_micro":6.059134,"dif_vs_oficial":-0.184859,"rel_vs_nac":0.095105,"top1":0.603144,"sello":0}
+,{"impuesto":"IEPSNP","rec":2281494066.67,"rec_nacional":289706800000.00,"te":49.809965,"te_nacional_micro":47.023729,"dif_vs_oficial":4.082825,"rel_vs_nac":2.786236,"top1":4.546230,"sello":0}
+,{"impuesto":"IEPSP","rec":6940634672.95,"rec_nacional":538549200000.00,"te":137.113303,"te_nacional_micro":75.037439,"dif_vs_oficial":79.591104,"rel_vs_nac":62.075863,"top1":4.754898,"sello":0}
+,{"impuesto":"ISAN","rec":224581512.47,"rec_nacional":17426100000.00,"te":1.692941,"te_nacional_micro":1.692941,"dif_vs_oficial":-1.268424,"rel_vs_nac":0.000000,"top1":4.754898,"sello":0}
+,{"impuesto":"IMPORT","rec":1597045240.22,"rec_nacional":232511200000.00,"te":0.796834,"te_nacional_micro":0.796834,"dif_vs_oficial":-1.757272,"rel_vs_nac":-0.000000,"top1":0.423248,"sello":0}
+],
+"agregados":{"YlImpTE":11.960272,"ingconsumoTE":11.664441,"RecTotal":59082254620.26,"RecTotal_nacional":7488215000000.00},
+"procedencia":{"modulo":"01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0","base":"master/perfiles2027.dta + master/<anioenigh>/households.dta + consumption_categ_ieps_pc.dta (las mismas del nacional)","generado_el":"2026-10-29 19:52:23","stata":"19.5 SE","escalares":"Rec<IMP>col, Base<BASE>col, <IMP>TEcol, Dif<IMP>TEcol, Rel<IMP>TEcol, Pobcol, IngBrutocol (registro escalar, vivos en la sesion)"}}

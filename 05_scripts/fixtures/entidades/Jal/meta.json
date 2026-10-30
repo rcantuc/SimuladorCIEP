@@ -1,0 +1,692 @@
+{
+ "esquema": "entidad-meta/v1",
+ "entidad": {
+  "nombre": "Jalisco",
+  "clave": "14",
+  "abrev": "Jal",
+  "pos": 14
+ },
+ "muestra": {
+  "n": 8617,
+  "n_ciclo": 8617,
+  "pob": 9072576.0,
+  "anio_enigh": 2024,
+  "anio_politica": 2027,
+  "anio_vp": 2027,
+  "paquete": "CGPE 2027"
+ },
+ "parametros": {
+  "sello_n": 100,
+  "sello_top1": 25,
+  "regla": "por celda quinquenio x sexo: n (personas de la muestra de la entidad) < sello_n, o una sola persona aporta mas de sello_top1 % del aporta o del recibe de la celda (regla P5 de SankeySF.do)"
+ },
+ "sellos": {
+  "conteo": {
+   "sankeys_micro": [
+    32,
+    155
+   ],
+   "ciclo": [
+    19,
+    46
+   ],
+   "tasas": [
+    0,
+    10
+   ]
+  },
+  "texto": "32/155 / 19/46 / 0/10",
+  "celdas_n_menor": {
+   "sankeys_micro": 31,
+   "ciclo": 15,
+   "tasas": 0,
+   "total": 46
+  },
+  "sankeys": {
+   "quintil": {
+    "corte": "quintil estatal",
+    "enlaces_micro": 40,
+    "sellados": [
+     {
+      "from": "I",
+      "to": "  Imp al capital",
+      "n": 38,
+      "top1": 20.65868926824137,
+      "motivo": "n"
+     },
+     {
+      "from": "II",
+      "to": "  Imp al capital",
+      "n": 53,
+      "top1": 8.12893994537279,
+      "motivo": "n"
+     },
+     {
+      "from": "III",
+      "to": "  Imp al capital",
+      "n": 54,
+      "top1": 13.95821474554159,
+      "motivo": "n"
+     },
+     {
+      "from": "IV",
+      "to": "  Imp al capital",
+      "n": 77,
+      "top1": 5.490991058171567,
+      "motivo": "n"
+     }
+    ],
+    "celdas": [
+     {
+      "celda": "I",
+      "n": "2462",
+      "hog": "612",
+      "pob": "2283994"
+     },
+     {
+      "celda": "II",
+      "n": "1947",
+      "hog": "522",
+      "pob": "2097321"
+     },
+     {
+      "celda": "III",
+      "n": "1669",
+      "hog": "502",
+      "pob": "1834131"
+     },
+     {
+      "celda": "IV",
+      "n": "1391",
+      "hog": "477",
+      "pob": "1587919"
+     },
+     {
+      "celda": "V",
+      "n": "1148",
+      "hog": "491",
+      "pob": "1269211"
+     }
+    ]
+   },
+   "grupoedad": {
+    "corte": "grupoedad",
+    "enlaces_micro": 35,
+    "sellados": [
+     {
+      "from": "De 0 a 4",
+      "to": " Imp al consumo",
+      "n": 547,
+      "top1": 34.01340798745209,
+      "motivo": "top1"
+     },
+     {
+      "from": "De 5 a 17",
+      "to": "Imp al trabajo",
+      "n": 94,
+      "top1": 8.26316507666498,
+      "motivo": "n"
+     },
+     {
+      "from": "De 5 a 17",
+      "to": "  Imp al capital",
+      "n": 3,
+      "top1": 69.37704492020211,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "De 18 a 24",
+      "to": "  Imp al capital",
+      "n": 20,
+      "top1": 30.72560835983688,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "De 65 y más",
+      "to": "  Imp al capital",
+      "n": 73,
+      "top1": 13.0503514900952,
+      "motivo": "n"
+     },
+     {
+      "from": "  Pensiones",
+      "to": " De 25 a 64",
+      "n": 74,
+      "top1": 16.60538978386382,
+      "motivo": "n"
+     }
+    ],
+    "celdas": [
+     {
+      "celda": "De 0 a 4",
+      "n": "547",
+      "hog": "0",
+      "pob": "545046"
+     },
+     {
+      "celda": "De 5 a 17",
+      "n": "1880",
+      "hog": "0",
+      "pob": "1995573"
+     },
+     {
+      "celda": "De 18 a 24",
+      "n": "942",
+      "hog": "62",
+      "pob": "1029827"
+     },
+     {
+      "celda": "De 25 a 64",
+      "n": "4376",
+      "hog": "1958",
+      "pob": "4686515"
+     },
+     {
+      "celda": "De 65 y más",
+      "n": "872",
+      "hog": "584",
+      "pob": "815615"
+     }
+    ]
+   },
+   "sexo": {
+    "corte": "sexo",
+    "enlaces_micro": 16,
+    "sellados": [
+     {
+      "from": "Mujeres",
+      "to": "  Imp al capital",
+      "n": 99,
+      "top1": 14.64963774654221,
+      "motivo": "n"
+     }
+    ],
+    "celdas": [
+     {
+      "celda": "Hombres",
+      "n": "4142",
+      "hog": "1777",
+      "pob": "4398001"
+     },
+     {
+      "celda": "Mujeres",
+      "n": "4475",
+      "hog": "827",
+      "pob": "4674575"
+     }
+    ]
+   },
+   "rural": {
+    "corte": "rural",
+    "enlaces_micro": 24,
+    "sellados": [
+     {
+      "from": "Rural",
+      "to": "  Imp al capital",
+      "n": 60,
+      "top1": 14.76377079337232,
+      "motivo": "n"
+     },
+     {
+      "from": "Indígena",
+      "to": "Imp al trabajo",
+      "n": 30,
+      "top1": 19.36120367815505,
+      "motivo": "n"
+     },
+     {
+      "from": "Indígena",
+      "to": " Imp al consumo",
+      "n": 57,
+      "top1": 10.52399665937929,
+      "motivo": "n"
+     },
+     {
+      "from": "Indígena",
+      "to": "  Imp al capital",
+      "n": 2,
+      "top1": 50.96748714541002,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "Educación",
+      "to": " Indígena",
+      "n": 57,
+      "top1": 16.80275313973458,
+      "motivo": "n"
+     },
+     {
+      "from": "Salud",
+      "to": " Indígena",
+      "n": 46,
+      "top1": 9.187645929929644,
+      "motivo": "n"
+     },
+     {
+      "from": "  Pensiones",
+      "to": " Indígena",
+      "n": 1,
+      "top1": 100.0,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "   Inversión",
+      "to": " Indígena",
+      "n": 57,
+      "top1": 4.133850779324778,
+      "motivo": "n"
+     },
+     {
+      "from": "   Transferencias",
+      "to": " Indígena",
+      "n": 57,
+      "top1": 7.537277998208477,
+      "motivo": "n"
+     }
+    ],
+    "celdas": [
+     {
+      "celda": "Urbano",
+      "n": "6213",
+      "hog": "1874",
+      "pob": "8000179"
+     },
+     {
+      "celda": "Rural",
+      "n": "2347",
+      "hog": "704",
+      "pob": "1015767"
+     },
+     {
+      "celda": "Indígena",
+      "n": "57",
+      "hog": "26",
+      "pob": "56630"
+     }
+    ]
+   },
+   "escol": {
+    "corte": "escol",
+    "enlaces_micro": 40,
+    "sellados": [
+     {
+      "from": "Sin escolaridad",
+      "to": "Imp al trabajo",
+      "n": 73,
+      "top1": 17.95191085334444,
+      "motivo": "n"
+     },
+     {
+      "from": "Sin escolaridad",
+      "to": "  Imp al capital",
+      "n": 2,
+      "top1": 95.21133312592397,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "Media Superior",
+      "to": "  Imp al capital",
+      "n": 72,
+      "top1": 25.34578726492043,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "Posgrado",
+      "to": "Imp al trabajo",
+      "n": 68,
+      "top1": 16.95804674216589,
+      "motivo": "n"
+     },
+     {
+      "from": "Posgrado",
+      "to": " Imp al consumo",
+      "n": 89,
+      "top1": 14.15813005086629,
+      "motivo": "n"
+     },
+     {
+      "from": "Posgrado",
+      "to": "  Imp al capital",
+      "n": 13,
+      "top1": 25.5590519128003,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "Educación",
+      "to": " Posgrado",
+      "n": 89,
+      "top1": 56.22429495966289,
+      "motivo": "n+top1"
+     },
+     {
+      "from": "Salud",
+      "to": " Posgrado",
+      "n": 64,
+      "top1": 6.857058775625487,
+      "motivo": "n"
+     },
+     {
+      "from": "  Pensiones",
+      "to": " Media Superior",
+      "n": 90,
+      "top1": 4.393868097223598,
+      "motivo": "n"
+     },
+     {
+      "from": "  Pensiones",
+      "to": " Posgrado",
+      "n": 17,
+      "top1": 12.12737953944834,
+      "motivo": "n"
+     },
+     {
+      "from": "   Inversión",
+      "to": " Posgrado",
+      "n": 89,
+      "top1": 11.1500835090658,
+      "motivo": "n"
+     },
+     {
+      "from": "   Transferencias",
+      "to": " Posgrado",
+      "n": 89,
+      "top1": 3.784198414727693,
+      "motivo": "n"
+     }
+    ],
+    "celdas": [
+     {
+      "celda": "Sin escolaridad",
+      "n": "689",
+      "hog": "130",
+      "pob": "646766"
+     },
+     {
+      "celda": "Básica",
+      "n": "5017",
+      "hog": "1507",
+      "pob": "5000721"
+     },
+     {
+      "celda": "Media Superior",
+      "n": "1605",
+      "hog": "471",
+      "pob": "1827025"
+     },
+     {
+      "celda": "Superior",
+      "n": "1217",
+      "hog": "440",
+      "pob": "1488556"
+     },
+     {
+      "celda": "Posgrado",
+      "n": "89",
+      "hog": "56",
+      "pob": "109508"
+     }
+    ]
+   }
+  },
+  "ciclo": [
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 2,
+    "quinquenio": "5-9",
+    "n": 343,
+    "top1_aporta": 32.047659,
+    "top1_recibe": 1.561857,
+    "motivo": "top1"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 12,
+    "quinquenio": "55-59",
+    "n": 159,
+    "top1_aporta": 10.656065,
+    "top1_recibe": 54.100257,
+    "motivo": "top1"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 14,
+    "quinquenio": "65-69",
+    "n": 138,
+    "top1_aporta": 29.387783,
+    "top1_recibe": 7.29041,
+    "motivo": "top1"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 16,
+    "quinquenio": "75-79",
+    "n": 72,
+    "top1_aporta": 15.286884,
+    "top1_recibe": 10.370105,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 17,
+    "quinquenio": "80-84",
+    "n": 48,
+    "top1_aporta": 13.625594,
+    "top1_recibe": 8.669659,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 18,
+    "quinquenio": "85-89",
+    "n": 21,
+    "top1_aporta": 18.348648,
+    "top1_recibe": 16.295832,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 19,
+    "quinquenio": "90-94",
+    "n": 12,
+    "top1_aporta": 79.332488,
+    "top1_recibe": 41.690297,
+    "motivo": "n+top1"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 20,
+    "quinquenio": "95-99",
+    "n": 4,
+    "top1_aporta": 42.835724,
+    "top1_recibe": 47.900844,
+    "motivo": "n+top1"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 21,
+    "quinquenio": "100-104",
+    "n": 0,
+    "top1_aporta": 0.0,
+    "top1_recibe": 0.0,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 22,
+    "quinquenio": "105-109",
+    "n": 0,
+    "top1_aporta": 0.0,
+    "top1_recibe": 0.0,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Hombres",
+    "s": 1,
+    "g": 23,
+    "quinquenio": "110+",
+    "n": 0,
+    "top1_aporta": 0.0,
+    "top1_recibe": 0.0,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 1,
+    "quinquenio": "0-4",
+    "n": 269,
+    "top1_aporta": 36.261045,
+    "top1_recibe": 5.303471,
+    "motivo": "top1"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 17,
+    "quinquenio": "80-84",
+    "n": 54,
+    "top1_aporta": 38.135688,
+    "top1_recibe": 9.145771,
+    "motivo": "n+top1"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 18,
+    "quinquenio": "85-89",
+    "n": 33,
+    "top1_aporta": 17.475448,
+    "top1_recibe": 14.477184,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 19,
+    "quinquenio": "90-94",
+    "n": 9,
+    "top1_aporta": 28.334595,
+    "top1_recibe": 37.017833,
+    "motivo": "n+top1"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 20,
+    "quinquenio": "95-99",
+    "n": 4,
+    "top1_aporta": 71.11366,
+    "top1_recibe": 32.792351,
+    "motivo": "n+top1"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 21,
+    "quinquenio": "100-104",
+    "n": 0,
+    "top1_aporta": 0.0,
+    "top1_recibe": 0.0,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 22,
+    "quinquenio": "105-109",
+    "n": 0,
+    "top1_aporta": 0.0,
+    "top1_recibe": 0.0,
+    "motivo": "n"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 23,
+    "quinquenio": "110+",
+    "n": 0,
+    "top1_aporta": 0.0,
+    "top1_recibe": 0.0,
+    "motivo": "n"
+   }
+  ],
+  "tasas": [],
+  "top1_n100": {
+   "pct": 54.100257,
+   "donde": "ciclo Hombres 55-59 recibe (n=159)"
+  },
+  "top1_te": {
+   "pct": 14.700511,
+   "impuesto": "ISRPF"
+  }
+ },
+ "ciclo": {
+  "neto_pesos": 250728846462.33,
+  "aporta_pesos": 581562481136.92,
+  "recibe_pesos": 330833634674.59,
+  "pob": 9072576
+ },
+ "pibe": {
+  "pibe_pesos": 3007514453890.0,
+  "neto_pesos": 250728846462.33,
+  "neto_pct_pibe": 8.33674618381403,
+  "vintage": "2026-10-19",
+  "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32) o --pibe-vintage",
+  "anio_vp": 2027,
+  "fuente_pibe": "contrato-32.tsv pibe_pesos = scalar pibY<ABREV> de PIBDeflactor por entidad (base master/PIBDeflactor<ABREV>.dta)",
+  "fuente_neto": "ciclo-vida.json totales.entidad.neto (pesos de anio_vp)",
+  "calculo": "neto_pct_pibe = neto_pesos / pibe_pesos * 100, dividido en generar-entidades.py (igual que contrato-32.py §4b); FLAG v8.13.0: única división fuera de Stata"
+ },
+ "nacional": {
+  "neto_pesos": 1249989659760.78,
+  "pib_pesos": 39419415318851.43,
+  "neto_pct_pib": 3.171000000000003,
+  "share_pob": 0.06700998,
+  "share_neto": 0.20058474,
+  "n": 308598,
+  "pob": 135391415
+ },
+ "tabla_32": {
+  "fuente": "contrato-32.md §4, columna «selladas: sankeys micro / ciclo / TE»",
+  "tabla": "32/155 / 19/46 / 0/10",
+  "corrida": "32/155 / 19/46 / 0/10",
+  "coincide": true
+ },
+ "espejo": null,
+ "procedencia": {
+  "generador": "generar-entidades.py v1.0 (v8.13.0)",
+  "commit": "e456647",
+  "insumos": [
+   "ciclo-vida.json",
+   "tasas-efectivas.json",
+   "sankey-quintil.json",
+   "sankey-grupoedad.json",
+   "sankey-sexo.json",
+   "sankey-rural.json",
+   "sankey-escol.json",
+   "contrato-32.tsv"
+  ],
+  "modulos": {
+   "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
+   "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
+  },
+  "generado_el": "2026-10-29 19:56:14"
+ },
+ "pibe_32": {
+  "suma_pesos": 39629803600642.0,
+  "pib_nacional_pesos": 39419415318851.43,
+  "discrepancia_pct": 0.5337174082588714,
+  "entidades_con_pibe": 32,
+  "nota": "Σ32 PIBE (año de valor presente) vs PIB nacional de la corrida (ciclo-vida.json totales.nacional.pibY): informativa, no se gatea (contrato-32.md §4b)"
+ }
+}
