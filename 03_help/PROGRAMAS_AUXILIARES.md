@@ -37,11 +37,17 @@ Este manual documenta los programas auxiliares del Simulador CIEP que complement
 
 ## 3. Distribucion.ado
 
-**Descripción:** Genera análisis distributivos de ingresos y gastos.
+**Descripción:** Imputación macro-micro proporcional a un relativo: reparte un agregado macro (LIF, PEF, SCN) entre las
+personas de la base en proporción a una variable, de modo que la suma ponderada reproduce el agregado al peso. Es el único
+mecanismo de imputación del motor (Households.do, PerfilesSim.do, ISR_Mod.do, NTA.do, GastoPC, TasasEfectivas*).
 
-**Sintaxis:** `Distribucion varname [, opciones]`
+**Sintaxis:** `Distribucion newvar [if], relativo(varname) macro(real)`
 
-**Función:** Calcula coeficientes de desigualdad (Gini, Theil) y distribución por percentiles.
+**Función:** `newvar = relativo × macro / Σ_[fw=factor] relativo` (Σ newvar = macro). Es per cápita solo cuando el relativo
+es `pob`; con `relativo(factor)` reparte en proporción al factor de expansión; con `relativo(gas_pc_X)` hereda el reparto
+intra-hogar de `perfilpc.ado`. Requiere `factor` en memoria. **No** calcula coeficientes de desigualdad: la descripción
+anterior de esta ayuda (Gini/Theil por percentiles) correspondía a un programa que nunca existió; el Gini vive en `Gini.ado`
+(corregido en v8.14).
 
 ---
 
