@@ -429,6 +429,10 @@ SITE_SMOKE_ASSETS=(
     cargaDefault.php
     jsonSankey.php
     NTA
+    entidades
+    entidades/NL
+    entidades/Jal
+    entidades/Col
 )
 for _a in "${SITE_SMOKE_ASSETS[@]}"; do
     [[ -f "$LOCAL_SITE_ROOT/$_a" || -f "$LOCAL_SITE_ROOT/$_a/index.php" ]] || die "Gate 7: el activo de humo $_a no existe en $LOCAL_SITE_ROOT.
@@ -870,6 +874,9 @@ fi
 #       NTA/nta-quinquenio-sexo.json    ← jsonSankeyNTA.php?cuenta=quinquenio-sexo
 #       NTA/nta-identidad.txt           ← jsonSankeyNTA.php?cuenta=identidad (reporte enlazado desde /NTA)
 #       (el v2, SankeyNTA/sankey-v2-grupoedad.json, lo sigue emitiendo el motor pero /NTA ya no lo dibuja: no viaja desde v8.12.6)
+#       <ABREV>/sankey-<corte>.json ×5, <ABREV>/ciclo-vida.json, <ABREV>/tasas-efectivas.json, <ABREV>/meta.json (×32)
+#                                       ← jsonEntidad.php?abrev=<ABREV>&producto=sankey|ciclo|tasas|meta (/entidades/<ABREV>, v8.13.0)
+#       entidades.json                  ← jsonEntidad.php?producto=indice (/entidades, v8.13.0)
 # Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
 # SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
 # investigador). El contrato del PHP no se toca: se publica EN users/ciepmx/.
@@ -897,7 +904,24 @@ DEFAULT_MANIFEST=(
     NTA/nta-quinquenio-sexo.json
     NTA/nta-identidad.txt
 )
-log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
+# v8.13.0 (template estatal, /entidades/<ABREV>): users/ricardo/<ABREV>/ para las 32 — los 5 Sankeys de
+# aportación (SankeySF.do por entidad), ciclo-vida.json (CicloEntidad.do), tasas-efectivas.json
+# (TasasEfectivasEntidad.do) y meta.json (generar-entidades.py meta: sellos con su n, PIBE y neto del
+# ciclo) — más entidades.json (el índice de las 32). Los produce contrato-32.sh (Ricardo lo corre antes
+# del tag); jsonEntidad.php los lee en users/<id>/<ABREV>/. El catálogo de abreviaturas se lee de
+# SIMentidad.ado (global entidadesC, sin «Nac»), la única fuente de verdad, para no copiarlo aquí.
+ENTIDADES_ABREV="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
+[[ -n "$ENTIDADES_ABREV" ]] || die "Fase 3b-ter: no pude leer 'global entidadesC' de SIMentidad.ado (el catálogo de las 32 entidades)."
+_n_ent=0
+for _ab in $ENTIDADES_ABREV; do
+    for _f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json meta.json; do
+        DEFAULT_MANIFEST+=("$_ab/$_f")
+    done
+    _n_ent=$((_n_ent+1))
+done
+DEFAULT_MANIFEST+=(entidades.json)
+[[ $_n_ent -eq 32 ]] || die "Fase 3b-ter: el catálogo de SIMentidad.ado trae $_n_ent entidades; esperaba 32."
+log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos; incluye las $_n_ent entidades × 8 + entidades.json) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
 
 LOCAL_DEFAULT_DIR="$LOCAL_REPO_ROOT/users/ricardo"
 LOCAL_PEF_DTA="$LOCAL_REPO_ROOT/master/PEF.dta"
@@ -1104,7 +1128,9 @@ MOTOR_LECTURAS_VPS=(
     "users/ciepmx/NTA/nta-grupoedad.json"            # Fase 3b-ter: cuenta NTA por grupo (cifras de /NTA, ?cuenta=grupoedad)
     "users/ciepmx/NTA/nta-panel-grupoedad-sexo.json" # Fase 3b-ter: panel por grupo × sexo de /NTA (?cuenta=panel-grupoedad-sexo)
     "users/ciepmx/NTA/nta-identidad.txt"             # Fase 3b-ter: reporte de identidad enlazado desde /NTA
+    "users/ciepmx/entidades.json"                    # Fase 3b-ter: índice de las 32 (/entidades, jsonEntidad.php?producto=indice, v8.13.0)
 )
+for _ab in $ENTIDADES_ABREV; do MOTOR_LECTURAS_VPS+=("users/ciepmx/$_ab/meta.json"); done   # Fase 3b-ter: una por entidad (/entidades/<ABREV>, v8.13.0)
 _GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
 for _f in "${MOTOR_LECTURAS_VPS[@]}"; do _GATE5R_CMD+=" '$_f'"; done
 _GATE5R_CMD+="; do [ -e \"\$f\" ] || echo \"FALTA \$f\"; done; sha256sum 05_scripts/manifest.json 2>/dev/null | cut -c1-64"
@@ -1311,6 +1337,17 @@ health_assets_check() {
     (( ${#SITE_SMOKE_FALLAS[@]} == 0 ))
 }
 
+ENTIDADES_FALLAS=()
+health_entidades_check() {
+    local base="${VPS_HEALTH_URL%/*}" ab code
+    ENTIDADES_FALLAS=()
+    for ab in $ENTIDADES_ABREV; do
+        code=$(curl -sIL -o /dev/null -w "%{http_code}" --max-time 15 "$base/jsonEntidad.php?abrev=$ab&producto=meta" 2>/dev/null || echo "000")
+        [[ "$code" == "200" ]] || ENTIDADES_FALLAS+=("$ab → HTTP $code")
+    done
+    (( ${#ENTIDADES_FALLAS[@]} == 0 ))
+}
+
 HEALTH_PASSED=1
 if [[ $SKIP_HEALTH -eq 1 ]]; then
     log_warn "Fase 6: SALTADA por --skip-health. El rollback automático también queda saltado."
@@ -1318,6 +1355,7 @@ if [[ $SKIP_HEALTH -eq 1 ]]; then
 elif [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Fase 6: se verificaría HTTP 200 y 'Commit: ${CURRENT_COMMIT_SHORT}...' en $VPS_HEALTH_URL"
     log_info "[dry-run] Fase 6: y HTTP 200 en ${#SITE_SMOKE_ASSETS[@]} activos del esqueleto bajo ${VPS_HEALTH_URL%/*}/: ${SITE_SMOKE_ASSETS[*]}"
+    log_info "[dry-run] Fase 6: y HTTP 200 (HEAD) en ${VPS_HEALTH_URL%/*}/jsonEntidad.php?abrev=<ABREV>&producto=meta para las $_n_ent entidades"
     log_info "[dry-run] Fase 6: y, tras $( [[ $ESPERA_REALPATH -eq 1 ]] && echo '125 s de espera (caché de realpath)' || echo '0 s' ), el «Calcular» de humo: bash 05_scripts/humo-calcular.sh ${VPS_HEALTH_URL%/*} --timeout 120$( [[ $SKIP_HUMO -eq 1 ]] && echo ' (SALTADO por --skip-humo)' )"
 else
     log_info "Fase 6: verificación post-deploy contra $VPS_HEALTH_URL"
@@ -1336,6 +1374,18 @@ else
             log_error "Health check: ${#SITE_SMOKE_FALLAS[@]} activo(s) del esqueleto NO responden 200 bajo ${VPS_HEALTH_URL%/*}/:"
             for _f in "${SITE_SMOKE_FALLAS[@]}"; do log_error "  $_f"; done
             log_error "El sitio cargaría sin estilos/JS (incidente v8.10, 2026-10-16). Revisa la Fase 2 (rsync del sitio) y los permisos (Fase 3c)."
+            HEALTH_PASSED=0
+        fi
+        # --- las 32 entidades (v8.13.0): un HEAD al endpoint de cada una -------------------------
+        # /entidades/<ABREV> lee /jsonEntidad.php?abrev=<ABREV>&producto=meta (users/ciepmx/<ABREV>/meta.json,
+        # Fase 3b-ter). El esqueleto cubre tres páginas muestra; aquí se exige que el endpoint responda 200
+        # para las 32 (si una no viajó, su página abriría con «could not be loaded»).
+        if health_entidades_check; then
+            log_ok "Health check: jsonEntidad.php responde 200 (HEAD) para las $_n_ent entidades."
+        else
+            log_error "Health check: ${#ENTIDADES_FALLAS[@]} entidad(es) sin endpoint 200 bajo ${VPS_HEALTH_URL%/*}/jsonEntidad.php:"
+            for _f in "${ENTIDADES_FALLAS[@]}"; do log_error "  $_f"; done
+            log_error "Revisa la Fase 3b-ter (users/ricardo/<ABREV>/ para las 32 → users/ciepmx/) y los permisos (Fase 3c)."
             HEALTH_PASSED=0
         fi
         # --- «Calcular» de humo real (v8.12.1) -----------------------------------------
