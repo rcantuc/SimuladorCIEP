@@ -581,6 +581,17 @@ la vez** — de ahí el baile.
 Regla de bolsillo: **Dropbox = leer; publicación = rituales; sesión = cambiar.** `master` solo se
 mueve en GitHub, por PR (branch protection); ningún árbol local hace `git push origin master`.
 
+**El cuarto árbol: `-datos`.** `~/CIEP_Simuladores/SimuladorCIEP-datos` es el clon con los **datos
+canónicos**: `raw/` (12 GB), `master/` (5 GB, con los 32 `PIBDeflactor<ABREV>.{dta,meta}` del sello pibe-32)
+y `users/ricardo/` de la última corrida completa que reprodujo el baseline (`gate-numeros.sh` verde ahí).
+Las corridas de evidencia de una sesión **no** se hacen en Dropbox ni en `-datos`: se hacen en worktrees
+desechables que **clonan** `raw/` y `master/` de `-datos` con `cp -Rc` (clon APFS, gratis) y copian
+`set_token.do` y `.clon-desarrollo`; `users/` nace vacío. Máximo tres corridas a la vez (30 min cada
+una a 1 procesador; cuatro suben a 55 min). Al terminar: `git worktree remove --force` y se conserva solo
+la carpeta `~/CIEP_Simuladores/diag-<tema>-<fecha>/` (wrap.log, output.txt, JSON, gate, `pr-body.md`).
+El `users/ricardo/output.txt` del clon de Dropbox está vacío por diseño: el gate de números se corre
+contra `-datos` o contra la carpeta diag de la corrida.
+
 ### 10.2 Crear y tirar un worktree de sesión
 
 ```bash
@@ -633,6 +644,29 @@ Síntomas y causa:
 | `publicar.sh` aborta "NO está marcado como clon de desarrollo" | se corrió desde Dropbox o desde un worktree de sesión | ir al worktree de publicación; si es uno nuevo, `touch .clon-desarrollo` (10.3.4) |
 | El sitio o `raw/` están incompletos en el worktree de publicación | se creó el worktree y se copió a mano | `git checkout -- 04_1_simuladorfiscal.ciep.mx` (nunca copiar de Dropbox); `test-maquina-virgen.sh --download --into "$PWD"` |
 
+### 10.4 Lo obligatorio, en cinco líneas (v8.14)
+
+1. **El baile es obligatorio** en cada merge (§10.3): GitHub mergea → Dropbox `git pull --ff-only` →
+   worktree de publicación `git checkout --detach origin/master`. Si se salta un paso, el worktree de
+   publicación publica un commit que no es `master` o Dropbox se queda atrás y el IDE edita sobre viejo.
+2. **El tag se crea sobre el hash explícito**, no sobre «lo que esté extraído»: `git tag -a vX.Y.Z <hash>
+   -m "…"` con el hash que `git log --oneline -1 origin/master` acaba de mostrar y que coincide con el
+   `version` del manifest (Gate 3). Después `git push origin vX.Y.Z`. Un tag sobre HEAD de un worktree
+   desprendido en el commit equivocado es irreversible una vez empujado (incidente v8.8: código v8.7.2 bajo
+   el letrero v8.8).
+3. **La versión de deployment no es la del código** (§0 y Gate 6 de `publicar-vps.sh`): `publicar-vps.sh
+   vN.M` despliega al directorio `vN.M` y exige que el manifest diga `vN.M.x`. Minor = directorio nuevo
+   (rollback instantáneo); patch = el mismo.
+4. **El candado del ritual** (v8.14): `publicar.sh` (también `--check`) y `publicar-vps.sh` abortan si hay
+   una corrida viva (`pgrep`: `correr-sim.sh`, `contrato-32.sh`, `compuertas-entidad.sh`, `pibe-32.sh`,
+   `test-maquina-virgen.sh`, `vintage-aportaciones`, cualquier `stata-se|mp -b`) o si el `wrap*.log` /
+   `SIM*.log` más reciente bajo `SIM_EVIDENCIA` (default `~/CIEP_Simuladores`, profundidad 3) o en la raíz
+   del repo **no termina en «end of do-file»** (una corrida que murió termina en `r(###);`; una viva no ha
+   cerrado). No hay bandera para saltarlo: se espera a la corrida o se repite. Antes del ritual, cierra o
+   mueve fuera de `SIM_EVIDENCIA` los logs de corridas abandonadas.
+5. **Los números del PR salen de `-datos` o de la carpeta diag de una corrida completa** (10.1, cuarto
+   árbol), nunca de una corrida suelta sobre el `households.dta` del clon de Dropbox (difiere del canónico).
+
 ---
 
 ## 11. Qué gate corre dónde: CI (GitHub Actions) vs. sesión
@@ -665,6 +699,24 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | «Calcular» de humo (`humo-calcular.sh`, Fase 6 de `publicar-vps.sh`) | rojo/verde con Stata falso (`test-humo-calcular.sh`, job `sitio-seguridad`) | el real, contra el VPS, en cada deploy | Stata + producción |
 | Gate humano del navegador (§6, lo que el humo no prueba) | **no** | Ricardo | humano |
 
+**Gates de sesión (con Stata; v8.14, lo que un PR que toca el motor debe traer en su descripción):**
+
+| Gate de sesión | Qué exige | Cómo se corre |
+|---|---|---|
+| `gate-numeros.sh` | `output.txt` byte-idéntico al baseline y los 10 sankeys ≤ 1e-9 | sobre `users/ricardo` de una corrida completa (`correr-sim.sh` de la carpeta diag) |
+| Dos caminos | `output.txt` y los 11 JSON byte-idénticos entre una corrida con `master/SCN.dta` enriquecido y otra con las 18 series S.14 borradas (`strip-s14.do`) | dos worktrees desechables, `comparar.py` |
+| `test-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **46/46 llaves** de `output.txt` como cadena | `bash 05_scripts/test-web-batch.sh --root <worktree con la corrida>` (~2 min) |
+| `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
+| `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14), sellos, banda en las 32 (con `users/ricardo-v<t>/`) | §13 |
+| `test-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
+| `test-sitio-nta.sh --png`, `test-sitio-entidades.sh --png` | lo mismo que CI pero sobre los JSON de la corrida (no los fixtures) y con la captura que se adjunta al PR | `--json/--cuenta/--panel`, `--users` |
+
+**`test-sitio-transitorios.sh` local vs CI.** Desde 2026-10-29 el gate falla a veces en local («ReferenceError:
+$ is not defined» en la portada, `test-sitio-transitorios.js:34`) sobre ramas que en CI (ubuntu) pasan con la
+misma portada byte a byte; no se encontró la causa (¿carga del equipo con Stata + Chrome?). **El veredicto lo da
+CI**: un rojo local de ese gate no implica regresión; si CI también falla, mirar el orden de carga de
+`plugins/jquery` y la espera `networkidle2` + 2.5 s de `abrir()`.
+
 Correr lo mismo que CI, localmente, antes de abrir el PR (todo en segundos):
 ```bash
 shellcheck -S error 05_scripts/*.sh && bash 05_scripts/verify_gitignore.sh && \
@@ -673,8 +725,27 @@ bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
-Branches → `master` → *Require status checks to pass before merging* → marcar los siete checks de
-`gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`, `sitio-transitorios`, `publicar-check`).
+Branches → `master` → *Require status checks to pass before merging* → marcar los **nueve** checks de
+`gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`,
+`sitio-transitorios`, `sitio-nta`, `sitio-entidades`, `publicar-check`). El nombre del check es el `name:` del job
+(no su id): cambiarlo rompe la protección. Por línea de comandos (v8.14, para añadir `sitio-entidades`):
+```bash
+gh api -X PATCH repos/rcantuc/SimuladorCIEP/branches/master/protection/required_status_checks \
+  --input - <<'JSON'
+{"strict": true, "contexts": [
+  "shellcheck 05_scripts/*.sh (severidad error)",
+  "verify_gitignore.sh (85 casos)",
+  "php -l de los PHP del sitio",
+  "harness de seguridad del sitio (php -S + Stata falso)",
+  "sitio auto-contenido (docroot == git ls-files 04_1/)",
+  "efectos transitorios del Calcular (Chrome headless + Stata falso)",
+  "/NTA: Sankey NTA idéntico al JSON del motor (Chrome headless)",
+  "/entidades: 32 páginas generadas, 4 productos y sellos = JSON del motor (Chrome headless)",
+  "publicar.sh --ci (gates 1, 3, 4, 5*, 6, 7, 8)"
+]}
+JSON
+gh api repos/rcantuc/SimuladorCIEP/branches/master/protection/required_status_checks --jq '.contexts[]'
+```
 
 **Efectos transitorios (v8.12.3):** un efecto de ~1 s (el parpadeo `blink-1` de las tablas tras «Calcular», el refresco de los 5 Sankeys, «Finalizando…») no deja rastro en el DOM final, así que una captura del estado final no lo ve. `bash 05_scripts/test-sitio-transitorios.sh` los muestrea cada ~100 ms con Chrome headless y corre en CI (job `sitio-transitorios`). Todo cambio al cierre del «Calcular» (`complete`/`success` en `stataCalcula*.js`) debe pasarlo; ojo con las claves duplicadas en el objeto de `$.ajax` (la última gana en silencio).
 
@@ -745,8 +816,8 @@ Tolerante a fallos: si una entidad truena en un paso, queda su rc en la tabla y 
 
 | Base | La exige | Si falta | Receta |
 |---|---|---|---|
-| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | son los `aportaciones.dta` de corridas completas de `SIM.do` con la ENIGH de cada vintage (horas cada una; `raw/ENIGH/<año>/` completo). Hoy viven en el worktree `SimuladorCIEP-NL/users/ricardo-v<año>/`; se clonan: `for v in 2016 2018 2020 2022 2024; do mkdir -p users/ricardo-v$v; cp -c …/SimuladorCIEP-NL/users/ricardo-v$v/aportaciones.dta users/ricardo-v$v/; done`. Fabricarlas desde cero es decisión de Ricardo (qué vintages, con qué parámetros) |
-| `statajson_entidad-nl.json` (testigo NL, 2026-10-08, sha `ca453062…`) | el gate 3 de `compuertas-entidad.py` (90 celdas `dis<fam>nle<dec>` a 1e-12) | el gate queda "no verificable" (declarado) | `--statajson <ruta>`; el driver lo busca en `users/$id/nodos/` y en `diag-v8.11b-retiro-capa-2026-10-16/`. Es un sello histórico del sprint NL: no se regenera |
+| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | **Receta ejecutable (v8.14, DoD 1):** `bash 05_scripts/test-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" --into "$PWD"` corre `05_scripts/vintage-aportaciones.do` por vintage (SIM.do §0–§5 y §7 con `anioPE = aniovp = anioenigh = t`, calibración contemporánea sin los parámetros del Paquete, `bootstrap 1`), construye las cachés `master/<t>/` y baja de la Release los assets que falten; imprime el tiempo por vintage (**medido 2026-10-30:** 28–32 min por vintage sin cachés `master/<t>/`, 16 min con ellas, StataNow 19.5 SE a 1 procesador; con `nohup`, máximo tres a la vez, una invocación por vintage). Límite heredado: sin los escalares de §5.1, `GastoPC` deja `Salud` y `Pensiones` en cero (como en las bases del 8-oct), así que la banda del lado gasto cubre Educación, Transferencias e Inversión. Las bases del 8-oct de `SimuladorCIEP-NL` (motor v8.8.1) siguen siendo válidas para la banda mientras no se regeneren: `cp -c` desde `…/SimuladorCIEP-NL/users/ricardo-v<t>/` |
+| `05_scripts/fixtures/statajson_entidad-nl.json` (testigo NL, **v8.14**: regenerado con el motor actual, post-v8.12.4) | el gate 3 de `compuertas-entidad.py` (15 celdas quintil×familia a 1e-12 y 90 celdas `dis<fam>nle<dec>` a 1e-13) | el gate queda "no verificable" (declarado) | lo escribe `compuertas-entidad.do` §2 en `<evidencia>/statajson_entidad-nl.json` (esquema `ciep.testigo.entidad-nl/v1`, con el commit y el año en `procedencia`); `contrato-32.sh` y `compuertas-entidad.sh` leen el fixture por default (`--statajson` lo sustituye). Se regenera solo con una corrección de datos declarada en el CHANGELOG, copiando el de la corrida de evidencia al fixture en el mismo PR. El testigo del sprint NL (2026-10-08, sha `ca453062…`) quedó obsoleto con v8.12.4 (reldif 6.6e-2) |
 | `master/PIBDeflactor<ABREV>.dta` (las 32 desde v8.13a-2) | PIB/Deflactor por entidad (§2) y el «% del PIBE» de v8.13b | la entidad va `PIB sin base` en la tabla (y `contrato-32.py` §4b falla) | `05_scripts/pibe-32.sh` (§13.1): `PIBDeflactor if entidad == "<nombre>", update` por entidad; BISE con token |
 
 **Gates que corren por script y su estado:** paridad (sha256 de `output.txt` y 5 sankeys
@@ -783,8 +854,11 @@ consulta de cada fuente (en el sello y en la tabla): es lo que distingue un vint
 regeneran juntas para que el vintage sea uniforme; si INEGI revisó algo, aparece en el diff de las bases previas.
 
 **Al VPS:** los `.dta` van por la Fase 3b del deploy (son datos, no código). Para rescatarlos del worktree
-de sesión al de publicación: `rsync -a master/PIBDeflactor*.dta <worktree de publicación>/master/`
-(los `.meta` son opcionales: el mismo sello ya viaja dentro del `.dta`).
+de sesión al de publicación: `rsync -a master/PIBDeflactor*.{dta,meta} <worktree de publicación>/master/`.
+**Los `.meta` viven junto a los `.dta` en `master/` (v8.14):** `generar-entidades.py meta` lee de
+`master/PIBDeflactor<ABREV>.meta` (`base_generada`) el vintage del PIBE que publica `/entidades/<ABREV>`
+(`--pibe-vintage` se retiró). En `-datos/master/` están los 32 del sello 2026-10-19; un worktree que clona
+`master/` de `-datos` los trae; si faltan, `meta.json` lo declara («not declared in this run») y el PR debe decirlo.
 
 ---
 
