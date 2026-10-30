@@ -2,7 +2,6 @@
 **** SIMULADOR FISCAL CIEP
 **** Ricardo Cantú Calderón
 **** ricardocantu@ciep.mx
-**** 23 de febrero de 2026
 ****
 clear all
 macro drop _all
@@ -26,13 +25,14 @@ if _rc != 0 {
 }
 
 ** 0.2 Parámetros
-global id = "`c(username)'"
-global idbase "$id"									// ESCENARIO BASE que lee FiscalGap: users/<idbase>/bootstraps/<bootstrap>/*RECprom.dta. Local: el propio id. Web.Stata.do lo fija en el escenario publicado
 scalar aniovp = 2027								// ANIO VALOR PRESENTE
 scalar anioPE = 2027								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
-global bootstrap "250"								// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, Expenditure, Households): EE e IC 95 %; FiscalGap consume el PROMEDIO de las réplicas (PerfilesSim §8). §7 corre con bootstrap(1): contrato del sitio (Web.Stata.do)
-global seed "1111"									// SEMILLA del remuestreo (Simulador seed(); la misma desde v1.x). Misma semilla + mismas fuentes = mismo output.txt
+
+global id = "`c(username)'"
+global idbase "$id"									// ESCENARIO BASE
+global bootstrap "250"								// RÉPLICAS BOOTSTRAP
+global seed "1111"									// SEMILLA del remuestreo
 set seed $seed
 
 ** 0.3 Directorio de archivos "users"
@@ -42,10 +42,10 @@ capture mkdir "${SIMROOT}/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global textbook "textbook"						// SCALAR TO LATEX
-//global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global hasta "3"									// PARO TEMPRANO
-global algebra "algebra"							// v8.12 fase 2b: FORMA CERRADA en FiscalGap §3 (totales HH desde los escalares) y GastoPC §3-6 (una pasada por variable). ENCENDIDO por default desde v8.12.0 (decisión 2026-10-18 con la tabla de deltas: 0 diferencias; red: sankeys dentro de 1e-9 relativo). Vaciarlo ("") = ruta micro de siempre
+//global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
+global algebra "algebra"							// FORMA CERRADA SOBRE ESCALARES ("" = ruta micro, solo para auditar paridad)
 
 ** 0.5 Entidad federativa
 //global entidad "Nuevo León"   // edición local; el default versionado es vacío (nacional)
@@ -435,7 +435,7 @@ forvalues k = 2026(1)2032 {
 
 * SHRFSP: comando *
 set scheme deuda
-*scalar tasaEfectiva = 6.1544
+*scalar tasaEfectiva = 6.67
 noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 if "$hasta" == "6" exit
 
@@ -493,7 +493,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
 	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap(1)	// sin réplicas: misma llamada que Web.Stata.do; los APORT* de output.txt salen de esta pasada
+	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap(1)	// sin réplicas
 }
 save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
@@ -517,11 +517,11 @@ noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desd
 foreach k in decil grupoedad sexo rural escol {
 	noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
 }
-if "$entidad" != "" {									// entidad (2026-10-10): mismos cortes, con el decil sustituido por el QUINTIL ESTATAL (P2); outputs en users/$id/<ABREV>/ (P1)
+if "$entidad" != "" {
 	foreach k in quintil grupoedad sexo rural escol {
 		noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE' "$entidad"
 	}
-	noisily run "${SIMROOT}/01_modulos/visualizations/CicloEntidad.do" `=anioPE' "$entidad"	// entidad (2026-10-11): ciclo de vida (APORT* del nacional) filtrado a la entidad → users/$id/<ABREV>/ciclo-vida.json
+	noisily run "${SIMROOT}/01_modulos/visualizations/CicloEntidad.do" `=anioPE' "$entidad"
 }
 
 
