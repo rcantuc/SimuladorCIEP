@@ -4,23 +4,28 @@
 # =============================================================================
 # Levanta el sitio (04_1_simuladorfiscal.ciep.mx/) con php -S en una copia temporal, con lo que el motor
 # emite para esta página en el lugar del escenario default (users/ciepmx/):
-#   - el Sankey v3 (users/<id>/SankeyNTA/sankey-v3-grupoedad.json, NTA.do §7b, contrato v3: edades solo al inicio y al final),
+#   - el Sankey v3 (users/<id>/SankeyNTA/sankey-v3-grupoedad.json, NTA.do §7b, contrato v3: edades solo al inicio y al final;
+#     NTA-4: cada enlace con value en MXN y pctpib en % del PIB, un solo Desahorro / Futuro / ajuste S.14, especie fundida),
 #   - la cuenta NTA por grupo (users/<id>/NTA/nta-grupoedad.json, NTA.do §6.2) + nta-identidad.txt, y
-#   - el panel por grupo de edad × sexo (users/<id>/NTA/nta-panel-grupoedad-sexo.json, NTA.do §7c, esquema nta-panel/v1),
+#   - el panel por grupo de edad × sexo (users/<id>/NTA/nta-panel-grupoedad-sexo.json, NTA.do §7c, esquema nta-panel/v2),
 # y comprueba:
 #   1. HTTP: /NTA y /NTA/ responden 200; jsonSankeyNTA.php sirve el v3 por default y con corte=v3-grupoedad, con el MISMO
-#      número de nodos y enlaces que el JSON de origen (42/118 cuando el origen es el fixture; el conteo del v3 queda fijado
-#      aquí); corte fuera de la lista blanca → 400; idSession con traversal → cae al default ciepmx; el v2 y el v1 sin
-#      archivo → 404 con pista de deploy; ?cuenta=grupoedad y ?cuenta=panel-grupoedad-sexo se sirven byte a byte;
-#      ?cuenta=identidad sirve el reporte de texto; cuenta fuera de la lista → 400; el panel trae 15 celdas balanceadas.
+#      número de nodos y enlaces que el JSON de origen (35/99 cuando el origen es el fixture; el conteo del v3 queda fijado
+#      aquí) y cada enlace idéntico (from, to, value, pctpib) al de origen, chart.unidad = pctpib; corte fuera de la lista
+#      blanca → 400; idSession con traversal → cae al default ciepmx; el v2 y el v1 sin archivo → 404 con pista de deploy;
+#      ?cuenta=grupoedad y ?cuenta=panel-grupoedad-sexo se sirven byte a byte; ?cuenta=identidad sirve el reporte de texto;
+#      cuenta fuera de la lista → 400; el panel trae 15 celdas balanceadas en ambas unidades, pib.valor y nacional_pctpib.
 #   2. Cero números en la página: ni NTA/index.php, ni js/metodo-sankey.js, ni metodo/plantilla.php, ni
 #      css/metodo.css, ni jsonSankeyNTA.php traen un literal de 4+ dígitos (todo valor dibujado o escrito
 #      viene de los JSON del motor).
 #   3. Chrome headless (test-sitio-nta.js): el Sankey v3 se dibuja y cada enlace que recibe el navegador es
-#      idéntico, como cadena, al del JSON de origen; nodos iguales y en el mismo orden; las cifras de
-#      «Anchoring and residual» se llenaron desde la cuenta; los cinco mini-Sankeys del panel se dibujan con las celdas
-#      Total y el selector Hombres / Mujeres cambia los cinco sin recargar; y, si se pide, las capturas PNG (página
-#      completa, Sankey v3 solo y panel en Total: la evidencia del PR).
+#      idéntico, como cadena, al del JSON de origen (value y pctpib); nodos iguales y en el mismo orden; FusionCharts
+#      dibuja con pctpib como value y conserva el MXN (mxn) y un tooltext con ambas unidades; el tooltip de un enlace
+#      muestra «% of GDP» y «bn MXN»; las cifras de «Anchoring and residual» se llenaron desde la cuenta (bn) y desde el
+#      panel (% del PIB, nacional_pctpib / v3_mxn), incluido el año del encabezado de unidad; los cinco mini-Sankeys del
+#      panel se dibujan con las celdas Total (cintas con data-value y data-pctpib), los pies traen ambas unidades, y el
+#      selector Hombres / Mujeres cambia los cinco sin recargar; y, si se pide, las capturas PNG (página completa, Sankey
+#      v3 solo y panel en Total: la evidencia del PR).
 # Origen del Sankey: --json <ruta>; si no, users/ricardo/SankeyNTA/sankey-v3-grupoedad.json del repo si
 # existe; si no, el fixture 05_scripts/fixtures/sankey-nta-grupoedad.json (el v3 real de la corrida completa
 # de SIM.do, CI sin corrida local). Origen de la cuenta: --cuenta <ruta>; si no, users/ricardo/NTA/
@@ -135,12 +140,13 @@ aserta() { if eval "$1"; then printf 'OK     %s\n' "$2"; else printf 'FALLO  %s\
 read -r N_ORI L_ORI < <(python3 -c '
 import re,sys
 t=open(sys.argv[1],encoding="utf-8").read()
-print(len(re.findall(r"\{label:\"([^\"]*)\"\}",t)), len(re.findall(r"\{to:\"([^\"]*)\",value:\"([^\"]*)\",from:\"([^\"]*)\"\}",t)))' "$JSON")
+print(len(re.findall(r"\{label:\"([^\"]*)\"\}",t)), len(re.findall(r"\{to:\"([^\"]*)\",value:\"([^\"]*)\",from:\"([^\"]*)\"(?:,pctpib:\"([^\"]*)\")?\}",t)))' "$JSON")
 echo "# origen: $N_ORI nodos / $L_ORI enlaces"
 if $ES_FIXTURE; then
-    aserta '[[ "$N_ORI" == 42 && "$L_ORI" == 118 ]]' "el fixture es el v3 real: 42 nodos / 118 enlaces ($N_ORI/$L_ORI)"
+    aserta '[[ "$N_ORI" == 35 && "$L_ORI" == 99 ]]' "el fixture es el v3 real (NTA-4): 35 nodos / 99 enlaces ($N_ORI/$L_ORI)"
 fi
-aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"esquema\"]==\"nta-panel/v1\" and len(d[\"celdas\"])==15 and all(abs(sum(c[\"entradas_flujos\"].values())-sum(c[\"salidas_flujos\"].values()))/c[\"C\"]<=1e-9 for c in d[\"celdas\"])" "$PANEL"' "el panel de origen es nta-panel/v1 con 15 celdas balanceadas (1e-9 relativo a C)"
+aserta 'python3 -c "import re,sys; t=open(sys.argv[1],encoding=\"utf-8\").read(); L=re.findall(r\"\\{to:\\\"[^\\\"]*\\\",value:\\\"[^\\\"]*\\\",from:\\\"[^\\\"]*\\\"(,pctpib:\\\"[^\\\"]*\\\")?\\}\", t); assert L and all(p for p in L)" "$JSON"' "cada enlace del v3 de origen trae pctpib (NTA-4: value en MXN y % del PIB, dividido en Stata)"
+aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"esquema\"]==\"nta-panel/v2\" and len(d[\"celdas\"])==15 and d[\"pib\"][\"valor\"]>0 and \"nacional_pctpib\" in d and \"v3_mxn\" in d and all(abs(sum(c[\"entradas_flujos\"].values())-sum(c[\"salidas_flujos\"].values()))/c[\"C\"]<=1e-9 and abs(sum(c[\"pctpib\"][\"entradas_flujos\"].values())-sum(c[\"pctpib\"][\"salidas_flujos\"].values()))/c[\"pctpib\"][\"C\"]<=1e-9 for c in d[\"celdas\"])" "$PANEL"' "el panel de origen es nta-panel/v2 con 15 celdas balanceadas en MXN y en % del PIB (1e-9 relativo a C), pib.valor, nacional_pctpib y v3_mxn"
 
 echo "## 1. HTTP"
 chk 200 "GET /NTA (la ruta)"                                  "$U/NTA"
@@ -160,8 +166,15 @@ chk 200 "jsonSankeyNTA.php?corte=v3-grupoedad"                 "$U/jsonSankeyNTA
 aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"nodes\"] and d[\"links\"]" "$H/body"' "la respuesta es JSON válido con nodes y links"
 read -r N_SRV L_SRV < <(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(len(d["nodes"]), len(d["links"]))' "$H/body" 2>/dev/null || echo "0 0")
 aserta '[[ "$N_SRV" == "$N_ORI" && "$L_SRV" == "$L_ORI" ]]' "el JSON servido tiene los mismos nodos/enlaces que el origen ($N_SRV/$L_SRV vs $N_ORI/$L_ORI)"
+aserta 'python3 -c "
+import json,re,sys
+d=json.load(open(sys.argv[1])); t=open(sys.argv[2],encoding=\"utf-8\").read()
+O=re.findall(r\"\\{to:\\\"([^\\\"]*)\\\",value:\\\"([^\\\"]*)\\\",from:\\\"([^\\\"]*)\\\",pctpib:\\\"([^\\\"]*)\\\"\\}\", t)
+assert len(O)==len(d[\"links\"]) and all(l[\"to\"]==o[0] and l[\"value\"]==o[1] and l[\"from\"]==o[2] and l[\"pctpib\"]==o[3] for l,o in zip(d[\"links\"],O))
+assert d[\"chart\"][\"unidad\"]==\"pctpib\"
+" "$H/body" "$JSON"' "cada enlace servido es idéntico (from, to, value, pctpib) al de origen y el chart declara unidad = pctpib"
 aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); g=[n for n in d[\"nodes\"] if n[\"label\"] in (\"Ing nacional\",\"Gobierno\",\"Activos\",\"Transferencias en efectivo\")]; assert len(g)==4 and all(\"toolText\" in n for n in g) and not any(\"toolText\" in n for n in d[\"nodes\"] if n not in g)" "$H/body"' "solo los cuatro hubs (Ing nacional, Gobierno, Activos, Transferencias en efectivo) llevan el toolText «inflows = outflows»"
-aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); L=[n[\"label\"] for n in d[\"nodes\"]]; assert not any(l.startswith((\"Ingreso \",\"Consumo \")) or l==\"Familias\" for l in L) and sum(l.startswith(\"De \") for l in L)==5 and sum(l.startswith(\" De \") for l in L)==5" "$H/body"' "el v3 servido: 5 grupos perceptores y 5 consumidores, sin Ingreso g / Consumo g / Familias"
+aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); L=[n[\"label\"] for n in d[\"nodes\"]]; assert not any(l.startswith((\"Ingreso \",\"Consumo \",\"Desahorro \",\"Futuro \",\"Ancla S14\")) or l in (\"Familias\",\"Salud pública\",\"Educación pública\",\"Otros en especie\") for l in L) and sum(l.startswith(\"De \") for l in L)==5 and sum(l.startswith(\" De \") for l in L)==5 and all(x in L for x in (\"Desahorro\",\"Futuro\",\"Colectivo\",\"Ajuste a cuentas nacionales S14\"))" "$H/body"' "el v3 servido (NTA-4): 5 grupos perceptores y 5 consumidores; Desahorro, Futuro, Colectivo y Ajuste a cuentas nacionales S14 únicos; sin Ingreso g / Consumo g / Familias / Desahorro g / Futuro g / especie aparte / Ancla recorte+complemento"
 chk 400 "jsonSankeyNTA.php?corte=../x (fuera de lista)"       "$U/jsonSankeyNTA.php?corte=../x"
 chk 400 "jsonSankeyNTA.php?corte=v3-grupoedad%00"             "$U/jsonSankeyNTA.php?corte=v3-grupoedad%00"
 chk 200 "jsonSankeyNTA.php traversal en idSession"            "$U/jsonSankeyNTA.php?corte=v3-grupoedad&idSession=../../../../etc/passwd%00"
