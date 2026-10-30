@@ -167,7 +167,7 @@
     "pct": 44.711263,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -0.5401361579575462,
+   "neto_pct_pibe": -0.5401361579575465,
    "pibe_pesos": 534444016675.55396,
    "neto_pesos": -2886725378.11,
    "tabla_32_coincide": true,
@@ -425,7 +425,7 @@
     "pct": 45.830574,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 0.9971739537238961,
+   "neto_pct_pibe": 0.9971739537238958,
    "pibe_pesos": 519611973987.6821,
    "neto_pesos": 5181435265.04,
    "tabla_32_coincide": true,
@@ -511,7 +511,7 @@
     "pct": 14.035971,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -7.5432013205031385,
+   "neto_pct_pibe": -7.54320132050314,
    "pibe_pesos": 524747593811.5318,
    "neto_pesos": -39582767425.7,
    "tabla_32_coincide": true,
@@ -640,7 +640,7 @@
     "pct": 29.392277,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.985424653284448,
+   "neto_pct_pibe": 1.9854246532844475,
    "pibe_pesos": 3626065280609.1455,
    "neto_pesos": 71992794025.4,
    "tabla_32_coincide": true,
@@ -726,7 +726,7 @@
     "pct": 64.877918,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -0.8202944700145719,
+   "neto_pct_pibe": -0.8202944700145725,
    "pibe_pesos": 411899741909.498,
    "neto_pesos": -3378790804.89,
    "tabla_32_coincide": true,
@@ -769,7 +769,7 @@
     "pct": 45.225806,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 3.911333451444471,
+   "neto_pct_pibe": 3.9113334514444675,
    "pibe_pesos": 271368113898.5347,
    "neto_pesos": 10614111815.47,
    "tabla_32_coincide": true,
@@ -898,7 +898,7 @@
     "pct": 16.934838,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 0.46068208514940023,
+   "neto_pct_pibe": 0.460682085149407,
    "pibe_pesos": 1400001765115.44,
    "neto_pesos": 6449557323.66,
    "tabla_32_coincide": true,
@@ -1156,7 +1156,7 @@
     "pct": 36.486224,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.0591299751376124,
+   "neto_pct_pibe": 1.0591299751376122,
    "pibe_pesos": 772694506205.3712,
    "neto_pesos": 8183839131.46,
    "tabla_32_coincide": true,
@@ -1199,7 +1199,7 @@
     "pct": 37.956397,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 2.0300171247326437,
+   "neto_pct_pibe": 2.0300171247326424,
    "pibe_pesos": 1212850088910.2014,
    "neto_pesos": 24621064502.21,
    "tabla_32_coincide": true,
@@ -1328,7 +1328,7 @@
     "pct": 27.049923,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 5.355100959639627,
+   "neto_pct_pibe": 5.355100959639623,
    "pibe_pesos": 652890124384.5305,
    "neto_pesos": 34962925316.31,
    "tabla_32_coincide": true,
@@ -1371,7 +1371,7 @@
     "pct": 22.195935,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -0.3227887527356323,
+   "neto_pct_pibe": -0.3227887527356328,
    "pibe_pesos": 416714621046.97833,
    "neto_pesos": -1345107927.74,
    "tabla_32_coincide": true,
@@ -1404,9 +1404,9 @@
  "faltan": [],
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "3b19f3d",
+  "commit": "05ec3e3",
   "tabla_md": "contrato-32.md",
   "pibe32": "entidades-pibe32.json",
-  "generado_el": "2026-10-29 20:52:11"
+  "generado_el": "2026-10-30 11:13:03"
  }
 }

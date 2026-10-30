@@ -16,7 +16,7 @@
     "log": "",
     "origen": "simulador",
     "dataset_serie": "users/ricardo/NL/ciclo-vida.json + PIBDeflactor Nuevo León",
-    "generado_en": "29-Oct-2026T20:49:18"
+    "generado_en": "30-Oct-2026T11:09:54"
   },
   "unidades": {
     "saldo_nominal": {"unidad": "pesos corrientes de anio_vp (neto del ciclo de vida de la entidad: aporta - recibe)", "formato_sugerido": "%14.1fc", "divisor_sugerido": 1000000},

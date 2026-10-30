@@ -16,7 +16,7 @@
     "log": "",
     "origen": "simulador",
     "dataset_serie": "users/ricardo/Jal/ciclo-vida.json + PIBDeflactor Jalisco",
-    "generado_en": "29-Oct-2026T20:48:36"
+    "generado_en": "30-Oct-2026T11:08:43"
   },
   "unidades": {
     "saldo_nominal": {"unidad": "pesos corrientes de anio_vp (neto del ciclo de vida de la entidad: aporta - recibe)", "formato_sugerido": "%14.1fc", "divisor_sugerido": 1000000},
