@@ -1,0 +1,108 @@
+{
+  "esquema": "ciep.nodo.serie/v1",
+  "nodo": "neto-pibe-Col",
+  "titulo": "Neto del ciclo de vida de Colima como % de su PIBE",
+  "medida_titular": "saldo_pib",
+  "anio_referencia": 2027,
+  "piso_serie": 2027,
+  "procedencia": {
+    "version_simulador": "v8.13.0",
+    "corte_datos": "2026-10-29",
+    "corte_serie": {
+      "anio": 2027,
+      "mes": 0,
+      "etiqueta": "anio de valor presente"
+    },
+    "log": "",
+    "origen": "simulador",
+    "dataset_serie": "users/ricardo/Col/ciclo-vida.json + PIBDeflactor Colima",
+    "generado_en": "29-Oct-2026T20:47:31"
+  },
+  "unidades": {
+    "saldo_nominal": {"unidad": "pesos corrientes de anio_vp (neto del ciclo de vida de la entidad: aporta - recibe)", "formato_sugerido": "%14.1fc", "divisor_sugerido": 1000000},
+    "saldo_real": {"unidad": "", "formato_sugerido": "", "divisor_sugerido": 1},
+    "poblacion": {"unidad": "personas (factor ENIGH, residentes de la entidad)", "formato_sugerido": "%15.0fc", "divisor_sugerido": 1},
+    "indice_precios": {"unidad": "", "formato_sugerido": "", "divisor_sugerido": 1},
+    "saldo_pc_nominal": {"unidad": "", "formato_sugerido": "", "divisor_sugerido": 1},
+    "saldo_pc_real": {"unidad": "", "formato_sugerido": "", "divisor_sugerido": 1},
+    "saldo_pib": {"unidad": "% del PIBE de la entidad (anio_vp)", "formato_sugerido": "%7.3fc", "divisor_sugerido": 1}
+  },
+  "criterios": {
+    "cobertura_institucional": "hogares residentes en la entidad (substr(folioviv,1,2) == clave INEGI), corte por residencia del flujo nacional",
+    "momento_de_registro": "",
+    "neto_o_bruto": "",
+    "moneda_y_valuacion": "pesos corrientes de anio_vp (AportacionesNetas de aportaciones.dta, Simulador.ado)",
+    "denominador_pib": "PIBE de la entidad: scalar pibY<ABREV> de PIBDeflactor por entidad (base master/PIBDeflactor<ABREV>.dta, BIE 750453), anio de valor presente",
+    "poblacion_denominador": "",
+    "deflactor": ""
+  },
+  "fuentes": {
+    "saldo_nominal": "users/<id>/<ABREV>/ciclo-vida.json totales.entidad.neto (CicloEntidad.do; registro NetoCiclo<ABREV>)",
+    "saldo_real": "",
+    "poblacion": "users/<id>/<ABREV>/ciclo-vida.json totales.entidad.pob (registro PobCiclo<ABREV>)",
+    "indice_precios": "",
+    "saldo_pc_nominal": "",
+    "saldo_pc_real": "",
+    "saldo_pib": "NetoCicloPIBE<ABREV> = NetoCiclo<ABREV> / pibY<ABREV> * 100 (05_scripts/contrato-32.do §4b)"
+  },
+  "presentacion": {
+    "entidad": "Colima",
+    "abrev": "Col"
+  },
+  "tabla": [
+  ],
+  "capas_declaradas": [
+  ],
+  "escalares": {
+    "NetoCicloCol": {"valor": 16408783478.78194, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "AportaCicloCol": {"valor": 53577016221.506157, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "RecibeCicloCol": {"valor": 37168232742.72422, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "PobCicloCol": {"valor": 755998, "tipo": "personas", "formato_sugerido": "%15.0fc", "divisor_sugerido": 1},
+    "pibYCol": {"valor": 257334843776.51132, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "NetoCicloPIBECol": {"valor": 6.3764328366789487, "tipo": "pctpib", "formato_sugerido": "%7.3fc", "divisor_sugerido": 1}
+  },
+  "titular": {
+    "anio": 2027,
+    "procedencia": {"origen": "serie_observada", "dataset": "users/ricardo/Col/ciclo-vida.json + PIBDeflactor Colima", "tipo_dato": "observado"},
+    "saldo_nominal": 16408783478.78194,
+    "saldo_real": null,
+    "poblacion": 755998,
+    "indice_precios": null,
+    "saldo_pc_nominal": null,
+    "saldo_pc_real": null,
+    "saldo_pib": 6.3764328366789487
+  },
+  "cobertura": {"anio_min": 2027, "anio_max": 2027, "n_anios": 1, "n_esperados": 1, "anios_faltantes": []},
+  "series": [
+    {"anio": 2027, "saldo_nominal": 16408783478.78194, "saldo_real": null, "poblacion": 755998, "indice_precios": null, "saldo_pc_nominal": null, "saldo_pc_real": null, "saldo_pib": 6.3764328366789487}
+  ],
+  "faltantes": [
+    "procedencia.log",
+    "unidad.saldo_real",
+    "formato.saldo_real",
+    "unidad.indice_precios",
+    "formato.indice_precios",
+    "unidad.saldo_pc_nominal",
+    "formato.saldo_pc_nominal",
+    "unidad.saldo_pc_real",
+    "formato.saldo_pc_real",
+    "criterio.momento_de_registro",
+    "criterio.neto_o_bruto",
+    "criterio.poblacion_denominador",
+    "criterio.deflactor",
+    "fuente.saldo_real",
+    "fuente.indice_precios",
+    "fuente.saldo_pc_nominal",
+    "fuente.saldo_pc_real",
+    "tabla.dataset",
+    "capas.dataset",
+    "serie.saldo_real",
+    "serie.indice_precios",
+    "serie.saldo_pc_nominal",
+    "serie.saldo_pc_real",
+    "titular.saldo_real",
+    "titular.indice_precios",
+    "titular.saldo_pc_nominal",
+    "titular.saldo_pc_real"
+  ]
+}

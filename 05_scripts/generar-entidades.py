@@ -12,24 +12,26 @@ Dos trabajos, uno por subcomando; ninguno toca el motor (.do/.ado) ni teclea un 
       compara lo que generaría con lo commiteado (y detecta carpetas <ABREV>/ sobrantes) y sale 1 si
       difieren — es el gate «generado == commiteado» de test-sitio-entidades.sh y de CI.
 
-  meta --users <users/<id>> [--tabla <contrato-32.tsv>] [--tabla-md <contrato-32.md>]
+  meta --users <users/<id>> [--tabla-md <contrato-32.md>] [--pibe-vintage <AAAA-MM-DD>]
       Lee lo que contrato-32 dejó en users/<id>/<ABREV>/ (los 5 sankey-<corte>.json de SankeySF.do, el
-      ciclo-vida.json de CicloEntidad.do y el tasas-efectivas.json de TasasEfectivasEntidad.do) y escribe,
-      por entidad, users/<id>/<ABREV>/meta.json (esquema entidad-meta/v1) y el índice users/<id>/entidades.json
-      (esquema entidades-indice/v1). Es lo que la página lee en runtime para los SELLOS (qué celdas tienen
-      n < sello_n o top-1 > sello_top1, con su n: cada marca de la gráfica y cada nota al pie sale de aquí,
-      nada se cablea en PHP/JS) y para el producto «neto del ciclo como % del PIBE»: el PIBE (pesos, año de
-      valor presente) viene de la columna pibe_pesos de contrato-32.tsv (escalar pibY<ABREV> de PIBDeflactor
-      por entidad; sin --tabla el bloque pibe queda null y la página lo declara), el neto de
-      ciclo-vida.json totales.entidad.neto y el cociente se calcula aquí, igual que contrato-32.py §4b
-      (FLAG declarado en el CHANGELOG: es la única división fuera de Stata; lo limpio es que CicloEntidad.do
-      lo emita en una sesión del motor). La discrepancia Σ32 PIBE vs PIB nacional (totales.nacional.pibY)
-      se registra como informativa. Con --tabla-md se cotejan los conteos de sellos contra la tabla de las
-      32 de esa corrida (§4) y la diferencia, si la hay, se declara en meta.json (tabla_32.coincide).
+      ciclo-vida.json de CicloEntidad.do, el tasas-efectivas.json de TasasEfectivasEntidad.do y el
+      neto-pibe.json que contrato-32.do §4b exporta con scalarjson) y users/<id>/entidades-pibe32.json, y
+      escribe, por entidad, users/<id>/<ABREV>/meta.json (esquema entidad-meta/v1) y el índice
+      users/<id>/entidades.json (esquema entidades-indice/v1). Es lo que la página lee en runtime para los
+      SELLOS (qué celdas tienen n < sello_n o top-1 > sello_top1, con su n: cada marca de la gráfica y cada
+      nota al pie sale de aquí, nada se cablea en PHP/JS) y lo que el índice muestra. REGLA: ningún número de
+      la página nace fuera de Stata — este script TRANSCRIBE: el neto del ciclo como % del PIBE
+      (NetoCicloPIBE<ABREV>), el PIBE (pibY<ABREV>) y el neto (NetoCiclo<ABREV>) se copian de neto-pibe.json;
+      la suma de los 32 PIBE, su discrepancia con el PIB nacional y el neto nacional / PIB se copian de
+      entidades-pibe32.json; los conteos de sellos son conteos de banderas que el motor ya puso (sello=1).
+      Sin neto-pibe.json el bloque pibe queda null y la página lo declara. Con --tabla-md se cotejan los
+      conteos de sellos contra la tabla de las 32 de esa corrida (§4) y la diferencia, si la hay, se declara
+      en meta.json (tabla_32.coincide). --pibe-vintage declara la fecha de las bases PIBE si no hay
+      master/PIBDeflactor<ABREV>.meta junto a users/.
 
 Lo llama contrato-32.sh al final del recorrido (meta) y test-sitio-entidades.sh / CI (paginas --check).
 """
-import argparse, csv, datetime, glob, json, os, re, subprocess, sys
+import argparse, datetime, glob, json, os, re, subprocess, sys
 
 VERSION = 'generar-entidades.py v1.0 (v8.13.0)'
 CORTES = ['quintil', 'grupoedad', 'sexo', 'rural', 'escol']
@@ -161,10 +163,11 @@ def num(x, default=None):
         return default
 
 
-def leer_tabla_tsv(ruta):
-    if not ruta: return {}
-    filas = list(csv.DictReader(open(ruta, encoding='utf-8'), delimiter='\t'))
-    return {f['abrev']: f for f in filas}
+def leer_escalares(ruta):
+    """escalares de un JSON de scalarjson (ciep.nodo.serie/v1) -> {nombre: valor}; {} si no existe."""
+    if not os.path.isfile(ruta): return {}
+    d = json.load(open(ruta, encoding='utf-8'))
+    return {k: v.get('valor') for k, v in d.get('escalares', {}).items()}
 
 
 def leer_tabla_md(ruta):
@@ -181,7 +184,7 @@ def leer_tabla_md(ruta):
     return out
 
 
-def meta_entidad(e, U, tabla, tabla_md, generado_el, commit, pibe_vintage=None):
+def meta_entidad(e, U, pibe32, tabla_md, generado_el, commit, pibe_vintage=None):
     d = os.path.join(U, e['abrev'])
     ciclo = json.load(open(os.path.join(d, 'ciclo-vida.json'), encoding='utf-8'))
     tasas = json.load(open(os.path.join(d, 'tasas-efectivas.json'), encoding='utf-8'))
@@ -233,24 +236,28 @@ def meta_entidad(e, U, tabla, tabla_md, generado_el, commit, pibe_vintage=None):
         if n_te >= 100 and i['top1'] > top1[0]: top1 = (i['top1'], f"TE {i['impuesto']} (n={n_te})")
     te_menor = len(tasas['impuestos']) if n_te < sello_n else 0
 
-    # --- PIBE y neto del ciclo (vista §4b de contrato-32.py) ---
-    fila = tabla.get(e['abrev'], {})
+    # --- PIBE y neto del ciclo: TRANSCRITOS de neto-pibe.json (contrato-32.do §4b, scalarjson); nada se divide aquí ---
+    ab = e['abrev']
+    esc = leer_escalares(os.path.join(d, 'neto-pibe.json'))
     pibe = None
-    pp = num(fila.get('pibe_pesos')) if fila else None
+    pp = esc.get('pibY' + ab)
     neto = ciclo['totales']['entidad']['neto']
-    if pp:
+    if pp and esc.get('NetoCicloPIBE' + ab) is not None:
         vint = pibe_vintage
         meta_dta = os.path.join(U, '..', '..', 'master', f"PIBDeflactor{e['abrev']}.meta")
         if not vint and os.path.isfile(meta_dta):
             for l in open(meta_dta, encoding='utf-8', errors='replace'):
                 if l.startswith('base_generada='): vint = l.split('=', 1)[1].strip()[:10]
-        pibe = {'pibe_pesos': pp, 'neto_pesos': neto, 'neto_pct_pibe': neto / pp * 100, 'vintage': vint or 'not declared in this run (no master/PIBDeflactor<ABREV>.meta beside users/ and no --pibe-vintage)',
+        pibe = {'pibe_pesos': pp, 'neto_pesos': esc.get('NetoCiclo' + ab), 'neto_pct_pibe': esc.get('NetoCicloPIBE' + ab),
+                'vintage': vint or 'not declared in this run (no master/PIBDeflactor<ABREV>.meta beside users/ and no --pibe-vintage)',
                 'fuente_vintage': 'master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32) o --pibe-vintage',
-                'anio_vp': ciclo['anio_vp'], 'fuente_pibe': 'contrato-32.tsv pibe_pesos = scalar pibY<ABREV> de PIBDeflactor por entidad (base master/PIBDeflactor<ABREV>.dta)',
-                'fuente_neto': 'ciclo-vida.json totales.entidad.neto (pesos de anio_vp)',
-                'calculo': 'neto_pct_pibe = neto_pesos / pibe_pesos * 100, dividido en generar-entidades.py (igual que contrato-32.py §4b); FLAG v8.13.0: única división fuera de Stata'}
+                'anio_vp': ciclo['anio_vp'],
+                'fuente': 'neto-pibe.json (scalarjson; 05_scripts/contrato-32.do §4b): escalares pibY<ABREV> (PIBDeflactor por entidad), NetoCiclo<ABREV> (CicloEntidad.do) y NetoCicloPIBE<ABREV> = NetoCiclo/pibY×100, divididos en Stata; aquí solo se transcriben',
+                'coincide_ciclo': abs(esc.get('NetoCiclo' + ab) - neto) <= 0.005,   # ciclo-vida.json escribe el neto con 2 decimales; el escalar va a precisión completa
+                'nota_coincide': 'NetoCiclo<ABREV> (precisión completa) vs totales.entidad.neto de ciclo-vida.json (2 decimales): iguales a medio centavo'}
     nac = ciclo['totales']['nacional']
-    nacional = {'neto_pesos': nac['neto'], 'pib_pesos': nac['pibY'], 'neto_pct_pib': nac['neto'] / nac['pibY'] * 100 if nac.get('pibY') else None,
+    nacional = {'neto_pesos': nac['neto'], 'pib_pesos': nac['pibY'], 'neto_pct_pib': pibe32.get('NetoCicloPIBNac'),
+                'fuente_pct': 'entidades-pibe32.json escalar NetoCicloPIBNac (contrato-32.do; null si la corrida no lo exportó)',
                 'share_pob': nac['share_pob'], 'share_neto': nac['share_neto'], 'n': nac['n'], 'pob': nac['pob']}
 
     conteo = {'sankeys_micro': [n_sell, n_micro], 'ciclo': [len(ci), len(ciclo['celdas'])], 'tasas': [len(te), len(tasas['impuestos'])]}
@@ -274,7 +281,7 @@ def meta_entidad(e, U, tabla, tabla_md, generado_el, commit, pibe_vintage=None):
         'pibe': pibe,
         'nacional': nacional,
         'tabla_32': tabla_32,
-        'procedencia': {'generador': VERSION, 'commit': commit, 'insumos': ['ciclo-vida.json', 'tasas-efectivas.json'] + [f'sankey-{k}.json' for k in sk] + (['contrato-32.tsv'] if fila else []),
+        'procedencia': {'generador': VERSION, 'commit': commit, 'insumos': ['ciclo-vida.json', 'tasas-efectivas.json'] + [f'sankey-{k}.json' for k in sk] + (['neto-pibe.json'] if pibe else []) + (['entidades-pibe32.json'] if pibe32 else []),
                         'modulos': {'ciclo': ciclo['procedencia']['modulo'], 'tasas': tasas['procedencia']['modulo']},
                         'generado_el': generado_el},
     }
@@ -283,7 +290,7 @@ def meta_entidad(e, U, tabla, tabla_md, generado_el, commit, pibe_vintage=None):
 def cmd_meta(a):
     cat = leer_catalogo(a.catalogo)
     U = a.users
-    tabla = leer_tabla_tsv(a.tabla)
+    pibe32 = leer_escalares(os.path.join(U, 'entidades-pibe32.json'))
     tabla_md = leer_tabla_md(a.tabla_md)
     generado_el = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     try:
@@ -295,13 +302,13 @@ def cmd_meta(a):
         d = os.path.join(U, e['abrev'])
         if not (os.path.isfile(os.path.join(d, 'ciclo-vida.json')) and os.path.isfile(os.path.join(d, 'tasas-efectivas.json'))):
             faltan.append(e['abrev']); continue
-        metas.append(meta_entidad(e, U, tabla, tabla_md, generado_el, commit, a.pibe_vintage))
+        metas.append(meta_entidad(e, U, pibe32, tabla_md, generado_el, commit, a.pibe_vintage))
     if not metas:
         sys.exit(f'generar-entidades meta: ninguna entidad con ciclo-vida.json + tasas-efectivas.json en {U}')
-    # índice de las 32 (y la discrepancia Σ32 PIBE vs PIB nacional, informativa)
+    # índice de las 32; Σ32 PIBE y su discrepancia TRANSCRITAS de entidades-pibe32.json (contrato-32.do), no sumadas aquí
     pibes = [m['pibe']['pibe_pesos'] for m in metas if m['pibe']]
-    pib_nac = metas[0]['nacional']['pib_pesos']
-    suma = sum(pibes) if len(pibes) == 32 else None
+    pib_nac = pibe32.get('pibY', metas[0]['nacional']['pib_pesos'])
+    suma = pibe32.get('pibYSum32')
     filas = []
     for m in metas:
         filas.append({'pos': m['entidad']['pos'], 'abrev': m['entidad']['abrev'], 'clave': m['entidad']['clave'], 'nombre': m['entidad']['nombre'],
@@ -312,8 +319,9 @@ def cmd_meta(a):
                       'neto_pesos': m['ciclo']['neto_pesos'],
                       'tabla_32_coincide': m['tabla_32']['coincide'] if m['tabla_32'] else None,
                       'url': f"/entidades/{m['entidad']['abrev']}"})
-    pibe_32 = {'suma_pesos': suma, 'pib_nacional_pesos': pib_nac, 'discrepancia_pct': (suma / pib_nac - 1) * 100 if (suma and pib_nac) else None,
-               'entidades_con_pibe': len(pibes), 'nota': 'Σ32 PIBE (año de valor presente) vs PIB nacional de la corrida (ciclo-vida.json totales.nacional.pibY): informativa, no se gatea (contrato-32.md §4b)'}
+    pibe_32 = {'suma_pesos': suma, 'pib_nacional_pesos': pib_nac, 'discrepancia_pct': pibe32.get('pibeDiscrepancia32'),
+               'entidades_con_pibe': len(pibes), 'fuente': 'entidades-pibe32.json (scalarjson; contrato-32.do): pibYSum32, pibY, pibeDiscrepancia32 — transcritos',
+               'nota': 'Σ32 PIBE (año de valor presente) vs PIB nacional de la corrida: informativa, no se gatea (contrato-32.md §4b)'}
     for m in metas:   # cada meta.json lleva también la discrepancia Σ32 (la página la cita en la nota al pie del producto neto/PIBE)
         m['pibe_32'] = pibe_32
         json.dump(m, open(os.path.join(U, m['entidad']['abrev'], 'meta.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
@@ -325,15 +333,15 @@ def cmd_meta(a):
                      'neto_pct_pib': metas[0]['nacional']['neto_pct_pib'], 'anio_enigh': metas[0]['muestra']['anio_enigh'], 'anio_vp': metas[0]['muestra']['anio_vp'], 'paquete': metas[0]['muestra']['paquete']},
         'pibe_32': pibe_32,
         'faltan': faltan,
-        'procedencia': {'generador': VERSION, 'commit': commit, 'tabla': os.path.basename(a.tabla) if a.tabla else None, 'tabla_md': os.path.basename(a.tabla_md) if a.tabla_md else None, 'generado_el': generado_el},
+        'procedencia': {'generador': VERSION, 'commit': commit, 'tabla_md': os.path.basename(a.tabla_md) if a.tabla_md else None, 'pibe32': 'entidades-pibe32.json' if pibe32 else None, 'generado_el': generado_el},
     }
     json.dump(indice, open(os.path.join(U, 'entidades.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     print(f'generar-entidades meta: {len(metas)}/32 meta.json + entidades.json en {U}' + (f' (faltan: {", ".join(faltan)})' if faltan else ''))
     if tabla_md:
         dif = [m['entidad']['abrev'] + f" (tabla {m['tabla_32']['tabla']} vs corrida {m['tabla_32']['corrida']})" for m in metas if m['tabla_32'] and m['tabla_32']['coincide'] is False]
         print('  sellos vs tabla de las 32: ' + ('coinciden en las ' + str(len(metas)) if not dif else f'{len(dif)} difieren: ' + '; '.join(dif)))
-    if suma: print(f"  Σ32 PIBE = {suma/1e6:,.0f} mdp vs PIB nacional {pib_nac/1e6:,.0f} mdp ({indice['pibe_32']['discrepancia_pct']:+.2f} %, informativo)")
-    else: print(f'  PIBE: {len(pibes)}/32 con pibe_pesos' + ('' if a.tabla else ' (sin --tabla: el producto neto/PIBE queda declarado como no disponible)'))
+    if suma: print(f"  Σ32 PIBE = {suma/1e6:,.0f} mdp vs PIB nacional {pib_nac/1e6:,.0f} mdp ({indice['pibe_32']['discrepancia_pct']:+.2f} %, informativo; transcrito de entidades-pibe32.json)")
+    else: print(f'  PIBE: {len(pibes)}/32 con neto-pibe.json; sin entidades-pibe32.json (Σ32 y neto nacional / PIB quedan null)')
     return 0 if not faltan else 1
 
 
@@ -343,7 +351,7 @@ def main():
     sub = ap.add_subparsers(dest='cmd', required=True)
     p = sub.add_parser('paginas'); p.add_argument('--check', action='store_true')
     p.add_argument('--sitio', default=os.path.join(raiz_repo(), '04_1_simuladorfiscal.ciep.mx', 'entidades'))
-    m = sub.add_parser('meta'); m.add_argument('--users', required=True); m.add_argument('--tabla'); m.add_argument('--tabla-md'); m.add_argument('--pibe-vintage', help='fecha (AAAA-MM-DD) de las bases PIBDeflactor<ABREV>.dta si no hay master/PIBDeflactor<ABREV>.meta junto a users/')
+    m = sub.add_parser('meta'); m.add_argument('--users', required=True); m.add_argument('--tabla-md'); m.add_argument('--pibe-vintage', help='fecha (AAAA-MM-DD) de las bases PIBDeflactor<ABREV>.dta si no hay master/PIBDeflactor<ABREV>.meta junto a users/')
     a = ap.parse_args()
     sys.exit(cmd_paginas(a) if a.cmd == 'paginas' else cmd_meta(a))
 

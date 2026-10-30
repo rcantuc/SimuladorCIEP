@@ -874,8 +874,8 @@ fi
 #       NTA/nta-quinquenio-sexo.json    ← jsonSankeyNTA.php?cuenta=quinquenio-sexo
 #       NTA/nta-identidad.txt           ← jsonSankeyNTA.php?cuenta=identidad (reporte enlazado desde /NTA)
 #       (el v2, SankeyNTA/sankey-v2-grupoedad.json, lo sigue emitiendo el motor pero /NTA ya no lo dibuja: no viaja desde v8.12.6)
-#       <ABREV>/sankey-<corte>.json ×5, <ABREV>/ciclo-vida.json, <ABREV>/tasas-efectivas.json, <ABREV>/meta.json (×32)
-#                                       ← jsonEntidad.php?abrev=<ABREV>&producto=sankey|ciclo|tasas|meta (/entidades/<ABREV>, v8.13.0)
+#       <ABREV>/sankey-<corte>.json ×5, <ABREV>/ciclo-vida.json, <ABREV>/tasas-efectivas.json, <ABREV>/neto-pibe.json, <ABREV>/meta.json (×32)
+#                                       ← jsonEntidad.php?abrev=<ABREV>&producto=sankey|ciclo|tasas|neto|meta (/entidades/<ABREV>, v8.13.0)
 #       entidades.json                  ← jsonEntidad.php?producto=indice (/entidades, v8.13.0)
 # Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
 # SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
@@ -906,22 +906,23 @@ DEFAULT_MANIFEST=(
 )
 # v8.13.0 (template estatal, /entidades/<ABREV>): users/ricardo/<ABREV>/ para las 32 — los 5 Sankeys de
 # aportación (SankeySF.do por entidad), ciclo-vida.json (CicloEntidad.do), tasas-efectivas.json
-# (TasasEfectivasEntidad.do) y meta.json (generar-entidades.py meta: sellos con su n, PIBE y neto del
-# ciclo) — más entidades.json (el índice de las 32). Los produce contrato-32.sh (Ricardo lo corre antes
+# (TasasEfectivasEntidad.do), neto-pibe.json (contrato-32.do §4b vía scalarjson: neto del ciclo / PIBE en
+# Stata) y meta.json (generar-entidades.py meta: sellos con su n; PIBE y neto transcritos) — más
+# entidades.json (el índice de las 32). Los produce contrato-32.sh (Ricardo lo corre antes
 # del tag); jsonEntidad.php los lee en users/<id>/<ABREV>/. El catálogo de abreviaturas se lee de
 # SIMentidad.ado (global entidadesC, sin «Nac»), la única fuente de verdad, para no copiarlo aquí.
 ENTIDADES_ABREV="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
 [[ -n "$ENTIDADES_ABREV" ]] || die "Fase 3b-ter: no pude leer 'global entidadesC' de SIMentidad.ado (el catálogo de las 32 entidades)."
 _n_ent=0
 for _ab in $ENTIDADES_ABREV; do
-    for _f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json meta.json; do
+    for _f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json neto-pibe.json meta.json; do
         DEFAULT_MANIFEST+=("$_ab/$_f")
     done
     _n_ent=$((_n_ent+1))
 done
 DEFAULT_MANIFEST+=(entidades.json)
 [[ $_n_ent -eq 32 ]] || die "Fase 3b-ter: el catálogo de SIMentidad.ado trae $_n_ent entidades; esperaba 32."
-log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos; incluye las $_n_ent entidades × 8 + entidades.json) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
+log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos; incluye las $_n_ent entidades × 9 + entidades.json) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
 
 LOCAL_DEFAULT_DIR="$LOCAL_REPO_ROOT/users/ricardo"
 LOCAL_PEF_DTA="$LOCAL_REPO_ROOT/master/PEF.dta"

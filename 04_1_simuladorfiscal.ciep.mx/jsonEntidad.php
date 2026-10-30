@@ -14,9 +14,10 @@
 //       número se escribe aquí.
 //   ?abrev=<ABREV>&producto=ciclo    users/<id>/<ABREV>/ciclo-vida.json      (CicloEntidad.do, ciclo-vida/v1)   byte a byte
 //   ?abrev=<ABREV>&producto=tasas    users/<id>/<ABREV>/tasas-efectivas.json (TasasEfectivasEntidad.do)        byte a byte
+//   ?abrev=<ABREV>&producto=neto     users/<id>/<ABREV>/neto-pibe.json (contrato-32.do §4b vía scalarjson: NetoCicloPIBE<ABREV> =
+//                                    NetoCiclo<ABREV> / pibY<ABREV> × 100, dividido EN STATA; el producto 4 de la página)   byte a byte
 //   ?abrev=<ABREV>&producto=meta     users/<id>/<ABREV>/meta.json (generar-entidades.py meta, entidad-meta/v1:
-//                                    sellos con su n, PIBE y neto del ciclo, espejo)                            byte a byte
-//   ?abrev=<ABREV>&producto=neto     alias de meta (el producto «neto del ciclo como % del PIBE» vive ahí)
+//                                    sellos con su n; PIBE y neto transcritos de neto-pibe.json)               byte a byte
 //   ?producto=indice                 users/<id>/entidades.json (entidades-indice/v1: la tabla de las 32)      byte a byte
 //
 // Harness de seguridad (test-sitio-entidades.sh, test-sitio-seguridad.sh): abrev se valida ESTRICTO contra el
@@ -82,7 +83,11 @@ if ($producto === 'tasas') {
 	list($ruta, $rel) = ent_ruta($base_path, $idSession, "%s/{$abrev}/tasas-efectivas.json");
 	ent_sirve_json($ruta, $rel);
 }
-if ($producto === 'meta' || $producto === 'neto') {
+if ($producto === 'neto') {
+	list($ruta, $rel) = ent_ruta($base_path, $idSession, "%s/{$abrev}/neto-pibe.json");
+	ent_sirve_json($ruta, $rel);
+}
+if ($producto === 'meta') {
 	list($ruta, $rel) = ent_ruta($base_path, $idSession, "%s/{$abrev}/meta.json");
 	ent_sirve_json($ruta, $rel);
 }

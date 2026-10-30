@@ -557,20 +557,21 @@
   "pob": 6375312
  },
  "pibe": {
-  "pibe_pesos": 3231482553598.0,
-  "neto_pesos": 354111194496.85,
-  "neto_pct_pibe": 10.958165133912768,
+  "pibe_pesos": 3231482553598.41,
+  "neto_pesos": 354111194496.8468,
+  "neto_pct_pibe": 10.958165133911278,
   "vintage": "2026-10-19",
   "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32) o --pibe-vintage",
   "anio_vp": 2027,
-  "fuente_pibe": "contrato-32.tsv pibe_pesos = scalar pibY<ABREV> de PIBDeflactor por entidad (base master/PIBDeflactor<ABREV>.dta)",
-  "fuente_neto": "ciclo-vida.json totales.entidad.neto (pesos de anio_vp)",
-  "calculo": "neto_pct_pibe = neto_pesos / pibe_pesos * 100, dividido en generar-entidades.py (igual que contrato-32.py §4b); FLAG v8.13.0: única división fuera de Stata"
+  "fuente": "neto-pibe.json (scalarjson; 05_scripts/contrato-32.do §4b): escalares pibY<ABREV> (PIBDeflactor por entidad), NetoCiclo<ABREV> (CicloEntidad.do) y NetoCicloPIBE<ABREV> = NetoCiclo/pibY×100, divididos en Stata; aquí solo se transcriben",
+  "coincide_ciclo": true,
+  "nota_coincide": "NetoCiclo<ABREV> (precisión completa) vs totales.entidad.neto de ciclo-vida.json (2 decimales): iguales a medio centavo"
  },
  "nacional": {
   "neto_pesos": 1249989659760.78,
   "pib_pesos": 39419415318851.43,
   "neto_pct_pib": 3.171000000000003,
+  "fuente_pct": "entidades-pibe32.json escalar NetoCicloPIBNac (contrato-32.do; null si la corrida no lo exportó)",
   "share_pob": 0.04708801,
   "share_neto": 0.2832913,
   "n": 308598,
@@ -582,15 +583,9 @@
   "corrida": "23/155 / 16/46 / 2/10",
   "coincide": true
  },
- "espejo": {
-  "etiqueta": "Simulador CoNL (Nuevo León mirror)",
-  "url": null,
-  "placeholder": true,
-  "nota": "URL pasada a generar-entidades.py meta --conl-url; sin ella la página declara el placeholder"
- },
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "e456647",
+  "commit": "3b19f3d",
   "insumos": [
    "ciclo-vida.json",
    "tasas-efectivas.json",
@@ -599,19 +594,21 @@
    "sankey-sexo.json",
    "sankey-rural.json",
    "sankey-escol.json",
-   "contrato-32.tsv"
+   "neto-pibe.json",
+   "entidades-pibe32.json"
   ],
   "modulos": {
    "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
    "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
   },
-  "generado_el": "2026-10-29 19:56:14"
+  "generado_el": "2026-10-29 20:52:11"
  },
  "pibe_32": {
-  "suma_pesos": 39629803600642.0,
+  "suma_pesos": 39629803600641.83,
   "pib_nacional_pesos": 39419415318851.43,
-  "discrepancia_pct": 0.5337174082588714,
+  "discrepancia_pct": 0.5337174082584273,
   "entidades_con_pibe": 32,
-  "nota": "Σ32 PIBE (año de valor presente) vs PIB nacional de la corrida (ciclo-vida.json totales.nacional.pibY): informativa, no se gatea (contrato-32.md §4b)"
+  "fuente": "entidades-pibe32.json (scalarjson; contrato-32.do): pibYSum32, pibY, pibeDiscrepancia32 — transcritos",
+  "nota": "Σ32 PIBE (año de valor presente) vs PIB nacional de la corrida: informativa, no se gatea (contrato-32.md §4b)"
  }
 }

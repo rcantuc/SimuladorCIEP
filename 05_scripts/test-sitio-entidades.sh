@@ -8,7 +8,8 @@
 #   1. Las 32 páginas, la plantilla, el índice y el endpoint parsean (php -l).
 #   2. HTTP (php -S sobre una copia del sitio, con los JSON de las entidades de prueba en users/ciepmx/<ABREV>/ y el
 #      índice en users/ciepmx/entidades.json): /entidades y /entidades/<ABREV> responden 200 con su esqueleto;
-#      jsonEntidad.php sirve ciclo, tasas, meta (= neto) y el índice BYTE A BYTE, y el Sankey de cada corte con los mismos
+#      jsonEntidad.php sirve ciclo, tasas, neto (neto-pibe.json: el escalar NetoCicloPIBE<ABREV> dividido en Stata por
+#      contrato-32.do §4b y exportado con scalarjson), meta y el índice BYTE A BYTE, y el Sankey de cada corte con los mismos
 #      nodos y enlaces que el archivo del motor (los enlaces con sello=1 llevan toolText); harness de seguridad:
 #      abrev fuera del catálogo (minúsculas, clave numérica, traversal, %00) → 400, producto o corte fuera de la lista → 400,
 #      idSession con traversal → cae al default ciepmx, entidad del catálogo sin archivos → 404 con la pista del deploy.
@@ -17,10 +18,11 @@
 #   4. Chrome headless (test-sitio-entidades.js) sobre las entidades de prueba (default NL, Jal y Col: un estado grande,
 #      uno medio y uno chico) y sobre el índice: los cuatro productos se dibujan; los enlaces del Sankey son idénticos como
 #      cadena al JSON del motor (quintil y, tras el selector, grupoedad); las series del ciclo de vida son los pct del JSON;
-#      cada barra de tasas lleva el te del JSON; el neto/PIBE de la página es el de meta.json; los sellos aparecen (marca,
+#      cada barra de tasas lleva el te del JSON; el neto/PIBE de la página es el escalar de neto-pibe.json (y meta.json lo
+#      transcribe igual); NL lleva la frase fija del espejo CoNL, sin enlace; los sellos aparecen (marca,
 #      lista y nota al pie numerada con su n) exactamente donde meta.json y los JSON del motor dicen sello=1 y en ningún
 #      otro lado; las cifras del encabezado se llenaron; sin errores de JS; y, si se pide, las capturas PNG.
-# Origen de los JSON: --users <dir> con <ABREV>/{sankey-*.json, ciclo-vida.json, tasas-efectivas.json, meta.json} y
+# Origen de los JSON: --users <dir> con <ABREV>/{sankey-*.json, ciclo-vida.json, tasas-efectivas.json, neto-pibe.json, meta.json} y
 # entidades.json (p. ej. users/ricardo tras contrato-32.sh); default 05_scripts/fixtures/entidades (NL, Jal, Col reales
 # de una corrida completa; CI sin corrida local). --entidades "NL Jal Col" elige cuáles probar (deben existir en --users).
 #   bash 05_scripts/test-sitio-entidades.sh [--users <dir>] [--entidades "NL Jal Col"] [--png <dir>] [--puerto N] [--conservar] [--sin-chrome]
@@ -57,7 +59,7 @@ fi
 [[ -n "$USERS" ]] || USERS="$FIX"
 [[ -d "$USERS" ]] || { echo "no existe el directorio de JSON de entidades: $USERS" >&2; exit 2; }
 for e in $ENTIDADES; do
-    for f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json meta.json; do
+    for f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json neto-pibe.json meta.json; do
         [[ -f "$USERS/$e/$f" ]] || { echo "falta $USERS/$e/$f (corre contrato-32.sh o generar-entidades.py meta)" >&2; exit 2; }
     done
 done
@@ -146,8 +148,9 @@ for e in $ENTIDADES; do
     aserta 'cmp -s "$H/body" "$USERS/'"$e"'/tasas-efectivas.json"' "$e: tasas-efectivas.json se sirve byte a byte"
     chk 200 "jsonEntidad.php?abrev=$e&producto=meta"           "$U/jsonEntidad.php?abrev=$e&producto=meta"
     aserta 'cmp -s "$H/body" "$USERS/'"$e"'/meta.json"' "$e: meta.json se sirve byte a byte"
-    chk 200 "jsonEntidad.php?abrev=$e&producto=neto (alias)"   "$U/jsonEntidad.php?abrev=$e&producto=neto"
-    aserta 'cmp -s "$H/body" "$USERS/'"$e"'/meta.json"' "$e: producto=neto es meta.json"
+    chk 200 "jsonEntidad.php?abrev=$e&producto=neto"           "$U/jsonEntidad.php?abrev=$e&producto=neto"
+    aserta 'cmp -s "$H/body" "$USERS/'"$e"'/neto-pibe.json"' "$e: neto-pibe.json (scalarjson, contrato-32.do §4b) se sirve byte a byte"
+    aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); e=d[\"escalares\"]; assert d[\"esquema\"]==\"ciep.nodo.serie/v1\" and e[\"NetoCicloPIBE'"$e"'\"][\"valor\"] is not None and e[\"pibY'"$e"'\"][\"valor\"] and e[\"NetoCiclo'"$e"'\"][\"valor\"] is not None" "$H/body"' "$e: neto-pibe.json trae los escalares NetoCicloPIBE, pibY y NetoCiclo de la entidad (nacidos en Stata)"
     chk 200 "jsonEntidad.php?abrev=$e&producto=sankey (default quintil)" "$U/jsonEntidad.php?abrev=$e&producto=sankey"
     aserta 'grep -q "ciepmx/'"$e"'/sankey-quintil.json" "$H/body"' "$e: el default del Sankey es sankey-quintil.json (quintil estatal)"
     for k in quintil grupoedad sexo rural escol; do

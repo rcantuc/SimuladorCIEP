@@ -10,8 +10,9 @@
 //     categorías llevan «⚠» exactamente en las celdas con sello=1 del archivo (y en ninguna otra).
 //   - Tasas efectivas (SVG propio): una barra por impuesto salvo los excluidos (ISAN, IMPORT), con data-te igual al te del
 //     tasas-efectivas.json y data-sello=1 exactamente en los impuestos con sello=1.
-//   - Neto / PIBE (SVG + cifras): la cifra de la página es neto_pct_pibe de meta.json con el formato de la página y la barra
-//     lleva el valor tal cual; si meta.json no trae pibe, la página lo declara (párrafo «not available»).
+//   - Neto / PIBE (SVG + cifras): la cifra de la página es el escalar NetoCicloPIBE<ABREV> de users/…/<ABREV>/neto-pibe.json
+//     (contrato-32.do §4b, dividido en Stata y exportado con scalarjson) con el formato de la página, la barra lleva el valor
+//     tal cual, y meta.json lo transcribe igual; si no hay neto-pibe.json, la página lo declara («not available»).
 //   - Sellos: el conjunto de celdas con marca (listas bajo las gráficas, li[data-sello]) y el de notas al pie agregadas
 //     (ol.metodo-notas li[data-sello]) son EXACTAMENTE el conjunto de celdas selladas de meta.json, que a su vez es el de
 //     los JSON del motor (sankeys: enlaces sello="1" en los 5 cortes; ciclo: celdas sello=1; tasas: impuestos sello=1);
@@ -60,6 +61,7 @@ async function probarEntidad(browser, abrev) {
   const meta = JSON.parse(fs.readFileSync(path.join(dir, 'meta.json'), 'utf8'));
   const ciclo = JSON.parse(fs.readFileSync(path.join(dir, 'ciclo-vida.json'), 'utf8'));
   const tasas = JSON.parse(fs.readFileSync(path.join(dir, 'tasas-efectivas.json'), 'utf8'));
+  const netoArchivo = fs.existsSync(path.join(dir, 'neto-pibe.json')) ? JSON.parse(fs.readFileSync(path.join(dir, 'neto-pibe.json'), 'utf8')) : null;
   const cortes = ['quintil', 'grupoedad', 'sexo', 'rural', 'escol'];
   const sankeys = {}; cortes.forEach(c => { sankeys[c] = leerSankey(path.join(dir, `sankey-${c}.json`)); });
   console.log(`### ${abrev} — ${meta.entidad.nombre}`);
@@ -86,7 +88,7 @@ async function probarEntidad(browser, abrev) {
 
   const listo = await esperar(page, () => {
     const D = window.entidadData;
-    return !!(D && D.meta && D.ciclo && D.tasas && D.sankeys.quintil
+    return !!(D && D.meta && D.ciclo && D.tasas && D.neto && D.sankeys.quintil
       && document.querySelectorAll('#ent-sankey svg path').length > 0
       && document.querySelectorAll('#ent-ciclo-H svg .apexcharts-bar-area').length > 0
       && document.querySelectorAll('#ent-ciclo-M svg .apexcharts-bar-area').length > 0
@@ -135,17 +137,25 @@ async function probarEntidad(browser, abrev) {
   ok(espT.every((i, j) => barras[j] && barras[j].sello === (i.sello === 1 ? '1' : '0')), `tasas: data-sello=1 exactamente en los ${espT.filter(i => i.sello === 1).length} impuestos con sello=1`);
   ok(!barras.some(b => EXCLUIR_TASAS.indexOf(b.impuesto) >= 0), 'tasas: ISAN e IMPORT no se dibujan (tasa nacional por construcción)');
 
-  // --- Neto / PIBE ---
+  // --- Neto / PIBE: el escalar de Stata (neto-pibe.json), transcrito igual en meta.json ---
   const neto = await page.evaluate(() => ({
-    cifra: (document.querySelector('[data-ent="pibe.neto_pct_pibe"]') || {}).textContent,
+    cifra: (document.querySelector('[data-neto="escalares.NetoCicloPIBE{abrev}.valor"]') || {}).textContent,
+    netoBn: (document.querySelector('[data-neto="escalares.NetoCiclo{abrev}.valor"]') || {}).textContent,
     barras: [...document.querySelectorAll('#ent-neto rect.ent-neto-barra')].map(r => r.getAttribute('data-value')),
     nd: !(document.getElementById('ent-neto-nd') || {}).hidden,
+    recibido: window.entidadData.neto && window.entidadData.neto.procedencia && window.entidadData.neto.procedencia.generado_en,
   }));
-  if (meta.pibe) {
-    ok(neto.cifra === fmt(meta.pibe.neto_pct_pibe, 3, 3), `neto / PIBE en la página = ${neto.cifra} % (meta.json: ${fmt(meta.pibe.neto_pct_pibe, 3, 3)})`);
-    ok(neto.barras.length === 2 && neto.barras[0] === String(meta.pibe.neto_pct_pibe) && neto.barras[1] === String(meta.nacional.neto_pct_pib) && !neto.nd, 'neto / PIBE: dos barras (entidad, nacional) con los valores de meta.json tal cual');
+  if (netoArchivo) {
+    const esc = netoArchivo.escalares;
+    const pct = esc['NetoCicloPIBE' + abrev].valor, pibY = esc['pibY' + abrev].valor, netoEsc = esc['NetoCiclo' + abrev].valor;
+    ok(neto.recibido === netoArchivo.procedencia.generado_en, `neto-pibe.json recibido es el del archivo (generado_en ${neto.recibido})`);
+    ok(neto.cifra === fmt(pct, 3, 3), `neto / PIBE en la página = ${neto.cifra} % = escalar NetoCicloPIBE${abrev} de Stata (${fmt(pct, 3, 3)})`);
+    ok(neto.netoBn === fmt(netoEsc / 1e9, 1, 1), `neto del ciclo en la página = ${neto.netoBn} bn = escalar NetoCiclo${abrev}`);
+    ok(neto.barras.length === 2 && neto.barras[0] === String(pct) && neto.barras[1] === String(meta.nacional.neto_pct_pib) && !neto.nd, 'neto / PIBE: dos barras (entidad, nacional) con el escalar tal cual y la razón nacional de meta.json');
+    ok(meta.pibe && meta.pibe.neto_pct_pibe === pct && meta.pibe.pibe_pesos === pibY && meta.pibe.neto_pesos === netoEsc && Math.abs(netoEsc - ciclo.totales.entidad.neto) <= 0.005, 'meta.json transcribe los tres escalares sin tocarlos y NetoCiclo = totales.entidad.neto de ciclo-vida.json (a medio centavo: el JSON va con 2 decimales)');
+    ok(Math.abs(netoEsc / pibY * 100 - pct) <= 1e-9 * Math.abs(pct), 'control: el escalar de Stata es neto / PIBE × 100 (1e-9 relativo)');
   } else {
-    ok(neto.nd && neto.barras.length === 0, 'sin PIBE en meta.json: la página lo declara y no dibuja la razón');
+    ok(neto.nd && neto.barras.length === 0 && !meta.pibe, 'sin neto-pibe.json: la página lo declara, no dibuja la razón y meta.json no inventa el bloque pibe');
   }
 
   // --- Sellos: listas + notas al pie = meta.json (y nada más) ---

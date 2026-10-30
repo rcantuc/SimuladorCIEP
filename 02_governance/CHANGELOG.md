@@ -19,8 +19,9 @@ Formato de cada entrada:
 ## [v8.13.0] — 2026-10-29 — Andamiaje 32: template estatal
 
 El sitio gana una página por entidad federativa, **/entidades/<ABREV>** para las 32, y el índice **/entidades** (PR
-v8.13b). El motor **no cambia** (ningún `.do`/`.ado`): lo que se publica es lo que contrato-32 ya emite por entidad
-(v8.13a, `02_governance/contrato-32-2026-10-19.md`) y el sitio solo lo lee. Decisiones de Ricardo (29-oct): las 32
+v8.13b). El motor de cifras **no cambia** ningún número: lo que se publica es lo que contrato-32 ya emite por entidad
+(v8.13a, `02_governance/contrato-32-2026-10-19.md`) más dos exportaciones nuevas en Stata (abajo) y el sitio solo lo
+lee. **Regla sostenida: ningún número de la página nace fuera de Stata.** Decisiones de Ricardo (29-oct): las 32
 iguales, con sellos; los cuatro productos; 32 páginas estáticas generadas; precalculado en el deploy; índice en tabla,
 sin mapa; reúso de `metodo/plantilla.php`; inglés.
 
@@ -33,8 +34,10 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
   ciclo-vida.json, tasas-efectivas.json}` y `contrato-32.tsv` y escribe `users/<id>/<ABREV>/meta.json` (esquema
   `entidad-meta/v1`: cada celda sellada con su `n` y su top-1 por producto, conteos, top-1 en celdas no delgadas, PIBE y
   neto del ciclo, espejo, procedencia) y `users/<id>/entidades.json` (`entidades-indice/v1`: la tabla de las 32).
-  `contrato-32.sh` lo llama al final del recorrido (`--pibe-vintage`). Los sellos **no se cablean**: la
-  página los lee de ahí.
+  `contrato-32.sh` lo llama al final del recorrido (`--pibe-vintage`). El generador **transcribe, no calcula**: el
+  neto del ciclo como % del PIBE, el PIBE y el neto se copian de `neto-pibe.json`; la suma de los 32 PIBE, su
+  discrepancia y el neto nacional / PIB se copian de `entidades-pibe32.json`. Los sellos **no se cablean**: la página
+  los lee de ahí.
 - **`entidades/_entidad.php`** (plantilla de método reutilizada: cabecera con migas, notas numeradas, pie). Orden:
   encabezado (nombre, clave INEGI, n ENIGH, población, vintage, corrida) → párrafo de método en inglés (qué es por
   entidad: §1–3, Sankeys y ciclo §7–8.2, tasas efectivas micro/micro por residencia; qué es federal: parámetros, deciles
@@ -45,7 +48,8 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
   la receta de «Tax burden by age» de la portada: barras horizontales apiladas por grupo de deciles, % del neto de la
   entidad), (iii) las **tasas efectivas por impuesto** sin renglón ISAN/IMPORT (SVG propio, como el panel NTA: la portada
   solo tiene PNG; barra = entidad, marca = nacional micro), (iv) el **neto del ciclo como % del PIBE** (cifras + dos
-  barras SVG, entidad vs nacional) con nota al pie de la discrepancia Σ32 PIBE vs PIB nacional (informativa). **Sellos**:
+  barras SVG, entidad vs nacional) leído de `neto-pibe.json` (ajuste de Ricardo: nada se divide en Python) con nota al
+  pie de la discrepancia Σ32 PIBE vs PIB nacional (informativa). **Sellos**:
   toda celda con n < sello_n o top-1 > sello_top1 lleva marca ⚠ en la gráfica (toolText y lista bajo el Sankey, «⚠» en
   la etiqueta del quinquenio, rayado en la barra de la tasa) y **nota al pie numerada** («n = 73 in this cell; read as
   indicative»), continuando la numeración de las cinco notas de método. Pie: fuente, versión, data_updated. La página
@@ -54,15 +58,24 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
 - **`entidades/index.php`**: tabla de las 32 (número, nombre, abreviatura, n ENIGH, celdas por debajo del umbral,
   celdas selladas Sankeys / ciclo / tasas, concentración top-1 en celdas no delgadas, neto/PIBE, enlace), filas del
   catálogo y columnas leídas de `entidades.json`.
-- **`jsonEntidad.php`** (nuevo): `?abrev=<ABREV>&producto=sankey|ciclo|tasas|meta|neto[&corte=…]` y `?producto=indice`;
-  sirve byte a byte ciclo, tasas, meta (= neto) y el índice; el Sankey con los nodos y enlaces del motor tal cual
+- **`jsonEntidad.php`** (nuevo): `?abrev=<ABREV>&producto=sankey|ciclo|tasas|neto|meta[&corte=…]` y `?producto=indice`;
+  sirve byte a byte ciclo, tasas, neto (`neto-pibe.json`), meta y el índice; el Sankey con los nodos y enlaces del motor tal cual
   (claves entrecomilladas con la misma gramática que `compuertas-entidad.py`, `toolText` de sello en los enlaces con
   `sello=1`); **abrev estricto** contra el catálogo generado (minúsculas, clave numérica, traversal y `%00` → 400),
   producto y corte en lista blanca (400), idSession inválido → default `ciepmx`, archivo ausente → 404 con la pista del
   deploy. `js/entidad.js` (nuevo), `metodo/plantilla.php` (sección «States», migas, `scripts`/`init`), `css/metodo.css`.
   **Cero literales numéricos** en PHP/JS/CSS (gate de 4+ dígitos sobre los nueve archivos y las 32 páginas).
+- **Stata (v8.13.0, ajuste de Ricardo: el neto/PIBE nace en Stata).** `01_modulos/visualizations/CicloEntidad.do`
+  registra en el registro escalar (`escalar.ado`) `NetoCiclo<ABREV>`, `AportaCiclo<ABREV>`, `RecibeCiclo<ABREV>`,
+  `PobCiclo<ABREV>` y `NetoCicloNac` (los mismos valores que escribe en `ciclo-vida.json`; **ningún número cambia**:
+  `gate-numeros.sh` verde, paridad byte-idéntica). `05_scripts/contrato-32.do` §4b: `escalar pctpib NetoCicloPIBE<ABREV>
+  = NetoCiclo<ABREV>/pibY<ABREV>*100` (solo con base PIBE) y exportación con `scalarjson` a
+  `users/<id>/<ABREV>/neto-pibe.json` (serie de una fila: `saldo_nominal` = neto, `saldo_pib` = % del PIBE, `poblacion`;
+  escalares NetoCiclo, Aporta, Recibe, Pob, pibY y NetoCicloPIBE con su tipo; metadatos de unidad/criterio/fuente);
+  al final del recorrido `pibYSum32`, `pibeDiscrepancia32` y `NetoCicloPIBNac` a `users/<id>/entidades-pibe32.json`.
+  La columna `neto_rc` se suma a `contrato-32.tsv`.
 - **Deploy.** `publicar-vps.sh`: la Fase 3b-ter embarca `users/ricardo/<ABREV>/` para las 32 (5 Sankeys + ciclo + tasas +
-  `meta.json` = 256 archivos; catálogo leído de `SIMentidad.ado`) y `entidades.json` (manifiesto 12 → 269); Gate 5-remoto
+  `neto-pibe.json` + `meta.json` = 288 archivos; catálogo leído de `SIMentidad.ado`) y `entidades.json` (manifiesto 12 → 301); Gate 5-remoto
   exige `users/ciepmx/<ABREV>/meta.json` de las 32 y el índice; el esqueleto suma `/entidades` y las tres páginas muestra
   (NL, Jal, Col); la Fase 6 hace un HEAD a `jsonEntidad.php?abrev=<ABREV>&producto=meta` para las 32. Precondición del
   ritual: `contrato-32.sh` (que ya corre `generar-entidades.py meta`) antes del tag. `manifest.json` → v8.13.0.
@@ -71,15 +84,16 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
   byte a byte; los cinco Sankeys con los mismos nodos/enlaces y los mismos enlaces con sello que el motor); harness de
   seguridad (400/404); cero literales; Chrome headless sobre NL, Jal y Col: los cuatro productos renderizan, enlaces del
   Sankey idénticos como cadena (quintil y, tras el selector, grupoedad con una sola petición), series del ciclo = pct del
-  JSON y «⚠» exactamente en las celdas selladas, barras de tasas con el te del JSON y sello exacto, neto/PIBE = meta.json,
+  JSON y «⚠» exactamente en las celdas selladas, barras de tasas con el te del JSON y sello exacto, neto/PIBE = el escalar
+  `NetoCicloPIBE<ABREV>` de `neto-pibe.json` (y `meta.json` lo transcribe igual; control neto/PIBE×100 a 1e-9), frase fija
+  del espejo solo en NL,
   listas y notas de sellos = exactamente las celdas selladas de meta.json (que a su vez = `sello=1` de los JSON del
   motor), cifras llenas, espejo en NL, sin errores de JS, `--png`; índice lleno. `test-sitio-seguridad.sh` gana los casos
   de `jsonEntidad.php`; `verify_sitio_autocontenido.sh` al día. Fixtures: `05_scripts/fixtures/entidades/{NL,Jal,Col}/`
   + `entidades.json` de la corrida completa de esta sesión (SIM.do + contrato-32 en worktree de `b837c33`).
-- **FLAG (metodología, Ricardo firma).** El cociente neto/PIBE es la única división fuera de Stata (la hace
-  `generar-entidades.py`, igual que la vista previa §4b de `contrato-32.py`); lo limpio es que `CicloEntidad.do` emita
-  `pibe` y `neto_pct_pibe` en una sesión del motor. ISAN/IMPORT omitidos de la gráfica de tasas por la FLAG TE de v8.13a.
-  
+- **FLAGs.** ISAN/IMPORT omitidos de la gráfica de tasas por la FLAG TE de v8.13a. La vista previa §4b de
+  `contrato-32.py` sigue dividiendo en Python para el reporte (no alimenta la página); se puede retirar cuando el
+  reporte lea `neto-pibe.json`.
 - **Corrida de evidencia** (`~/CIEP_Simuladores/diag-v8.13b-entidades-2026-10-29/`, worktree de `b837c33` con `raw/` y
   `master/` de `-datos`, Stata 39 min): paridad byte-idéntica con `-datos` (`output.txt` `fcddfb84…`, 5 Sankeys),
   `gate-numeros.sh` VERDE, contrato-32.py PASÓ (32/32, aditividad del ciclo), **conteos de sellos idénticos a la tabla

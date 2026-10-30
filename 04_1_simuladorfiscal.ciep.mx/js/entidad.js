@@ -17,10 +17,13 @@
 //      portada), valor = pct (% del neto de la entidad) tal cual viene; «⚠» en la etiqueta de las celdas selladas.
 //   4. Tasas efectivas (SVG propio: la portada solo tiene PNG): barra = te de la entidad, marca = te nacional micro,
 //      sin los impuestos de cfg.excluirTasas; rayado + ⚠ en los sellados.
-//   5. Neto / PIBE (SVG propio): dos barras, entidad vs nacional, desde meta.json (pibe, nacional).
+//   5. Neto / PIBE: cifras y dos barras (entidad vs nacional, SVG propio) desde neto-pibe.json (el escalar
+//      NetoCicloPIBE<ABREV> que contrato-32.do divide EN STATA y exporta con scalarjson; aquí no se divide nada) y, para
+//      la razón nacional, meta.json (nacional.neto_pct_pib, transcrita de entidades-pibe32.json). Los <span data-neto="ruta">
+//      llevan {abrev} como comodín del sufijo del escalar.
 // entidadIndice(cfg)   cfg = {url, tabla}: llena la tabla de /entidades desde entidades.json.
 // Todo lo recibido queda en window.entidadData (lo lee el gate 05_scripts/test-sitio-entidades.js).
-window.entidadData = window.entidadData || {meta: null, ciclo: null, tasas: null, sankeys: {}, cicloSeries: {}, indice: null, notas: {}, corte: null};
+window.entidadData = window.entidadData || {meta: null, ciclo: null, tasas: null, neto: null, sankeys: {}, cicloSeries: {}, indice: null, notas: {}, corte: null};
 
 var ENT_PALETA = ['#5d62b5', '#29c3be', '#f2726f', '#ffc533', '#62b58f', '#bc95df', '#67cdf2', '#8d95c7', '#f7a35c'];
 var ENT_COLOR_SELLO = '#c0392b';
@@ -241,20 +244,35 @@ function entidadTasas(cfg, sellos) {
 	}, function (det) { entidadError(cfg.ids.tasas, cfg.urls.tasas, det); });
 }
 
-// --- 5. Neto del ciclo / PIBE (SVG propio, desde meta.json) ---
+// --- 5. Neto del ciclo / PIBE: neto-pibe.json (escalares de Stata) + la razón nacional de meta.json ---
 function entidadNeto(cfg, meta) {
+	var D = window.entidadData;
 	var caja = document.getElementById(cfg.ids.neto), cifra = document.getElementById(cfg.ids.netoCifra), nd = document.getElementById(cfg.ids.netoNd);
-	if (!meta.pibe) {
+	var sinDato = function () {
 		if (cifra) cifra.hidden = true;
 		if (nd) nd.hidden = false;
 		if (caja) caja.innerHTML = '';
-		return;
-	}
+	};
+	entidadAjax(cfg.urls.neto, function (neto) {
+		D.neto = neto;
+		var esc = neto.escalares || {};
+		var pct = esc['NetoCicloPIBE' + cfg.abrev] ? esc['NetoCicloPIBE' + cfg.abrev].valor : null;
+		if (pct === null || pct === undefined) { sinDato(); return; }
+		document.querySelectorAll('[data-neto]').forEach(function (el) {
+			var v = entidadLee(neto, el.getAttribute('data-neto').split('{abrev}').join(cfg.abrev));
+			el.textContent = entidadFormato(v, el.getAttribute('data-neto-unidad') || 'texto');
+			el.classList.add(v === undefined || v === null ? 'metodo-cifra-nd' : 'metodo-cifra-ok');
+		});
+		entidadNetoBarras(caja, meta, pct);
+	}, function () { sinDato(); });
+}
+
+function entidadNetoBarras(caja, meta, pct) {
 	if (!caja) return;
 	var filas = [
-		{etiqueta: meta.entidad.nombre + ' (net / PIBE)', v: meta.pibe.neto_pct_pibe, color: ENT_PALETA[0]},
+		{etiqueta: meta.entidad.nombre + ' (net / PIBE)', v: pct, color: ENT_PALETA[0]},
 		{etiqueta: 'National (net / GDP)', v: meta.nacional.neto_pct_pib, color: '#999'}
-	];
+	].filter(function (f) { return f.v !== null && f.v !== undefined; });
 	var W = caja.clientWidth || 700, filaH = 34, pad = 6, etqW = 230, valW = 90, barMax = Math.max(60, W - etqW - valW - 2 * pad);
 	var H = pad * 2 + filaH * filas.length;
 	var maximo = 0;

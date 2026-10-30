@@ -20,10 +20,11 @@
 #        [--statajson <statajson_entidad-nl.json>] [--entidad-sesion "Nuevo León"] [--stata <ruta>] [--sin-sim]
 #        [--pibe-vintage <AAAA-MM-DD de las bases PIBDeflactor<ABREV>.dta>]
 #   --sin-sim reutiliza la sesión anterior (exige <evidencia>/escalares.do, como compuertas-entidad.sh).
-#   6. (v8.13.0) generar-entidades.py meta: users/<id>/<ABREV>/meta.json (sellos con su n, PIBE y neto del
-#      ciclo, espejo) y users/<id>/entidades.json (índice): lo que /entidades y /entidades/<ABREV> leen y lo
-#      que la Fase 3b-ter de publicar-vps.sh embarca. --pibe-vintage declara la fecha de las bases PIBE si no
-#      hay master/PIBDeflactor<ABREV>.meta.
+#   6. (v8.13.0) generar-entidades.py meta: users/<id>/<ABREV>/meta.json (sellos con su n; PIBE y neto del
+#      ciclo TRANSCRITOS de neto-pibe.json, que contrato-32.do §4b exporta con scalarjson) y
+#      users/<id>/entidades.json (índice; Σ32 PIBE transcrita de entidades-pibe32.json): lo que /entidades y
+#      /entidades/<ABREV> leen y lo que la Fase 3b-ter de publicar-vps.sh embarca. --pibe-vintage declara la
+#      fecha de las bases PIBE si no hay master/PIBDeflactor<ABREV>.meta.
 # Bases precedentes (banda de vintages y testigo): ver runbook §13 — se validan y se imprime la
 # receta; si faltan, el recorrido sigue sin banda / sin testigo y lo declara.
 # Pensado para correr de noche: nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-... &
@@ -131,7 +132,7 @@ echo "== contrato-32.py (paridad, tabla de las 32, ciclo de vida, tasas efectiva
 python3 05_scripts/contrato-32.py --root "$REPO_ROOT" --id "$ID" --evidencia "$EVID" ${REFS:+--refs "$REFS"}
 RC_C32=$?
 echo "== generar-entidades.py meta (sellos y neto/PIBE por entidad → users/$ID/<ABREV>/meta.json + entidades.json; lo lee /entidades)"
-python3 05_scripts/generar-entidades.py meta --users "$REPO_ROOT/users/$ID" --tabla "$EVID/contrato-32.tsv" --tabla-md "$EVID/contrato-32.md" ${PIBE_VINTAGE:+--pibe-vintage "$PIBE_VINTAGE"}
+python3 05_scripts/generar-entidades.py meta --users "$REPO_ROOT/users/$ID" --tabla-md "$EVID/contrato-32.md" ${PIBE_VINTAGE:+--pibe-vintage "$PIBE_VINTAGE"}
 RC_META=$?
 echo "== reporte: $EVID/contrato-32.md"
 exit $(( RC_CE != 0 || RC_C32 != 0 || RC_META != 0 ? 1 : 0 ))

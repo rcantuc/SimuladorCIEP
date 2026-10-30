@@ -9,14 +9,16 @@
 // lectura de dos líneas: (i) los cinco Sankeys de aportación con selector de corte (FusionCharts, como la
 // portada), (ii) el ciclo de vida quinquenio × sexo (ApexCharts, como «Tax burden by age» de la portada),
 // (iii) las tasas efectivas por impuesto sin ISAN/IMPORT (SVG propio: la portada no tiene gráfica equivalente,
-// solo PNG), (iv) el neto del ciclo como % del PIBE (cifras + SVG propio). Sellos: toda celda con n < sello_n
-// o top-1 > sello_top1 lleva marca ⚠ en la gráfica y nota al pie numerada con su n; se leen de meta.json
-// (generar-entidades.py meta, a partir de los JSON del motor y de la tabla de las 32), no se cablean.
-// CERO números en este archivo: todo valor viene en runtime de /jsonEntidad.php (users/<id>/<ABREV>/
-// {sankey-<corte>.json, ciclo-vida.json, tasas-efectivas.json, meta.json}); js/entidad.js llena los
-// <span data-ent="ruta.en.meta.json" data-ent-unidad="…"> y dibuja. El nombre y la clave vienen del catálogo
-// generado (_catalogo.php), no del JSON, porque el <title> se escribe en el servidor. La línea del espejo CoNL en NL
-// es texto fijo, sin enlace (decisión de Ricardo).
+// solo PNG), (iv) el neto del ciclo como % del PIBE (cifras + SVG propio) leído de neto-pibe.json, el escalar
+// que contrato-32.do §4b divide EN STATA y exporta con scalarjson (regla: ningún número de la página nace fuera
+// de Stata). Sellos: toda celda con n < sello_n o top-1 > sello_top1 lleva marca ⚠ en la gráfica y nota al pie
+// numerada con su n; se leen de meta.json (generar-entidades.py meta, a partir de los JSON del motor y de la
+// tabla de las 32), no se cablean. CERO números en este archivo: todo valor viene en runtime de
+// /jsonEntidad.php (users/<id>/<ABREV>/{sankey-<corte>.json, ciclo-vida.json, tasas-efectivas.json,
+// neto-pibe.json, meta.json}); js/entidad.js llena los <span data-ent="ruta.en.meta.json"> y
+// <span data-neto="ruta.en.neto-pibe.json"> (con {abrev} como comodín del sufijo del escalar) y dibuja. El
+// nombre y la clave vienen del catálogo generado (_catalogo.php), no del JSON, porque el <title> se escribe en
+// el servidor. La línea del espejo CoNL en NL es texto fijo, sin enlace (decisión de Ricardo).
 $catalogo = require __DIR__ . '/_catalogo.php';
 if (!isset($ENTIDAD_ABREV) || !is_string($ENTIDAD_ABREV) || !array_key_exists($ENTIDAD_ABREV, $catalogo)) {
 	http_response_code(404);
@@ -98,8 +100,8 @@ metodo_cabecera(array(
 
 		<h2>4 · Net lifecycle contribution as a share of state GDP</h2>
 		<section class="metodo-texto">
-			<p class="ent-neto-cifra" id="ent-neto-cifra">The net contribution of the households of <?= $h($nombre) ?> to the federation, <span data-ent="ciclo.neto_pesos" data-ent-unidad="bn"></span> bn MXN, is <b><span data-ent="pibe.neto_pct_pibe" data-ent-unidad="pct3"></span> %</b> of the state's GDP (PIBE <span data-ent="pibe.anio_vp" data-ent-unidad="texto"></span>: <span data-ent="pibe.pibe_pesos" data-ent-unidad="bn"></span> bn MXN); the national ratio in the same run is <span data-ent="nacional.neto_pct_pib" data-ent-unidad="pct3"></span> % (national net <span data-ent="nacional.neto_pesos" data-ent-unidad="bn"></span> bn over national GDP <span data-ent="nacional.pib_pesos" data-ent-unidad="bn"></span> bn). A state above the national ratio is a net contributor relative to its economy; a negative ratio is a net recipient. The sum of the 32 PIBE differs from the national GDP of the run<?= metodo_nota_ref(5) ?>, so the state ratios are not exact shares of the national one.</p>
-			<p class="ent-neto-nd lead-nota" id="ent-neto-nd" hidden>The PIBE of this state is not available in this run (no state base in contrato-32.tsv), so the ratio is not shown; the net contribution in pesos is in product 1.</p>
+			<p class="ent-neto-cifra" id="ent-neto-cifra">The net contribution of the households of <?= $h($nombre) ?> to the federation, <span data-neto="escalares.NetoCiclo{abrev}.valor" data-neto-unidad="bn"></span> bn MXN, is <b><span data-neto="escalares.NetoCicloPIBE{abrev}.valor" data-neto-unidad="pct3"></span> %</b> of the state's GDP (PIBE <span data-neto="titular.anio" data-neto-unidad="texto"></span>: <span data-neto="escalares.pibY{abrev}.valor" data-neto-unidad="bn"></span> bn MXN); the national ratio in the same run is <span data-ent="nacional.neto_pct_pib" data-ent-unidad="pct3"></span> % (national net <span data-ent="nacional.neto_pesos" data-ent-unidad="bn"></span> bn over national GDP <span data-ent="nacional.pib_pesos" data-ent-unidad="bn"></span> bn). A state above the national ratio is a net contributor relative to its economy; a negative ratio is a net recipient. The sum of the 32 PIBE differs from the national GDP of the run<?= metodo_nota_ref(5) ?>, so the state ratios are not exact shares of the national one. The ratio is the engine's scalar <code>NetoCicloPIBE<?= $h($abrev) ?></code>, exported as <a href="<?= $h($ep . 'neto') ?>">neto-pibe.json</a>; the page divides nothing.</p>
+			<p class="ent-neto-nd lead-nota" id="ent-neto-nd" hidden>The ratio is not available in this run (no <code>neto-pibe.json</code> for this state: no state GDP base when contrato-32 ran); the net contribution in pesos is in product 1.</p>
 		</section>
 		<div class="ent-neto" id="ent-neto"></div>
 
@@ -107,10 +109,10 @@ metodo_cabecera(array(
 <?php
 metodo_notas(array(
 	1 => '<b>Sample seals.</b> The engine seals a cell (a Sankey link from or to a household group, a five-year × sex cell of the lifecycle, a tax of the rates chart) when its unweighted sample has fewer than <span data-ent="parametros.sello_n" data-ent-unidad="entero"></span> persons or when a single person accounts for more than <span data-ent="parametros.sello_top1" data-ent-unidad="entero"></span> % of the cell\'s amount (rule P5 of <code>SankeySF.do</code>; <code>sello</code>, <code>n</code> and <code>top1</code> travel in every JSON). Sealed cells in this state: <span data-ent="sellos.texto" data-ent-unidad="texto"></span> (Sankey links / lifecycle cells / taxes). The seals below are read from <code>meta.json</code>, which <code>generar-entidades.py</code> builds from the engine\'s JSON at deploy time; the table of the 32 (contrato-32, §4) carries the same counts<span data-ent="tabla_32.coincide" data-ent-unidad="coincide"></span>.',
-	2 => '<b>State GDP (PIBE).</b> <code>master/PIBDeflactor&lt;ABREV&gt;.dta</code>, built by <code>PIBDeflactor</code> by state from INEGI\'s BIE (GDP by state at current prices, implicit price index, state employment and ITAEE) and sealed with its consultation dates; vintage of the base used here: <span data-ent="pibe.vintage" data-ent-unidad="texto"></span>. The PIBE of the value-present year (<span data-ent="pibe.anio_vp" data-ent-unidad="texto"></span>) is the scalar <code>pibY&lt;ABREV&gt;</code> that contrato-32 records in its table.',
+	2 => '<b>State GDP (PIBE).</b> <code>master/PIBDeflactor&lt;ABREV&gt;.dta</code>, built by <code>PIBDeflactor</code> by state from INEGI\'s BIE (GDP by state at current prices, implicit price index, state employment and ITAEE) and sealed with its consultation dates; vintage of the base used here: <span data-ent="pibe.vintage" data-ent-unidad="texto"></span>. The PIBE of the value-present year (<span data-ent="pibe.anio_vp" data-ent-unidad="texto"></span>) is the engine\'s scalar <code>pibY&lt;ABREV&gt;</code>; the ratio of product 4 is the scalar <code>NetoCicloPIBE&lt;ABREV&gt;</code> that <code>contrato-32.do</code> computes in Stata from it and from <code>NetoCiclo&lt;ABREV&gt;</code> (the lifecycle module\'s net), exported with <code>scalarjson</code>.',
 	3 => '<b>National-accounts fraction without state breakdown.</b> The household components (labor and capital income, consumption, contributions) are scaled to the household sector of the national accounts at the national level before the residence cut; the SCN publishes no institutional-sector accounts by state, so the engine declares the fraction national and does not recalibrate by state. Consequence: the amounts of the 32 add up to the national ones by construction (verified in contrato-32: Sankeys within 1e-13 relative, lifecycle within the print tolerance); rates and shares are not additive.',
 	4 => '<b>National rate by construction.</b> For the car tax (ISAN) and import taxes, numerator and denominator are imputed to households with the same relative (<code>Distribucion</code>), so the state ratio equals the national micro rate in the 32 states and carries no state information; the chart omits both rows (decision of the v8.13a report, FLAG TE ISAN/IMPORT).',
-	5 => '<b>Σ32 PIBE vs national GDP.</b> In this run the sum of the 32 state GDPs of the value-present year is <span data-ent="pibe_32.suma_pesos" data-ent-unidad="bn"></span> bn MXN against the national GDP of <span data-ent="pibe_32.pib_nacional_pesos" data-ent-unidad="bn"></span> bn: a discrepancy of <span data-ent="pibe_32.discrepancia_pct" data-ent-unidad="signo-pct2"></span> %, informative (state GDPs come from the state accounts, the national GDP from the national accounts and the engine\'s projection; it is not gated).',
+	5 => '<b>Σ32 PIBE vs national GDP.</b> In this run the sum of the 32 state GDPs of the value-present year is <span data-ent="pibe_32.suma_pesos" data-ent-unidad="bn"></span> bn MXN against the national GDP of <span data-ent="pibe_32.pib_nacional_pesos" data-ent-unidad="bn"></span> bn: a discrepancy of <span data-ent="pibe_32.discrepancia_pct" data-ent-unidad="signo-pct2"></span> %, informative (state GDPs come from the state accounts, the national GDP from the national accounts and the engine\'s projection; it is not gated). The sum, the discrepancy and the national ratio are the engine\'s scalars <code>pibYSum32</code>, <code>pibeDiscrepancia32</code> and <code>NetoCicloPIBNac</code> (<code>contrato-32.do</code>, exported with <code>scalarjson</code>), transcribed here.',
 ));
 ?>
 <?php
@@ -120,7 +122,7 @@ metodo_pie(array(
 	'init' => 'entidadPagina(' . json_encode(array(
 		'abrev' => $abrev,
 		'nombre' => $nombre,
-		'urls' => array('meta' => $ep . 'meta', 'ciclo' => $ep . 'ciclo', 'tasas' => $ep . 'tasas', 'sankey' => $ep . 'sankey&corte='),
+		'urls' => array('meta' => $ep . 'meta', 'ciclo' => $ep . 'ciclo', 'tasas' => $ep . 'tasas', 'neto' => $ep . 'neto', 'sankey' => $ep . 'sankey&corte='),
 		'cortes' => array_keys($cortes),
 		'etiquetasCortes' => $cortes,
 		'excluirTasas' => array('ISAN', 'IMPORT'),
