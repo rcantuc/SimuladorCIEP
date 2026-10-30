@@ -1,0 +1,44 @@
+# CITATION.cff — cómo citar el Simulador Fiscal CIEP (lo lee GitHub: botón «Cite this repository»).
+# GENERADO por 05_scripts/publicar.sh --citation desde 05_scripts/manifest.json (version y data_updated);
+# el Gate 10 de publicar.sh (--check y --ci) exige que esté sincronizado. No editar a mano version, date-released
+# ni la URL de la Release: cambia el manifest y regenera.
+cff-version: 1.2.0
+message: "Si usas el Simulador Fiscal CIEP o su corte de datos, cita la versión y la fecha de los datos: CIEP (2026). Simulador Fiscal CIEP v8.14.0, datos al 2026-10-30. https://github.com/rcantuc/SimuladorCIEP/releases/tag/v8.14.0"
+type: software
+title: "Simulador Fiscal CIEP"
+abstract: "Motor de simulación fiscal del Centro de Investigación Económica y Presupuestaria (CIEP): armoniza la ENIGH con el Sistema de Cuentas Nacionales, la Ley de Ingresos y el Presupuesto de Egresos de la Federación, y publica el escenario default del sitio, la cuenta de Transferencias Nacionales por individuo y el contrato de las 32 entidades. Cada versión publica en su Release de GitHub el código, los insumos crudos verificados por SHA-256 y el corte de datos citable datos-<version>.zip con su manifest-datos.json."
+authors:
+  - name: "Centro de Investigación Económica y Presupuestaria, A.C. (CIEP)"
+    city: "Ciudad de México"
+    country: MX
+    website: "https://ciep.mx"
+  - family-names: "Cantú Calderón"
+    given-names: "Ricardo"
+    affiliation: "Centro de Investigación Económica y Presupuestaria, A.C. (CIEP)"
+    email: "ricardocantu@ciep.mx"
+version: "v8.14.0"
+date-released: "2026-10-30"
+repository-code: "https://github.com/rcantuc/SimuladorCIEP"
+url: "https://simuladorfiscal.ciep.mx"
+keywords:
+  - "política fiscal"
+  - "incidencia fiscal"
+  - "National Transfer Accounts"
+  - "ENIGH"
+  - "Stata"
+  - "México"
+identifiers:
+  - type: url
+    value: "https://github.com/rcantuc/SimuladorCIEP/releases/tag/v8.14.0"
+    description: "Release de esta versión: código, insumos crudos (SHA-256) y el corte de datos citable (datos-v8.14.0.zip + manifest-datos.json)."
+preferred-citation:
+  type: software
+  title: "Simulador Fiscal CIEP v8.14.0, datos al 2026-10-30"
+  authors:
+    - name: "Centro de Investigación Económica y Presupuestaria, A.C. (CIEP)"
+    - family-names: "Cantú Calderón"
+      given-names: "Ricardo"
+  version: "v8.14.0"
+  date-released: "2026-10-30"
+  url: "https://github.com/rcantuc/SimuladorCIEP/releases/tag/v8.14.0"
+  year: 2026

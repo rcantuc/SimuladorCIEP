@@ -360,6 +360,33 @@ cómo usar ese rollback: §7.
 
 ---
 
+### 4c. El corte de datos citable (v8.14b): `datos-<versión>.zip` + `manifest-datos.json`
+
+Lo que el VPS sirve como escenario default y páginas de método es también lo que se **cita**: `publicar.sh` (§3,
+antes de crear la Release) empaqueta desde `users/ricardo/` del worktree de publicación `output.txt`, los 10
+sankeys, `NTA/*` (los JSON y el reporte de texto; **no** el microdato `nta-persona.dta`: el zip es de salidas publicadas
+y el microdato se reproduce con `SIM.do` o la receta de DoD 1), `SankeyNTA/sankey-v3-grupoedad.json`, las 32
+carpetas `<ABREV>/` (9 JSON cada una) y `entidades.json` + `entidades-pibe32.json` en
+`users/_sidecar/<versión>/datos-<versión>.zip` (306 archivos, 3.7 MB sin comprimir, zip ≈ 1.2 MB; reproducible con
+fecha fija) y escribe
+`manifest-datos.json` al lado: `sha256` y `bytes` por archivo, `version`, `commit`, `data_updated`, la cita sugerida y
+el bloque `vintages` **tal como los registra el motor** (`enigh_vintage` del manifest, `cache/sello.txt`, `procedencia`
+y `anclas` de `NTA/nta-grupoedad.json`, `base_generada` de los 32 `master/PIBDeflactor<ABREV>.meta`, los vintages de
+la banda que declara `NL/sankey-quintil.json`). Los dos archivos suben a la Release como assets y
+`release_post_verify` los verifica por digest sha256 como a los 26 crudos.
+
+```bash
+bash 05_scripts/publicar.sh vX.Y.Z --empaquetar-datos   # solo el sidecar (tras SIM.do + contrato-32.sh); lo exige --check
+bash 05_scripts/publicar.sh vX.Y.Z --check              # Gate 9: existe y cuadra (manifest ↔ zip ↔ users/ricardo); Gate 10: CITATION.cff
+bash 05_scripts/publicar.sh --citation                  # regenera CITATION.cff desde el manifest (version, data_updated); commitear
+```
+
+Reglas: el Gate 9 aplica desde v8.14.0 y se omite en `--ci` (sin `users/`); si `users/ricardo/` cambia después de
+empaquetar, el gate lo detecta (sha por archivo) y hay que re-empaquetar; `CITATION.cff` se regenera en el mismo PR
+que bumpea el manifest (el Gate 10 corre también en CI). Sin DOI externo (sin Zenodo): la referencia es la Release.
+
+---
+
 ## 5. Verificación post-deploy
 
 ```bash
@@ -590,7 +617,9 @@ desechables que **clonan** `raw/` y `master/` de `-datos` con `cp -Rc` (clon APF
 una a 1 procesador; cuatro suben a 55 min). Al terminar: `git worktree remove --force` y se conserva solo
 la carpeta `~/CIEP_Simuladores/diag-<tema>-<fecha>/` (wrap.log, output.txt, JSON, gate, `pr-body.md`).
 El `users/ricardo/output.txt` del clon de Dropbox está vacío por diseño: el gate de números se corre
-contra `-datos` o contra la carpeta diag de la corrida.
+contra `-datos` o contra la carpeta diag de la corrida. `-datos/users/ricardo-v{2016..2024}/` guarda las cinco
+bases de la banda de vintages (v8.14b: las de la receta); un worktree de corrida que vaya a producir Sankeys de
+entidad las clona también.
 
 ### 10.2 Crear y tirar un worktree de sesión
 
@@ -691,6 +720,8 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `publicar.sh` Gate 6 (cobertura de assets, `test-maquina-virgen.sh --cobertura`) | **sí** | — | estático (grep de `ensure_asset`) |
 | `publicar.sh` Gate 7 (clausura transitiva de los `.pkg`) | **sí** | — | estático |
 | `publicar.sh` Gate 8 (Release remota completa) | **sí** (solo lectura con `gh` y el token del workflow) | — | red, sin descarga; si la Release aún no existe, pasa |
+| `publicar.sh` Gate 9 (corte de datos citable existe y cuadra, §4c) | **no** | `--empaquetar-datos` + `--check` en el worktree de publicación, tras `SIM.do` + `contrato-32.sh` | exige `users/ricardo/` |
+| `publicar.sh` Gate 10 (`CITATION.cff` = manifest) | **sí** | — | estático (`--citation` lo regenera) |
 | Corridas: `SIM.do`, `Web.Stata.do`, `perfilar-web.sh`, `compuertas-entidad.sh` | **no** | worktree de publicación | Stata |
 | Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
 | Identidad NTA por individuo (`test-nta-identidad.sh`, NTA-1/1b/1c): sobre `users/<id>/NTA/nta-persona.dta`, identidad **sin ancla** `C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0` por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, residual = `S_ajuste` declarado), Σ intra-hogar = 0 nacional y por hogar, Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla multiplicativa Σ S = B.8n), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31, Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759, Σ `YA_base` = B.2n + ⅓B.3n + D.4 neto; escalares de `SCN.ado`), JSON por grupo = base; y, sin Stata, conservación de flujo en todo nodo del Sankey v2.1 (`SankeyNTA/sankey-v2-grupoedad.json`, nodos del contrato, conteo nodos/enlaces) | **no** (la mitad Stata exige `master/SCN.dta` y la base por persona, que no están en git; la mitad Python se puede correr con `--sin-stata` sobre una corrida local) | después de `SIM.do` hasta §3 (o de `NTA.do` suelto), antes de abrir el PR: `bash 05_scripts/test-nta-identidad.sh` | Stata + `users/` |
@@ -816,7 +847,7 @@ Tolerante a fallos: si una entidad truena en un paso, queda su rc en la tabla y 
 
 | Base | La exige | Si falta | Receta |
 |---|---|---|---|
-| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | **Receta ejecutable (v8.14, DoD 1):** `bash 05_scripts/test-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" --into "$PWD"` corre `05_scripts/vintage-aportaciones.do` por vintage (SIM.do §0–§5 y §7 con `anioPE = aniovp = anioenigh = t`, calibración contemporánea sin los parámetros del Paquete, `bootstrap 1`), construye las cachés `master/<t>/` y baja de la Release los assets que falten; imprime el tiempo por vintage (**medido 2026-10-30:** 28–32 min por vintage sin cachés `master/<t>/`, 16 min con ellas, StataNow 19.5 SE a 1 procesador; con `nohup`, máximo tres a la vez, una invocación por vintage). Límite heredado: sin los escalares de §5.1, `GastoPC` deja `Salud` y `Pensiones` en cero (como en las bases del 8-oct), así que la banda del lado gasto cubre Educación, Transferencias e Inversión. Las bases del 8-oct de `SimuladorCIEP-NL` (motor v8.8.1) siguen siendo válidas para la banda mientras no se regeneren: `cp -c` desde `…/SimuladorCIEP-NL/users/ricardo-v<t>/` |
+| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | **Receta ejecutable (v8.14, DoD 1):** `bash 05_scripts/test-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" --into "$PWD"` corre `05_scripts/vintage-aportaciones.do` por vintage (SIM.do §0–§5 y §7 con `anioPE = aniovp = anioenigh = t`, calibración contemporánea sin los parámetros del Paquete, `bootstrap 1`), construye las cachés `master/<t>/` y baja de la Release los assets que falten; imprime el tiempo por vintage (**medido 2026-10-30:** 28–32 min por vintage sin cachés `master/<t>/`, 16 min con ellas, StataNow 19.5 SE a 1 procesador; con `nohup`, máximo tres a la vez, una invocación por vintage). Límite heredado: sin los escalares de §5.1, `GastoPC` deja `Salud` y `Pensiones` en cero (como en las bases del 8-oct), así que la banda del lado gasto cubre Educación, Transferencias e Inversión. **Desde v8.14b las cinco bases vigentes son las de la receta** (2026-10-30, motor v8.14) y viven en `-datos/users/ricardo-v<t>/` (los worktrees de corrida las clonan con `cp -c` junto con `raw/` y `master/`); las del 8-oct (`SimuladorCIEP-NL`, motor v8.8.1) quedan como histórico: mismos totales nacionales, participaciones de NL distintas en el segundo decimal (CHANGELOG v8.14.0, punto 17) |
 | `05_scripts/fixtures/statajson_entidad-nl.json` (testigo NL, **v8.14**: regenerado con el motor actual, post-v8.12.4) | el gate 3 de `compuertas-entidad.py` (15 celdas quintil×familia a 1e-12 y 90 celdas `dis<fam>nle<dec>` a 1e-13) | el gate queda "no verificable" (declarado) | lo escribe `compuertas-entidad.do` §2 en `<evidencia>/statajson_entidad-nl.json` (esquema `ciep.testigo.entidad-nl/v1`, con el commit y el año en `procedencia`); `contrato-32.sh` y `compuertas-entidad.sh` leen el fixture por default (`--statajson` lo sustituye). Se regenera solo con una corrección de datos declarada en el CHANGELOG, copiando el de la corrida de evidencia al fixture en el mismo PR. El testigo del sprint NL (2026-10-08, sha `ca453062…`) quedó obsoleto con v8.12.4 (reldif 6.6e-2) |
 | `master/PIBDeflactor<ABREV>.dta` (las 32 desde v8.13a-2) | PIB/Deflactor por entidad (§2) y el «% del PIBE» de v8.13b | la entidad va `PIB sin base` en la tabla (y `contrato-32.py` §4b falla) | `05_scripts/pibe-32.sh` (§13.1): `PIBDeflactor if entidad == "<nombre>", update` por entidad; BISE con token |
 

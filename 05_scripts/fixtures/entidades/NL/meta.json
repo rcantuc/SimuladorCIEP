@@ -585,7 +585,7 @@
  },
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "05ec3e3",
+  "commit": "46e10ba",
   "insumos": [
    "ciclo-vida.json",
    "tasas-efectivas.json",
@@ -601,7 +601,7 @@
    "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
    "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
   },
-  "generado_el": "2026-10-30 11:13:03"
+  "generado_el": "2026-10-30 14:23:49"
  },
  "pibe_32": {
   "suma_pesos": 39629803600641.83,

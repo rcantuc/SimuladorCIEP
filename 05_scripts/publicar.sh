@@ -19,6 +19,11 @@
 #   4. Push del tag a origin si aún no está allá
 #   5. Crea la GitHub Release <VERSION> (si no existe) con las notas extraídas del
 #      02_governance/CHANGELOG.md, y sube los assets del data sidecar declarados en 05_scripts/manifest.json
+#   5b. (v8.14b) Data sidecar citable: empaqueta users/ricardo/{output.txt, 10 sankeys, NTA/* (sin .dta),
+#      SankeyNTA/sankey-v3-grupoedad.json, <ABREV>/ ×32, entidades.json} en datos-<VERSION>.zip con
+#      manifest-datos.json (sha256 por archivo, commit, data_updated, vintages que registró el motor)
+#      y los sube a la Release como assets; Gate 9 exige que exista y cuadre (desde v8.14.0),
+#      Gate 10 que CITATION.cff lleve la versión y la fecha del manifest.
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
@@ -50,6 +55,8 @@ CI_MODE=false
 SKIP_POST_VERIFY=false
 SOLO_ASSETS=false
 POBLAR_RAW=false
+EMPAQUETAR_DATOS=false
+CITATION_ONLY=false
 
 # Colores (desactivados si stdout no es tty)
 if [[ -t 1 ]]; then
@@ -95,6 +102,12 @@ Opciones:
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
   --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
+  --empaquetar-datos    (v8.14b) Solo construye el data sidecar citable (users/_sidecar/<VERSION>/
+                        datos-<VERSION>.zip + manifest-datos.json) desde users/ricardo/ de este
+                        clon, sin tag, push ni Release. publicar.sh lo hace solo al publicar; este
+                        modo sirve para dejarlo listo antes de --check (que lo exige desde v8.14.0).
+  --citation            (v8.14b) Regenera CITATION.cff desde 05_scripts/manifest.json (versión y
+                        data_updated) y termina. El Gate 10 exige que esté sincronizado.
   --poblar-raw          Descarga a raw/ local, desde la Release <VERSION>, los assets del manifest
                         que falten (verifica SHA-256; no toca los presentes). Sin tag, sin push.
   --solo-assets         Reparación: sube a la Release <VERSION> ya existente los assets del
@@ -739,6 +752,294 @@ release_post_verify() {
     fi
 }
 
+
+# ═══ DATA SIDECAR CITABLE (v8.14b, punto 13) ═══
+# Un corte de datos citable por versión: lo que el motor dejó en users/ricardo/ y el sitio sirve
+# (output.txt, los 10 sankeys, NTA/* sin el microdato .dta, SankeyNTA/sankey-v3-grupoedad.json, las 32 carpetas
+# users/ricardo/<ABREV>/ y entidades.json + entidades-pibe32.json) empaquetado en
+# users/_sidecar/<version>/datos-<version>.zip, con manifest-datos.json al lado: sha256 y bytes
+# por archivo, versión, commit, data_updated y los vintages que leyó la corrida TAL COMO LOS
+# REGISTRA EL MOTOR (manifest.json enigh_vintage; users/ricardo/cache/sello.txt; la procedencia y
+# las anclas de NTA/nta-grupoedad.json; base_generada de master/PIBDeflactor<ABREV>.meta; los
+# vintages de la banda ENIGH que declara <ABREV>/sankey-quintil.json). Los dos archivos suben a la
+# Release como assets y se verifican por sha256 como los 26 crudos (release_post_verify). Nada
+# externo (sin Zenodo): la cita es la Release. Gate 9: desde v8.14.0, publicar.sh --check exige
+# que el sidecar exista y cuadre (zip ↔ manifest ↔ users/ricardo). CITATION.cff en la raíz
+# (Gate 10, también en --ci) lleva versión y fecha del manifest.
+SIDECAR_ROOT="$REPO_ROOT/users/_sidecar"
+SIDECAR_DESDE="v8.14.0"          # primera versión con sidecar obligatorio
+
+sidecar_aplica() {   # 0 si <version> >= SIDECAR_DESDE (orden de versión), 1 si no
+    [[ "$(printf '%s\n%s\n' "$SIDECAR_DESDE" "$1" | sort -V | head -n 1)" == "$SIDECAR_DESDE" ]]
+}
+
+# Lista de archivos del corte, relativa a users/ricardo/ (una ruta por línea). El catálogo de las 32
+# se lee de SIMentidad.ado (global entidadesC sin «Nac»), como en publicar-vps.sh Fase 3b-ter.
+sidecar_lista() {
+    local ab f abrevs
+    echo "output.txt"
+    for f in decil grupoedad sexo rural escol; do echo "sankey-$f.json"; echo "SankeyNTA/sankey-$f.json"; done
+    echo "SankeyNTA/sankey-v3-grupoedad.json"
+    # NTA/*: los JSON y el reporte de texto; NO el microdato nta-persona.dta (el zip es de salidas publicadas y el
+    # microdato se reproduce con la receta de DoD 1 / SIM.do; decisión de Ricardo, PR #50)
+    ( cd "$REPO_ROOT/users/ricardo/NTA" 2>/dev/null && ls -1 | grep -v '\.dta$' | sed 's#^#NTA/#' ) || true
+    abrevs="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
+    for ab in $abrevs; do
+        for f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json neto-pibe.json meta.json; do
+            echo "$ab/$f"
+        done
+    done
+    echo "entidades.json"
+    echo "entidades-pibe32.json"
+}
+
+sidecar_empaquetar() {
+    local version="$1"
+    log_step "Data sidecar citable: datos-$version.zip + manifest-datos.json"
+    local base="$REPO_ROOT/users/ricardo"
+    [[ -d "$base" ]] || abort "No existe $base: el sidecar se empaqueta desde la corrida completa de SIM.do + contrato-32.sh (runbook §1)."
+    local faltan="" f
+    while IFS= read -r f; do [[ -f "$base/$f" ]] || faltan+=$'\n'"  - users/ricardo/$f"; done < <(sidecar_lista)
+    [[ -z "$faltan" ]] || abort "Faltan archivos del corte en users/ricardo/ (¿corrió SIM.do completo y contrato-32.sh?):$faltan"
+    [[ -n "$(ls -1 "$base/NTA" 2>/dev/null)" ]] || abort "users/ricardo/NTA/ está vacío: el sidecar exige la cuenta NTA (SIM.do §3.2b)."
+    local dir="$SIDECAR_ROOT/$version" commit
+    mkdir -p "$dir"
+    commit="$(git rev-parse --short HEAD)"
+    local lista
+    lista="$(mktemp -t sidecar-lista-XXXXXX)"
+    sidecar_lista > "$lista"
+    python3 - "$REPO_ROOT" "$version" "$commit" "$dir" "$lista" <<'PYEOF'
+import hashlib, json, os, re, sys, zipfile, datetime
+root, version, commit, outdir, lista = sys.argv[1:6]
+base = os.path.join(root, 'users', 'ricardo')
+archivos = [l.strip() for l in open(lista, encoding='utf-8') if l.strip()]
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, 'rb') as fh:
+        for b in iter(lambda: fh.read(1 << 20), b''): h.update(b)
+    return h.hexdigest()
+man = json.load(open(os.path.join(root, '05_scripts', 'manifest.json'), encoding='utf-8'))
+# vintages tal como los registra el motor (se copian, no se calculan)
+vint = {'enigh_vintage': man.get('enigh_vintage'), 'data_updated': man.get('data_updated')}
+sello = os.path.join(base, 'cache', 'sello.txt')
+if os.path.isfile(sello):
+    vint['cache_sello'] = {}
+    insumos = []
+    for l in open(sello, encoding='utf-8', errors='replace'):
+        c = l.rstrip('\n').split('\t')
+        if c[0] == 'sello' and len(c) >= 3: vint['cache_sello'][c[1]] = c[2]
+        elif c[0] == 'insumo' and len(c) >= 4: insumos.append({'item': c[1], 'ruta': c[2], 'bytes': c[3]})
+    vint['cache_insumos'] = insumos
+nta = os.path.join(base, 'NTA', 'nta-grupoedad.json')
+if os.path.isfile(nta):
+    d = json.load(open(nta, encoding='utf-8'))
+    vint['nta_anio'] = d.get('anio')
+    vint['nta_procedencia'] = d.get('procedencia')
+    vint['nta_anclas'] = d.get('anclas')
+pibe = {}
+mdir = os.path.join(root, 'master')
+if os.path.isdir(mdir):
+    for f in sorted(os.listdir(mdir)):
+        m = re.match(r'PIBDeflactor(\w+)\.meta$', f)
+        if m:
+            for l in open(os.path.join(mdir, f), encoding='utf-8', errors='replace'):
+                if l.startswith('base_generada='): pibe[m.group(1)] = l.split('=', 1)[1].strip()
+vint['pibe_base_generada'] = pibe
+nl = os.path.join(base, 'NL', 'sankey-quintil.json')
+if os.path.isfile(nl):
+    s = open(nl, encoding='utf-8').read()
+    m = re.search(r'vintages:"([^"]*)"', s); mo = re.search(r'vintagesOmitidos:"([^"]*)"', s)
+    vint['banda_enigh_vintages'] = m.group(1) if m else ''
+    vint['banda_enigh_omitidos'] = mo.group(1) if mo else ''
+entradas = []
+zpath = os.path.join(outdir, 'datos-%s.zip' % version)
+with zipfile.ZipFile(zpath, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+    for rel in archivos:
+        p = os.path.join(base, rel)
+        entradas.append({'path': 'users/ricardo/' + rel, 'sha256': sha(p), 'bytes': os.path.getsize(p)})
+        zi = zipfile.ZipInfo('users/ricardo/' + rel, date_time=(1980, 1, 1, 0, 0, 0))   # fecha fija: zip reproducible
+        zi.compress_type = zipfile.ZIP_DEFLATED
+        with open(p, 'rb') as fh: z.writestr(zi, fh.read())
+anio = (man.get('data_updated') or '')[:4]
+manifest = {
+    'esquema': 'ciep.datos-sidecar/v1',
+    'version': version, 'release_tag': man.get('release_tag'), 'commit': commit,
+    'data_updated': man.get('data_updated'), 'enigh_vintage': man.get('enigh_vintage'),
+    'descripcion': 'Corte de datos citable del Simulador Fiscal CIEP: lo que el motor dejó en users/ricardo/ (escenario default del sitio, cuenta NTA, Sankeys, las 32 entidades) en la corrida que publicó esta versión.',
+    'cita': 'CIEP (%s). Simulador Fiscal CIEP %s, datos al %s. https://github.com/rcantuc/SimuladorCIEP/releases/tag/%s' % (anio, version, man.get('data_updated'), version),
+    'zip': {'name': os.path.basename(zpath), 'sha256': sha(zpath), 'bytes': os.path.getsize(zpath)},
+    'archivos': entradas,
+    'vintages': vint,
+    'generado_en': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+}
+json.dump(manifest, open(os.path.join(outdir, 'manifest-datos.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+print('%d archivos, %.1f MB sin comprimir, zip %.1f MB (%s)' % (len(entradas), sum(e['bytes'] for e in entradas) / 1e6, os.path.getsize(zpath) / 1e6, manifest['zip']['sha256'][:12]))
+PYEOF
+    rm -f "$lista"
+    log_info "✓ Sidecar en $dir: datos-$version.zip + manifest-datos.json"
+}
+
+# Gate 9 — el sidecar existe y cuadra: manifest-datos.json ↔ zip ↔ users/ricardo/ (sha256 por archivo) y
+# el sha256 del zip es el que declara el manifest. Solo desde SIDECAR_DESDE; se omite en --ci (sin users/).
+gate_sidecar_datos() {
+    local version="$1"
+    if ! sidecar_aplica "$version"; then
+        log_info "Gate 9: el sidecar de datos aplica desde $SIDECAR_DESDE; $version queda fuera."
+        return 0
+    fi
+    local dir="$SIDECAR_ROOT/$version" zip="$SIDECAR_ROOT/$version/datos-$version.zip" man="$SIDECAR_ROOT/$version/manifest-datos.json"
+    if [[ ! -f "$zip" || ! -f "$man" ]]; then
+        log_error "Gate 9 FALLO: no existe el sidecar de datos de $version ($dir/{datos-$version.zip, manifest-datos.json})."
+        log_error "        Constrúyelo desde la corrida completa: bash 05_scripts/publicar.sh $version --empaquetar-datos"
+        return 1
+    fi
+    local out
+    if ! out="$(python3 - "$REPO_ROOT" "$version" "$zip" "$man" <<'PYEOF'
+import hashlib, json, os, sys, zipfile
+root, version, zpath, mpath = sys.argv[1:5]
+def sha_bytes(b): return hashlib.sha256(b).hexdigest()
+def sha_file(p):
+    h = hashlib.sha256()
+    with open(p, 'rb') as fh:
+        for b in iter(lambda: fh.read(1 << 20), b''): h.update(b)
+    return h.hexdigest()
+m = json.load(open(mpath, encoding='utf-8'))
+fallas = []
+if m.get('version') != version: fallas.append('manifest-datos.version %s != %s' % (m.get('version'), version))
+if m['zip']['sha256'] != sha_file(zpath): fallas.append('sha256 del zip != manifest-datos.zip.sha256')
+with zipfile.ZipFile(zpath) as z:
+    nombres = set(z.namelist())
+    for e in m['archivos']:
+        if e['path'] not in nombres: fallas.append('falta en el zip: ' + e['path']); continue
+        if sha_bytes(z.read(e['path'])) != e['sha256']: fallas.append('sha256 en el zip != manifest: ' + e['path'])
+        local = os.path.join(root, e['path'])
+        if not os.path.isfile(local): fallas.append('no existe en el clon: ' + e['path'])
+        elif sha_file(local) != e['sha256']: fallas.append('users/ricardo cambió desde el empaquetado: ' + e['path'])
+    extra = nombres - {e['path'] for e in m['archivos']}
+    if extra: fallas.append('el zip trae archivos que el manifest no declara: ' + ', '.join(sorted(extra)[:5]))
+if fallas:
+    print('\n'.join(fallas)); sys.exit(1)
+print('%d archivos cuadran (zip %.1f MB, commit %s, data_updated %s)' % (len(m['archivos']), m['zip']['bytes'] / 1e6, m.get('commit'), m.get('data_updated')))
+PYEOF
+)"; then
+        log_error "Gate 9 FALLO: el sidecar de $version no cuadra:"
+        while IFS= read -r l; do log_error "        $l"; done <<< "$out"
+        log_error "        Re-empaqueta desde la corrida vigente: bash 05_scripts/publicar.sh $version --empaquetar-datos"
+        return 1
+    fi
+    log_info "✓ Gate 9: sidecar de datos de $version — $out"
+    return 0
+}
+
+# Gate 10 — CITATION.cff sincronizado con el manifest (version y date-released = data_updated; URL de la Release).
+# Estático: corre también en --ci. --citation lo regenera.
+citation_render() {
+    python3 - "$REPO_ROOT" <<'PYEOF'
+import json, sys, os
+root = sys.argv[1]
+m = json.load(open(os.path.join(root, '05_scripts', 'manifest.json'), encoding='utf-8'))
+v, d = m['version'], m['data_updated']
+url = 'https://github.com/rcantuc/SimuladorCIEP/releases/tag/' + v
+L = [
+'# CITATION.cff — cómo citar el Simulador Fiscal CIEP (lo lee GitHub: botón «Cite this repository»).',
+'# GENERADO por 05_scripts/publicar.sh --citation desde 05_scripts/manifest.json (version y data_updated);',
+'# el Gate 10 de publicar.sh (--check y --ci) exige que esté sincronizado. No editar a mano version, date-released',
+'# ni la URL de la Release: cambia el manifest y regenera.',
+'cff-version: 1.2.0',
+'message: "Si usas el Simulador Fiscal CIEP o su corte de datos, cita la versión y la fecha de los datos: CIEP (%s). Simulador Fiscal CIEP %s, datos al %s. %s"' % (d[:4], v, d, url),
+'type: software',
+'title: "Simulador Fiscal CIEP"',
+'abstract: "Motor de simulación fiscal del Centro de Investigación Económica y Presupuestaria (CIEP): armoniza la ENIGH con el Sistema de Cuentas Nacionales, la Ley de Ingresos y el Presupuesto de Egresos de la Federación, y publica el escenario default del sitio, la cuenta de Transferencias Nacionales por individuo y el contrato de las 32 entidades. Cada versión publica en su Release de GitHub el código, los insumos crudos verificados por SHA-256 y el corte de datos citable datos-<version>.zip con su manifest-datos.json."',
+'authors:',
+'  - name: "Centro de Investigación Económica y Presupuestaria, A.C. (CIEP)"',
+'    city: "Ciudad de México"',
+'    country: MX',
+'    website: "https://ciep.mx"',
+'  - family-names: "Cantú Calderón"',
+'    given-names: "Ricardo"',
+'    affiliation: "Centro de Investigación Económica y Presupuestaria, A.C. (CIEP)"',
+'    email: "ricardocantu@ciep.mx"',
+'version: "%s"' % v,
+'date-released: "%s"' % d,
+'repository-code: "https://github.com/rcantuc/SimuladorCIEP"',
+'url: "https://simuladorfiscal.ciep.mx"',
+'keywords:',
+'  - "política fiscal"',
+'  - "incidencia fiscal"',
+'  - "National Transfer Accounts"',
+'  - "ENIGH"',
+'  - "Stata"',
+'  - "México"',
+'identifiers:',
+'  - type: url',
+'    value: "%s"' % url,
+'    description: "Release de esta versión: código, insumos crudos (SHA-256) y el corte de datos citable (datos-%s.zip + manifest-datos.json)."' % v,
+'preferred-citation:',
+'  type: software',
+'  title: "Simulador Fiscal CIEP %s, datos al %s"' % (v, d),
+'  authors:',
+'    - name: "Centro de Investigación Económica y Presupuestaria, A.C. (CIEP)"',
+'    - family-names: "Cantú Calderón"',
+'      given-names: "Ricardo"',
+'  version: "%s"' % v,
+'  date-released: "%s"' % d,
+'  url: "%s"' % url,
+'  year: %s' % d[:4],
+]
+sys.stdout.write('\n'.join(L) + '\n')
+PYEOF
+}
+
+gate_citation() {
+    local f="$REPO_ROOT/CITATION.cff"
+    if [[ ! -f "$f" ]]; then
+        log_error "Gate 10 FALLO: no existe CITATION.cff en la raíz. Genéralo: bash 05_scripts/publicar.sh --citation"
+        return 1
+    fi
+    local esperado
+    esperado="$(citation_render)"
+    if [[ "$(cat "$f")" != "$esperado" ]]; then
+        log_error "Gate 10 FALLO: CITATION.cff no está sincronizado con 05_scripts/manifest.json (version / data_updated / URL de la Release)."
+        log_error "        Regenera y commitea: bash 05_scripts/publicar.sh --citation"
+        diff <(echo "$esperado") "$f" | head -n 8 | while IFS= read -r l; do log_error "        $l"; done
+        return 1
+    fi
+    log_info "✓ Gate 10: CITATION.cff sincronizado con el manifest ($(sed -nE 's/^version: "(.*)"/\1/p' "$f"), datos al $(sed -nE 's/^date-released: "(.*)"/\1/p' "$f"))"
+    return 0
+}
+
+# Assets del sidecar en la Release: subir los dos (idempotente) y verificar por digest sha256.
+sidecar_upload() {
+    local version="$1" dir="$SIDECAR_ROOT/$1"
+    sidecar_aplica "$version" || return 0
+    local remote f
+    remote="$(remote_assets "$version" || true)"
+    for f in "datos-$version.zip" "manifest-datos.json"; do
+        if [[ -n "$(awk -F'\t' -v n="$f" '$1==n{print $2}' <<< "$remote")" ]]; then
+            log_info "Sidecar: $f ya está en la Release $version"
+            continue
+        fi
+        log_info "Subiendo sidecar $f..."
+        gh release upload "$version" "$dir/$f" || abort "Falló la subida de $dir/$f. Re-corre el script: los ya subidos se omiten."
+    done
+}
+
+sidecar_post_verify() {
+    local version="$1" dir="$SIDECAR_ROOT/$1"
+    sidecar_aplica "$version" || return 0
+    local remote zsha msha rz rm_
+    remote="$(remote_assets "$version" || true)"
+    zsha="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["zip"]["sha256"])' "$dir/manifest-datos.json")"
+    msha="$(shasum -a 256 "$dir/manifest-datos.json" | awk '{print $1}')"
+    rz="$(awk -F'\t' -v n="datos-$version.zip" '$1==n{print $3}' <<< "$remote")"
+    rm_="$(awk -F'\t' -v n="manifest-datos.json" '$1==n{print $3}' <<< "$remote")"
+    if [[ "$rz" == "$zsha" && "$rm_" == "$msha" ]]; then
+        log_info "✓ Sidecar verificado en la Release por digest sha256: datos-$version.zip (${zsha:0:12}…) y manifest-datos.json (${msha:0:12}…)"
+    else
+        log_warn "Sidecar: digest remoto distinto o ausente (zip ${rz:0:12}… vs ${zsha:0:12}…; manifest ${rm_:0:12}… vs ${msha:0:12}…). Investiga antes de anunciar."
+    fi
+}
+
 # ═══ PARSING DE ARGUMENTOS ═══
 
 while [[ $# -gt 0 ]]; do
@@ -750,6 +1051,8 @@ while [[ $# -gt 0 ]]; do
         --skip-post-verify)     SKIP_POST_VERIFY=true; shift ;;
         --solo-assets)          SOLO_ASSETS=true; shift ;;
         --poblar-raw)           POBLAR_RAW=true; shift ;;
+        --empaquetar-datos)     EMPAQUETAR_DATOS=true; shift ;;
+        --citation)             CITATION_ONLY=true; shift ;;
         --force)                FORCE=true; shift ;;
         -h|--help)              usage; exit 0 ;;
         v*)                     VERSION="$1"; shift ;;
@@ -757,13 +1060,20 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$VERSION" && "$CI_MODE" == "true" && -f "$REPO_ROOT/05_scripts/manifest.json" ]]; then
+if [[ -z "$VERSION" && ( "$CI_MODE" == "true" || "$CITATION_ONLY" == "true" ) && -f "$REPO_ROOT/05_scripts/manifest.json" ]]; then
     VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("version",""))' "$REPO_ROOT/05_scripts/manifest.json")"
 fi
 [[ -z "$VERSION" ]] && { log_error "Falta <version>"; usage; exit 1; }
 [[ -z "$REPO_ROOT" ]] && abort "No se pudo detectar root del repo Git."
 
 cd "$REPO_ROOT"
+
+# ─── Modo --citation (v8.14b): regenerar CITATION.cff desde el manifest y terminar ───
+if [[ "$CITATION_ONLY" == "true" ]]; then
+    citation_render > "$REPO_ROOT/CITATION.cff"
+    log_info "CITATION.cff regenerado desde 05_scripts/manifest.json ($VERSION). Commitéalo."
+    exit 0
+fi
 
 # ─── Guard de identidad de clon (2026-09-09) ───
 # Se publica SOLO desde el clon de desarrollo. La Carpeta del Simulador para
@@ -812,15 +1122,28 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_release_remota "$VERSION" || GATE_FAILURES=$((GATE_FAILURES+1))
+    if [[ "$CI_MODE" == "true" ]]; then
+        log_warn "Gate 9 (sidecar de datos) omitido en --ci: el runner no tiene users/ricardo/."
+    else
+        gate_sidecar_datos "$VERSION" || GATE_FAILURES=$((GATE_FAILURES+1))
+    fi
+    gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."   # también en --ci
         exit 1
     fi
     if [[ "$CI_MODE" == "true" ]]; then
-        log_info "--ci: los 7 gates sin Stata ni assets pasaron para $VERSION (Gate 2 omitido)."
+        log_info "--ci: los 8 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
     else
-        log_info "--check: los 8 gates pasaron para $VERSION."
+        log_info "--check: los 10 gates pasaron para $VERSION."
     fi
+    exit 0
+fi
+
+# ─── Modo --empaquetar-datos (v8.14b): solo el sidecar, desde users/ricardo/ de este clon ───
+if [[ "$EMPAQUETAR_DATOS" == "true" ]]; then
+    sidecar_empaquetar "$VERSION"
+    gate_sidecar_datos "$VERSION" || exit 1
     exit 0
 fi
 
@@ -862,7 +1185,11 @@ if [[ "$SOLO_ASSETS" == "true" ]]; then
     gh release view "$VERSION" >/dev/null 2>&1 || abort "La Release $VERSION no existe en GitHub; usa publicar.sh $VERSION completo."
     gate_raw_declarado || abort "Gate 5 falló: los assets locales no coinciden con el manifest."
     assets_upload "$VERSION"
-    if [[ "$SKIP_POST_VERIFY" == "true" ]]; then log_warn "--skip-post-verify activo"; else release_post_verify "$VERSION"; fi
+    if sidecar_aplica "$VERSION"; then
+        gate_sidecar_datos "$VERSION" || abort "Gate 9 falló: el sidecar de datos no existe o no cuadra (publicar.sh $VERSION --empaquetar-datos)."
+        sidecar_upload "$VERSION"
+    fi
+    if [[ "$SKIP_POST_VERIFY" == "true" ]]; then log_warn "--skip-post-verify activo"; else release_post_verify "$VERSION"; sidecar_post_verify "$VERSION"; fi
     gate_release_remota "$VERSION" || exit 1
     exit 0
 fi
@@ -879,8 +1206,15 @@ gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
+fi
+
+# ─── Fase data sidecar (v8.14b): se empaqueta desde users/ricardo/ de este worktree y debe cuadrar ───
+if sidecar_aplica "$VERSION"; then
+    sidecar_empaquetar "$VERSION"
+    gate_sidecar_datos "$VERSION" || abort "Gate 9 falló: el sidecar de datos no cuadra."
 fi
 
 log_step "Tag de versión"
@@ -894,7 +1228,9 @@ ensure_tag_pushed "$VERSION"
 # ─── Release inmutable primero, endpoint operativo después ───
 release_create "$VERSION"
 assets_upload "$VERSION"
+sidecar_upload "$VERSION"
 release_post_verify "$VERSION"
+sidecar_post_verify "$VERSION"
 
 log_step "Publicación al endpoint"
 

@@ -19,4 +19,4 @@
 ,{"impuesto":"IMPORT","rec":18064027496.56,"rec_nacional":232511200000.00,"te":0.796834,"te_nacional_micro":0.796834,"dif_vs_oficial":-1.757272,"rel_vs_nac":-0.000000,"top1":0.504075,"sello":0}
 ],
 "agregados":{"YlImpTE":13.695621,"ingconsumoTE":10.896005,"RecTotal":635249703809.31,"RecTotal_nacional":7488215000000.00},
-"procedencia":{"modulo":"01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0","base":"master/perfiles2027.dta + master/<anioenigh>/households.dta + consumption_categ_ieps_pc.dta (las mismas del nacional)","generado_el":"2026-10-30 11:08:42","stata":"19.5 SE","escalares":"Rec<IMP>jal, Base<BASE>jal, <IMP>TEjal, Dif<IMP>TEjal, Rel<IMP>TEjal, Pobjal, IngBrutojal (registro escalar, vivos en la sesion)"}}
+"procedencia":{"modulo":"01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0","base":"master/perfiles2027.dta + master/<anioenigh>/households.dta + consumption_categ_ieps_pc.dta (las mismas del nacional)","generado_el":"2026-10-30 14:19:10","stata":"19.5 SE","escalares":"Rec<IMP>jal, Base<BASE>jal, <IMP>TEjal, Dif<IMP>TEjal, Rel<IMP>TEjal, Pobjal, IngBrutojal (registro escalar, vivos en la sesion)"}}

@@ -177,6 +177,14 @@ Como cualquier herramienta, el proceso de adaptación al Simulador Fiscal CIEP t
 Si deseas que incluyamos nueva información económica o tienes sugerencias para cualquiera de los Simuladores CIEP, no dudes en enviarnos un correo a `ricardocantu@ciep.mx`. Estamos comprometidos en hacer estos simuladores lo más robustos posible y estamos abiertos a todas tus sugerencias.
 
 
+<h2 style="color: #ff7020;">Cómo citar</h2>
+
+Cada versión publicada deja en su Release de GitHub un **corte de datos citable**: `datos-<versión>.zip` (el escenario default del sitio `output.txt`, los 10 Sankeys, la cuenta NTA `NTA/*`, el Sankey v3 y las 32 carpetas de entidad con `entidades.json`) y `manifest-datos.json` (SHA-256 y bytes por archivo, commit, `data_updated` y los vintages que leyó la corrida tal como los registra el motor). Los empaqueta y verifica `05_scripts/publicar.sh` en cada release (Gate 9); el archivo [`CITATION.cff`](CITATION.cff) de la raíz lleva la versión y la fecha de los datos del manifest (Gate 10; GitHub muestra el botón *Cite this repository*). Cita sugerida:
+
+> CIEP (2026). Simulador Fiscal CIEP v9.0.0, datos al *data_updated*. https://github.com/rcantuc/SimuladorCIEP/releases/tag/v9.0.0
+
+Sustituye la versión y la fecha por las de la Release que usaste (están en `manifest-datos.json` y en `CITATION.cff`). No hay DOI externo: la Release de GitHub, con sus SHA-256, es la referencia.
+
 <h2 style="color: #ff7020;">Cómo reproducir resultados de una versión específica</h2>
 
 Si necesitas replicar un análisis hecho con una versión anterior del Simulador Fiscal CIEP (por ejemplo, para verificar los resultados de una publicación, revisar un artículo, o comparar cambios entre versiones), este es el proceso:

@@ -19,7 +19,57 @@ Formato de cada entrada:
 ## [v8.14.0] — 2026-10-30 — Pulido, docs y auditoría DoD: la última antes de v9.0.0
 
 Sesión de cierre sobre `master` con #47 (y #48: comentarios de `SIM.do`). **Nada metodológico nuevo**; la Cuadratura es
-9.1+. Un commit por punto (rama `sesion/v8.14`); evidencia en `~/CIEP_Simuladores/diag-v8.14-2026-10-30/` (tres corridas
+9.1+.
+
+### Segunda entrega (PR v8.14b, mismo tag; puntos 13–17)
+
+- **13 Corte de datos citable.** `publicar.sh` gana la fase *data sidecar* (antes de crear la Release): empaqueta desde
+  `users/ricardo/` del worktree de publicación `output.txt`, los 10 sankeys, `NTA/*` (los JSON y el reporte; **sin** el
+  microdato `nta-persona.dta`: el zip es de salidas publicadas y el microdato se reproduce con la receta de DoD 1),
+  `SankeyNTA/sankey-v3-grupoedad.json`, las 32 carpetas `<ABREV>/` (catálogo de `SIMentidad.ado`) y `entidades.json` +
+  `entidades-pibe32.json` en `users/_sidecar/<versión>/datos-<versión>.zip` (306 archivos, 3.7 MB sin comprimir, zip
+  ≈ 1.2 MB; reproducible) con
+  `manifest-datos.json` (sha256 y bytes por archivo, `version`, `commit`, `data_updated`, la cita sugerida y el bloque
+  `vintages` **tal como los registra el motor**: `enigh_vintage`, `cache/sello.txt`, procedencia y anclas de
+  `nta-grupoedad.json`, `base_generada` de los `.meta` del PIBE, vintages de la banda del Sankey NL). Los dos suben a la
+  Release como assets y se verifican por digest sha256 como los 26 crudos. **Gate 9**: `--check` y la publicación exigen,
+  desde v8.14.0, que el sidecar exista y cuadre (manifest ↔ zip ↔ `users/ricardo`); se omite en `--ci`.
+  **`CITATION.cff`** en la raíz (CIEP como autor institucional, Ricardo Cantú Calderón; versión y fecha leídas del manifest;
+  cita «CIEP (año). Simulador Fiscal CIEP vX.Y.Z, datos al `data_updated`. URL de la Release»), regenerado con
+  `publicar.sh --citation` y exigido por el **Gate 10** (también en `--ci`). Sin Zenodo. Runbook §4c; README «Cómo citar».
+- **14 Sankey v3 sin cruces innecesarios.** `NTA.do` §7b ordena cada eje por (rango del origen, rango del destino) con
+  `_nta_v3rank`: col. 1 El mundo, grupos de edad, OyE públicas, Desahorro, Otras transferencias privadas, Déficit público,
+  Ajuste S14 (si es fuente); col. 2 Remesas, Impuestos a productos, Ing capital, Ing laboral, Alquiler propio, Derechos de
+  pensión D8; Ing nacional; Gobierno, Activos; Transferencias en efectivo, Colectivo, Futuro; categorías Alimentos,
+  Vivienda, Transporte, Salud, Educación, Vestido, Otros gastos; grupos consumidores. `SankeySumSim` emite los nodos por
+  primera aparición y los enlaces en el orden de las filas, y **FusionCharts respeta el orden del arreglo `nodes` dentro de
+  cada columna** (verificado con la captura de `test-sitio-nta.sh --png`; no hace falta atributo de la librería): Remesas
+  entra al hub por arriba, Alquiler propio y D.8 por abajo; Gobierno sobre Activos. Ningún valor cambia: el fixture del v3 se
+  refresca solo por orden (mismo conjunto de 99 enlaces con los mismos `value`/`pctpib`), el v2 no se toca.
+- **15 `/NTA`, nota 2 con las cifras post-§4.3**: hub 85.7 % del PIB (81.6 + 4.8 + 3.8 + 0.6 + 1.7 − 2.8 − 0.3 − 3.2 − 0.3),
+  Σ S sin ancla 1,634.8 bn, brecha −14.0 %, ancla multiplicativa (factor leído del motor) dibujada como fuente de
+  +266.2 bn, y la línea que explica el cambio de signo respecto al memo CONC-1 (los ⅔ de `ImpNetProductos_mixK` salen de
+  YL; YA, re-anclado a S.14, absorbe; el ingreso total baja 331.7 bn; la brecha laboral YL vs D.1 + ⅔ B.3n es la Cuadratura
+  9.1).
+- **16 `data_updated` → 2026-10-30** (criterio v8.12.4: cambiaron números publicados). El sello de `users/ricardo/cache` lo
+  escribe `Precache` con esta fecha en la corrida del ritual.
+- **17 Bases de vintages.** `cmp` de las cinco `users/ricardo-v{2016..2024}/aportaciones.dta` de la receta contra las del
+  8-oct (`SimuladorCIEP-NL`, motor v8.8.1): **las cinco distintas**, así que la receta es la verdad: se instalan en
+  `-datos/users/` y la banda de los Sankeys de entidad se regenera con ellas. Δ: misma N y mismos totales nacionales de
+  las nueve familias en los cinco vintages (byte a byte en los totales); las participaciones de NL se mueven en el
+  segundo decimal por las correcciones del motor desde v8.8.1 (AlTrabajo: 2016 7.884 → 7.864 %, 2018 7.535 → 7.594,
+  2020 8.952 → 8.927, 2022 9.204 → 9.181, 2024 sin cambio; AlCapital: 2016 41.635 → 41.674, 2018 7.889 → 7.897,
+  2020 10.014 → 10.027, 2022 4.640 → 4.644, 2024 14.151 → 14.121; AlConsumo, Educación, Transferencias e Inversión
+  sin cambio a tres decimales). `Salud` y `Pensiones` siguen en cero en ambas (límite heredado, runbook §13). Los
+  fixtures de `entidades/*` (NL, Jal, Col, índice) se refrescan con la corrida que lleva la banda nueva: los `value` de
+  los enlaces, el ciclo, las tasas, el neto y los sellos no cambian respecto a #49; solo `bmin`/`bmax` (mediana Δ 0; máximos
+  de 4–20 % en celdas delgadas de un vintage: NL quintil 3.8 %, Jal grupoedad 20.5 %, Jal rural 13.8 %, Col quintil 6.0 %;
+  tabla completa en el PR). Nota sobre #49: los fixtures de `entidades/*` que cambiaron ahí difieren solo en metadatos (`generado_el`,
+  `commit`, `vintage` del PIBE), no en valores (≤ 2.5e-15, último bit).
+
+### Primera entrega (PR #49, puntos 1–12)
+
+Un commit por punto (rama `sesion/v8.14`); evidencia en `~/CIEP_Simuladores/diag-v8.14-2026-10-30/` (tres corridas
 completas de `SIM.do` + `contrato-32.sh`, StataNow 19.5 SE, 1 procesador; r1/r2 31 min cada una). Solo dos puntos tocan
 números publicados y ambos los declaran: el **4** (sort del último bit: 0 líneas de `output.txt`, 11 JSON byte-idénticos entre
 caminos) y el **7** (NTA §4.3: la cuenta NTA y `/NTA`). El baseline del gate de números se re-ancla en un commit propio
@@ -116,8 +166,8 @@ la corrida (Δ rel. máx 3.0e-14 frente a v8.12.4).
   sin versionar en `.devin/backups/`.
 - CHANGELOG sin `[Unreleased]` huérfano: NTA-1/1b/1c y la página `/NTA` v1 quedan bajo v8.12.5; v8.13a y v8.13a-2 bajo v8.12.4
   (el tag es un punto de `master`). README: las dos secciones de método (`/NTA`, `/entidades`), los memos y `NTA.do`.
-  `manifest.json` → v8.14.0 (`data_updated` se queda en 2026-10-29: los insumos no cambian; cambia una definición de la cuenta
-  NTA. Si se prefiere el criterio de v8.12.4 —bump por número publicado que se mueve— es un campo; decisión de Ricardo).
+  `manifest.json` → v8.14.0 (en #49 `data_updated` se dejó en 2026-10-29; la segunda entrega lo bumpea a 2026-10-30 con el
+  criterio de v8.12.4: punto 16).
 
 ## [v8.13.0] — 2026-10-29 — Andamiaje 32: template estatal
 

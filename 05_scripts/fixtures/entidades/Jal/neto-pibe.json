@@ -6,8 +6,8 @@
   "anio_referencia": 2027,
   "piso_serie": 2027,
   "procedencia": {
-    "version_simulador": "v8.13.0",
-    "corte_datos": "2026-10-29",
+    "version_simulador": "v8.14.0",
+    "corte_datos": "2026-10-30",
     "corte_serie": {
       "anio": 2027,
       "mes": 0,
@@ -16,7 +16,7 @@
     "log": "",
     "origen": "simulador",
     "dataset_serie": "users/ricardo/Jal/ciclo-vida.json + PIBDeflactor Jalisco",
-    "generado_en": "30-Oct-2026T11:08:43"
+    "generado_en": "30-Oct-2026T14:19:11"
   },
   "unidades": {
     "saldo_nominal": {"unidad": "pesos corrientes de anio_vp (neto del ciclo de vida de la entidad: aporta - recibe)", "formato_sugerido": "%14.1fc", "divisor_sugerido": 1000000},

@@ -19,4 +19,4 @@
 ,{"impuesto":"IMPORT","rec":1597045240.22,"rec_nacional":232511200000.00,"te":0.796834,"te_nacional_micro":0.796834,"dif_vs_oficial":-1.757272,"rel_vs_nac":-0.000000,"top1":0.423248,"sello":0}
 ],
 "agregados":{"YlImpTE":11.960272,"ingconsumoTE":11.664441,"RecTotal":59082254620.26,"RecTotal_nacional":7488215000000.00},
-"procedencia":{"modulo":"01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0","base":"master/perfiles2027.dta + master/<anioenigh>/households.dta + consumption_categ_ieps_pc.dta (las mismas del nacional)","generado_el":"2026-10-30 11:06:57","stata":"19.5 SE","escalares":"Rec<IMP>col, Base<BASE>col, <IMP>TEcol, Dif<IMP>TEcol, Rel<IMP>TEcol, Pobcol, IngBrutocol (registro escalar, vivos en la sesion)"}}
+"procedencia":{"modulo":"01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0","base":"master/perfiles2027.dta + master/<anioenigh>/households.dta + consumption_categ_ieps_pc.dta (las mismas del nacional)","generado_el":"2026-10-30 14:17:22","stata":"19.5 SE","escalares":"Rec<IMP>col, Base<BASE>col, <IMP>TEcol, Dif<IMP>TEcol, Rel<IMP>TEcol, Pobcol, IngBrutocol (registro escalar, vivos en la sesion)"}}
