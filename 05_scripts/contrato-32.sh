@@ -18,13 +18,13 @@
 # Uso:
 #   bash 05_scripts/contrato-32.sh --evidencia <dir> [--refs <dir con output.txt y sankey-*.json de referencia>]
 #        [--statajson <statajson_entidad-nl.json>] [--entidad-sesion "Nuevo León"] [--stata <ruta>] [--sin-sim]
-#        [--pibe-vintage <AAAA-MM-DD de las bases PIBDeflactor<ABREV>.dta>]
 #   --sin-sim reutiliza la sesión anterior (exige <evidencia>/escalares.do, como compuertas-entidad.sh).
+#   --statajson: testigo NL; default (v8.14) 05_scripts/fixtures/statajson_entidad-nl.json (motor actual, post-v8.12.4).
 #   6. (v8.13.0) generar-entidades.py meta: users/<id>/<ABREV>/meta.json (sellos con su n; PIBE y neto del
 #      ciclo TRANSCRITOS de neto-pibe.json, que contrato-32.do §4b exporta con scalarjson) y
 #      users/<id>/entidades.json (índice; Σ32 PIBE transcrita de entidades-pibe32.json): lo que /entidades y
-#      /entidades/<ABREV> leen y lo que la Fase 3b-ter de publicar-vps.sh embarca. --pibe-vintage declara la
-#      fecha de las bases PIBE si no hay master/PIBDeflactor<ABREV>.meta.
+#      /entidades/<ABREV> leen y lo que la Fase 3b-ter de publicar-vps.sh embarca. El vintage de las bases PIBE se
+#      lee de master/PIBDeflactor<ABREV>.meta (sello de pibe-32.sh; v8.14: los .meta viven junto a los .dta en master/).
 # Bases precedentes (banda de vintages y testigo): ver runbook §13 — se validan y se imprime la
 # receta; si faltan, el recorrido sigue sin banda / sin testigo y lo declara.
 # Pensado para correr de noche: nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-... &
@@ -33,7 +33,7 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 STATA="/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se"
-EVID=""; REFS=""; STATAJSON=""; ENTIDAD="Nuevo León"; SIN_SIM=false; PIBE_VINTAGE=""
+EVID=""; REFS=""; STATAJSON=""; ENTIDAD="Nuevo León"; SIN_SIM=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --evidencia) EVID="$2"; shift 2 ;;
@@ -42,7 +42,6 @@ while [[ $# -gt 0 ]]; do
         --entidad-sesion) ENTIDAD="$2"; shift 2 ;;
         --stata) STATA="$2"; shift 2 ;;
         --sin-sim) SIN_SIM=true; shift ;;
-        --pibe-vintage) PIBE_VINTAGE="$2"; shift 2 ;;
         *) echo "Argumento desconocido: $1" >&2; exit 2 ;;
     esac
 done
@@ -59,16 +58,17 @@ for v in 2016 2018 2020 2022 2024; do
 done
 if (( ${#FALTAN_V[@]} )); then
     echo "  banda de vintages: NO (faltan users/$ID-v{${FALTAN_V[*]// /,}}/aportaciones.dta)."
-    echo "  Receta: son los aportaciones.dta de corridas completas de SIM.do con la ENIGH de cada vintage;"
-    echo "  hoy viven en el worktree SimuladorCIEP-NL (users/ricardo-v<anio>/) y se clonan: cp -c (FLAG #26)."
+    echo "  Receta (v8.14, runbook §13): bash 05_scripts/test-maquina-virgen.sh --download --vintages \"${FALTAN_V[*]}\" --into \"$REPO_ROOT\""
+    echo "  (SIM.do con anioPE = aniovp = anioenigh = vintage y calibracion contemporanea: 05_scripts/vintage-aportaciones.do)."
 else
     echo "  banda de vintages: sí (5 bases)."
 fi
 if [[ -z "$STATAJSON" ]]; then
-    for c in "$REPO_ROOT/users/$ID/nodos/statajson_entidad-nl.json" "$HOME/CIEP_Simuladores/diag-v8.11b-retiro-capa-2026-10-16/statajson_entidad-nl-2026-10-08.json"; do
-        [[ -f "$c" ]] && { STATAJSON="$c"; break; }
-    done
+    # v8.14: el testigo versionado (05_scripts/fixtures, regenerado con el motor actual por compuertas-entidad.do) es el default
+    c="$REPO_ROOT/05_scripts/fixtures/statajson_entidad-nl.json"
+    [[ -f "$c" ]] && STATAJSON="$c"
 fi
+git rev-parse --short HEAD > "$EVID/commit.txt" 2>/dev/null; git status --short >> "$EVID/commit.txt" 2>/dev/null   # compuertas-entidad.do lo escribe en la procedencia del testigo
 if [[ -n "$STATAJSON" && -f "$STATAJSON" ]]; then echo "  testigo NL: $STATAJSON ($(shasum -a 256 "$STATAJSON" | cut -c1-12)…)"; else echo "  testigo NL: NO (sin --statajson; el gate 3 de compuertas-entidad.py quedará 'no verificable')"; STATAJSON=""; fi
 
 # --- SIM_run.do: SIM.do con la raíz de este clon y los globals tras `macro drop _all` ---------
@@ -132,7 +132,7 @@ echo "== contrato-32.py (paridad, tabla de las 32, ciclo de vida, tasas efectiva
 python3 05_scripts/contrato-32.py --root "$REPO_ROOT" --id "$ID" --evidencia "$EVID" ${REFS:+--refs "$REFS"}
 RC_C32=$?
 echo "== generar-entidades.py meta (sellos y neto/PIBE por entidad → users/$ID/<ABREV>/meta.json + entidades.json; lo lee /entidades)"
-python3 05_scripts/generar-entidades.py meta --users "$REPO_ROOT/users/$ID" --tabla-md "$EVID/contrato-32.md" ${PIBE_VINTAGE:+--pibe-vintage "$PIBE_VINTAGE"}
+python3 05_scripts/generar-entidades.py meta --users "$REPO_ROOT/users/$ID" --tabla-md "$EVID/contrato-32.md"
 RC_META=$?
 echo "== reporte: $EVID/contrato-32.md"
 exit $(( RC_CE != 0 || RC_C32 != 0 || RC_META != 0 ? 1 : 0 ))
