@@ -27,6 +27,19 @@
 #                --into <dir>  deposita cada asset en <dir>/<local_path> (p. ej.
 #                la raiz de un worktree sin raw/) y lo conserva; sin --into el
 #                SITE es temporal y se borra al pasar.
+#                --vintages "<t ...>"  (v8.14, DoD 1) la RECETA de las bases precedentes de la
+#                banda de vintages: para cada ENIGH t en 2016 2018 2020 2022 2024 corre
+#                05_scripts/vintage-aportaciones.do (SIM.do §0–§5 y §7 con anioPE = aniovp =
+#                anioenigh = t, calibracion contemporanea, bootstrap 1) sobre la raiz --into
+#                (default: este clon) y deja users/<usuario>-v<t>/aportaciones.dta, que es lo
+#                que SankeySF.do lee. Los assets que falten (ENIGH <t>.zip, LIF, PEF…) los baja
+#                ensure_asset desde la Release del manifest: por eso vive bajo --download.
+#                Imprime el tiempo por vintage; exit 0 solo si cada driver llego a VINTAGE_OK.
+#                Medido (2026-10-30, StataNow 19.5 SE, 1 procesador, master/ de -datos): 28-32 min por
+#                vintage sin caches master/<t>/, 16 min con ellas; se corre con nohup y, como maximo,
+#                tres a la vez (una invocacion por vintage). Limite heredado del motor: GastoPC sin los
+#                escalares de SIM.do §5.1 deja Salud y Pensiones en cero (igual que las bases del 8-oct;
+#                reporte F1), asi que la banda del lado gasto solo cubre Educacion, Transferencias e Inversion.
 #
 #   --zip        (dinamico, ~1 min, sin red)  La via del ALUMNO (2026-10-05): ZIP de
 #                GitHub sin git, carpeta con nombre arbitrario y espacios, sin
@@ -42,6 +55,7 @@
 # Uso: bash 05_scripts/test-maquina-virgen.sh --cobertura
 #      bash 05_scripts/test-maquina-virgen.sh --download [--stata <ruta stata-se>]
 #      bash 05_scripts/test-maquina-virgen.sh --download --from <tag> [--into <dir>]
+#      bash 05_scripts/test-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" [--into <raiz>] [--stata <ruta>]
 #      bash 05_scripts/test-maquina-virgen.sh --zip [--completo] [--stata <ruta>]
 # Exit 0 si pasa; 1 si falla (lista lo que falta).
 
@@ -56,6 +70,7 @@ STATA=""
 COMPLETO=false
 FROM_TAG=""
 INTO_DIR=""
+VINTAGES=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --cobertura) MODE="cobertura"; shift ;;
@@ -65,15 +80,24 @@ while [[ $# -gt 0 ]]; do
         --stata)     STATA="$2"; shift 2 ;;
         --from)      FROM_TAG="${2:-}"; shift 2 ;;
         --into)      INTO_DIR="${2:-}"; shift 2 ;;
+        --vintages)  VINTAGES="${2:-}"; shift 2 ;;
         *) echo "Argumento desconocido: $1" >&2; exit 1 ;;
     esac
 done
-[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] [--from <tag> [--into <dir>]] | --zip [--completo]" >&2; exit 1; }
-if [[ -n "$FROM_TAG" || -n "$INTO_DIR" ]] && [[ "$MODE" != "download" ]]; then
-    echo "--from/--into solo aplican con --download." >&2; exit 1
+[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] [--from <tag> [--into <dir>]] [--vintages \"<t ...>\" [--into <raiz>]] | --zip [--completo]" >&2; exit 1; }
+if [[ -n "$FROM_TAG" || -n "$INTO_DIR" || -n "$VINTAGES" ]] && [[ "$MODE" != "download" ]]; then
+    echo "--from/--into/--vintages solo aplican con --download." >&2; exit 1
 fi
-if [[ -n "$INTO_DIR" && -z "$FROM_TAG" ]]; then
-    echo "--into requiere --from <tag> (la via sin Stata que deposita los assets en su local_path)." >&2; exit 1
+if [[ -n "$INTO_DIR" && -z "$FROM_TAG" && -z "$VINTAGES" ]]; then
+    echo "--into requiere --from <tag> (la via sin Stata que deposita los assets en su local_path) o --vintages." >&2; exit 1
+fi
+if [[ -n "$VINTAGES" && -n "$FROM_TAG" ]]; then
+    echo "--vintages y --from son modos distintos de --download; corre uno a la vez." >&2; exit 1
+fi
+if [[ -n "$VINTAGES" ]]; then
+    for v in $VINTAGES; do
+        [[ "$v" =~ ^(2016|2018|2020|2022|2024)$ ]] || { echo "--vintages: $v no es un vintage ENIGH de la banda (2016 2018 2020 2022 2024)." >&2; exit 1; }
+    done
 fi
 if [[ -n "$FROM_TAG" && ! "$FROM_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "--from espera un tag de Release vN.M.P (recibido: '$FROM_TAG')." >&2; exit 1
@@ -223,6 +247,48 @@ if [[ -z "$STATA" ]]; then
     done
 fi
 [[ -x "${STATA:-}" ]] || { echo "No encontre stata-se/stata-mp; pasa --stata <ruta>." >&2; exit 1; }
+
+# ─── --download --vintages: la receta de users/<usuario>-v<t>/aportaciones.dta (DoD 1, v8.14) ───
+# Una sesion de Stata por vintage con 05_scripts/vintage-aportaciones.do sobre la raiz (--into o este
+# clon): construye las caches master/<t>/ y perfiles<t>.dta si faltan, pide a ensure_asset los assets
+# que no esten en raw/ (la Release del manifest), y deja aportaciones.dta con las variables que lee la
+# banda. Log en users/<usuario>-v<t>/vintage-aportaciones.log; tiempo por vintage en la tabla final.
+if [[ "$MODE" == "download" && -n "$VINTAGES" ]]; then
+    RAIZ="$REPO_ROOT"
+    if [[ -n "$INTO_DIR" ]]; then
+        mkdir -p "$INTO_DIR" || { echo "No pude crear $INTO_DIR." >&2; exit 1; }
+        RAIZ="$(cd "$INTO_DIR" && pwd)"
+    fi
+    [[ -f "$RAIZ/SIM.do" && -f "$RAIZ/05_scripts/vintage-aportaciones.do" ]] || { echo "--vintages: $RAIZ no es la raiz de un clon/worktree del Simulador (falta SIM.do o 05_scripts/vintage-aportaciones.do)." >&2; exit 1; }
+    [[ -f "$RAIZ/set_token.do" ]] || echo "AVISO: $RAIZ/set_token.do no existe; si master/ no trae las bases del BIE, PIBDeflactor/SCN no podran consultarlo." >&2
+    USUARIO="$(whoami)"
+    fallas=0
+    echo "VINTAGES ($VINTAGES) → $RAIZ/users/$USUARIO-v<t>/aportaciones.dta  (driver 05_scripts/vintage-aportaciones.do; Stata: $STATA)"
+    printf '%-8s %-10s %-10s %s\n' "vintage" "resultado" "tiempo" "aportaciones.dta"
+    for v in $VINTAGES; do
+        udir="$RAIZ/users/$USUARIO-v$v"
+        mkdir -p "$udir"
+        wrap="$udir/vintage-aportaciones-wrap.do"
+        printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++ "%s"\ndo "%s/05_scripts/vintage-aportaciones.do" %s\n' "$RAIZ" "$RAIZ" "$RAIZ" "$v" > "$wrap"
+        t0=$(date +%s)
+        ( cd "$udir" && "$STATA" -b do "$wrap" < /dev/null )
+        secs=$(( $(date +%s) - t0 ))
+        log="$udir/vintage-aportaciones-wrap.log"
+        [[ -f "$log" ]] && mv -f "$log" "$udir/vintage-aportaciones.log"; log="$udir/vintage-aportaciones.log"
+        if [[ -f "$log" ]] && grep -q "VINTAGE_OK $v" "$log" && ! grep -qE '^r\([0-9]+\);' "$log" && [[ -s "$udir/aportaciones.dta" ]]; then
+            printf '%-8s %-10s %-10s %s\n' "$v" "OK" "$((secs/60)) min" "$(du -h "$udir/aportaciones.dta" | cut -f1) $udir/aportaciones.dta"
+        else
+            printf '%-8s %-10s %-10s %s\n' "$v" "FALLO" "$((secs/60)) min" "ver $log"
+            [[ -f "$log" ]] && grep -B4 -E '^r\([0-9]+\);' "$log" | head -12 >&2
+            fallas=$((fallas+1))
+        fi
+    done
+    if (( fallas > 0 )); then
+        echo "MAQUINA VIRGEN (--vintages): $fallas vintage(s) fallaron."; exit 1
+    fi
+    echo "MAQUINA VIRGEN (--vintages): todos los vintages pedidos ($VINTAGES) dejaron users/$USUARIO-v<t>/aportaciones.dta con las variables que lee la banda."
+    exit 0
+fi
 
 # ─── Modo --zip: la via del alumno (ZIP sin git, ruta con espacios, sin profile.do, sin SITE) ───
 if [[ "$MODE" == "zip" ]]; then
