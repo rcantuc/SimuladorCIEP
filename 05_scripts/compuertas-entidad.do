@@ -9,7 +9,8 @@
 *   2. Para Nuevo León (si $entidad lo es o existe su base), reconstruye las 90 celdas
 *      dis<fam>nle<dec> (participación por DECIL estatal de 9 familias) con el criterio de
 *      Households.do §12 y las exporta a <evidencia>/nl-dis-nle-recalc.csv para la compuerta 3
-*      (testigo: compuertas-entidad.py las compara con statajson_entidad-nl.json a 1e-14).
+*      (testigo: compuertas-entidad.py las compara con 05_scripts/fixtures/statajson_entidad-nl.json a 1e-13) y, desde v8.14,
+*      las escribe tambien como testigo JSON (<evidencia>/statajson_entidad-nl.json) para regenerar esa referencia.
 *   Los números se comparan en compuertas-entidad.py (lee los JSON); aquí solo se producen.
 *
 * USO: do "${SIMROOT}/05_scripts/compuertas-entidad.do" "<carpeta de evidencia>"
@@ -79,9 +80,40 @@ quietly {
 	rename w_ share
 	format share %21.17g
 	keep nombre share
+	sort nombre
 	export delimited using `"`evidencia'/nl-dis-nle-recalc.csv"', replace
+
+	* v8.14: las mismas 90 celdas como TESTIGO versionable (JSON de escalares, esquema ciep.testigo.entidad-nl/v1). El testigo
+	* del sprint NL (statajson_entidad-nl-2026-10-08.json, motor v8.8.1) quedo obsoleto con la correccion de datos v8.12.4; este
+	* lo regenera el motor actual y se versiona en 05_scripts/fixtures/statajson_entidad-nl.json (lo lee compuertas-entidad.py
+	* gate 3). Numeros nacidos aqui, en Stata; el .py solo compara. Determinismo: generado_en es la ULTIMA clave de procedencia. *
+	local commit ""
+	capture confirm file `"`evidencia'/commit.txt"'
+	if _rc == 0 {
+		tempname fc
+		file open `fc' using `"`evidencia'/commit.txt"', read text
+		file read `fc' commit
+		file close `fc'
+		local commit = word(`"`commit'"', 1)
+	}
+	local q = char(34)
+	tempname fj
+	file open `fj' using `"`evidencia'/statajson_entidad-nl.json"', write replace text
+	file write `fj' `"{"esquema":"ciep.testigo.entidad-nl/v1","nodo":"entidad-nl","titulo":"Testigo NL: participacion (%) de cada decil estatal en 9 familias de impuestos de residentes de Nuevo Leon (dis<fam>nle<dec>)","' _n
+	file write `fj' `""definicion":"decil estatal = xtile de ingbrutotot per capita del hogar con pw = factor/tot_integ sobre users/<id>/aportaciones.dta filtrado a folioviv 19 (Households.do §12); share = sum(var*factor del decil)/sum(var*factor de NL)*100; familias: AlTrabajo AlConsumo AlCapital ImpAport (ImpuestosAportaciones) IVA IEPSNP IEPSP ISAN IMPORT (*_Sim)","' _n
+	file write `fj' `""procedencia":{"origen":"05_scripts/compuertas-entidad.do §2 (sesion de SIM.do)","anioPE":`=anioPE',"anioenigh":`=anioenigh',"commit":"`commit'","quintil_distinto_de_ceil_decil_entre_2":`nq',"generado_en":"`c(current_date)' `c(current_time)'"},"' _n
+	file write `fj' `""escalares":{"' _n
+	forvalues i = 1/`=_N' {
+		* string() omite el cero inicial (.1528…), que no es JSON válido: se repone (misma cifra, otra escritura) *
+		local v = trim(string(share[`i'], "%21.17g"))
+		if substr("`v'", 1, 1) == "." local v = "0`v'"
+		if substr("`v'", 1, 2) == "-." local v = "-0" + substr("`v'", 2, .)
+		file write `fj' `"`=cond(`i' > 1, ",", "")'"`=nombre[`i']'":{"valor":`v',"tipo":"pct"}"' _n
+	}
+	file write `fj' "}}" _n
+	file close `fj'
 }
-noisily di in g "  90 celdas exportadas a " in y `"`evidencia'/nl-dis-nle-recalc.csv"' in g "; quintil ≠ ceil(decil/2) en " in y "`nq'" in g " personas (debe ser 0)."
+noisily di in g "  90 celdas exportadas a " in y `"`evidencia'/nl-dis-nle-recalc.csv"' in g " y como testigo a " in y `"`evidencia'/statajson_entidad-nl.json"' in g "; quintil ≠ ceil(decil/2) en " in y "`nq'" in g " personas (debe ser 0)."
 
 timer off 8
 quietly timer list 8
