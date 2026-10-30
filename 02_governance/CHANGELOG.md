@@ -16,6 +16,80 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.13.0] — 2026-10-29 — Andamiaje 32: template estatal
+
+El sitio gana una página por entidad federativa, **/entidades/<ABREV>** para las 32, y el índice **/entidades** (PR
+v8.13b). El motor **no cambia** (ningún `.do`/`.ado`): lo que se publica es lo que contrato-32 ya emite por entidad
+(v8.13a, `02_governance/contrato-32-2026-10-19.md`) y el sitio solo lo lee. Decisiones de Ricardo (29-oct): las 32
+iguales, con sellos; los cuatro productos; 32 páginas estáticas generadas; precalculado en el deploy; índice en tabla,
+sin mapa; reúso de `metodo/plantilla.php`; inglés.
+
+### Institucional — generador, páginas, endpoint
+
+- **`05_scripts/generar-entidades.py`** (nuevo). `paginas`: desde `SIMentidad.ado` (única fuente del catálogo) escribe
+  `entidades/_catalogo.php` y las 32 `entidades/<ABREV>/index.php`, cada una un stub de tres líneas que fija
+  `$ENTIDAD_ABREV` y carga la plantilla única `entidades/_entidad.php` (las 32 iguales por construcción); idempotente y
+  determinista; `--check` es el gate «generado == commiteado» (CI). `meta`: lee `users/<id>/<ABREV>/{sankey-*.json ×5,
+  ciclo-vida.json, tasas-efectivas.json}` y `contrato-32.tsv` y escribe `users/<id>/<ABREV>/meta.json` (esquema
+  `entidad-meta/v1`: cada celda sellada con su `n` y su top-1 por producto, conteos, top-1 en celdas no delgadas, PIBE y
+  neto del ciclo, espejo, procedencia) y `users/<id>/entidades.json` (`entidades-indice/v1`: la tabla de las 32).
+  `contrato-32.sh` lo llama al final del recorrido (`--conl-url`, `--pibe-vintage`). Los sellos **no se cablean**: la
+  página los lee de ahí.
+- **`entidades/_entidad.php`** (plantilla de método reutilizada: cabecera con migas, notas numeradas, pie). Orden:
+  encabezado (nombre, clave INEGI, n ENIGH, población, vintage, corrida) → párrafo de método en inglés (qué es por
+  entidad: §1–3, Sankeys y ciclo §7–8.2, tasas efectivas micro/micro por residencia; qué es federal: parámetros, deciles
+  nacionales, anclas SCN sin apertura estatal, ISAN/IMPORT a tasa nacional por construcción; qué está anclado a qué: PIBE
+  por entidad con su vintage, PIB nacional de la corrida) → los cuatro productos, cada uno con gráfica y lectura:
+  (i) los **cinco Sankeys de aportación** con selector de corte (quintil estatal, grupo de edad, sexo, rural, escolaridad;
+  FusionCharts como la portada, un corte por petición, cacheado), (ii) el **ciclo de vida quinquenio × sexo** (ApexCharts,
+  la receta de «Tax burden by age» de la portada: barras horizontales apiladas por grupo de deciles, % del neto de la
+  entidad), (iii) las **tasas efectivas por impuesto** sin renglón ISAN/IMPORT (SVG propio, como el panel NTA: la portada
+  solo tiene PNG; barra = entidad, marca = nacional micro), (iv) el **neto del ciclo como % del PIBE** (cifras + dos
+  barras SVG, entidad vs nacional) con nota al pie de la discrepancia Σ32 PIBE vs PIB nacional (informativa). **Sellos**:
+  toda celda con n < sello_n o top-1 > sello_top1 lleva marca ⚠ en la gráfica (toolText y lista bajo el Sankey, «⚠» en
+  la etiqueta del quinquenio, rayado en la barra de la tasa) y **nota al pie numerada** («n = 73 in this cell; read as
+  indicative»), continuando la numeración de las cinco notas de método. Pie: fuente, versión, data_updated. La página
+  NL lleva la línea del espejo CoNL (URL por parámetro del generador; sin ella, **placeholder declarado**: hoy el
+  espejo se publica a Google Drive y no tiene URL pública).
+- **`entidades/index.php`**: tabla de las 32 (número, nombre, abreviatura, n ENIGH, celdas por debajo del umbral,
+  celdas selladas Sankeys / ciclo / tasas, concentración top-1 en celdas no delgadas, neto/PIBE, enlace), filas del
+  catálogo y columnas leídas de `entidades.json`.
+- **`jsonEntidad.php`** (nuevo): `?abrev=<ABREV>&producto=sankey|ciclo|tasas|meta|neto[&corte=…]` y `?producto=indice`;
+  sirve byte a byte ciclo, tasas, meta (= neto) y el índice; el Sankey con los nodos y enlaces del motor tal cual
+  (claves entrecomilladas con la misma gramática que `compuertas-entidad.py`, `toolText` de sello en los enlaces con
+  `sello=1`); **abrev estricto** contra el catálogo generado (minúsculas, clave numérica, traversal y `%00` → 400),
+  producto y corte en lista blanca (400), idSession inválido → default `ciepmx`, archivo ausente → 404 con la pista del
+  deploy. `js/entidad.js` (nuevo), `metodo/plantilla.php` (sección «States», migas, `scripts`/`init`), `css/metodo.css`.
+  **Cero literales numéricos** en PHP/JS/CSS (gate de 4+ dígitos sobre los nueve archivos y las 32 páginas).
+- **Deploy.** `publicar-vps.sh`: la Fase 3b-ter embarca `users/ricardo/<ABREV>/` para las 32 (5 Sankeys + ciclo + tasas +
+  `meta.json` = 256 archivos; catálogo leído de `SIMentidad.ado`) y `entidades.json` (manifiesto 12 → 269); Gate 5-remoto
+  exige `users/ciepmx/<ABREV>/meta.json` de las 32 y el índice; el esqueleto suma `/entidades` y las tres páginas muestra
+  (NL, Jal, Col); la Fase 6 hace un HEAD a `jsonEntidad.php?abrev=<ABREV>&producto=meta` para las 32. Precondición del
+  ritual: `contrato-32.sh` (que ya corre `generar-entidades.py meta`) antes del tag. `manifest.json` → v8.13.0.
+- **Gates.** `test-sitio-entidades.{sh,js}` (nuevo; job `sitio-entidades` en CI): generado == commiteado; 37 PHP parsean y
+  hay 32 carpetas; HTTP (índice con 32 filas; por entidad: contenedores, selector, cinco notas; ciclo/tasas/meta/índice
+  byte a byte; los cinco Sankeys con los mismos nodos/enlaces y los mismos enlaces con sello que el motor); harness de
+  seguridad (400/404); cero literales; Chrome headless sobre NL, Jal y Col: los cuatro productos renderizan, enlaces del
+  Sankey idénticos como cadena (quintil y, tras el selector, grupoedad con una sola petición), series del ciclo = pct del
+  JSON y «⚠» exactamente en las celdas selladas, barras de tasas con el te del JSON y sello exacto, neto/PIBE = meta.json,
+  listas y notas de sellos = exactamente las celdas selladas de meta.json (que a su vez = `sello=1` de los JSON del
+  motor), cifras llenas, espejo en NL, sin errores de JS, `--png`; índice lleno. `test-sitio-seguridad.sh` gana los casos
+  de `jsonEntidad.php`; `verify_sitio_autocontenido.sh` al día. Fixtures: `05_scripts/fixtures/entidades/{NL,Jal,Col}/`
+  + `entidades.json` de la corrida completa de esta sesión (SIM.do + contrato-32 en worktree de `b837c33`).
+- **FLAG (metodología, Ricardo firma).** El cociente neto/PIBE es la única división fuera de Stata (la hace
+  `generar-entidades.py`, igual que la vista previa §4b de `contrato-32.py`); lo limpio es que `CicloEntidad.do` emita
+  `pibe` y `neto_pct_pibe` en una sesión del motor. ISAN/IMPORT omitidos de la gráfica de tasas por la FLAG TE de v8.13a.
+  El enlace al espejo CoNL queda en placeholder hasta tener URL pública.
+- **Corrida de evidencia** (`~/CIEP_Simuladores/diag-v8.13b-entidades-2026-10-29/`, worktree de `b837c33` con `raw/` y
+  `master/` de `-datos`, Stata 39 min): paridad byte-idéntica con `-datos` (`output.txt` `fcddfb84…`, 5 Sankeys),
+  `gate-numeros.sh` VERDE, contrato-32.py PASÓ (32/32, aditividad del ciclo), **conteos de sellos idénticos a la tabla
+  de las 32 del 19-oct en las 32 entidades** (NL 23/155 / 16/46 / 2/10; Jal 32/155 / 19/46 / 0/10; Col 15/155 / 18/46 /
+  1/10); el neto/PIBE se mueve respecto a la vista previa del 19-oct por la corrección de datos v8.12.4 (NL 10.974 →
+  10.958 %, Jal 8.217 → 8.337 %, Col 6.359 → 6.376 %); Σ32 PIBE 39,629,804 mdp vs PIB nacional 39,419,415 mdp (+0.53 %).
+  Hallazgo lateral (no de este PR): `compuertas-entidad.py` falla su gate 3 (testigo NL: `statajson_entidad-nl-2026-10-08.json`
+  es anterior a v8.12.4; reldif 6.6e-2) y la banda de vintages no corre sin `users/ricardo-v<anio>/`; los gates 2 y 4
+  (Σ32 = nacional, sellos en las 32×5) pasan.
+
 ## [v8.12.6] — 2026-10-29 — Reproducibilidad: el orden de los empates ya no depende del camino
 
 Cierre del memo REPRO-1 (`02_governance/repro-1-2026-10-28.md`, PR #42): dos corridas completas del mismo

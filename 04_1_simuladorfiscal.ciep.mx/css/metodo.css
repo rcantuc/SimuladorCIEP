@@ -417,3 +417,6 @@ body.metodo {
 	white-space: normal;
 	max-width: 260px;
 }
+.ent-indice td[data-col="sellos_texto"] {
+	white-space: nowrap;
+}
