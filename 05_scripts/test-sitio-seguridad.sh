@@ -63,7 +63,7 @@ printf '$(document).ready(function() {const dataSource={chart:{caption:""},\nnod
 printf '$(document).ready(function() {const dataSource={chart:{caption:""},\nnodes:[{label:"De 0 a 4"},{label:"Ing laboral"},{label:"Ing nacional"}],\nlinks:[{to:"Ing laboral",value:"28803723154.81406",from:"De 0 a 4"},{to:"Ing nacional",value:"28803723154.81406",from:"Ing laboral"}]};\nFusionCharts.ready(function() {});});\n' > "$H/users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json"
 mkdir -p "$H/users/ciepmx/NTA"
 printf '{"esquema":"nta/v1","S_vs_B8n":{"S_sin_ajuste":1.0}}\n' > "$H/users/ciepmx/NTA/nta-grupoedad.json"
-printf '{"esquema":"nta-panel/v1","celdas":[]}\n' > "$H/users/ciepmx/NTA/nta-panel-grupoedad-sexo.json"
+printf '{"esquema":"nta-panel/v2","celdas":[]}\n' > "$H/users/ciepmx/NTA/nta-panel-grupoedad-sexo.json"
 # config.php de la COPIA: cualquier ruta de Stata que config.php conozca -> el falso. La detección
 # local/VPS de config.php es por HTTP_HOST (localhost) y la primera rama exige que exista el
 # binario de StataNow: se sustituye la ruta de esa rama por el falso, que sí existe.
@@ -150,7 +150,7 @@ aserta 'grep -q "ciepmx/SankeyNTA/sankey-v3-grupoedad.json" "$H/body"' "el defau
 chk 404 "jsonSankeyNTA.php?corte=v2-grupoedad (sin archivo)" "$U/jsonSankeyNTA.php?corte=v2-grupoedad"
 chk 200 "jsonSankeyNTA.php?cuenta=grupoedad"              "$U/jsonSankeyNTA.php?cuenta=grupoedad"
 chk 200 "jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo"   "$U/jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo"
-aserta 'grep -q "nta-panel/v1" "$H/body"' "el panel se sirve byte a byte (users/ciepmx/NTA/nta-panel-grupoedad-sexo.json)"
+aserta 'grep -q "nta-panel/v2" "$H/body"' "el panel se sirve byte a byte (users/ciepmx/NTA/nta-panel-grupoedad-sexo.json)"
 chk 400 "jsonSankeyNTA.php?cuenta=../../etc/passwd"       "$U/jsonSankeyNTA.php?cuenta=../../etc/passwd"
 chk 404 "jsonSankeyNTA.php?cuenta=identidad (sin archivo)" "$U/jsonSankeyNTA.php?cuenta=identidad"
 

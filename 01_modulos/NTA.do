@@ -9,7 +9,9 @@
 * del SCN ANTES de cualquier ancla de S; el ajuste de S queda como variante, no como default. NTA-1c (2026-10-28): el total
 * de YA se re-ancla a S.14 (nta_YA = S14) y, si |Σ S − B.8n|/B.8n ≤ 15 %, el ancla multiplicativa de S se activa DECLARADA
 * (nta_anclaS = auto -> multiplicativo; intra y la identidad se exigen sin ancla). NTA-3 (2026-10-29): se emiten además el Sankey v3
-* (§7b, edades solo al inicio y al final, sin Familias ni «Ingreso g»/«Consumo g») y el panel grupo × sexo (§7c); ningún número cambia. Llamada (SIM.do §3.2b):
+* (§7b, edades solo al inicio y al final, sin Familias ni «Ingreso g»/«Consumo g») y el panel grupo × sexo (§7c); ningún número cambia.
+* NTA-4 (2026-10-29): el v3 funde Desahorro/Futuro en un nodo cada uno, la especie pública en su categoría y el ancla S.14 en un solo nodo con el neto,
+* y cada enlace viaja con value (MXN) y pctpib (% del PIB del año, escalar PIB de SCN.ado); el panel emite ambas unidades (esquema nta-panel/v2). Llamada (SIM.do §3.2b):
 *   run NTA.do <anioenigh>        (2024: el único año con households.dta anclado a SCN/LIF/PEF 2024)
 *
 * IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):
@@ -83,7 +85,7 @@
 *
 * SALIDAS: users/$id/NTA/nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json (obligatorio: 36 celdas), nta-identidad.txt,
 *          nta-panel-grupoedad-sexo.json (NTA-3: panel grupo × sexo, §7c); users/$id/SankeyNTA/sankey-v2-grupoedad.json (contrato
-*          v2.1, §7) y sankey-v3-grupoedad.json (NTA-3: contrato v3, edades solo al inicio y al final, §7b; el 31/79 de v1 no se toca).
+*          v2.1, §7) y sankey-v3-grupoedad.json (NTA-3: contrato v3, edades solo al inicio y al final, §7b; NTA-4: value + pctpib por enlace; el 31/79 de v1 no se toca).
 * Nada de literales: todo número que sale viene de escalar/SCN/LIF/PEF o de la base.
 *********************************************************************
 if "`1'" == "" {
@@ -141,6 +143,13 @@ if _rc != 0 {
 }
 local AhorroHog = scalar(AhorroHog)
 local AhorroHogB = scalar(AhorroHogB)
+* NTA-4: PIB nominal del año (SCN.ado: escalar mxn PIB = PIB[anio], BIE); denominador de pctpib en el v3 y en el panel *
+capture confirm scalar PIB
+if _rc != 0 | scalar(PIB) <= 0 {
+	noisily di as err "NTA: SCN no dejó el escalar PIB del año `anio' (denominador de % del PIB). Sin PIB no hay emisión v3/panel."
+	exit 459
+}
+local PIBY = scalar(PIB)
 local TransfEspecie = scalar(TransfEspecie)
 local ConHogS14 = scalar(ConHogS14)
 * NTA-1b: anclas S.14 adicionales; si SCN no las definió (tabulado viejo) el parámetro cae a la variante del motor con FLAG *
@@ -1090,32 +1099,42 @@ noisily di in g "  Sankey v2: balance Gobierno " in y %20.0fc `BG' in g " (τ⁻
 
 
 **********************************
-**# 7b. Sankey v3 (NTA-3, 2026-10-29): edades solo al inicio y al final (users/$id/SankeyNTA/sankey-v3-grupoedad.json)
+**# 7b. Sankey v3 (NTA-3, 2026-10-29; NTA-4: nodos fundidos y % del PIB): edades solo al inicio y al final (users/$id/SankeyNTA/sankey-v3-grupoedad.json)
 **********************************
 * Decisión de Ricardo (2026-10-29): el gráfico principal de /NTA lleva las edades solo como perceptores (izquierda) y como
 * consumidores (derecha); se eliminan los ejes «Ingreso g» y «Consumo g» y el nodo «Familias». Las transferencias en efectivo,
 * inter e intra-hogar netean a cero nacionalmente (lo que un grupo recibe otro lo paga), así que el v3 no las dibuja por grupo:
 * la cuenta por grupo × sexo, con efectivo e inter/intra-hogar, vive en el panel (§7c). El v2 (§7) se sigue emitiendo.
-* Columnas: Fuentes (grupos perceptores, OyE públicas, El mundo, Desahorro g, balances declarados) → Tipos de ingreso (laboral,
+* NTA-4 (2026-10-29, decisiones de Ricardo; la cuenta no cambia, cambia la emisión): (i) un solo «Desahorro» (fuente) y un solo
+* «Futuro» (sink) en lugar de uno por grupo (el detalle por grupo vive en el panel); (ii) la especie pública se funde con su
+* categoría de consumo: Gobierno → Salud / Educación / Otros gastos (desaparecen «Salud pública», «Educación pública», «Otros en
+* especie»); cada categoría recibe de Ing nacional, Transferencias en efectivo, Activos y Gobierno y sale a los grupos
+* consumidores con privado + especie; «Colectivo» sigue como nodo propio terminal; (iii) el ancla de S.14 en un solo nodo
+* «Ajuste a cuentas nacionales S14» con el NETO recorte − complemento (Activos → ajuste si el neto es un recorte; ajuste →
+* Activos si fuera un complemento neto); recorte y complemento por separado siguen en nta-grupoedad.json y en el panel;
+* (iv) cada enlace viaja con value (MXN corrientes, como siempre) y pctpib = value / PIB × 100 (variable j_pctpib: SankeySumSim
+* la escribe como campo del enlace), con el PIB nominal del año que registra SCN.ado (escalar mxn PIB) y que aquí se guarda
+* como NTAPIBY; los totales de los hubs se registran como escalar pctpib. Nada se divide fuera de Stata.
+* Columnas: Fuentes (grupos perceptores, OyE públicas, El mundo, Desahorro, balances declarados) → Tipos de ingreso (laboral,
 * capital, alquiler propio, impuestos a productos, D.8, remesas; mismos ejes 1 y 2 que el v2) → Ing nacional → Gobierno (entran
-* τ⁻ + OyE; salen Educación/Salud pública y Otros en especie por edad, Colectivo sin edad y «Transferencias en efectivo» a un
-* nodo único) y Activos (entra el S sin ancla de los grupos que ahorran y el desahorro de los que no; salen Futuro g, «Ancla S14
-* recorte» y el desahorro hacia las categorías) → Usos (7 categorías privadas, 3 en especie, Colectivo, Transferencias en
-* efectivo) → Sinks (grupos consumidores, Futuro g, Colectivo).
+* τ⁻ + OyE; salen la especie a Salud / Educación / Otros gastos, Colectivo sin edad y «Transferencias en efectivo» a un nodo
+* único) y Activos (entra el S sin ancla de los grupos que ahorran y el Desahorro de los que no; salen Futuro, el ajuste S.14 y
+* el desahorro hacia las categorías) → Usos (7 categorías, Colectivo, Transferencias en efectivo) → Sinks (grupos consumidores,
+* Futuro, Colectivo, Ajuste a cuentas nacionales S14).
 * Financiamiento del consumo privado (lo que v2 resolvía en «Consumo g»): cada categoría recibe de Ing nacional lo que los grupos
 * pagan con ingreso PROPIO (Y − τ⁻ − S⁺ − recorte + inter recibido + remesas + intra − inter otorgado), de «Transferencias en
 * efectivo» lo pagado con τ⁺ efectivo y de Activos lo pagado con desahorro (+ complemento del ancla), cada flujo de cada grupo
 * repartido por la CANASTA del grupo (Cpriv_gc / Cpriv_g): propio + efectivo + desahorro = Cpriv_g por la identidad, así que
-* Σ entradas de cada categoría = Σ_g Cpriv_gc = sus salidas a los grupos consumidores.
+* Σ entradas de cada categoría = Σ_g Cpriv_gc + Σ_g Cpub_gc (la especie que entra de Gobierno) = sus salidas a los grupos.
 * Balances como en v2: «Déficit público» → Gobierno si τ⁻ + OyE < τ⁺ efectivo + Cpub (si no Gobierno → «Resto del gasto
 * público»); «Otras transferencias privadas» → Ing nacional si inter recibido > otorgado (si no Ing nacional → «Transferencias
-* privadas netas»). Ancla multiplicativa declarada (d_g = S sin ancla − S anclado): Activos → «Ancla S14 recorte» Σ_g max(d_g, 0);
-* «Ancla S14 complemento» → Activos Σ_g max(−d_g, 0). Conservación en todo nodo intermedio; test-nta-identidad.sh B lo exige.
-local lbl4 `"11 "Gobierno" 13 "Activos" 14 "Transferencias en efectivo" 21 "Desahorro 0 a 4" 22 "Desahorro 5 a 17" 23 "Desahorro 18 a 24" 24 "Desahorro 25 a 64" 25 "Desahorro 65 y más" 31 "Otras transferencias privadas" 32 "Déficit público" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 61 "Futuro 0 a 4" 62 "Futuro 5 a 17" 63 "Futuro 18 a 24" 64 "Futuro 25 a 64" 65 "Futuro 65 y más" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 81 "Ancla S14 recorte" 82 "Ancla S14 complemento" 999 "Ing nacional""'
+* privadas netas»). Ancla multiplicativa declarada (d_g = S sin ancla − S anclado): recorte = Σ_g max(d_g, 0), complemento =
+* Σ_g max(−d_g, 0); el nodo lleva el neto. Conservación en todo nodo intermedio en ambas unidades; test-nta-identidad.sh C lo exige.
+local lbl4 `"11 "Gobierno" 13 "Activos" 14 "Transferencias en efectivo" 20 "Desahorro" 31 "Otras transferencias privadas" 32 "Déficit público" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 60 "Futuro" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 80 "Ajuste a cuentas nacionales S14" 999 "Ing nacional""'
 quietly {
-	tempfile catg fin f3 f4 f5
+	tempfile catg fin f1 f2 f3 f4 f5
 
-	* --- Categorías por grupo (misma receta que §7 eje 5; «Colectivo» sin edad reemplaza a «Colectivo per cápita») --- *
+	* --- Categorías por grupo: privado (misma receta que §7 eje 5) + especie pública fundida en su categoría; «Colectivo» sin edad --- *
 	use `per2', clear
 	egen double sk_Alimentos = rsum(gas_pc_Agua gas_pc_Alim gas_pc_BebN)
 	egen double sk_Vestido = rsum(gas_pc_Vest gas_pc_Calz)
@@ -1127,14 +1146,17 @@ quietly {
 	foreach v of varlist sk_* {
 		replace `v' = `v' + gasto_anualComprasN*`v'/gastoanualTOT if gastoanualTOT > 0
 	}
-	g double sk_Educación_pública = CpubEduc
-	g double sk_Salud_pública = CpubSalud
-	g double sk_Otros_en_especie = CpubRestoInd
-	g double sk_Colectivo = CpubCol
-	collapse (sum) sk_* [fw=factor], by(grupoedad)
-	reshape long sk_, i(grupoedad) j(cat) string
-	rename sk_ profile
-	g byte publica = inlist(cat, "Educación_pública", "Salud_pública", "Otros_en_especie", "Colectivo")
+	g double pb_Salud = CpubSalud
+	g double pb_Educación = CpubEduc
+	g double pb_Otros_gastos = CpubRestoInd
+	g double pb_Colectivo = CpubCol
+	collapse (sum) sk_* pb_* [fw=factor], by(grupoedad)
+	reshape long sk_ pb_, i(grupoedad) j(cat) string
+	rename sk_ priv
+	rename pb_ pub
+	replace priv = 0 if priv == .
+	replace pub = 0 if pub == .
+	g double profile = priv + pub
 	encode cat, g(catn)
 	levelsof catn, local(cats)
 	local lblcat ""
@@ -1142,14 +1164,14 @@ quietly {
 		local cl : label catn `c'
 		local lblcat `"`lblcat' `=100+`c'' "`cl'""'
 	}
-	* canasta privada del grupo: participación de cada categoría privada en Cpriv_g *
-	egen double cpriv_g = total(cond(publica, 0, profile)), by(grupoedad)
-	g double share = cond(publica, ., profile/cpriv_g)
+	* canasta privada del grupo: participación de cada categoría en Cpriv_g (la especie no entra a la canasta) *
+	egen double cpriv_g = total(priv), by(grupoedad)
+	g double share = priv/cpriv_g
 	save `catg'
 
 	* --- Financiamiento del consumo privado por categoría: propio (desde Ing nacional), efectivo (desde Transferencias en
 	*     efectivo) y desahorro + complemento (desde Activos), cada grupo repartido por su canasta --- *
-	keep if !publica
+	drop if cat == "Colectivo"
 	g double v_propio = .
 	g double v_efectivo = .
 	g double v_desahorro = .
@@ -1171,9 +1193,11 @@ quietly {
 	}
 	collapse (sum) v_propio v_efectivo v_desahorro, by(catn)
 	save `fin'
+	* neto del ancla: > 0 recorte neto (Activos → ajuste), < 0 complemento neto (ajuste → Activos) *
+	local ajuste_neto = `rec_tot' - `comp_tot'
 
-	* --- Eje 3: Ing nacional → Gobierno (τ⁻ + OyE) / Activos (S sin ancla de los que ahorran) / categorías privadas (propio);
-	*     fuentes → Ing nacional (Otras transferencias privadas), → Gobierno (Déficit público), → Activos (Desahorro g, complemento) --- *
+	* --- Eje 3: Ing nacional → Gobierno (τ⁻ + OyE) / Activos (S sin ancla de los que ahorran) / categorías (propio);
+	*     fuentes → Ing nacional (Otras transferencias privadas), → Gobierno (Déficit público), → Activos (Desahorro, complemento neto) --- *
 	g from = 999
 	g to = 100 + catn
 	g double profile = v_propio
@@ -1186,19 +1210,17 @@ quietly {
 	replace from = 999 in -1
 	replace to = 13 in -1
 	replace profile = `Spos_tot' + `rec_tot' in -1
-	forvalues g = 1/5 {
-		if scalar(NTAS`g') < 0 {
-			set obs `=_N+1'
-			replace from = 20 + `g' in -1
-			replace to = 13 in -1
-			replace profile = -scalar(NTAS`g') in -1
-		}
-	}
-	if `comp_tot' > 0 {
+	if `Sneg_tot' > 0 {
 		set obs `=_N+1'
-		replace from = 82 in -1
+		replace from = 20 in -1
 		replace to = 13 in -1
-		replace profile = `comp_tot' in -1
+		replace profile = `Sneg_tot' in -1
+	}
+	if `ajuste_neto' < 0 {
+		set obs `=_N+1'
+		replace from = 80 in -1
+		replace to = 13 in -1
+		replace profile = -`ajuste_neto' in -1
 	}
 	if `BF' > 0 {
 		set obs `=_N+1'
@@ -1223,9 +1245,9 @@ quietly {
 	label values to n4
 	save `f3'
 
-	* --- Eje 4: Gobierno → categorías públicas (especie por edad y Colectivo) y → Transferencias en efectivo (τ⁺ efectivo);
-	*     Transferencias en efectivo → categorías privadas; Activos → categorías privadas (desahorro), → Futuro g, → Ancla S14 recorte;
-	*     Gobierno → Resto del gasto público --- *
+	* --- Eje 4: Gobierno → categorías (la especie: Salud, Educación, Otros gastos) y → Colectivo y → Transferencias en efectivo
+	*     (τ⁺ efectivo); Transferencias en efectivo → categorías; Activos → categorías (desahorro), → Futuro, → ajuste S.14 (recorte
+	*     neto); Gobierno → Resto del gasto público --- *
 	use `fin', clear
 	g from = 14
 	g to = 100 + catn
@@ -1241,29 +1263,28 @@ quietly {
 	append using `f4a'
 	save `f4a', replace
 	use `catg', clear
-	keep if publica
-	collapse (sum) profile, by(catn)
+	collapse (sum) pub, by(catn)
+	keep if pub > 0
 	g from = 11
 	g to = 100 + catn
+	rename pub profile
 	keep from to profile
 	append using `f4a'
 	set obs `=_N+1'
 	replace from = 11 in -1
 	replace to = 14 in -1
 	replace profile = scalar(NTATpubEf0) in -1
-	forvalues g = 1/5 {
-		if scalar(NTAS`g') > 0 {
-			set obs `=_N+1'
-			replace from = 13 in -1
-			replace to = 60 + `g' in -1
-			replace profile = scalar(NTAS`g') in -1
-		}
-	}
-	if `rec_tot' > 0 {
+	if `Spos_tot' > 0 {
 		set obs `=_N+1'
 		replace from = 13 in -1
-		replace to = 81 in -1
-		replace profile = `rec_tot' in -1
+		replace to = 60 in -1
+		replace profile = `Spos_tot' in -1
+	}
+	if `ajuste_neto' > 0 {
+		set obs `=_N+1'
+		replace from = 13 in -1
+		replace to = 80 in -1
+		replace profile = `ajuste_neto' in -1
 	}
 	if `BG' > 0 {
 		set obs `=_N+1'
@@ -1276,7 +1297,7 @@ quietly {
 	label values to n4
 	save `f4'
 
-	* --- Eje 5: categorías (privadas y en especie) → grupos consumidores; Colectivo es terminal (sin edad) --- *
+	* --- Eje 5: categorías (privado + especie) → grupos consumidores; Colectivo es terminal (sin edad) --- *
 	use `catg', clear
 	drop if cat == "Colectivo"
 	g from = 100 + catn
@@ -1287,11 +1308,21 @@ quietly {
 	label values to n4
 	save `f5'
 
+	* --- % del PIB por enlace (NTA-4): copias propias de los ejes 1 y 2 (el v2 sigue byte-idéntico) y j_pctpib en los cinco --- *
 	local negs3 = 0
-	foreach e in `f3' `f4' `f5' {
-		use `e', clear
+	local IngNac_tot = 0
+	foreach e in e1 e2 f3 f4 f5 {
+		use ``e'', clear
 		count if profile < 0
 		local negs3 = `negs3' + r(N)
+		if "`e'" == "e2" {
+			tabstat profile, stat(sum) save
+			local IngNac_tot = r(StatTotal)[1,1] + max(`BF', 0)
+		}
+		g double j_pctpib = profile/`PIBY'*100
+		if "`e'" == "e1" save `f1'
+		else if "`e'" == "e2" save `f2'
+		else save ``e'', replace
 	}
 	use `per2', clear
 }
@@ -1299,9 +1330,21 @@ if `negs3' > 0 {
 	local ok = 0
 	noisily di as err "  GATE NTA Sankey v3: `negs3' enlace(s) negativos (un grupo con ingreso propio insuficiente para su canasta)."
 }
-noisily SankeySumSim, anio(`anio') name(v3-grupoedad) folder(SankeyNTA) a(`e1') b(`e2') c(`f3') d(`f4') e(`f5')
+escalar mxn NTAPIBY = `PIBY'
+escalar pctpib NTAV3IngNacPIB = `IngNac_tot'/`PIBY'*100
+escalar pctpib NTAV3GobiernoPIB = (scalar(NTATmen0) + `OyE' + max(-`BG', 0))/`PIBY'*100
+escalar pctpib NTAV3ActivosPIB = (`Spos_tot' + `rec_tot' + `Sneg_tot' + max(-`ajuste_neto', 0))/`PIBY'*100
+escalar pctpib NTAV3TransfEfPIB = scalar(NTATpubEf0)/`PIBY'*100
+escalar pctpib NTAV3FuturoPIB = `Spos_tot'/`PIBY'*100
+escalar pctpib NTAV3DesahorroPIB = `Sneg_tot'/`PIBY'*100
+escalar pctpib NTAV3ColectivoPIB = scalar(NTACpubColNac)/`PIBY'*100
+escalar pctpib NTAV3AjusteS14PIB = `ajuste_neto'/`PIBY'*100
+escalar mxn NTAV3AjusteS14 = `ajuste_neto'
+escalar mxn NTAV3Recorte = `rec_tot'
+escalar mxn NTAV3Complemento = `comp_tot'
+noisily SankeySumSim, anio(`anio') name(v3-grupoedad) folder(SankeyNTA) a(`f1') b(`f2') c(`f3') d(`f4') e(`f5')
 quietly use `per2', clear
-noisily di in g "  Sankey v3: Ing nacional → Gobierno " in y %20.0fc scalar(NTATmen0) + `OyE' in g " (τ⁻ + OyE); → Activos " in y %20.0fc `Spos_tot' + `rec_tot' in g " (S sin ancla de los que ahorran); Transferencias en efectivo " in y %20.0fc scalar(NTATpubEf0) in g "; desahorro + complemento a categorías " in y %20.0fc `Sneg_tot' + `comp_tot' in g "; recorte " in y %20.0fc `rec_tot'
+noisily di in g "  Sankey v3: PIB `anio' " in y %20.0fc `PIBY' in g "; Ing nacional " in y %6.2f scalar(NTAV3IngNacPIB) in g " % del PIB; → Gobierno " in y %20.0fc scalar(NTATmen0) + `OyE' in g " (τ⁻ + OyE); → Activos " in y %20.0fc `Spos_tot' + `rec_tot' in g " (S sin ancla de los que ahorran); Transferencias en efectivo " in y %20.0fc scalar(NTATpubEf0) in g "; Desahorro " in y %20.0fc `Sneg_tot' in g "; Futuro " in y %20.0fc `Spos_tot' in g "; ajuste S.14 neto " in y %20.0fc `ajuste_neto' in g " (recorte " in y %20.0fc `rec_tot' in g " − complemento " in y %20.0fc `comp_tot' in g ")"
 
 
 
@@ -1317,6 +1360,11 @@ noisily di in g "  Sankey v3: Ing nacional → Gobierno " in y %20.0fc scalar(NT
 * = 0) con el ancla declarada: S es el anclado (Σ = B.8n) como en el v3. Aquí sí se ven el efectivo y lo inter/intra-hogar que el
 * v3 no dibuja. Formato scalarjson: números crudos a 17 dígitos significativos (round-trip exacto del double), nada de literales;
 * generado_el aislado como última clave de procedencia. La página /NTA lee las tres variantes (T/H/M) de este único archivo.
+* NTA-4 (esquema nta-panel/v2): doble emisión. Cada celda lleva además pctpib = valor / PIB × 100 (PIB nominal del año, escalar PIB de
+* SCN.ado = NTAPIBY) de sus escalares y de cada flujo; el bloque pib declara el denominador y nacional_pctpib trae en % del PIB las
+* cifras nacionales que la página /NTA escribe en bn («Anchoring and residual»: S, ancla, YA, efectivo, τ⁻, consumo, hubs del v3) y
+* v3_mxn los totales del v3 (hubs, Futuro, Desahorro, Colectivo, ancla recorte / complemento / neta) en MXN.
+* Nada se divide fuera de Stata: la página solo transcribe.
 capture program drop _ntanum
 program define _ntanum, rclass
 	args e
@@ -1358,10 +1406,19 @@ quietly {
 	egen double entradas = rowtotal(in_*)
 	egen double salidas = rowtotal(out_*)
 	g double balance = entradas - salidas
+	g double deficit_cv = C - YL
+	foreach v in C YL deficit_cv S S_sinancla S_ajuste YA ImpProd YA_d8 Tmen InterRec Remesas InterOtor IntraPos IntraNeg Cpriv CpubInd CpubCol TpubEf TpubEsp TpubCol entradas salidas {
+		g double pp_`v' = `v'/`PIBY'*100
+	}
+	foreach v of local pan_in {
+		g double ppin_`v' = in_`v'/`PIBY'*100
+	}
+	foreach v of local pan_out {
+		g double ppout_`v' = out_`v'/`PIBY'*100
+	}
 	g double balrel = abs(balance)/C
 	summarize balrel, meanonly
 	local balmax = r(max)
-	g double deficit_cv = C - YL
 	local ncel = _N
 }
 local okpan = cond(`balmax' <= `tol', 1, 0)
@@ -1370,7 +1427,9 @@ if `okpan' == 0 {
 	noisily di as err "  GATE NTA panel: alguna celda grupo × sexo no balancea (|entradas − salidas|/C máx " %9.2e `balmax' ")"
 }
 file open `fh' using `"`dirnta'/nta-panel-grupoedad-sexo.json"', write replace text
-file write `fh' `"{"esquema":"nta-panel/v1","anio":`anio',"unidad":"MXN corrientes de `anio', sumas [fw=factor]","corte":"grupoedad x sexo","' _n
+file write `fh' `"{"esquema":"nta-panel/v2","anio":`anio',"unidad":"MXN corrientes de `anio', sumas [fw=factor]","corte":"grupoedad x sexo","' _n
+_ntanum "`PIBY'"
+file write `fh' `""pib":{"anio":`anio',"valor":`r(n)',"unidad":"MXN corrientes de `anio'","escalar":"PIB (SCN.ado, BIE; registrado como NTAPIBY en NTA.do)","regla":"pctpib = valor / pib.valor x 100, calculado en Stata; la pagina transcribe"},"' _n
 file write `fh' `""identidad":"Σ entradas = Σ salidas en cada celda: YL + (YA + ImpProd) + tau_pub_efectivo + tau_pub_especie + tau_pub_colectivo + (inter_recibido + remesas) + intra_recibido + desahorro + ancla_complemento = Cpriv + Cpub_especie + Cpub_colectivo + tau_menos + inter_otorgado + intra_otorgado + S + ancla_recorte; es la identidad del gate (C - YL - ImpProd - (tau_mas - tau_menos) - (YA - S_sinancla) - intra = 0) con S anclado (S = S_sinancla + S_ajuste) y el ajuste declarado como ancla","' _n
 file write `fh' `""regla":"intra_recibido / intra_otorgado = sumas por persona de max(intra, 0) / max(-intra, 0); desahorro / S = -S / S de la celda segun su signo; ancla_complemento / ancla_recorte = S_ajuste / -S_ajuste de la celda segun su signo; S es el anclado (nta_anclaS=$nta_anclaS)","' _n
 file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_YA":"$nta_YA","nta_cuotas":"$nta_cuotas","nta_d8":"$nta_d8","nta_anclaTau":"$nta_anclaTau","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","tolerancia":1e-9},"' _n
@@ -1409,12 +1468,61 @@ forvalues i = 1/`ncel' {
 		_ntanum "out_`v'[`i']"
 		file write `fh' `"`=cond(`k' > 1, ",", "")'"`v'":`r(n)'"'
 	}
+	file write `fh' `"},"pctpib":{"'
+	local k = 0
+	foreach v in C YL deficit_cv S S_sinancla S_ajuste YA ImpProd YA_d8 Tmen InterRec Remesas InterOtor IntraPos IntraNeg Cpriv CpubInd CpubCol TpubEf TpubEsp TpubCol entradas salidas {
+		local ++k
+		_ntanum "pp_`v'[`i']"
+		file write `fh' `"`=cond(`k' > 1, ",", "")'"`v'":`r(n)'"'
+	}
+	file write `fh' `","entradas_flujos":{"'
+	local k = 0
+	foreach v of local pan_in {
+		local ++k
+		_ntanum "ppin_`v'[`i']"
+		file write `fh' `"`=cond(`k' > 1, ",", "")'"`v'":`r(n)'"'
+	}
+	file write `fh' `"},"salidas_flujos":{"'
+	local k = 0
+	foreach v of local pan_out {
+		local ++k
+		_ntanum "ppout_`v'[`i']"
+		file write `fh' `"`=cond(`k' > 1, ",", "")'"`v'":`r(n)'"'
+	}
 	_ntanum "balance[`i']"
-	file write `fh' `"},"balance":`r(n)'}"' _n
+	file write `fh' `"}},"balance":`r(n)'}"' _n
 }
 file write `fh' `"],"' _n
+* NTA-4: cifras nacionales en % del PIB (las que /NTA escribe en bn desde nta-grupoedad.json, más los hubs del v3); mismas fuentes que §6.2 *
+file write `fh' `""nacional_pctpib":{"'
+local k = 0
+foreach par in "S_sin_ajuste `S_micro'" "AhorroHog `AhorroHog'" "S_final `S_nac'" "S_ajuste scalar(NTASAjusteNac)" "ancla_recorte `rec_tot'" "ancla_complemento `comp_tot'" "ancla_neto `ajuste_neto'" ///
+	"YA_motor `YA_motor_tot'" "YAHogS14 `YAHogS14'" "B2n `ExNOpHogS14'" "tercio_B3n `MixNHogS14'/3" "D4_neto `RentaPropHogNeta'" ///
+	"YL scalar(NTAYL0)" "YA scalar(NTAYA0)" "ImpProd scalar(NTAImpProd0)" "C scalar(NTAC0)" "TpubEf scalar(NTATpubEf0)" "Tmen scalar(NTATmen0)" "OyE `OyE'" ///
+	"InterOtor scalar(NTAInterOtor0)" "InterRec scalar(NTAInterRec0)" "Remesas scalar(NTARemesas0)" "Intra_bruto_recibido scalar(NTAIntraPos1)+scalar(NTAIntraPos2)+scalar(NTAIntraPos3)+scalar(NTAIntraPos4)+scalar(NTAIntraPos5)" ///
+	"Cpriv scalar(NTACprivNac)" "ConHogS14_P3 `ConHogS14'" "ConHog `ConHog'" "Cpub scalar(NTACpubNac)" "individual_D63 scalar(NTACpubIndNac)" "colectivo scalar(NTACpubColNac)" ///
+	"CapFij `CapFij'" "PIN `PIN'" "ROWProp `ROWProp'" "ROWTrans `ROWTrans'" ///
+	"hub_Ing_nacional `IngNac_tot'" "hub_Gobierno scalar(NTATmen0)+`OyE'+max(-`BG',0)" "hub_Activos `Spos_tot'+`rec_tot'+`Sneg_tot'+max(-`ajuste_neto',0)" "hub_Transferencias_efectivo scalar(NTATpubEf0)" ///
+	"Futuro `Spos_tot'" "Desahorro `Sneg_tot'" "Deficit_publico max(-`BG',0)" "Otras_transf_privadas max(`BF',0)" {
+	local ++k
+	gettoken nm ex : par
+	_ntanum "(`ex')/`PIBY'*100"
+	file write `fh' `"`=cond(`k' > 1, ",", "")'"`nm'":`r(n)'"'
+}
+file write `fh' `"},"' _n
+* NTA-4: los mismos totales del v3 en MXN (hubs, Futuro, Desahorro y el ancla S.14 por separado y neta), para que la página los escriba en ambas unidades *
+file write `fh' `""v3_mxn":{"'
+local k = 0
+foreach par in "hub_Ing_nacional `IngNac_tot'" "hub_Gobierno scalar(NTATmen0)+`OyE'+max(-`BG',0)" "hub_Activos `Spos_tot'+`rec_tot'+`Sneg_tot'+max(-`ajuste_neto',0)" "hub_Transferencias_efectivo scalar(NTATpubEf0)" ///
+	"Futuro `Spos_tot'" "Desahorro `Sneg_tot'" "ancla_recorte `rec_tot'" "ancla_complemento `comp_tot'" "ancla_neto `ajuste_neto'" "Colectivo scalar(NTACpubColNac)" {
+	local ++k
+	gettoken nm ex : par
+	_ntanum "(`ex')"
+	file write `fh' `"`=cond(`k' > 1, ",", "")'"`nm'":`r(n)'"'
+}
+file write `fh' `"},"' _n
 file write `fh' `""gates":{"celdas":`ncel',"balance_max_rel":`=trim(string(`balmax', "%12.4e"))',"tolerancia":1e-9,"ok":`okpan'},"' _n
-file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.3 (NTA-3)","base":"la misma cuenta por persona que users/$id/NTA/nta-persona.dta, agregada por grupoedad x sexo [fw=factor]","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","stata":"`c(stata_version)' `c(edition_real)'","generado_el":"`fecha' $S_TIME"}}"' _n
+file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.4 (NTA-4)","base":"la misma cuenta por persona que users/$id/NTA/nta-persona.dta, agregada por grupoedad x sexo [fw=factor]; pctpib con el escalar PIB de SCN.ado","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","stata":"`c(stata_version)' `c(edition_real)'","generado_el":"`fecha' $S_TIME"}}"' _n
 file close `fh'
 noisily di in g "  Panel grupo × sexo: " in y `ncel' in g " celdas; |entradas − salidas|/C máx " in y %9.2e `balmax' in g " -> " in y cond(`okpan', "OK", "ROJO")
 quietly use `per2', clear
