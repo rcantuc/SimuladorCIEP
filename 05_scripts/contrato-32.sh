@@ -18,7 +18,13 @@
 # Uso:
 #   bash 05_scripts/contrato-32.sh --evidencia <dir> [--refs <dir con output.txt y sankey-*.json de referencia>]
 #        [--statajson <statajson_entidad-nl.json>] [--entidad-sesion "Nuevo León"] [--stata <ruta>] [--sin-sim]
+#        [--conl-url <URL del espejo CoNL>] [--pibe-vintage <AAAA-MM-DD de las bases PIBDeflactor<ABREV>.dta>]
 #   --sin-sim reutiliza la sesión anterior (exige <evidencia>/escalares.do, como compuertas-entidad.sh).
+#   6. (v8.13.0) generar-entidades.py meta: users/<id>/<ABREV>/meta.json (sellos con su n, PIBE y neto del
+#      ciclo, espejo) y users/<id>/entidades.json (índice): lo que /entidades y /entidades/<ABREV> leen y lo
+#      que la Fase 3b-ter de publicar-vps.sh embarca. --conl-url pone el enlace al espejo en la página de NL
+#      (sin él: placeholder declarado); --pibe-vintage declara la fecha de las bases PIBE si no hay
+#      master/PIBDeflactor<ABREV>.meta.
 # Bases precedentes (banda de vintages y testigo): ver runbook §13 — se validan y se imprime la
 # receta; si faltan, el recorrido sigue sin banda / sin testigo y lo declara.
 # Pensado para correr de noche: nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-... &
@@ -27,7 +33,7 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 STATA="/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se"
-EVID=""; REFS=""; STATAJSON=""; ENTIDAD="Nuevo León"; SIN_SIM=false
+EVID=""; REFS=""; STATAJSON=""; ENTIDAD="Nuevo León"; SIN_SIM=false; CONL_URL=""; PIBE_VINTAGE="" 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --evidencia) EVID="$2"; shift 2 ;;
@@ -36,6 +42,8 @@ while [[ $# -gt 0 ]]; do
         --entidad-sesion) ENTIDAD="$2"; shift 2 ;;
         --stata) STATA="$2"; shift 2 ;;
         --sin-sim) SIN_SIM=true; shift ;;
+        --conl-url) CONL_URL="$2"; shift 2 ;;
+        --pibe-vintage) PIBE_VINTAGE="$2"; shift 2 ;;
         *) echo "Argumento desconocido: $1" >&2; exit 2 ;;
     esac
 done
@@ -124,5 +132,8 @@ grep -A3 "## Veredicto" "$EVID/compuertas-entidad.md" 2>/dev/null | tail -2
 echo "== contrato-32.py (paridad, tabla de las 32, ciclo de vida, tasas efectivas, sellos)"
 python3 05_scripts/contrato-32.py --root "$REPO_ROOT" --id "$ID" --evidencia "$EVID" ${REFS:+--refs "$REFS"}
 RC_C32=$?
+echo "== generar-entidades.py meta (sellos y neto/PIBE por entidad → users/$ID/<ABREV>/meta.json + entidades.json; lo lee /entidades)"
+python3 05_scripts/generar-entidades.py meta --users "$REPO_ROOT/users/$ID" --tabla "$EVID/contrato-32.tsv" --tabla-md "$EVID/contrato-32.md" ${CONL_URL:+--conl-url "$CONL_URL"} ${PIBE_VINTAGE:+--pibe-vintage "$PIBE_VINTAGE"}
+RC_META=$?
 echo "== reporte: $EVID/contrato-32.md"
-exit $(( RC_CE != 0 || RC_C32 != 0 ? 1 : 0 ))
+exit $(( RC_CE != 0 || RC_C32 != 0 || RC_META != 0 ? 1 : 0 ))
