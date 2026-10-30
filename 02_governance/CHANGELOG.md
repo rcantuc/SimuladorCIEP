@@ -104,6 +104,62 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
   es anterior a v8.12.4; reldif 6.6e-2) y la banda de vintages no corre sin `users/ricardo-v<anio>/`; los gates 2 y 4
   (Σ32 = nacional, sellos en las 32×5) pasan.
 
+### Institucional — `/NTA` v3 sin nodos redundantes, en % del PIB, con un solo nodo de ancla (PR NTA-4, 2026-10-29)
+
+Decisiones de Ricardo (29-oct) sobre el Sankey v3 de `/NTA` (`NTA.do` §7b) y el panel (§7c). **La cuenta no cambia;
+cambia la emisión y la página**: `gate-numeros.sh` verde; `nta-identidad.txt`, `nta-grupoedad.json` (salvo `generado_el`),
+`nta-quinquenio-sexo.json` y el v2 byte-idénticos a la corrida de NTA-3; `output.txt` y los 10 sankeys publicados
+byte-idénticos al baseline. Mismo PR sobre `master` con #45 (v8.13.0) mergeado.
+
+- **Un solo «Desahorro» (fuente) y un solo «Futuro» (sink)** en lugar de uno por grupo; el detalle por grupo vive en el
+  panel. **La especie pública se funde con su categoría de consumo**: `Gobierno` → `Salud` / `Educación` / `Otros gastos`
+  (desaparecen «Salud pública», «Educación pública», «Otros en especie»); cada categoría recibe de `Ing nacional`,
+  `Transferencias en efectivo`, `Activos` y `Gobierno`, y sale a los grupos consumidores con privado + especie;
+  `Colectivo` sigue como nodo propio terminal. **El ancla S.14 en un nodo**: «Ancla S14 recorte» (66.9 bn) y «Ancla S14
+  complemento» (1.4 bn) se funden en `Ajuste a cuentas nacionales S14` con el neto, **65.5 bn** (0.195 % del PIB), desde
+  `Activos` (si algún año el complemento superara al recorte, el nodo sería fuente hacia `Activos`); recorte y
+  complemento siguen por separado en la cuenta, en el panel y en «Anchoring and residual». Etiqueta en español como el
+  resto de los nodos del motor (SankeySumSim no admite paréntesis ni puntos en una etiqueta); la página la llama
+  «adjustment to national accounts (S.14)». **42 nodos / 118 enlaces → 35 / 99** en 2024 (−7 nodos: 2 Desahorro g → 1,
+  3 Futuro g → 1, 3 especie → 0, 2 ancla → 1; −19 enlaces: los 15 especie → grupo se funden con los privados). Lo que
+  llega a cada grupo consumidor no se mueve (reldif ≤ 5e-15 contra el v3 de NTA-3); conservación en todo nodo intermedio
+  ≤ 1.5e-14.
+- **Flujos en % del PIB.** §7b emite cada enlace con `value` (MXN corrientes, como siempre) y `pctpib` = `value` / PIB ×
+  100 (variable `j_pctpib`; `SankeySumSim` la escribe como campo del enlace) con el PIB nominal del año que registra
+  `SCN.ado` (`escalar mxn PIB`, 33,667.0 bn en 2024; §1 lo guarda como `NTAPIBY` y aborta si falta); los ejes 1 y 2 se
+  copian a archivos propios para que el v2 siga byte-idéntico; hubs y nodos fundidos registrados como `escalar pctpib`
+  (`NTAV3IngNacPIB` 86.72, `NTAV3GobiernoPIB` 21.87, `NTAV3ActivosPIB` 6.08, `NTAV3TransfEfPIB` 10.23, `NTAV3FuturoPIB`
+  5.76, `NTAV3DesahorroPIB` 0.12, `NTAV3ColectivoPIB` 4.51, `NTAV3AjusteS14PIB` 0.19). **Nada se divide fuera de Stata.**
+  El panel pasa a **`nta-panel/v2`** con doble emisión: bloque `pib` (año, valor, escalar), `pctpib` por celda (los
+  mismos escalares y flujos en % del PIB), `nacional_pctpib` (las cifras de «Anchoring and residual» y los hubs del v3 en
+  % del PIB, mismas fuentes que §6.2) y `v3_mxn` (hubs, Futuro, Desahorro, Colectivo, ancla recorte / complemento / neta
+  en MXN); procedencia `v1.4 (NTA-4)`.
+- **Sitio.** `jsonSankeyNTA.php`: la clave `pctpib` viaja entre comillas (sin tocar el valor), `chart.unidad = pctpib` para
+  el v3 (`mxn` para v2/v1), tooltips y `toolText` de los hubs en «% of GDP» (no estaba en la compuerta: el fragmento del
+  motor no parsea sin entrecomillar la clave nueva y la unidad de los tooltips vive ahí). `js/metodo-sankey.js`:
+  `metodoSankeyEnUnidad` dibuja con `pctpib` como `value` del enlace (FusionCharts suma los nodos en % del PIB), guarda
+  el MXN en `mxn` y un `tooltext` por enlace con ambas unidades (verificado: FusionCharts lo respeta); `metodoFormato`
+  gana `pctpib` (dos decimales); el panel lee `celda.pctpib` (cintas con `data-pctpib`, tooltips y pies en ambas
+  unidades) y llena los `<span data-pib>` desde `nacional_pctpib` / `v3_mxn` / `pib`. `NTA/index.php`: unidad en el
+  encabezado («% of 2024 GDP; GDP = 100», el año leído de `pib.anio`), una línea que explica por qué el hub `Ing
+  nacional` lee 86.7 y no 100 (depreciación 19.2 % del PIB, saldo de renta primaria con el resto del mundo −2.9 %, lo que
+  retienen sociedades y gobierno; suma impuestos a productos, OyE y remesas), tabla de nodos del v3 NTA-4, «Anchoring
+  and residual» en bn y en % del PIB con recorte y complemento por separado y el neto del nodo, hubs en % del PIB; el
+  párrafo de método y las cabeceras de columnas al día. Cero literales en los cinco archivos.
+- **Gates.** `test-nta-identidad.sh` mitad C: `pctpib` en todos los enlaces y = `value` / PIB × 100 a **1e-12**;
+  conservación en ambas unidades; nodos retirados prohibidos, `Desahorro`/`Futuro`/`Colectivo`/`Ajuste` únicos y
+  terminales; contra `nta-grupoedad.json`: Σ entradas de cada « De g» = Cpriv + CpubInd del grupo, Colectivo, Futuro,
+  Desahorro, especie por categoría y ajuste neto = la cuenta (1e-9); panel v2 balanceado en ambas unidades, `pctpib` por
+  celda a 1e-12, `nacional_pctpib` = cuenta / PIB × 100 y = hubs del v3. `test-sitio-nta.{sh,js}`: **35/99** fijados con
+  el fixture, cada enlace servido idéntico (from, to, value, pctpib), `chart.unidad`, FusionCharts con `pctpib` como
+  `value` y el MXN en `mxn`, tooltext con ambas unidades y el **tooltip real** (hover en Chrome headless) con «% of GDP» y
+  «bn MXN», `<span data-pib>` llenos e iguales al archivo del panel, año del encabezado = `pib.anio`, pies del panel en
+  ambas unidades, `data-pctpib` en cada cinta; panel v2 con 15 celdas balanceadas en MXN y % del PIB. Harness de
+  seguridad con el stub del panel en v2. Fixtures: `sankey-nta-grupoedad.json` = el **v3 NTA-4 real** (35/99, sha256
+  `d352033f…`) y `nta-panel-grupoedad-sexo.json` v2 (sha256 `f4b23e9a…`) de la corrida completa de `SIM.do` en esta
+  rama (`33a7ffc`, worktree con `raw/` y `master/` de `-datos`, Stata 33 min; `output.txt`, los 10 sankeys, el v2,
+  `nta-identidad.txt` y `nta-grupoedad.json` byte-idénticos al baseline y a NTA-3 salvo `generado_el`).
+
 ## [v8.12.6] — 2026-10-29 — Reproducibilidad: el orden de los empates ya no depende del camino
 
 Cierre del memo REPRO-1 (`02_governance/repro-1-2026-10-28.md`, PR #42): dos corridas completas del mismo
