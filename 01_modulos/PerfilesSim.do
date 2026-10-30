@@ -584,7 +584,7 @@ keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP 
 	Pension* Educacion Salud IngBasico Pension_AM Otros_gastos Otras_inversiones Federalizado Energia infra_entidad /// Gastos
 	folio* numren edad sexo factor decil escol formal* ingbrutotot rural grupoedad /// Perfiles.ado
 	disc* gas_pc_Salu asis_esc tipoesc nivel inst_* ing_jubila jubilado /// GastoPC.ado
-	sbc cuotasTPF deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do
+	sbc cuotasTPF infonavit deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do (infonavit: FLAG-5 v8.14, cuotasTPF del web = batch)
 save "${SIMROOT}/master/perfiles`1'.dta", replace
 
 

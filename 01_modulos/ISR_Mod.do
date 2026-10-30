@@ -127,7 +127,7 @@ egen double CUOTAS = rsum(gmasgT gmpenT invyvidaT riesgoT guardT cestyvejT cuota
 	fondomedP pensjubP segriesgP presperP servsocculP admingenP fvivP)
 
 egen double cuotasF = rsum(gmasgF gmpenF invyvidaF riesgoF guardF cestyvejF cuotasocimssF cuotasocisssteF)
-replace cuotasTPF = cuotasF + CUOTAS
+replace cuotasTPF = cuotasF + CUOTAS + infonavit	// FLAG-5 (v8.14): como Households.do l. 1547 (infonavit una sola vez); antes el web lo omitia (FLAG 2 de v8.12.4)
 
 
 *************************/

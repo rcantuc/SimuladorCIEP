@@ -407,7 +407,7 @@ capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 //noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap(1)	// FLAG-5 (v8.14): MISMA llamada que SIM.do §7.3 (if k != 0, bootstrap(1)); SIM.do es canonico, el web se alinea
 save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
 
