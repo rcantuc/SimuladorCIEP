@@ -7,7 +7,11 @@
 //       v3-grupoedad: el Sankey v3 (contrato v3) que escribe 01_modulos/NTA.do §7b → SankeySumSim folder(SankeyNTA)
 //                     name(v3-grupoedad): edades solo al inicio (perceptores) y al final (consumidores), sin «Familias»
 //                     ni «Ingreso <g>»/«Consumo <g>»; las transferencias en efectivo salen de Gobierno a un nodo único.
-//                     Es lo que dibuja la página de método /NTA desde v8.12.6.
+//                     Es lo que dibuja la página de método /NTA desde v8.12.6. NTA-4 (v8.13.0): cada enlace trae
+//                     value (MXN corrientes) y pctpib (% del PIB del año, dividido en Stata); el chart declara
+//                     unidad = pctpib y js/metodo-sankey.js dibuja con pctpib y muestra ambas en el tooltip. Un solo
+//                     «Desahorro», un solo «Futuro», la especie fundida en su categoría y un solo nodo de ancla
+//                     («Ajuste a cuentas nacionales S14»). Aquí no se divide ni se reordena nada.
 //       v2-grupoedad: el Sankey v2 (contrato v2.1, NTA.do §7). El motor lo sigue emitiendo; /NTA ya no lo dibuja
 //                     (retirado del sitio en v8.12.6) pero el endpoint lo sirve mientras exista el archivo.
 //       decil | sexo | grupoedad | escol | rural: los cortes v1 (Households.do §"Sankeys NTA" →
@@ -26,9 +30,10 @@
 //       grupoedad | quinquenio-sexo: los JSON de la cuenta NTA por grupo (NTA.do §6.2 y §6.3), ya JSON válido:
 //                     se sirven byte a byte (la página /NTA lee de aquí Σ S sin ancla vs B.8n, el factor del
 //                     recorte y el residual intra-hogar; nada se recalcula en PHP ni en JS).
-//       panel-grupoedad-sexo: el panel por grupo de edad × sexo (NTA.do §7c, esquema nta-panel/v1): las 15 celdas
-//                     (5 grupos × Total/Hombres/Mujeres) con sus entradas y salidas; /NTA dibuja con él los cinco
-//                     mini-Sankeys de «The account by age group» y cambia de sexo sin recargar. Byte a byte.
+//       panel-grupoedad-sexo: el panel por grupo de edad × sexo (NTA.do §7c, esquema nta-panel/v2: MXN y % del PIB por
+//                     celda, bloque pib, nacional_pctpib y v3_mxn): las 15 celdas (5 grupos × Total/Hombres/Mujeres) con
+//                     sus entradas y salidas; /NTA dibuja con él los cinco mini-Sankeys de «The account by age group»,
+//                     cambia de sexo sin recargar y escribe de ahí las cifras en % del PIB. Byte a byte.
 //       identidad:    el reporte de texto nta-identidad.txt (text/plain), enlazado desde /NTA.
 //
 // `corte`/`cuenta` en lista blanca (forman la ruta); idSession inválido o ausente → escenario default
@@ -102,6 +107,8 @@ if ($lineaLinks = fgets($gestor)) {
 	$lineaLinks = str_replace("value", '"value"', $lineaLinks);
 	$lineaLinks = str_replace("from", '"from"', $lineaLinks);
 	$lineaLinks = preg_replace('/:(\d*\.\d+),/i', ':"${1}",', $lineaLinks);
+	// NTA-4: el campo pctpib del enlace (NTA.do §7b: value / PIB × 100, calculado en Stata) viaja tal cual, solo se le ponen comillas a la clave.
+	$lineaLinks = str_replace(',pctpib:', ',"pctpib":', $lineaLinks);
 }
 $lineaLinks = substr($lineaLinks, 0, -3);
 fclose($gestor);
@@ -109,6 +116,10 @@ fclose($gestor);
 // Nodos que conservan flujo: un toolText local que declara la conservación (entradas = salidas; $nodeValue es
 // ese total, macro de FusionCharts). v3: los cuatro hubs; v2: los nodos de grupo («Ingreso <g>», «Consumo <g>»).
 // Solo texto de presentación: la etiqueta y el orden de los nodos no cambian (05_scripts/test-sitio-nta.js lo exige).
+// Unidad de presentación (NTA-4): el v3 se dibuja en % del PIB (js/metodo-sankey.js pone pctpib como value del enlace y
+// deja el MXN en el tooltip); el v2 y los v1 siguen en MXN. El chart lo declara en `unidad` (FusionCharts la ignora).
+$unidad = ($corte === 'v3-grupoedad') ? 'pctpib' : 'mxn';
+$sufijo = ($unidad === 'pctpib') ? '% of GDP' : 'MXN';
 $hubs = null;
 if ($corte === 'v3-grupoedad') {
 	$hubs = '/\{"label":"(Ing nacional|Gobierno|Activos|Transferencias en efectivo)"\}/u';
@@ -116,7 +127,7 @@ if ($corte === 'v3-grupoedad') {
 	$hubs = '/\{"label":"((?:Ingreso|Consumo) [^"]*)"\}/u';
 }
 if ($hubs !== null) {
-	$lineaNode = preg_replace($hubs, '{"label":"$1","toolText":"$label<br>inflows = outflows = $nodeValue MXN"}', $lineaNode);
+	$lineaNode = preg_replace($hubs, '{"label":"$1","toolText":"$label<br>inflows = outflows = $nodeValue ' . $sufijo . '"}', $lineaNode);
 }
 
 // `nombre` relativo a users/ (trazabilidad del archivo servido, sin ruta absoluta
@@ -125,6 +136,7 @@ $respuesta = '{"chart": {
 	"caption": " ",
 	"nombre":"users/' . $rel . '",
 	"corte":"' . $corte . '",
+	"unidad":"' . $unidad . '",
     "subcaption": " ",
     "theme": "fusion",
     "orientation": "horizontal",
@@ -134,8 +146,10 @@ $respuesta = '{"chart": {
 	"linkcolor": "blend",
 	"enableDrag": "0",
     "nodelabelposition": "start",
-    "plotToolText": "$label<br>$nodeValue MXN",
-    "linkToolText": "$from → $to<br>$linkValue MXN"
+    "decimals": "' . ($unidad === 'pctpib' ? '2' : '0') . '",
+    "forceDecimals": "' . ($unidad === 'pctpib' ? '1' : '0') . '",
+    "plotToolText": "$label<br>$nodeValue ' . $sufijo . '",
+    "linkToolText": "$from → $to<br>$linkValue ' . $sufijo . '"
 	},
 	' . $lineaNode . $lineaLinks . '
 }';
