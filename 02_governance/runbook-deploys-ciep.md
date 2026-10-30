@@ -364,9 +364,11 @@ cómo usar ese rollback: §7.
 
 Lo que el VPS sirve como escenario default y páginas de método es también lo que se **cita**: `publicar.sh` (§3,
 antes de crear la Release) empaqueta desde `users/ricardo/` del worktree de publicación `output.txt`, los 10
-sankeys, `NTA/*` (incluido `nta-persona.dta`, ~130 MB sin comprimir), `SankeyNTA/sankey-v3-grupoedad.json`, las 32
+sankeys, `NTA/*` (los JSON y el reporte de texto; **no** el microdato `nta-persona.dta`: el zip es de salidas publicadas
+y el microdato se reproduce con `SIM.do` o la receta de DoD 1), `SankeyNTA/sankey-v3-grupoedad.json`, las 32
 carpetas `<ABREV>/` (9 JSON cada una) y `entidades.json` + `entidades-pibe32.json` en
-`users/_sidecar/<versión>/datos-<versión>.zip` (307 archivos, ~50 MB; zip reproducible con fecha fija) y escribe
+`users/_sidecar/<versión>/datos-<versión>.zip` (306 archivos, 3.7 MB sin comprimir, zip ≈ 1.2 MB; reproducible con
+fecha fija) y escribe
 `manifest-datos.json` al lado: `sha256` y `bytes` por archivo, `version`, `commit`, `data_updated`, la cita sugerida y
 el bloque `vintages` **tal como los registra el motor** (`enigh_vintage` del manifest, `cache/sello.txt`, `procedencia`
 y `anclas` de `NTA/nta-grupoedad.json`, `base_generada` de los 32 `master/PIBDeflactor<ABREV>.meta`, los vintages de

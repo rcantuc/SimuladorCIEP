@@ -19,7 +19,7 @@
 #   4. Push del tag a origin si aún no está allá
 #   5. Crea la GitHub Release <VERSION> (si no existe) con las notas extraídas del
 #      02_governance/CHANGELOG.md, y sube los assets del data sidecar declarados en 05_scripts/manifest.json
-#   5b. (v8.14b) Data sidecar citable: empaqueta users/ricardo/{output.txt, 10 sankeys, NTA/*,
+#   5b. (v8.14b) Data sidecar citable: empaqueta users/ricardo/{output.txt, 10 sankeys, NTA/* (sin .dta),
 #      SankeyNTA/sankey-v3-grupoedad.json, <ABREV>/ ×32, entidades.json} en datos-<VERSION>.zip con
 #      manifest-datos.json (sha256 por archivo, commit, data_updated, vintages que registró el motor)
 #      y los sube a la Release como assets; Gate 9 exige que exista y cuadre (desde v8.14.0),
@@ -755,7 +755,7 @@ release_post_verify() {
 
 # ═══ DATA SIDECAR CITABLE (v8.14b, punto 13) ═══
 # Un corte de datos citable por versión: lo que el motor dejó en users/ricardo/ y el sitio sirve
-# (output.txt, los 10 sankeys, NTA/*, SankeyNTA/sankey-v3-grupoedad.json, las 32 carpetas
+# (output.txt, los 10 sankeys, NTA/* sin el microdato .dta, SankeyNTA/sankey-v3-grupoedad.json, las 32 carpetas
 # users/ricardo/<ABREV>/ y entidades.json + entidades-pibe32.json) empaquetado en
 # users/_sidecar/<version>/datos-<version>.zip, con manifest-datos.json al lado: sha256 y bytes
 # por archivo, versión, commit, data_updated y los vintages que leyó la corrida TAL COMO LOS
@@ -780,7 +780,9 @@ sidecar_lista() {
     echo "output.txt"
     for f in decil grupoedad sexo rural escol; do echo "sankey-$f.json"; echo "SankeyNTA/sankey-$f.json"; done
     echo "SankeyNTA/sankey-v3-grupoedad.json"
-    ( cd "$REPO_ROOT/users/ricardo/NTA" 2>/dev/null && ls -1 | sed 's#^#NTA/#' ) || true
+    # NTA/*: los JSON y el reporte de texto; NO el microdato nta-persona.dta (el zip es de salidas publicadas y el
+    # microdato se reproduce con la receta de DoD 1 / SIM.do; decisión de Ricardo, PR #50)
+    ( cd "$REPO_ROOT/users/ricardo/NTA" 2>/dev/null && ls -1 | grep -v '\.dta$' | sed 's#^#NTA/#' ) || true
     abrevs="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
     for ab in $abrevs; do
         for f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json neto-pibe.json meta.json; do

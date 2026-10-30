@@ -24,9 +24,11 @@ Sesión de cierre sobre `master` con #47 (y #48: comentarios de `SIM.do`). **Nad
 ### Segunda entrega (PR v8.14b, mismo tag; puntos 13–17)
 
 - **13 Corte de datos citable.** `publicar.sh` gana la fase *data sidecar* (antes de crear la Release): empaqueta desde
-  `users/ricardo/` del worktree de publicación `output.txt`, los 10 sankeys, `NTA/*` (incluido `nta-persona.dta`),
+  `users/ricardo/` del worktree de publicación `output.txt`, los 10 sankeys, `NTA/*` (los JSON y el reporte; **sin** el
+  microdato `nta-persona.dta`: el zip es de salidas publicadas y el microdato se reproduce con la receta de DoD 1),
   `SankeyNTA/sankey-v3-grupoedad.json`, las 32 carpetas `<ABREV>/` (catálogo de `SIMentidad.ado`) y `entidades.json` +
-  `entidades-pibe32.json` en `users/_sidecar/<versión>/datos-<versión>.zip` (307 archivos, ~50 MB; zip reproducible) con
+  `entidades-pibe32.json` en `users/_sidecar/<versión>/datos-<versión>.zip` (306 archivos, 3.7 MB sin comprimir, zip
+  ≈ 1.2 MB; reproducible) con
   `manifest-datos.json` (sha256 y bytes por archivo, `version`, `commit`, `data_updated`, la cita sugerida y el bloque
   `vintages` **tal como los registra el motor**: `enigh_vintage`, `cache/sello.txt`, procedencia y anclas de
   `nta-grupoedad.json`, `base_generada` de los `.meta` del PIBE, vintages de la banda del Sankey NL). Los dos suben a la
