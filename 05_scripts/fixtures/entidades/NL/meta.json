@@ -231,7 +231,7 @@
       "from": "Indígena",
       "to": "Imp al trabajo",
       "n": 87,
-      "top1": 6.008426288543908,
+      "top1": 6.008426288543909,
       "motivo": "n"
      },
      {
@@ -285,7 +285,7 @@
       "from": "Sin escolaridad",
       "to": "Imp al trabajo",
       "n": 59,
-      "top1": 27.51416518781043,
+      "top1": 27.51416518781042,
       "motivo": "n+top1"
      },
      {
@@ -561,7 +561,7 @@
   "neto_pesos": 354111194496.8468,
   "neto_pct_pibe": 10.958165133911278,
   "vintage": "2026-10-19",
-  "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32) o --pibe-vintage",
+  "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32)",
   "anio_vp": 2027,
   "fuente": "neto-pibe.json (scalarjson; 05_scripts/contrato-32.do §4b): escalares pibY<ABREV> (PIBDeflactor por entidad), NetoCiclo<ABREV> (CicloEntidad.do) y NetoCicloPIBE<ABREV> = NetoCiclo/pibY×100, divididos en Stata; aquí solo se transcriben",
   "coincide_ciclo": true,
@@ -585,7 +585,7 @@
  },
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "3b19f3d",
+  "commit": "05ec3e3",
   "insumos": [
    "ciclo-vida.json",
    "tasas-efectivas.json",
@@ -601,7 +601,7 @@
    "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
    "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
   },
-  "generado_el": "2026-10-29 20:52:11"
+  "generado_el": "2026-10-30 11:13:03"
  },
  "pibe_32": {
   "suma_pesos": 39629803600641.83,

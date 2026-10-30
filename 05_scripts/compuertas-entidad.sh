@@ -8,7 +8,7 @@
 # Después compuertas-entidad.py compara los JSON y escribe <evidencia>/compuertas-entidad.md.
 #
 # Uso: bash 05_scripts/compuertas-entidad.sh --evidencia <dir> [--entidad "Nuevo León"]
-#        [--statajson <users/.../statajson_entidad-nl.json>] [--stata <ruta stata-se>]
+#        [--statajson <statajson_entidad-nl.json>] [--stata <ruta stata-se>]   (default: 05_scripts/fixtures/statajson_entidad-nl.json, v8.14)
 #        [--sin-sim]   (reutiliza la sesión: solo compuertas-entidad.do + .py; exige un
 #                       escalares.do en <evidencia> con los escalares de SIM.do — desarrollo)
 # Exit 0 si todo pasa.
@@ -31,6 +31,9 @@ done
 [[ -z "$EVID" ]] && { echo "Uso: $0 --evidencia <dir> [--entidad <nombre>] [--statajson <json>] [--stata <ruta>] [--sin-sim]" >&2; exit 1; }
 mkdir -p "$EVID"
 ID="$(whoami)"
+git rev-parse --short HEAD > "$EVID/commit.txt" 2>/dev/null; git status --short >> "$EVID/commit.txt" 2>/dev/null   # compuertas-entidad.do lo escribe en la procedencia del testigo
+# v8.14: el testigo NL versionado (motor actual, post-v8.12.4) es el default; --statajson lo sustituye
+[[ -z "$STATAJSON" && -f "$REPO_ROOT/05_scripts/fixtures/statajson_entidad-nl.json" ]] && STATAJSON="$REPO_ROOT/05_scripts/fixtures/statajson_entidad-nl.json"
 GLOBALS=('global nographs "nographs"' 'global output "output"' "global entidad \"$ENTIDAD\"")
 # SIM_run.do = SIM.do con la raiz de este clon y los globals tras `macro drop _all` (misma
 # mecanica que test-maquina-virgen.sh sim_run); SIM.do versionado no se toca.

@@ -37,6 +37,14 @@ ado/plus/
 
 
 # -----------------------------------------------------------------------------
+# Python — bytecode de los scripts de 05_scripts/ (v8.14: generar-entidades.py,
+# compuertas-entidad.py, … dejan 05_scripts/__pycache__/ al importarse entre sí)
+# -----------------------------------------------------------------------------
+__pycache__/
+*.pyc
+
+
+# -----------------------------------------------------------------------------
 # Sistemas operativos
 # -----------------------------------------------------------------------------
 # macOS — el patrón anterior `**.DS_Store**` era inválido (los `**` solo

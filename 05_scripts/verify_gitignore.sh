@@ -97,6 +97,8 @@ assert_ignored "hs_err_pid12345.log" "Stata crash log"
 assert_not_ignored "simulador.stpr" "Proyecto del Project Manager de Stata (decisión v1.14: se trackea como mapa del proyecto)"
 assert_ignored "ado/personal/foo.ado" "User-installed ado"
 assert_ignored "ado/plus/x.ado" "User-installed ado plus"
+assert_ignored "05_scripts/__pycache__/generar-entidades.cpython-313.pyc" "Bytecode de Python de los scripts (v8.14)"
+assert_ignored "cualquier/ruta/__pycache__/x.pyc" "Bytecode de Python a cualquier profundidad"
 
 echo "--- Dropbox conflict files (lowercase y Title Case) ---"
 assert_ignored "SIM (ServidorCIEP's conflicted copy 2021-05-28).do" "Dropbox lowercase raíz"
@@ -198,6 +200,7 @@ assert_not_ignored "02_governance/historico/fase-0-reconocimiento.md" "Doc gover
 assert_not_ignored "02_governance/historico/fase-0-5-git-hygiene-audit.md" "Doc governance"
 assert_not_ignored "02_governance/versionado-y-git.md" "Este documento"
 assert_not_ignored "05_scripts/verify_gitignore.sh" "Este script"
+assert_not_ignored "05_scripts/generar-entidades.py" "Script Python versionado (solo se ignora su bytecode)"
 
 echo "--- Manifest del Catálogo de datos asociados (vive en 05_scripts/) ---"
 assert_not_ignored "05_scripts/manifest.json" "Manifest del Catálogo de datos asociados"

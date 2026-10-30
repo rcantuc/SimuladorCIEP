@@ -11,7 +11,10 @@
 * (nta_anclaS = auto -> multiplicativo; intra y la identidad se exigen sin ancla). NTA-3 (2026-10-29): se emiten además el Sankey v3
 * (§7b, edades solo al inicio y al final, sin Familias ni «Ingreso g»/«Consumo g») y el panel grupo × sexo (§7c); ningún número cambia.
 * NTA-4 (2026-10-29): el v3 funde Desahorro/Futuro en un nodo cada uno, la especie pública en su categoría y el ancla S.14 en un solo nodo con el neto,
-* y cada enlace viaja con value (MXN) y pctpib (% del PIB del año, escalar PIB de SCN.ado); el panel emite ambas unidades (esquema nta-panel/v2). Llamada (SIM.do §3.2b):
+* y cada enlace viaja con value (MXN) y pctpib (% del PIB del año, escalar PIB de SCN.ado); el panel emite ambas unidades (esquema nta-panel/v2).
+* v8.14 (2026-10-30, CONC-1 §6.1): los impuestos netos a los productos que Altimir embebe en ing_mixto (ImpNetProductos_mixK, 497.6 bn en 2024)
+* se sacan de donde viajan: ⅓ de YA (Yk lleva ing_mixtoK = ⅓ ing_mixto) y ⅔ de YL (Yl lleva ing_mixtoL); antes §4.3 restaba de YA los 497.6 completos
+* y YL conservaba 331.7 bn de impuestos además de recibir ImpProd. Llamada (SIM.do §3.2b):
 *   run NTA.do <anioenigh>        (2024: el único año con households.dta anclado a SCN/LIF/PEF 2024)
 *
 * IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):
@@ -40,12 +43,14 @@
 *                indirectos anclados a LIF (IVA, IEPS, ISAN, importaciones). FUERA: ISR_PM y OTROSK (los pagan las sociedades
 *                en el SCN); se calculan y reportan (TmenFuera) sin restarse a nadie.
 *   ImpProd    = ImpNetosProd (D.21 − D.31 de la economía total) ∝ Cpriv: lo que paga cada quien. Entra como ingreso; lo que
-*                Altimir embebía de ImpNet en Yk (ImpNetProductos_mixK/_soc/_hog, Households.do l. 2420-2427) se saca de YA para
-*                no contarlo dos veces. Así los indirectos de τ⁻ ya no son doble resta. D.29 − D.39 sigue en Yl/Yk (FLAG).
+*                Altimir embebía de ImpNet en Yk y Yl (ImpNetProductos_mixK/_soc/_hog, Households.do l. 2420-2427) se saca de YA
+*                (_soc, _hog y ⅓ de _mixK) y de YL (⅔ de _mixK: v8.14) para no contarlo dos veces. Así los indirectos de τ⁻ ya no
+*                son doble resta. D.29 − D.39 sigue en Yl/Yk (FLAG).
 *   YL         = Yl del motor − pensiones (ing_jubila × TaltimirSal, lo que Households.do metió a Yl: FLAG motor v9.x)
-*                − 2/3 de las transferencias y flujos financieros que viajan dentro de ing_mixto (× TaltimirSelf) + ing_suborROW.
+*                − 2/3 de las transferencias y flujos financieros que viajan dentro de ing_mixto (× TaltimirSelf)
+*                − 2/3 de ImpNetProductos_mixK (v8.14) + ing_suborROW.
 *   YA         = YA_base + YA_d8 [+ YA_ajuste solo con nta_anclaS = aditivo]. YA_motor = Yk − depreciación (CapFij: base NETA,
-*                consistente con S = B.8n) − ImpNet embebido − 1/3 de lo mismo de ing_mixto + ing_capitalROW + alquiler imputado
+*                consistente con S = B.8n) − ImpNet embebido en Yk (_soc, _hog, ⅓ _mixK) − 1/3 de lo mismo de ing_mixto + ing_capitalROW + alquiler imputado
 *                reasignado al jefe del hogar (ingreso). YA_base = YA_motor × YAHogS14/Σ YA_motor con nta_YA = S14 (NTA-1c: el total
 *                de YA al del sector hogares B.2n + 1/3 B.3n + D.4 neto, misma distribución; el alquiler se escala igual) o = YA_motor
 *                con nta_YA = motor. YA_d8 = D.8 ∝ YL de quienes cotizan (nta_d8). FLAG motor v8.14: Yk lleva ExNOpSoc bruto (−1,765 bn).
@@ -351,16 +356,22 @@ g double nta_pens_enYl = min(ing_jubila*`TSal', ing_subor)
 * tamaño del FLAG: lo que ing_mixto trae de transferencias y flujos financieros, escalado como ingreso de cuenta propia *
 g double nta_mixto_flag = (ing_dona + ing_heren + ing_benef + nta_rem_raw + ing_prest + ing_otrocap + ing_ahorro)*`TSelf'
 
-** 4.2 YL **
-g double YL = Yl - nta_pens_enYl - 2/3*(nta_mixto_transf + nta_mixto_fin) + ing_suborROW
-label var YL "Ingreso laboral NTA (sin pensiones ni transferencias de ing_mixto; con ROW)"
+** 4.2 YL (v8.14, CONC-1 §6.1: Yl = ing_subor + ing_mixtoL y ing_mixtoL = ⅔ ing_mixto trae ⅔ de los impuestos netos a los productos
+**     que Altimir embebió en ing_mixto, ImpNetProductos_mixK; se sacan de aquí, el ⅓ que viaja en Yk se saca de YA en §4.3) **
+g double nta_impprod_YL = 2/3*ImpNetProductos_mixK
+g double YL = Yl - nta_pens_enYl - 2/3*(nta_mixto_transf + nta_mixto_fin) - nta_impprod_YL + ing_suborROW
+label var YL "Ingreso laboral NTA (sin pensiones, transferencias de ing_mixto ni 2/3 de ImpNet embebido; con ROW)"
 
 ** 4.3 YA (neto de depreciación; alquiler imputado al jefe; con ROW; SIN los impuestos netos a los productos que Altimir
 **     embebe en Yk: NTA-1b pieza 3 los saca de aquí y los reasigna ∝ consumo como ImpProd, §4.4b) **
 * Lo que Altimir puso de ImpNetProductos en cada persona: Households.do l. 2420-2427 lo deja calculado (∝ ing_mixtoK,
 * ing_capital, ing_estim_alqu con las participaciones MixKN / ExNOpSoc / ExNOpHog); Σ = ImpNet del BIE. Los otros
-* impuestos a la producción (D.29 − D.39: ImpNetProduccionL/K, 247 bn) se quedan en Yl/Yk como en el motor (FLAG). *
+* impuestos a la producción (D.29 − D.39: ImpNetProduccionL/K, 247 bn) se quedan en Yl/Yk como en el motor (FLAG).
+* v8.14 (CONC-1 §6.1): ImpNetProductos_mixK se calculó ∝ ing_mixtoK pero es el embebido en TODO ing_mixto, que el motor
+* reparte ⅔ a Yl (ing_mixtoL) y ⅓ a Yk (ing_mixtoK): de YA se saca solo el ⅓ (165.9 bn en 2024); los ⅔ (331.7) salen de YL (§4.2).
+* Antes se restaban de YA los 497.6 completos y YL los conservaba (doble conteo frente a ImpProd). *
 g double nta_impprod_motor = ImpNetProductos_mixK + ImpNetProductos_soc + ImpNetProductos_hog
+g double nta_impprod_YA = nta_impprod_motor - nta_impprod_YL
 egen double nta_alqu_hog = total(ing_estim_alqu - ImpNetProductos_hog), by(nta_hhid)
 g byte nta_jefe = parentesco == "101"
 egen byte nta_njefe = total(nta_jefe), by(nta_hhid)
@@ -372,9 +383,9 @@ replace nta_jefe = (edad == nta_edadmax) if nta_njefe == 0 & nta_edadmax_ad == .
 bysort nta_hhid nta_jefe (numren): replace nta_jefe = 0 if nta_jefe == 1 & _n > 1	// un solo jefe por hogar
 g double ALQ = cond("$nta_alqu" == "jefe", cond(nta_jefe, nta_alqu_hog, 0), ing_estim_alqu - ImpNetProductos_hog)
 label var ALQ "Alquiler imputado (ingreso, sin impuestos a productos embebidos): al jefe del hogar"
-g double YA_motor = Yk - gasto_anualDepreciacion - ing_estim_alqu + ALQ - ImpNetProductos_mixK - ImpNetProductos_soc ///
+g double YA_motor = Yk - gasto_anualDepreciacion - ing_estim_alqu + ALQ - 1/3*ImpNetProductos_mixK - ImpNetProductos_soc ///
 	- 1/3*(nta_mixto_transf + nta_mixto_fin) + ing_capitalROW
-label var YA_motor "Ingreso de activos del motor (neto de depreciación, sin impuestos a productos, sin D.8)"
+label var YA_motor "Ingreso de activos del motor (neto de depreciación, sin el ImpNet embebido en Yk, sin D.8)"
 
 ** 4.3b nta_YA (NTA-1c): el TOTAL de YA del motor se re-ancla a YAHogS14 = B.2n + 1/3 B.3n + D.4 neto del sector hogares
 **      (CSI_115 filas 69, 70, 95), repartido ∝ YA_motor (misma distribución, otro nivel). ImpNet ya fuera (pieza 3) y D.8 ya
@@ -620,13 +631,15 @@ escalar mxn NTATmenFueraNac = r(StatTotal)[1,3]
 escalar mxn NTACuotasNac = r(StatTotal)[1,4]
 noisily di in g "  τ⁻: directos " in y %16.0fc r(StatTotal)[1,1] in g " (cuotas $nta_cuotas " in y %16.0fc r(StatTotal)[1,4] in g ")  indirectos " in y %16.0fc r(StatTotal)[1,2] ///
 	in g "  fuera (ISR_PM + OTROSK) " in y %16.0fc r(StatTotal)[1,3]
-quietly tabstat ImpProd nta_impprod_motor TmenInd [fw=factor], stat(sum) save
+quietly tabstat ImpProd nta_impprod_motor TmenInd nta_impprod_YA nta_impprod_YL [fw=factor], stat(sum) save
 escalar mxn NTAImpProdNac = r(StatTotal)[1,1]
 escalar mxn NTAImpProdMotor = r(StatTotal)[1,2]
+escalar mxn NTAImpProdMotorYA = r(StatTotal)[1,4]
+escalar mxn NTAImpProdMotorYL = r(StatTotal)[1,5]
 escalar pct NTAFactorIndirectos = r(StatTotal)[1,3]/`ImpNetosProd'*100
 noisily di in g "  Impuestos a productos: ImpNetosProd (D.21−D.31 CSI_103) " in y %16.0fc `ImpNetosProd' in g "  ImpNet BIE " in y %16.0fc `ImpNetBIE' ///
-	in g "  embebido por Altimir en Yk (sacado) " in y %16.0fc r(StatTotal)[1,2] in g "  Σ indirectos micro (τ⁻) " in y %16.0fc r(StatTotal)[1,3] ///
-	in g "  factor indirectos/ImpNetosProd " in y %7.4f r(StatTotal)[1,3]/`ImpNetosProd'
+	in g "  embebido por Altimir (sacado) " in y %16.0fc r(StatTotal)[1,2] in g " = de YA " in y %16.0fc r(StatTotal)[1,4] in g " + de YL (⅔ mixK, v8.14) " in y %16.0fc r(StatTotal)[1,5] ///
+	in g "  Σ indirectos micro (τ⁻) " in y %16.0fc r(StatTotal)[1,3] in g "  factor indirectos/ImpNetosProd " in y %7.4f r(StatTotal)[1,3]/`ImpNetosProd'
 escalar pct NTAFactorTau = `fTau'*100
 escalar mxn NTATpubEfPre = `TpubEf_pre'
 noisily di in g "  τ⁺ efectivo: PEF/ENIGH " in y %16.0fc `TpubEf_pre' in g "  D.62 + D.759 S.14 " in y %16.0fc `TauPubS14' in g " (D.62 " in y %16.0fc `PrestSocHog' in g ", D.759 " in y %16.0fc `OtrasTransfHog' in g ")  factor " in y %7.4f `fTau' in g "  nta_anclaTau=" in y "$nta_anclaTau"
@@ -797,7 +810,7 @@ file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTACpri
 	`f1' (scalar(NTATpubEf0)/1e9) `f1' (scalar(NTATpubEsp0)/1e9) `f1' (scalar(NTATpubCol0)/1e9) `f1' (scalar(NTAInterRec0)/1e9) `f1' (scalar(NTARemesas0)/1e9) ///
 	`f1' (scalar(NTAInterOtor0)/1e9) `f1' (scalar(NTAIntra0)/1e9) %10.6f (scalar(NTAResid0)/1e9) _n _n
 file write `fh' "S y intra-hogar por sexo (bn): hombres S " `f1' (scalar(NTASH)/1e9) " intra " `f1' (scalar(NTAIntraH)/1e9) "; mujeres S " `f1' (scalar(NTASM)/1e9) " intra " `f1' (scalar(NTAIntraM)/1e9) _n
-file write `fh' "Impuestos a productos: ImpNetosProd (D.21−D.31) " `f1' (`ImpNetosProd'/1e9) "; ImpNet BIE " `f1' (`ImpNetBIE'/1e9) "; embebido por Altimir en Yk (sacado de YA) " `f1' (scalar(NTAImpProdMotor)/1e9) "; Σ indirectos micro τ⁻ " `f1' (scalar(NTATmenInd0)/1e9) " (factor " %7.4f (scalar(NTAFactorIndirectos)/100) ")" _n
+file write `fh' "Impuestos a productos: ImpNetosProd (D.21−D.31) " `f1' (`ImpNetosProd'/1e9) "; ImpNet BIE " `f1' (`ImpNetBIE'/1e9) "; embebido por Altimir (sacado) " `f1' (scalar(NTAImpProdMotor)/1e9) " = de YA " `f1' (scalar(NTAImpProdMotorYA)/1e9) " + de YL (⅔ de mixK, v8.14) " `f1' (scalar(NTAImpProdMotorYL)/1e9) "; Σ indirectos micro τ⁻ " `f1' (scalar(NTATmenInd0)/1e9) " (factor " %7.4f (scalar(NTAFactorIndirectos)/100) ")" _n
 file write `fh' "τ⁺ efectivo PEF/ENIGH " `f1' (`TpubEf_pre'/1e9) " vs D.62 + D.759 S.14 " `f1' (`TauPubS14'/1e9) " (D.62 " `f1' (`PrestSocHog'/1e9) ", D.759 " `f1' (`OtrasTransfHog'/1e9) "); factor " %7.4f (`fTau') "; nta_anclaTau=$nta_anclaTau; Σ τ⁺ efectivo final " `f1' (scalar(NTATpubEf0)/1e9) _n
 file write `fh' "D.8 AjustePension " `f1' (`AjustePension'/1e9) " → YA_d8 ($nta_d8) Σ " `f1' (scalar(NTAD8Nac)/1e9) _n
 file write `fh' "ConGob partido: individual (D.63) Σ " `f1' (scalar(NTACpubIndNac)/1e9) " vs TransfEspecie " `f1' (`TransfEspecie'/1e9) " (educación " `f1' (scalar(NTACpubEduc0)/1e9) ", salud " `f1' (scalar(NTACpubSalud0)/1e9) ", resto individual per cápita " `f1' (scalar(NTACpubRestoInd0)/1e9) "); colectivo (ConGob − D.63, per cápita) Σ " `f1' (scalar(NTACpubColNac)/1e9) "; ConGob " `f1' (`ConGob'/1e9) _n
@@ -820,7 +833,7 @@ forvalues d = 1/10 {
 	file write `fh' `"`=cond(`d' > 1, ",", "")'{"decil":`d',"pob":`=trim(string(scalar(NTAPobD`d'), "%20.0f"))',"YA_motor":`=trim(string(scalar(NTAYAMotorD`d'), "`fm'"))',"YA_base":`=trim(string(scalar(NTAYABaseD`d'), "`fm'"))'}"'
 }
 file write `fh' `"],"regla":"el total de YA del motor (neto de depreciación, sin ImpNet embebido, sin D.8) se re-ancla a B.2n + 1/3 B.3n + D.4 neto de S.14 ∝ YA del motor; el alquiler imputado se escala igual"},"' _n
-file write `fh' `""impuestos_productos":{"ImpNetosProd_D21_D31":`=trim(string(`ImpNetosProd', "`fm'"))',"ImpNet_BIE":`=trim(string(`ImpNetBIE', "`fm'"))',"ImpProd_micro":`=trim(string(scalar(NTAImpProdNac), "`fm'"))',"embebido_Altimir_sacado_de_YA":`=trim(string(scalar(NTAImpProdMotor), "`fm'"))',"indirectos_micro_tau_menos":`=trim(string(scalar(NTATmenInd0), "`fm'"))',"factor_indirectos_sobre_ImpNetosProd":`=trim(string(scalar(NTAFactorIndirectos)/100, "%12.8f"))',"regla":"ImpProd ∝ Cpriv; el ImpNet que Altimir embebe en Yk (∝ ing_mixtoK, ing_capital, ing_estim_alqu) se saca de YA"},"' _n
+file write `fh' `""impuestos_productos":{"ImpNetosProd_D21_D31":`=trim(string(`ImpNetosProd', "`fm'"))',"ImpNet_BIE":`=trim(string(`ImpNetBIE', "`fm'"))',"ImpProd_micro":`=trim(string(scalar(NTAImpProdNac), "`fm'"))',"embebido_Altimir_sacado":`=trim(string(scalar(NTAImpProdMotor), "`fm'"))',"embebido_Altimir_sacado_de_YA":`=trim(string(scalar(NTAImpProdMotorYA), "`fm'"))',"embebido_Altimir_sacado_de_YL":`=trim(string(scalar(NTAImpProdMotorYL), "`fm'"))',"indirectos_micro_tau_menos":`=trim(string(scalar(NTATmenInd0), "`fm'"))',"factor_indirectos_sobre_ImpNetosProd":`=trim(string(scalar(NTAFactorIndirectos)/100, "%12.8f"))',"regla":"ImpProd ∝ Cpriv; el ImpNet que Altimir embebe en Yk y Yl (∝ ing_mixtoK, ing_capital, ing_estim_alqu) se saca de YA (_soc, _hog y 1/3 de _mixK) y de YL (2/3 de _mixK; v8.14, CONC-1 §6.1)"},"' _n
 file write `fh' `""tau_mas_efectivo":{"PEF_ENIGH_pre":`=trim(string(`TpubEf_pre', "`fm'"))',"D62":`=trim(string(`PrestSocHog', "`fm'"))',"D759":`=trim(string(`OtrasTransfHog', "`fm'"))',"TauPubS14":`=trim(string(`TauPubS14', "`fm'"))',"factor":`=trim(string(`fTau', "%12.8f"))',"nta_anclaTau":"$nta_anclaTau","final":`=trim(string(scalar(NTATpubEf0), "`fm'"))',"regla":"un solo factor global multiplicativo sobre pensiones, Pensión Bienestar y becas/programas"},"' _n
 file write `fh' `""d8":{"AjustePension_D8":`=trim(string(`AjustePension', "`fm'"))',"YA_d8_micro":`=trim(string(scalar(NTAD8Nac), "`fm'"))',"nta_d8":"$nta_d8","personas_con_cuotas":`Ncotiz'},"' _n
 file write `fh' `""tau_menos":{"directos":`=trim(string(scalar(NTATmenDir0), "`fm'"))',"cuotas":`=trim(string(scalar(NTACuotasNac), "`fm'"))',"cuotas_ancla":"$nta_cuotas","CuotasHogS14_D61_menos_D614":`=trim(string(`CuotasHogS14', "`fm'"))',"LIF_CUOTAS":`=trim(string(`CUOTAS', "`fm'"))',"indirectos":`=trim(string(scalar(NTATmenInd0), "`fm'"))',"fuera_ISRPM_OTROSK":`=trim(string(scalar(NTATmenFueraNac), "`fm'"))',"LIF_ISRPM":`=trim(string(`ISRPM', "`fm'"))',"LIF_OTROSK":`=trim(string(`OTROSK', "`fm'"))'},"' _n

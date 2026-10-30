@@ -2,6 +2,12 @@
 **** ARMONIZACION SCN + ENIGH 2018
 ****    INFORMACION DE HOGARES
 ****
+**** Reparto intra-hogar (v8.14; FLAG registrado en v8.12.5): lo que la ENIGH registra por HOGAR (gasto, alquiler
+**** imputado, depreciacion) llega aqui ya repartido entre sus miembros por perfilpc.ado (Expenditure.do §2: punto fijo
+**** por perfil edad-sexo, conserva el total de cada hogar), NO per capita. El ingreso es por perceptor (ENIGH).
+**** Las imputaciones macro-micro de este archivo usan Distribucion.ado (y_i = x_i * MACRO / sum_w x): son per capita
+**** solo cuando el relativo es pob; con relativo(factor) reparten en proporcion al factor de expansion de cada persona.
+****
 if "`1'" == "" {
 	clear all
 	local 1 = 2024
@@ -548,8 +554,12 @@ egen double ing_t4_cap9 = rsum(ing_autor ing_remesas ing_trabmenor ing_prest ing
 ***
 **# 3. IDENTIFY EXEMPTIONS
 ***
+* v8.14 (REPRO-FIX, FLAG del ultimo bit): el merge m:1 de la l. 341 reordena las lineas de ingreso de una misma persona
+* con el RNG de sort y collapse (sum) las acumula en ese orden; con la llave unica el orden (y la suma en punto
+* flotante) ya no depende del camino de la corrida (dos caminos -> 11 JSON byte-identicos). *
+sort folioviv foliohog numren id_trabajo clave
 collapse (sum) ing_* p0* (max) jubilado=jubilacion factor, by(folioviv foliohog numren id_trabajo)
-sort folioviv foliohog numren
+sort folioviv foliohog numren id_trabajo
 
 * Ingreso total *
 egen ing_exclusivo = rsum(ing_agri - ing_autor)
@@ -2648,6 +2658,9 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 *******************************
 *** Sankey: PIB demográfico ***
 *******************************
+* Yl, Yk y las variables de consumo que leen Sankey.do y NTA.do son POR PERSONA: el ingreso por perceptor (ENIGH) anclado a
+* SCN con Altimir, y el consumo del hogar repartido entre sus miembros por perfilpc.ado (perfil edad-sexo, punto fijo;
+* Expenditure.do §2), no per capita: un menor de 0-4 recibe ~11 % del gasto en alimentos de un adulto de 30-64. (v8.14) *
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral (anual)"
 

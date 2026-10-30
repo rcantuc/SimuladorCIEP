@@ -118,6 +118,46 @@ ENDPOINT_URL definidos.
 EOF
 }
 
+# Candado del ritual (v8.14, 2026-10-30). Nada se publica mientras una corrida de evidencia esté
+# viva o su log no haya cerrado: el ritual (runbook §1) corre SIM.do completo ANTES de publicar y
+# el deploy embarca lo que esa corrida dejó en users/ricardo/; publicar con Stata a medias (o con
+# una corrida que murió en r(###)) embarcaría un escenario base incompleto. Dos comprobaciones:
+#   (a) pgrep: ningún correr-sim.sh / contrato-32.sh / compuertas-entidad.sh / pibe-32.sh /
+#       test-maquina-virgen.sh / vintage-aportaciones ni ningún Stata en batch (stata-se|mp -b);
+#   (b) el wrap*.log / SIM*.log más reciente bajo la carpeta de evidencia (SIM_EVIDENCIA, default
+#       ~/CIEP_Simuladores, profundidad 3) y bajo la raíz del repo debe terminar en «end of do-file»
+#       (un do-file en batch que muere termina en «r(###);»; uno vivo no ha escrito el cierre).
+# Se omite en --ci (el runner no tiene corridas). No hay bandera para saltarlo: si el candado
+# aborta, se espera a la corrida o se revisa su log.
+gate_corridas_vivas() {
+    local vivos
+    vivos="$(pgrep -fl 'correr-sim\.sh|contrato-32\.sh|compuertas-entidad\.sh|pibe-32\.sh|test-maquina-virgen\.sh|vintage-aportaciones|stata-(se|mp) -b' 2>/dev/null | grep -v "$$" || true)"
+    if [[ -n "$vivos" ]]; then
+        log_error "Candado del ritual: hay corridas de Stata/evidencia vivas; no se publica con una corrida a medias:"
+        while IFS= read -r l; do log_error "        $l"; done <<< "$vivos"
+        return 1
+    fi
+    local raiz="${SIM_EVIDENCIA:-$HOME/CIEP_Simuladores}"
+    local ultimo=""
+    if [[ -d "$raiz" ]]; then
+        ultimo="$( { find "$raiz" -maxdepth 3 -type f \( -name 'wrap*.log' -o -name 'SIM*.log' \) -print0 2>/dev/null; find "$REPO_ROOT" -maxdepth 1 -type f \( -name 'wrap*.log' -o -name 'SIM*.log' \) -print0 2>/dev/null; } | xargs -0 ls -t 2>/dev/null | head -n 1)"
+    fi
+    if [[ -n "$ultimo" ]]; then
+        local fin
+        fin="$(grep -v '^[[:space:]]*$' "$ultimo" | tail -n 1)"
+        if [[ "$fin" != *"end of do-file"* ]]; then
+            log_error "Candado del ritual: el log de corrida más reciente no termina en «end of do-file» (termina en: ${fin:0:80})."
+            log_error "        $ultimo"
+            log_error "        Si la corrida sigue viva, espera; si murió, repítela antes de publicar (runbook §1)."
+            return 1
+        fi
+        log_info "✓ Candado del ritual: sin corridas vivas; último log de corrida cerrado ($ultimo)"
+    else
+        log_info "✓ Candado del ritual: sin corridas vivas (sin logs de corrida bajo $raiz)"
+    fi
+    return 0
+}
+
 # Gate 5 — Raw declarado (2026-09-12). Cierra la Fase 1 del ciclo de edición de raw/
 # (runbook-actualizar-assets.md §2c): (a) SIM.do NO puede publicarse con
 # `global rawwip` activo — todo el equipo correría con el candado en modo aviso;
@@ -755,6 +795,11 @@ log_info "publicar.sh — versión: $VERSION"
 if [[ "$CHECK_MODE" == "true" ]]; then
     log_step "Modo --check: gates de validación (sin acciones)"
     GATE_FAILURES=0
+    if [[ "$CI_MODE" == "true" ]]; then
+        log_warn "Candado del ritual omitido en --ci (el runner no tiene corridas de evidencia)."
+    else
+        gate_corridas_vivas        || GATE_FAILURES=$((GATE_FAILURES+1))
+    fi
     gate_changelog "$VERSION"      || GATE_FAILURES=$((GATE_FAILURES+1))
     if [[ "$CI_MODE" == "true" ]]; then
         log_warn "Gate 2 omitido en --ci: el tag $VERSION lo crea publicar.sh al publicar (gate de sesión)."
@@ -778,6 +823,9 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     fi
     exit 0
 fi
+
+# ─── Candado del ritual (v8.14): también antes de --poblar-raw, --solo-assets y la publicación real ───
+gate_corridas_vivas || abort "Candado del ritual: no se publica con corridas vivas o con el último log de corrida sin cerrar."
 
 # ─── Modo --poblar-raw: traer a raw/ local los assets que falten, desde la Release ───
 if [[ "$POBLAR_RAW" == "true" ]]; then

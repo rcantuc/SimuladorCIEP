@@ -3,28 +3,34 @@ quietly log on output
 * Horizonte macro 2026-2032 (v8.3.0): mismos 7 anios que el marco del sitio
 * (inputs CRECPIB/CRECDEF) y que Web.Stata.do §2 / SIM.do §2. Mapeo POSICIONAL
 * con los inputs del DOM: al mover el horizonte hay que mover los tres a la vez.
+* FLAG-5 (v8.14): lo que aqui se imprime es lo que el sitio devuelve a Web.Stata.do como
+* {{CRECPIB*}}, {{CRECDEF*}} y {{DEUDA0}}; con %8.1f / %8.3f el web corria con 1.4 en vez
+* de 1.4127 y con la tasa efectiva redondeada, y 5 de 46 llaves de output.txt diferian
+* del batch. %12.0g conserva los globals tal como se escriben en SIM.do §2 (hasta 12
+* cifras significativas) y %20.0g devuelve la tasa efectiva (double) sin perder un bit.
+* Gate: 05_scripts/test-web-batch.sh (46/46 llaves identicas).
 noisily di in w "CRECPIB: ["  ///
-	%8.1f $pib2026 ", " ///
-	%8.1f $pib2027 ", " ///
-	%8.1f $pib2028 ", " ///
-	%8.1f $pib2029 ", " ///
-	%8.1f $pib2030 ", " ///
-	%8.1f $pib2031 ", " ///
-	%8.1f $pib2032 ///
+	%12.0g $pib2026 ", " ///
+	%12.0g $pib2027 ", " ///
+	%12.0g $pib2028 ", " ///
+	%12.0g $pib2029 ", " ///
+	%12.0g $pib2030 ", " ///
+	%12.0g $pib2031 ", " ///
+	%12.0g $pib2032 ///
 "]"
 
 noisily di in w "CRECDEF: ["  ///
-	%8.1f $def2026 ", " ///
-	%8.1f $def2027 ", " ///
-	%8.1f $def2028 ", " ///
-	%8.1f $def2029 ", " ///
-	%8.1f $def2030 ", " ///
-	%8.1f $def2031 ", " ///
-	%8.1f $def2032 ///
+	%12.0g $def2026 ", " ///
+	%12.0g $def2027 ", " ///
+	%12.0g $def2028 ", " ///
+	%12.0g $def2029 ", " ///
+	%12.0g $def2030 ", " ///
+	%12.0g $def2031 ", " ///
+	%12.0g $def2032 ///
 "]"
 
 noisily di in w "DEUDAPARAM: [" ///
-	%8.3f scalar(tasaEfectiva) /// Tasa de interés efectiva
+	%20.0g scalar(tasaEfectiva) /// Tasa de interés efectiva (FLAG-5: precision completa, el web la devuelve como {{DEUDA0}})
 "]"
 
 noisily di in w "INGRESOS: " in w "["  ///

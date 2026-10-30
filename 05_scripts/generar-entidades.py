@@ -12,7 +12,7 @@ Dos trabajos, uno por subcomando; ninguno toca el motor (.do/.ado) ni teclea un 
       compara lo que generaría con lo commiteado (y detecta carpetas <ABREV>/ sobrantes) y sale 1 si
       difieren — es el gate «generado == commiteado» de test-sitio-entidades.sh y de CI.
 
-  meta --users <users/<id>> [--tabla-md <contrato-32.md>] [--pibe-vintage <AAAA-MM-DD>]
+  meta --users <users/<id>> [--tabla-md <contrato-32.md>]
       Lee lo que contrato-32 dejó en users/<id>/<ABREV>/ (los 5 sankey-<corte>.json de SankeySF.do, el
       ciclo-vida.json de CicloEntidad.do, el tasas-efectivas.json de TasasEfectivasEntidad.do y el
       neto-pibe.json que contrato-32.do §4b exporta con scalarjson) y users/<id>/entidades-pibe32.json, y
@@ -26,8 +26,8 @@ Dos trabajos, uno por subcomando; ninguno toca el motor (.do/.ado) ni teclea un 
       entidades-pibe32.json; los conteos de sellos son conteos de banderas que el motor ya puso (sello=1).
       Sin neto-pibe.json el bloque pibe queda null y la página lo declara. Con --tabla-md se cotejan los
       conteos de sellos contra la tabla de las 32 de esa corrida (§4) y la diferencia, si la hay, se declara
-      en meta.json (tabla_32.coincide). --pibe-vintage declara la fecha de las bases PIBE si no hay
-      master/PIBDeflactor<ABREV>.meta junto a users/.
+      en meta.json (tabla_32.coincide). El vintage de las bases PIBE se lee de master/PIBDeflactor<ABREV>.meta
+      (sello de pibe-32.sh, junto a users/); sin .meta queda declarado como no declarado (v8.14: sin --pibe-vintage).
 
 Lo llama contrato-32.sh al final del recorrido (meta) y test-sitio-entidades.sh / CI (paginas --check).
 """
@@ -184,7 +184,7 @@ def leer_tabla_md(ruta):
     return out
 
 
-def meta_entidad(e, U, pibe32, tabla_md, generado_el, commit, pibe_vintage=None):
+def meta_entidad(e, U, pibe32, tabla_md, generado_el, commit):
     d = os.path.join(U, e['abrev'])
     ciclo = json.load(open(os.path.join(d, 'ciclo-vida.json'), encoding='utf-8'))
     tasas = json.load(open(os.path.join(d, 'tasas-efectivas.json'), encoding='utf-8'))
@@ -243,14 +243,14 @@ def meta_entidad(e, U, pibe32, tabla_md, generado_el, commit, pibe_vintage=None)
     pp = esc.get('pibY' + ab)
     neto = ciclo['totales']['entidad']['neto']
     if pp and esc.get('NetoCicloPIBE' + ab) is not None:
-        vint = pibe_vintage
+        vint = None
         meta_dta = os.path.join(U, '..', '..', 'master', f"PIBDeflactor{e['abrev']}.meta")
-        if not vint and os.path.isfile(meta_dta):
+        if os.path.isfile(meta_dta):
             for l in open(meta_dta, encoding='utf-8', errors='replace'):
                 if l.startswith('base_generada='): vint = l.split('=', 1)[1].strip()[:10]
         pibe = {'pibe_pesos': pp, 'neto_pesos': esc.get('NetoCiclo' + ab), 'neto_pct_pibe': esc.get('NetoCicloPIBE' + ab),
-                'vintage': vint or 'not declared in this run (no master/PIBDeflactor<ABREV>.meta beside users/ and no --pibe-vintage)',
-                'fuente_vintage': 'master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32) o --pibe-vintage',
+                'vintage': vint or 'not declared in this run (no master/PIBDeflactor<ABREV>.meta beside users/)',
+                'fuente_vintage': 'master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32)',
                 'anio_vp': ciclo['anio_vp'],
                 'fuente': 'neto-pibe.json (scalarjson; 05_scripts/contrato-32.do §4b): escalares pibY<ABREV> (PIBDeflactor por entidad), NetoCiclo<ABREV> (CicloEntidad.do) y NetoCicloPIBE<ABREV> = NetoCiclo/pibY×100, divididos en Stata; aquí solo se transcriben',
                 'coincide_ciclo': abs(esc.get('NetoCiclo' + ab) - neto) <= 0.005,   # ciclo-vida.json escribe el neto con 2 decimales; el escalar va a precisión completa
@@ -302,7 +302,7 @@ def cmd_meta(a):
         d = os.path.join(U, e['abrev'])
         if not (os.path.isfile(os.path.join(d, 'ciclo-vida.json')) and os.path.isfile(os.path.join(d, 'tasas-efectivas.json'))):
             faltan.append(e['abrev']); continue
-        metas.append(meta_entidad(e, U, pibe32, tabla_md, generado_el, commit, a.pibe_vintage))
+        metas.append(meta_entidad(e, U, pibe32, tabla_md, generado_el, commit))
     if not metas:
         sys.exit(f'generar-entidades meta: ninguna entidad con ciclo-vida.json + tasas-efectivas.json en {U}')
     # índice de las 32; Σ32 PIBE y su discrepancia TRANSCRITAS de entidades-pibe32.json (contrato-32.do), no sumadas aquí
@@ -351,7 +351,7 @@ def main():
     sub = ap.add_subparsers(dest='cmd', required=True)
     p = sub.add_parser('paginas'); p.add_argument('--check', action='store_true')
     p.add_argument('--sitio', default=os.path.join(raiz_repo(), '04_1_simuladorfiscal.ciep.mx', 'entidades'))
-    m = sub.add_parser('meta'); m.add_argument('--users', required=True); m.add_argument('--tabla-md'); m.add_argument('--pibe-vintage', help='fecha (AAAA-MM-DD) de las bases PIBDeflactor<ABREV>.dta si no hay master/PIBDeflactor<ABREV>.meta junto a users/')
+    m = sub.add_parser('meta'); m.add_argument('--users', required=True); m.add_argument('--tabla-md')
     a = ap.parse_args()
     sys.exit(cmd_paginas(a) if a.cmd == 'paginas' else cmd_meta(a))
 
