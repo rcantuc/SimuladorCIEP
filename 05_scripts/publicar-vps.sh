@@ -301,6 +301,33 @@ fi
 log_ok "Gate 2: working tree limpio."
 
 # -----------------------------------------------------------------------------
+# Candado del ritual (v8.14, 2026-10-30) — sin corridas vivas y con el último log de corrida cerrado
+# -----------------------------------------------------------------------------
+# El deploy embarca lo que SIM.do dejó en users/ricardo/ (Fases 3b-bis y 3b-ter): con una corrida a
+# medias (pgrep) o muerta en r(###) (su wrap*.log / SIM*.log no termina en «end of do-file») se
+# embarcaría un escenario base incompleto. Misma regla que publicar.sh; corre también en dry-run.
+# SIM_EVIDENCIA (default ~/CIEP_Simuladores) es la carpeta donde viven las corridas de evidencia.
+_vivos="$(pgrep -fl 'correr-sim\.sh|contrato-32\.sh|compuertas-entidad\.sh|pibe-32\.sh|test-maquina-virgen\.sh|vintage-aportaciones|stata-(se|mp) -b' 2>/dev/null | grep -v "$$" || true)"
+if [[ -n "$_vivos" ]]; then
+    die "Candado del ritual: hay corridas de Stata/evidencia vivas; no se despliega con una corrida a medias:
+$_vivos"
+fi
+_raiz_ev="${SIM_EVIDENCIA:-$HOME/CIEP_Simuladores}"
+_ultimo_log=""
+if [[ -d "$_raiz_ev" ]]; then
+    _ultimo_log="$( { find "$_raiz_ev" -maxdepth 3 -type f \( -name 'wrap*.log' -o -name 'SIM*.log' \) -print0 2>/dev/null; find "$LOCAL_REPO_ROOT" -maxdepth 1 -type f \( -name 'wrap*.log' -o -name 'SIM*.log' \) -print0 2>/dev/null; } | xargs -0 ls -t 2>/dev/null | head -n 1)"
+fi
+if [[ -n "$_ultimo_log" ]]; then
+    _fin="$(grep -v '^[[:space:]]*$' "$_ultimo_log" | tail -n 1)"
+    [[ "$_fin" == *"end of do-file"* ]] || die "Candado del ritual: el log de corrida más reciente no termina en «end of do-file» (termina en: ${_fin:0:80}).
+        $_ultimo_log
+        Si la corrida sigue viva, espera; si murió, repítela antes de desplegar (runbook §1)."
+    log_ok "Candado del ritual: sin corridas vivas; último log de corrida cerrado ($_ultimo_log)."
+else
+    log_ok "Candado del ritual: sin corridas vivas (sin logs de corrida bajo $_raiz_ev)."
+fi
+
+# -----------------------------------------------------------------------------
 # Gate 6 — El manifest del commit local corresponde al deployment solicitado
 # -----------------------------------------------------------------------------
 # Lección del deploy v8.8 (2026-10-07): se corrió `publicar-vps.sh v8.8` desde
