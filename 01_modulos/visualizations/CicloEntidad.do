@@ -161,6 +161,16 @@ quietly {
 	count if AportacionesNetas == 0
 	local nceros = r(N)
 
+	* Registro escalar (v8.13.0): los totales del ciclo de la entidad y el neto nacional quedan vivos en el
+	* registro (escalar.ado) para que 05_scripts/contrato-32.do divida el neto entre pibY<ABREV> (PIBDeflactor
+	* por entidad) y lo exporte con scalarjson a users/$id/<ABREV>/neto-pibe.json: ningun numero de la pagina
+	* /entidades/<ABREV> nace fuera de Stata. Los mismos valores que escribe el JSON de abajo; nada cambia aqui. *
+	escalar mxn NetoCiclo`eabrev' = `netoent'
+	escalar mxn AportaCiclo`eabrev' = `apent'
+	escalar mxn RecibeCiclo`eabrev' = `reent'
+	escalar personas PobCiclo`eabrev' = `pobent'
+	escalar mxn NetoCicloNac = `netonac'
+
 
 	*************************************************
 	*** 4 Celdas quinquenio × sexo × grupo (rejilla completa) ***

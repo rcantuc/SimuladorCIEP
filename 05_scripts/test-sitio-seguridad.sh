@@ -154,6 +154,15 @@ aserta 'grep -q "nta-panel/v1" "$H/body"' "el panel se sirve byte a byte (users/
 chk 400 "jsonSankeyNTA.php?cuenta=../../etc/passwd"       "$U/jsonSankeyNTA.php?cuenta=../../etc/passwd"
 chk 404 "jsonSankeyNTA.php?cuenta=identidad (sin archivo)" "$U/jsonSankeyNTA.php?cuenta=identidad"
 
+echo "## jsonEntidad.php (/entidades, v8.13.0: abrev estricto contra el catálogo, producto y corte en lista blanca; el detalle en test-sitio-entidades.sh)"
+chk 400 "jsonEntidad.php?abrev=../NL&producto=meta (traversal)" "$U/jsonEntidad.php?abrev=../NL&producto=meta"
+chk 400 "jsonEntidad.php?abrev=NL%00&producto=meta"            "$U/jsonEntidad.php?abrev=NL%00&producto=meta"
+chk 400 "jsonEntidad.php?abrev=NL&producto=../x"               "$U/jsonEntidad.php?abrev=NL&producto=../x"
+chk 400 "jsonEntidad.php?abrev=NL&producto=sankey&corte=../x"  "$U/jsonEntidad.php?abrev=NL&producto=sankey&corte=../x"
+chk 404 "jsonEntidad.php?abrev=NL&producto=meta (sin archivo)" "$U/jsonEntidad.php?abrev=NL&producto=meta"
+aserta 'grep -q "Fase 3b-ter" "$H/body"' "el 404 explica qué falta (users/ricardo/<ABREV>/ en la Fase 3b-ter)"
+chk 200 "GET /entidades/ (índice) y /entidades/NL/"             "$U/entidades/NL/"
+
 echo "## cargaDefault.php (sin eval) y logCalcular.php (sin inyección de renglones)"
 chk 200 "cargaDefault.php"                          "$U/cargaDefault.php"
 aserta 'grep -q "\"INGRESOS\":\[3.855,0.244\]" "$H/body"' "cargaDefault parsea output.txt a JSON tipado"

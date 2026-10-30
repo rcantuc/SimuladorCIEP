@@ -1,0 +1,1412 @@
+{
+ "esquema": "entidades-indice/v1",
+ "entidades": [
+  {
+   "pos": 1,
+   "abrev": "Ags",
+   "clave": "01",
+   "nombre": "Aguascalientes",
+   "n": 10247,
+   "anio_enigh": 2024,
+   "share_pob": 0.01148868,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     23,
+     154
+    ],
+    "ciclo": [
+     22,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "23/154 / 22/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 21,
+    "ciclo": 17,
+    "tasas": 0,
+    "total": 38
+   },
+   "top1_n100": {
+    "pct": 35.741073,
+    "donde": "ciclo Mujeres 0-4 aporta (n=358)"
+   },
+   "top1_te": {
+    "pct": 10.694772,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 5.84418775453048,
+   "pibe_pesos": 517276492888.0297,
+   "neto_pesos": 30230609454.43,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Ags"
+  },
+  {
+   "pos": 2,
+   "abrev": "BC",
+   "clave": "02",
+   "nombre": "Baja California",
+   "n": 12686,
+   "anio_enigh": 2024,
+   "share_pob": 0.02903569,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     21,
+     154
+    ],
+    "ciclo": [
+     17,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "21/154 / 17/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 19,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 34
+   },
+   "top1_n100": {
+    "pct": 45.57179,
+    "donde": "ciclo Mujeres 0-4 aporta (n=407)"
+   },
+   "top1_te": {
+    "pct": 22.860923,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 6.723182434596953,
+   "pibe_pesos": 1509205628672.7034,
+   "neto_pesos": 101466647728.87,
+   "tabla_32_coincide": true,
+   "url": "/entidades/BC"
+  },
+  {
+   "pos": 3,
+   "abrev": "BCS",
+   "clave": "03",
+   "nombre": "Baja California Sur",
+   "n": 8661,
+   "anio_enigh": 2024,
+   "share_pob": 0.00673648,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     21,
+     155
+    ],
+    "ciclo": [
+     21,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "21/155 / 21/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 20,
+    "ciclo": 18,
+    "tasas": 0,
+    "total": 38
+   },
+   "top1_n100": {
+    "pct": 49.723575,
+    "donde": "ciclo Hombres 5-9 aporta (n=315)"
+   },
+   "top1_te": {
+    "pct": 24.516818,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 11.185224278414996,
+   "pibe_pesos": 302248879278.9288,
+   "neto_pesos": 33807215026.34,
+   "tabla_32_coincide": true,
+   "url": "/entidades/BCS"
+  },
+  {
+   "pos": 4,
+   "abrev": "Camp",
+   "clave": "04",
+   "nombre": "Campeche",
+   "n": 7679,
+   "anio_enigh": 2024,
+   "share_pob": 0.00725961,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     18,
+     154
+    ],
+    "ciclo": [
+     22,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "18/154 / 22/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 17,
+    "ciclo": 17,
+    "tasas": 0,
+    "total": 34
+   },
+   "top1_n100": {
+    "pct": 56.028108,
+    "donde": "ciclo Mujeres 0-4 aporta (n=248)"
+   },
+   "top1_te": {
+    "pct": 44.711263,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -0.5401361579575462,
+   "pibe_pesos": 534444016675.55396,
+   "neto_pesos": -2886725378.11,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Camp"
+  },
+  {
+   "pos": 5,
+   "abrev": "Coah",
+   "clave": "05",
+   "nombre": "Coahuila",
+   "n": 13841,
+   "anio_enigh": 2024,
+   "share_pob": 0.02614302,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     19,
+     155
+    ],
+    "ciclo": [
+     15,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "19/155 / 15/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 19,
+    "ciclo": 14,
+    "tasas": 0,
+    "total": 33
+   },
+   "top1_n100": {
+    "pct": 29.061925,
+    "donde": "ciclo Mujeres 65-69 aporta (n=249)"
+   },
+   "top1_te": {
+    "pct": 11.662883,
+    "impuesto": "ISRPM"
+   },
+   "neto_pct_pibe": 5.1044482514066996,
+   "pibe_pesos": 1435643830586.518,
+   "neto_pesos": 73281696406.8,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Coah"
+  },
+  {
+   "pos": 6,
+   "abrev": "Col",
+   "clave": "06",
+   "nombre": "Colima",
+   "n": 10201,
+   "anio_enigh": 2024,
+   "share_pob": 0.0055838,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     15,
+     155
+    ],
+    "ciclo": [
+     18,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "15/155 / 18/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 13,
+    "ciclo": 14,
+    "tasas": 0,
+    "total": 27
+   },
+   "top1_n100": {
+    "pct": 36.100684,
+    "donde": "ciclo Hombres 50-54 aporta (n=350)"
+   },
+   "top1_te": {
+    "pct": 29.981754,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 6.376432836678949,
+   "pibe_pesos": 257334843776.51132,
+   "neto_pesos": 16408783478.78,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Col"
+  },
+  {
+   "pos": 7,
+   "abrev": "Chis",
+   "clave": "07",
+   "nombre": "Chiapas",
+   "n": 8417,
+   "anio_enigh": 2024,
+   "share_pob": 0.04499776,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     26,
+     155
+    ],
+    "ciclo": [
+     20,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "26/155 / 20/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 25,
+    "ciclo": 17,
+    "tasas": 0,
+    "total": 42
+   },
+   "top1_n100": {
+    "pct": 90.776683,
+    "donde": "ciclo Mujeres 15-19 aporta (n=392)"
+   },
+   "top1_te": {
+    "pct": 21.682155,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -16.29194292106721,
+   "pibe_pesos": 635561313460.948,
+   "neto_pesos": -103545286417.44,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Chis"
+  },
+  {
+   "pos": 8,
+   "abrev": "Chih",
+   "clave": "08",
+   "nombre": "Chihuahua",
+   "n": 15100,
+   "anio_enigh": 2024,
+   "share_pob": 0.02982577,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     12,
+     155
+    ],
+    "ciclo": [
+     17,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "12/155 / 17/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 10,
+    "ciclo": 13,
+    "tasas": 0,
+    "total": 23
+   },
+   "top1_n100": {
+    "pct": 34.922457,
+    "donde": "ciclo Mujeres 0-4 aporta (n=459)"
+   },
+   "top1_te": {
+    "pct": 12.996868,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 5.38887903591684,
+   "pibe_pesos": 1495865375658.473,
+   "neto_pesos": 80610375634.4,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Chih"
+  },
+  {
+   "pos": 9,
+   "abrev": "CDMX",
+   "clave": "09",
+   "nombre": "Ciudad de México",
+   "n": 8182,
+   "anio_enigh": 2024,
+   "share_pob": 0.07198247,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     16,
+     154
+    ],
+    "ciclo": [
+     18,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "16/154 / 18/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 15,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 30
+   },
+   "top1_n100": {
+    "pct": 31.945534,
+    "donde": "ciclo Hombres 0-4 aporta (n=161)"
+   },
+   "top1_te": {
+    "pct": 19.015773,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 2.169688673701775,
+   "pibe_pesos": 5989137941761.962,
+   "neto_pesos": 129945647574.78,
+   "tabla_32_coincide": true,
+   "url": "/entidades/CDMX"
+  },
+  {
+   "pos": 10,
+   "abrev": "Dgo",
+   "clave": "10",
+   "nombre": "Durango",
+   "n": 9942,
+   "anio_enigh": 2024,
+   "share_pob": 0.01455378,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     18,
+     155
+    ],
+    "ciclo": [
+     20,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "18/155 / 20/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 16,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 32
+   },
+   "top1_n100": {
+    "pct": 45.830574,
+    "donde": "TE ISRPF (n=9942)"
+   },
+   "top1_te": {
+    "pct": 45.830574,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 0.9971739537238961,
+   "pibe_pesos": 519611973987.6821,
+   "neto_pesos": 5181435265.04,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Dgo"
+  },
+  {
+   "pos": 11,
+   "abrev": "Gto",
+   "clave": "11",
+   "nombre": "Guanajuato",
+   "n": 11257,
+   "anio_enigh": 2024,
+   "share_pob": 0.04853528,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     33,
+     155
+    ],
+    "ciclo": [
+     20,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "33/155 / 20/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 31,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 46
+   },
+   "top1_n100": {
+    "pct": 61.020479,
+    "donde": "ciclo Mujeres 0-4 aporta (n=360)"
+   },
+   "top1_te": {
+    "pct": 20.598669,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 0.9022953353043301,
+   "pibe_pesos": 1814013477006.3252,
+   "neto_pesos": 16367758984.82,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Gto"
+  },
+  {
+   "pos": 12,
+   "abrev": "Gro",
+   "clave": "12",
+   "nombre": "Guerrero",
+   "n": 9054,
+   "anio_enigh": 2024,
+   "share_pob": 0.02766362,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     22,
+     155
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "22/155 / 19/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 20,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 36
+   },
+   "top1_n100": {
+    "pct": 46.653884,
+    "donde": "ciclo Hombres 60-64 recibe (n=159)"
+   },
+   "top1_te": {
+    "pct": 14.035971,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -7.5432013205031385,
+   "pibe_pesos": 524747593811.5318,
+   "neto_pesos": -39582767425.7,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Gro"
+  },
+  {
+   "pos": 13,
+   "abrev": "Hgo",
+   "clave": "13",
+   "nombre": "Hidalgo",
+   "n": 7704,
+   "anio_enigh": 2024,
+   "share_pob": 0.02479829,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     24,
+     154
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "24/154 / 19/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 24,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 40
+   },
+   "top1_n100": {
+    "pct": 36.519741,
+    "donde": "ciclo Hombres 45-49 aporta (n=205)"
+   },
+   "top1_te": {
+    "pct": 13.510933,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -1.1472465223074162,
+   "pibe_pesos": 722921639771.5875,
+   "neto_pesos": -8293693371.29,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Hgo"
+  },
+  {
+   "pos": 14,
+   "abrev": "Jal",
+   "clave": "14",
+   "nombre": "Jalisco",
+   "n": 8617,
+   "anio_enigh": 2024,
+   "share_pob": 0.06700998,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     32,
+     155
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "32/155 / 19/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 31,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 46
+   },
+   "top1_n100": {
+    "pct": 54.100257,
+    "donde": "ciclo Hombres 55-59 recibe (n=159)"
+   },
+   "top1_te": {
+    "pct": 14.700511,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 8.33674618381353,
+   "pibe_pesos": 3007514453890.175,
+   "neto_pesos": 250728846462.33,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Jal"
+  },
+  {
+   "pos": 15,
+   "abrev": "EdoMex",
+   "clave": "15",
+   "nombre": "Estado de México",
+   "n": 12885,
+   "anio_enigh": 2024,
+   "share_pob": 0.13612882,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     17,
+     155
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "17/155 / 19/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 13,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 28
+   },
+   "top1_n100": {
+    "pct": 60.769304,
+    "donde": "ciclo Hombres 75-79 aporta (n=102)"
+   },
+   "top1_te": {
+    "pct": 29.392277,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 1.985424653284448,
+   "pibe_pesos": 3626065280609.1455,
+   "neto_pesos": 71992794025.4,
+   "tabla_32_coincide": true,
+   "url": "/entidades/EdoMex"
+  },
+  {
+   "pos": 16,
+   "abrev": "Mich",
+   "clave": "16",
+   "nombre": "Michoacán",
+   "n": 7317,
+   "anio_enigh": 2024,
+   "share_pob": 0.03793948,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     32,
+     155
+    ],
+    "ciclo": [
+     23,
+     46
+    ],
+    "tasas": [
+     3,
+     10
+    ]
+   },
+   "sellos_texto": "32/155 / 23/46 / 3/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 26,
+    "ciclo": 18,
+    "tasas": 0,
+    "total": 44
+   },
+   "top1_n100": {
+    "pct": 78.515517,
+    "donde": "ciclo Hombres 60-64 aporta (n=136)"
+   },
+   "top1_te": {
+    "pct": 45.655613,
+    "impuesto": "ISRPM"
+   },
+   "neto_pct_pibe": 6.004457252454502,
+   "pibe_pesos": 1102740499660.1345,
+   "neto_pesos": 66213581907.6,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Mich"
+  },
+  {
+   "pos": 17,
+   "abrev": "Mor",
+   "clave": "17",
+   "nombre": "Morelos",
+   "n": 8407,
+   "anio_enigh": 2024,
+   "share_pob": 0.01513064,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     22,
+     154
+    ],
+    "ciclo": [
+     23,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "22/154 / 23/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 22,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 37
+   },
+   "top1_n100": {
+    "pct": 64.877918,
+    "donde": "TE ISRPF (n=8407)"
+   },
+   "top1_te": {
+    "pct": 64.877918,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -0.8202944700145719,
+   "pibe_pesos": 411899741909.498,
+   "neto_pesos": -3378790804.89,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Mor"
+  },
+  {
+   "pos": 18,
+   "abrev": "Nay",
+   "clave": "18",
+   "nombre": "Nayarit",
+   "n": 6783,
+   "anio_enigh": 2024,
+   "share_pob": 0.0095377,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     26,
+     155
+    ],
+    "ciclo": [
+     23,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "26/155 / 23/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 23,
+    "ciclo": 18,
+    "tasas": 0,
+    "total": 41
+   },
+   "top1_n100": {
+    "pct": 85.74049,
+    "donde": "ciclo Hombres 5-9 aporta (n=278)"
+   },
+   "top1_te": {
+    "pct": 45.225806,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 3.911333451444471,
+   "pibe_pesos": 271368113898.5347,
+   "neto_pesos": 10614111815.47,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Nay"
+  },
+  {
+   "pos": 19,
+   "abrev": "NL",
+   "clave": "19",
+   "nombre": "Nuevo León",
+   "n": 12586,
+   "anio_enigh": 2024,
+   "share_pob": 0.04708801,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     23,
+     155
+    ],
+    "ciclo": [
+     16,
+     46
+    ],
+    "tasas": [
+     2,
+     10
+    ]
+   },
+   "sellos_texto": "23/155 / 16/46 / 2/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 16,
+    "ciclo": 13,
+    "tasas": 0,
+    "total": 29
+   },
+   "top1_n100": {
+    "pct": 83.79311,
+    "donde": "ciclo Hombres 60-64 aporta (n=293)"
+   },
+   "top1_te": {
+    "pct": 48.030894,
+    "impuesto": "ISRPM"
+   },
+   "neto_pct_pibe": 10.958165133911278,
+   "pibe_pesos": 3231482553598.41,
+   "neto_pesos": 354111194496.85,
+   "tabla_32_coincide": true,
+   "url": "/entidades/NL"
+  },
+  {
+   "pos": 20,
+   "abrev": "Oax",
+   "clave": "20",
+   "nombre": "Oaxaca",
+   "n": 9377,
+   "anio_enigh": 2024,
+   "share_pob": 0.03278734,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     20,
+     155
+    ],
+    "ciclo": [
+     20,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "20/155 / 20/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 20,
+    "ciclo": 14,
+    "tasas": 0,
+    "total": 34
+   },
+   "top1_n100": {
+    "pct": 49.577218,
+    "donde": "ciclo Hombres 70-74 aporta (n=124)"
+   },
+   "top1_te": {
+    "pct": 33.707573,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -6.3020795101402305,
+   "pibe_pesos": 741851677565.1107,
+   "neto_pesos": -46752082567.46,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Oax"
+  },
+  {
+   "pos": 21,
+   "abrev": "Pue",
+   "clave": "21",
+   "nombre": "Puebla",
+   "n": 7688,
+   "anio_enigh": 2024,
+   "share_pob": 0.05062184,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     23,
+     155
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "23/155 / 19/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 23,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 39
+   },
+   "top1_n100": {
+    "pct": 43.175304,
+    "donde": "ciclo Mujeres 60-64 aporta (n=180)"
+   },
+   "top1_te": {
+    "pct": 16.934838,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 0.46068208514940023,
+   "pibe_pesos": 1400001765115.44,
+   "neto_pesos": 6449557323.66,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Pue"
+  },
+  {
+   "pos": 22,
+   "abrev": "Qro",
+   "clave": "22",
+   "nombre": "Querétaro",
+   "n": 13008,
+   "anio_enigh": 2024,
+   "share_pob": 0.01947265,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     14,
+     155
+    ],
+    "ciclo": [
+     23,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "14/155 / 23/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 10,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 26
+   },
+   "top1_n100": {
+    "pct": 47.846714,
+    "donde": "ciclo Mujeres 0-4 aporta (n=400)"
+   },
+   "top1_te": {
+    "pct": 23.235698,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 11.479444413022133,
+   "pibe_pesos": 955724551019.0204,
+   "neto_pesos": 109711868575.83,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Qro"
+  },
+  {
+   "pos": 23,
+   "abrev": "QRoo",
+   "clave": "23",
+   "nombre": "Quintana Roo",
+   "n": 7868,
+   "anio_enigh": 2024,
+   "share_pob": 0.01470309,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     28,
+     154
+    ],
+    "ciclo": [
+     22,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "28/154 / 22/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 26,
+    "ciclo": 20,
+    "tasas": 0,
+    "total": 46
+   },
+   "top1_n100": {
+    "pct": 37.062743,
+    "donde": "ciclo Hombres 5-9 aporta (n=335)"
+   },
+   "top1_te": {
+    "pct": 12.622834,
+    "impuesto": "IEPSNP"
+   },
+   "neto_pct_pibe": 12.771202773966905,
+   "pibe_pesos": 548777487311.0872,
+   "neto_pesos": 70085485682.38,
+   "tabla_32_coincide": true,
+   "url": "/entidades/QRoo"
+  },
+  {
+   "pos": 24,
+   "abrev": "SLP",
+   "clave": "24",
+   "nombre": "San Luis Potosí",
+   "n": 9204,
+   "anio_enigh": 2024,
+   "share_pob": 0.02208933,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     20,
+     155
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "20/155 / 19/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 20,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 36
+   },
+   "top1_n100": {
+    "pct": 42.659439,
+    "donde": "ciclo Hombres 5-9 aporta (n=381)"
+   },
+   "top1_te": {
+    "pct": 17.755086,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 1.4890546410077483,
+   "pibe_pesos": 940119305721.2046,
+   "neto_pesos": 13998890152.85,
+   "tabla_32_coincide": true,
+   "url": "/entidades/SLP"
+  },
+  {
+   "pos": 25,
+   "abrev": "Sin",
+   "clave": "25",
+   "nombre": "Sinaloa",
+   "n": 11297,
+   "anio_enigh": 2024,
+   "share_pob": 0.0240607,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     20,
+     155
+    ],
+    "ciclo": [
+     17,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "20/155 / 17/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 19,
+    "ciclo": 14,
+    "tasas": 0,
+    "total": 33
+   },
+   "top1_n100": {
+    "pct": 34.958325,
+    "donde": "ciclo Mujeres 75-79 aporta (n=113)"
+   },
+   "top1_te": {
+    "pct": 14.019141,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 2.3519866994040526,
+   "pibe_pesos": 859092982833.3733,
+   "neto_pesos": 20205752691.75,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Sin"
+  },
+  {
+   "pos": 26,
+   "abrev": "Son",
+   "clave": "26",
+   "nombre": "Sonora",
+   "n": 8518,
+   "anio_enigh": 2024,
+   "share_pob": 0.02347595,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     15,
+     155
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "15/155 / 19/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 15,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 31
+   },
+   "top1_n100": {
+    "pct": 34.529316,
+    "donde": "TE ISRPF (n=8518)"
+   },
+   "top1_te": {
+    "pct": 34.529316,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 7.366958126502059,
+   "pibe_pesos": 1301013493837.6145,
+   "neto_pesos": 95845119311.16,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Son"
+  },
+  {
+   "pos": 27,
+   "abrev": "Tab",
+   "clave": "27",
+   "nombre": "Tabasco",
+   "n": 7775,
+   "anio_enigh": 2024,
+   "share_pob": 0.01944815,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     25,
+     155
+    ],
+    "ciclo": [
+     26,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "25/155 / 26/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 23,
+    "ciclo": 18,
+    "tasas": 0,
+    "total": 41
+   },
+   "top1_n100": {
+    "pct": 67.807237,
+    "donde": "ciclo Mujeres 0-4 aporta (n=261)"
+   },
+   "top1_te": {
+    "pct": 36.486224,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 1.0591299751376124,
+   "pibe_pesos": 772694506205.3712,
+   "neto_pesos": 8183839131.46,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Tab"
+  },
+  {
+   "pos": 28,
+   "abrev": "Tamps",
+   "clave": "28",
+   "nombre": "Tamaulipas",
+   "n": 7499,
+   "anio_enigh": 2024,
+   "share_pob": 0.02746369,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     33,
+     154
+    ],
+    "ciclo": [
+     21,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "33/154 / 21/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 30,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 46
+   },
+   "top1_n100": {
+    "pct": 88.674977,
+    "donde": "ciclo Mujeres 0-4 aporta (n=221)"
+   },
+   "top1_te": {
+    "pct": 37.956397,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 2.0300171247326437,
+   "pibe_pesos": 1212850088910.2014,
+   "neto_pesos": 24621064502.21,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Tamps"
+  },
+  {
+   "pos": 29,
+   "abrev": "Tlax",
+   "clave": "29",
+   "nombre": "Tlaxcala",
+   "n": 8269,
+   "anio_enigh": 2024,
+   "share_pob": 0.0112589,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     25,
+     154
+    ],
+    "ciclo": [
+     18,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "25/154 / 18/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 24,
+    "ciclo": 17,
+    "tasas": 0,
+    "total": 41
+   },
+   "top1_n100": {
+    "pct": 34.202982,
+    "donde": "ciclo Mujeres 65-69 aporta (n=180)"
+   },
+   "top1_te": {
+    "pct": 26.360988,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -1.2529111851170793,
+   "pibe_pesos": 236960240751.28586,
+   "neto_pesos": -2968901360.65,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Tlax"
+  },
+  {
+   "pos": 30,
+   "abrev": "Ver",
+   "clave": "30",
+   "nombre": "Veracruz",
+   "n": 9831,
+   "anio_enigh": 2024,
+   "share_pob": 0.06214458,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     22,
+     155
+    ],
+    "ciclo": [
+     17,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "22/155 / 17/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 21,
+    "ciclo": 14,
+    "tasas": 0,
+    "total": 35
+   },
+   "top1_n100": {
+    "pct": 36.09298514010577,
+    "donde": "escol Sin escolaridad→Imp al trabajo (n=145)"
+   },
+   "top1_te": {
+    "pct": 19.772052,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -9.885809076514942,
+   "pibe_pesos": 1682029105037.9692,
+   "neto_pesos": -166282185935.47,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Ver"
+  },
+  {
+   "pos": 31,
+   "abrev": "Yuc",
+   "clave": "31",
+   "nombre": "Yucatán",
+   "n": 9803,
+   "anio_enigh": 2024,
+   "share_pob": 0.01826856,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     21,
+     155
+    ],
+    "ciclo": [
+     20,
+     46
+    ],
+    "tasas": [
+     1,
+     10
+    ]
+   },
+   "sellos_texto": "21/155 / 20/46 / 1/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 18,
+    "ciclo": 15,
+    "tasas": 0,
+    "total": 33
+   },
+   "top1_n100": {
+    "pct": 41.382302,
+    "donde": "ciclo Mujeres 0-4 aporta (n=290)"
+   },
+   "top1_te": {
+    "pct": 27.049923,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": 5.355100959639627,
+   "pibe_pesos": 652890124384.5305,
+   "neto_pesos": 34962925316.31,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Yuc"
+  },
+  {
+   "pos": 32,
+   "abrev": "Zac",
+   "clave": "32",
+   "nombre": "Zacatecas",
+   "n": 8895,
+   "anio_enigh": 2024,
+   "share_pob": 0.01276636,
+   "sellos_conteo": {
+    "sankeys_micro": [
+     28,
+     154
+    ],
+    "ciclo": [
+     19,
+     46
+    ],
+    "tasas": [
+     0,
+     10
+    ]
+   },
+   "sellos_texto": "28/154 / 19/46 / 0/10",
+   "celdas_n_menor": {
+    "sankeys_micro": 25,
+    "ciclo": 16,
+    "tasas": 0,
+    "total": 41
+   },
+   "top1_n100": {
+    "pct": 63.908315,
+    "donde": "ciclo Hombres 70-74 aporta (n=117)"
+   },
+   "top1_te": {
+    "pct": 22.195935,
+    "impuesto": "ISRPF"
+   },
+   "neto_pct_pibe": -0.3227887527356323,
+   "pibe_pesos": 416714621046.97833,
+   "neto_pesos": -1345107927.74,
+   "tabla_32_coincide": true,
+   "url": "/entidades/Zac"
+  }
+ ],
+ "parametros": {
+  "sello_n": 100,
+  "sello_top1": 25,
+  "regla": "por celda quinquenio x sexo: n (personas de la muestra de la entidad) < sello_n, o una sola persona aporta mas de sello_top1 % del aporta o del recibe de la celda (regla P5 de SankeySF.do)"
+ },
+ "nacional": {
+  "n": 308598,
+  "pob": 135391415,
+  "neto_pesos": 1249989659760.78,
+  "pib_pesos": 39419415318851.43,
+  "neto_pct_pib": 3.171000000000003,
+  "anio_enigh": 2024,
+  "anio_vp": 2027,
+  "paquete": "CGPE 2027"
+ },
+ "pibe_32": {
+  "suma_pesos": 39629803600641.83,
+  "pib_nacional_pesos": 39419415318851.43,
+  "discrepancia_pct": 0.5337174082584273,
+  "entidades_con_pibe": 32,
+  "fuente": "entidades-pibe32.json (scalarjson; contrato-32.do): pibYSum32, pibY, pibeDiscrepancia32 — transcritos",
+  "nota": "Σ32 PIBE (año de valor presente) vs PIB nacional de la corrida: informativa, no se gatea (contrato-32.md §4b)"
+ },
+ "faltan": [],
+ "procedencia": {
+  "generador": "generar-entidades.py v1.0 (v8.13.0)",
+  "commit": "3b19f3d",
+  "tabla_md": "contrato-32.md",
+  "pibe32": "entidades-pibe32.json",
+  "generado_el": "2026-10-29 20:52:11"
+ }
+}
