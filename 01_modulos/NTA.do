@@ -1143,6 +1143,39 @@ noisily di in g "  Sankey v2: balance Gobierno " in y %20.0fc `BG' in g " (τ⁻
 * público»); «Otras transferencias privadas» → Ing nacional si inter recibido > otorgado (si no Ing nacional → «Transferencias
 * privadas netas»). Ancla multiplicativa declarada (d_g = S sin ancla − S anclado): recorte = Σ_g max(d_g, 0), complemento =
 * Σ_g max(−d_g, 0); el nodo lleva el neto. Conservación en todo nodo intermedio en ambas unidades; test-nta-identidad.sh C lo exige.
+* v8.14b (punto 14, 2026-10-30): orden vertical EXPLÍCITO. SankeySumSim emite los nodos por primera aparición (eje por eje, fila por
+* fila) y los enlaces en el orden de las filas, y FusionCharts coloca los nodos de cada columna en el orden del arreglo nodes
+* (verificado con la captura de test-sitio-nta.sh --png; no hace falta atributo de la librería). Cada eje f1..f5 se ordena por
+* (rango del origen, rango del destino) con _nta_v3rank: col. 1 El mundo, grupos de edad, OyE públicas, Desahorro, Otras
+* transferencias privadas, Déficit público, Ajuste S14 (si es fuente); col. 2 Remesas, Impuestos a productos, Ing capital, Ing
+* laboral, Alquiler propio, Derechos de pensión D8; Ing nacional; Gobierno, Activos; Transferencias en efectivo, Colectivo, Futuro;
+* categorías Alimentos, Vivienda, Transporte, Salud, Educación, Vestido, Otros gastos; grupos consumidores («Ajuste ancla S 14»
+* del eje 1 vale 0 con nta_anclaS multiplicativo y SankeySumSim no lo emite; lleva rango para que el sort no falle). En el eje 3 las filas
+* de Ing nacional van primero (Gobierno sobre Activos). Ningún valor cambia: los ejes 1 y 2 del v2 (e1, e2) no se tocan.
+capture program drop _nta_v3rank
+program define _nta_v3rank
+	args var new
+	tempvar lab
+	decode `var', g(`lab')
+	quietly replace `lab' = subinstr(`lab', "_", " ", .)
+	quietly g int `new' = .
+	local k = 0
+	foreach l in "El mundo" "De 0 a 4" "De 5 a 17" "De 18 a 24" "De 25 a 64" "De 65 y más" "OyE públicas" "Desahorro" ///
+		"Otras transferencias privadas" "Déficit público" "Ajuste a cuentas nacionales S14" ///
+		"Remesas" "Impuestos a productos" "Ing capital" "Ing laboral" "Alquiler propio" "Derechos de pensión D8" "Ajuste ancla S 14" ///
+		"Ing nacional" "Gobierno" "Activos" "Transferencias en efectivo" "Colectivo" "Futuro" "Resto del gasto público" ///
+		"Transferencias privadas netas" "Alimentos" "Vivienda" "Transporte" "Salud" "Educación" "Vestido" "Otros gastos" ///
+		" De 0 a 4" " De 5 a 17" " De 18 a 24" " De 25 a 64" " De 65 y más" {
+		local ++k
+		quietly replace `new' = `k' if `lab' == "`l'"
+	}
+	quietly count if `new' == .
+	if r(N) > 0 {
+		di as err "NTA.do §7b: nodo sin rango de orden vertical en `var' (_nta_v3rank): "
+		noisily list `lab' if `new' == ., noobs
+		exit 459
+	}
+end
 local lbl4 `"11 "Gobierno" 13 "Activos" 14 "Transferencias en efectivo" 20 "Desahorro" 31 "Otras transferencias privadas" 32 "Déficit público" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 60 "Futuro" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 80 "Ajuste a cuentas nacionales S14" 999 "Ing nacional""'
 quietly {
 	tempfile catg fin f1 f2 f3 f4 f5
@@ -1333,6 +1366,12 @@ quietly {
 			local IngNac_tot = r(StatTotal)[1,1] + max(`BF', 0)
 		}
 		g double j_pctpib = profile/`PIBY'*100
+		* orden vertical explícito (v8.14b, punto 14): solo en las copias del v3; e1/e2 del v2 siguen como estaban *
+		_nta_v3rank from nta_rf
+		_nta_v3rank to nta_rt
+		if "`e'" == "f3" replace nta_rf = 0 if from == 999		// Ing nacional → Gobierno / Activos / categorías primero
+		sort nta_rf nta_rt
+		drop nta_rf nta_rt
 		if "`e'" == "e1" save `f1'
 		else if "`e'" == "e2" save `f2'
 		else save ``e'', replace
