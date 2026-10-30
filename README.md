@@ -16,6 +16,15 @@ El CIEP desarrolla tres simuladores de política pública disponibles en línea 
 
 Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`02_governance/arquitectura.md`](02_governance/arquitectura.md).
 
+Además de la portada (el «Calcular»), el sitio publica dos secciones de **método** que el motor alimenta con sus propios JSON (ningún número nace fuera de Stata; [`02_governance/principio-stata-produce-los-numeros.md`](02_governance/principio-stata-produce-los-numeros.md)):
+
+| Página | Qué muestra | Quién la produce |
+|---|---|---|
+| [simuladorfiscal.ciep.mx/NTA](https://simuladorfiscal.ciep.mx/NTA) | La cuenta de Transferencias Nacionales (NTA, Lee–Mason) de los hogares por individuo, cerrada en el sector S.14 del SCN: Sankey v3 por grupo de edad en % del PIB, panel grupo × sexo, anclas y residual, y la nota que concilia el hub con el ingreso nacional disponible | `01_modulos/NTA.do` (`SIM.do` §3.2b) → `users/<id>/NTA/` y `users/<id>/SankeyNTA/sankey-v3-grupoedad.json`; gates `test-nta-identidad.sh` y `test-sitio-nta.sh` |
+| [simuladorfiscal.ciep.mx/entidades](https://simuladorfiscal.ciep.mx/entidades) y `/entidades/<ABREV>` (las 32) | Por entidad federativa: cinco Sankeys de aportación (quintil estatal, grupo de edad, sexo, rural, escolaridad) con banda de vintages ENIGH y sellos de muestra, ciclo de vida quinquenio × sexo, tasas efectivas por impuesto y el neto del ciclo como % del PIBE | `05_scripts/contrato-32.sh` (`global entidad` del motor para las 32, `contrato-32.do`, `CicloEntidad.do`, `TasasEfectivasEntidad.do`) → `users/<id>/<ABREV>/`; páginas generadas por `generar-entidades.py`; gate `test-sitio-entidades.sh` |
+
+Los memos metodológicos que sustentan esas páginas viven en `02_governance/`: [`nta-0-inventario-2026-10-27.md`](02_governance/nta-0-inventario-2026-10-27.md) (qué hay por persona en el motor y las decisiones de la cuenta NTA), [`conc-1-scn-sankey-2026-10-30.md`](02_governance/conc-1-scn-sankey-2026-10-30.md) (puente SCN ↔ Sankey NTA: INBD 81.6 % del PIB vs hub, cierre de usos, esqueleto de la economía completa), [`contrato-32-2026-10-19.md`](02_governance/contrato-32-2026-10-19.md) (el contrato de entidad para las 32) y [`repro-1-2026-10-28.md`](02_governance/repro-1-2026-10-28.md) (reproducibilidad: por qué el orden de los empates no debe depender del camino).
+
 <h2 style="color: #ff7020;">Simulador Fiscal CIEP</h2>
 
 #### ¿Qué hace el Simulador Fiscal CIEP?
@@ -207,7 +216,10 @@ Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arqu
 Proyecto que concentra todos los do-files y ado-files del Simulador Fiscal CIEP.
 
 #### `SIM.do` 
-Plantilla maestra (template) para hacer simulaciones fiscales. Configura el entorno, define opciones globales, establece el directorio de trabajo basado en el usuario y ejecuta varios comandos de forma secuencial.
+Plantilla maestra (template) para hacer simulaciones fiscales. Configura el entorno, define opciones globales, establece el directorio de trabajo basado en el usuario y ejecuta varios comandos de forma secuencial. Es el flujo **canónico**: el «Calcular» del sitio (`01_modulos/Web.Stata.do`) debe reproducir con los valores default exactamente su `output.txt` (gate `05_scripts/test-web-batch.sh`, 46/46 llaves).
+
+#### `01_modulos/NTA.do`
+La cuenta NTA por individuo (§3.2b de `SIM.do`, solo para el año ENIGH anclado al SCN): identidad `C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S)` por persona, anclas S.14, Sankeys v2/v3 y panel grupo × sexo que dibuja `/NTA`. Parámetros declarados (`nta_anclaS`, `nta_YA`, `nta_cuotas`, `nta_d8`, …) en su encabezado.
 
 #### `profile.do`
 Archivo de configuración inicial que se ejecuta automáticamente al iniciar Stata. Realiza las siguientes configuraciones:
