@@ -360,6 +360,31 @@ cómo usar ese rollback: §7.
 
 ---
 
+### 4c. El corte de datos citable (v8.14b): `datos-<versión>.zip` + `manifest-datos.json`
+
+Lo que el VPS sirve como escenario default y páginas de método es también lo que se **cita**: `publicar.sh` (§3,
+antes de crear la Release) empaqueta desde `users/ricardo/` del worktree de publicación `output.txt`, los 10
+sankeys, `NTA/*` (incluido `nta-persona.dta`, ~130 MB sin comprimir), `SankeyNTA/sankey-v3-grupoedad.json`, las 32
+carpetas `<ABREV>/` (9 JSON cada una) y `entidades.json` + `entidades-pibe32.json` en
+`users/_sidecar/<versión>/datos-<versión>.zip` (307 archivos, ~50 MB; zip reproducible con fecha fija) y escribe
+`manifest-datos.json` al lado: `sha256` y `bytes` por archivo, `version`, `commit`, `data_updated`, la cita sugerida y
+el bloque `vintages` **tal como los registra el motor** (`enigh_vintage` del manifest, `cache/sello.txt`, `procedencia`
+y `anclas` de `NTA/nta-grupoedad.json`, `base_generada` de los 32 `master/PIBDeflactor<ABREV>.meta`, los vintages de
+la banda que declara `NL/sankey-quintil.json`). Los dos archivos suben a la Release como assets y
+`release_post_verify` los verifica por digest sha256 como a los 26 crudos.
+
+```bash
+bash 05_scripts/publicar.sh vX.Y.Z --empaquetar-datos   # solo el sidecar (tras SIM.do + contrato-32.sh); lo exige --check
+bash 05_scripts/publicar.sh vX.Y.Z --check              # Gate 9: existe y cuadra (manifest ↔ zip ↔ users/ricardo); Gate 10: CITATION.cff
+bash 05_scripts/publicar.sh --citation                  # regenera CITATION.cff desde el manifest (version, data_updated); commitear
+```
+
+Reglas: el Gate 9 aplica desde v8.14.0 y se omite en `--ci` (sin `users/`); si `users/ricardo/` cambia después de
+empaquetar, el gate lo detecta (sha por archivo) y hay que re-empaquetar; `CITATION.cff` se regenera en el mismo PR
+que bumpea el manifest (el Gate 10 corre también en CI). Sin DOI externo (sin Zenodo): la referencia es la Release.
+
+---
+
 ## 5. Verificación post-deploy
 
 ```bash
@@ -691,6 +716,8 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `publicar.sh` Gate 6 (cobertura de assets, `test-maquina-virgen.sh --cobertura`) | **sí** | — | estático (grep de `ensure_asset`) |
 | `publicar.sh` Gate 7 (clausura transitiva de los `.pkg`) | **sí** | — | estático |
 | `publicar.sh` Gate 8 (Release remota completa) | **sí** (solo lectura con `gh` y el token del workflow) | — | red, sin descarga; si la Release aún no existe, pasa |
+| `publicar.sh` Gate 9 (corte de datos citable existe y cuadra, §4c) | **no** | `--empaquetar-datos` + `--check` en el worktree de publicación, tras `SIM.do` + `contrato-32.sh` | exige `users/ricardo/` |
+| `publicar.sh` Gate 10 (`CITATION.cff` = manifest) | **sí** | — | estático (`--citation` lo regenera) |
 | Corridas: `SIM.do`, `Web.Stata.do`, `perfilar-web.sh`, `compuertas-entidad.sh` | **no** | worktree de publicación | Stata |
 | Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
 | Identidad NTA por individuo (`test-nta-identidad.sh`, NTA-1/1b/1c): sobre `users/<id>/NTA/nta-persona.dta`, identidad **sin ancla** `C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0` por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, residual = `S_ajuste` declarado), Σ intra-hogar = 0 nacional y por hogar, Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla multiplicativa Σ S = B.8n), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31, Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759, Σ `YA_base` = B.2n + ⅓B.3n + D.4 neto; escalares de `SCN.ado`), JSON por grupo = base; y, sin Stata, conservación de flujo en todo nodo del Sankey v2.1 (`SankeyNTA/sankey-v2-grupoedad.json`, nodos del contrato, conteo nodos/enlaces) | **no** (la mitad Stata exige `master/SCN.dta` y la base por persona, que no están en git; la mitad Python se puede correr con `--sin-stata` sobre una corrida local) | después de `SIM.do` hasta §3 (o de `NTA.do` suelto), antes de abrir el PR: `bash 05_scripts/test-nta-identidad.sh` | Stata + `users/` |
