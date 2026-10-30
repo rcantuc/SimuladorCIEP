@@ -548,8 +548,12 @@ egen double ing_t4_cap9 = rsum(ing_autor ing_remesas ing_trabmenor ing_prest ing
 ***
 **# 3. IDENTIFY EXEMPTIONS
 ***
+* v8.14 (REPRO-FIX, FLAG del ultimo bit): el merge m:1 de la l. 341 reordena las lineas de ingreso de una misma persona
+* con el RNG de sort y collapse (sum) las acumula en ese orden; con la llave unica el orden (y la suma en punto
+* flotante) ya no depende del camino de la corrida (dos caminos -> 11 JSON byte-identicos). *
+sort folioviv foliohog numren id_trabajo clave
 collapse (sum) ing_* p0* (max) jubilado=jubilacion factor, by(folioviv foliohog numren id_trabajo)
-sort folioviv foliohog numren
+sort folioviv foliohog numren id_trabajo
 
 * Ingreso total *
 egen ing_exclusivo = rsum(ing_agri - ing_autor)
