@@ -12,7 +12,7 @@ Dos trabajos, uno por subcomando; ninguno toca el motor (.do/.ado) ni teclea un 
       compara lo que generaría con lo commiteado (y detecta carpetas <ABREV>/ sobrantes) y sale 1 si
       difieren — es el gate «generado == commiteado» de test-sitio-entidades.sh y de CI.
 
-  meta --users <users/<id>> [--tabla <contrato-32.tsv>] [--tabla-md <contrato-32.md>] [--conl-url <URL>]
+  meta --users <users/<id>> [--tabla <contrato-32.tsv>] [--tabla-md <contrato-32.md>]
       Lee lo que contrato-32 dejó en users/<id>/<ABREV>/ (los 5 sankey-<corte>.json de SankeySF.do, el
       ciclo-vida.json de CicloEntidad.do y el tasas-efectivas.json de TasasEfectivasEntidad.do) y escribe,
       por entidad, users/<id>/<ABREV>/meta.json (esquema entidad-meta/v1) y el índice users/<id>/entidades.json
@@ -26,7 +26,6 @@ Dos trabajos, uno por subcomando; ninguno toca el motor (.do/.ado) ni teclea un 
       lo emita en una sesión del motor). La discrepancia Σ32 PIBE vs PIB nacional (totales.nacional.pibY)
       se registra como informativa. Con --tabla-md se cotejan los conteos de sellos contra la tabla de las
       32 de esa corrida (§4) y la diferencia, si la hay, se declara en meta.json (tabla_32.coincide).
-      La página de NL enlaza al espejo CoNL con la URL de --conl-url; sin ella, placeholder declarado.
 
 Lo llama contrato-32.sh al final del recorrido (meta) y test-sitio-entidades.sh / CI (paginas --check).
 """
@@ -182,7 +181,7 @@ def leer_tabla_md(ruta):
     return out
 
 
-def meta_entidad(e, U, tabla, tabla_md, conl_url, generado_el, commit, pibe_vintage=None):
+def meta_entidad(e, U, tabla, tabla_md, generado_el, commit, pibe_vintage=None):
     d = os.path.join(U, e['abrev'])
     ciclo = json.load(open(os.path.join(d, 'ciclo-vida.json'), encoding='utf-8'))
     tasas = json.load(open(os.path.join(d, 'tasas-efectivas.json'), encoding='utf-8'))
@@ -261,11 +260,6 @@ def meta_entidad(e, U, tabla, tabla_md, conl_url, generado_el, commit, pibe_vint
         ref = tabla_md.get(e['abrev'])
         tabla_32 = {'fuente': 'contrato-32.md §4, columna «selladas: sankeys micro / ciclo / TE»', 'tabla': ref, 'corrida': texto_conteo, 'coincide': (ref == texto_conteo) if ref else None}
 
-    espejo = None
-    if e['abrev'] == 'NL':
-        espejo = {'etiqueta': 'Simulador CoNL (Nuevo León mirror)', 'url': conl_url or None, 'placeholder': not bool(conl_url),
-                  'nota': 'URL pasada a generar-entidades.py meta --conl-url; sin ella la página declara el placeholder' if not conl_url else ''}
-
     return {
         'esquema': 'entidad-meta/v1',
         'entidad': {'nombre': e['nombre'], 'clave': e['clave'], 'abrev': e['abrev'], 'pos': e['pos']},
@@ -280,7 +274,6 @@ def meta_entidad(e, U, tabla, tabla_md, conl_url, generado_el, commit, pibe_vint
         'pibe': pibe,
         'nacional': nacional,
         'tabla_32': tabla_32,
-        'espejo': espejo,
         'procedencia': {'generador': VERSION, 'commit': commit, 'insumos': ['ciclo-vida.json', 'tasas-efectivas.json'] + [f'sankey-{k}.json' for k in sk] + (['contrato-32.tsv'] if fila else []),
                         'modulos': {'ciclo': ciclo['procedencia']['modulo'], 'tasas': tasas['procedencia']['modulo']},
                         'generado_el': generado_el},
@@ -302,7 +295,7 @@ def cmd_meta(a):
         d = os.path.join(U, e['abrev'])
         if not (os.path.isfile(os.path.join(d, 'ciclo-vida.json')) and os.path.isfile(os.path.join(d, 'tasas-efectivas.json'))):
             faltan.append(e['abrev']); continue
-        metas.append(meta_entidad(e, U, tabla, tabla_md, a.conl_url, generado_el, commit, a.pibe_vintage))
+        metas.append(meta_entidad(e, U, tabla, tabla_md, generado_el, commit, a.pibe_vintage))
     if not metas:
         sys.exit(f'generar-entidades meta: ninguna entidad con ciclo-vida.json + tasas-efectivas.json en {U}')
     # índice de las 32 (y la discrepancia Σ32 PIBE vs PIB nacional, informativa)
@@ -350,7 +343,7 @@ def main():
     sub = ap.add_subparsers(dest='cmd', required=True)
     p = sub.add_parser('paginas'); p.add_argument('--check', action='store_true')
     p.add_argument('--sitio', default=os.path.join(raiz_repo(), '04_1_simuladorfiscal.ciep.mx', 'entidades'))
-    m = sub.add_parser('meta'); m.add_argument('--users', required=True); m.add_argument('--tabla'); m.add_argument('--tabla-md'); m.add_argument('--conl-url'); m.add_argument('--pibe-vintage', help='fecha (AAAA-MM-DD) de las bases PIBDeflactor<ABREV>.dta si no hay master/PIBDeflactor<ABREV>.meta junto a users/')
+    m = sub.add_parser('meta'); m.add_argument('--users', required=True); m.add_argument('--tabla'); m.add_argument('--tabla-md'); m.add_argument('--pibe-vintage', help='fecha (AAAA-MM-DD) de las bases PIBDeflactor<ABREV>.dta si no hay master/PIBDeflactor<ABREV>.meta junto a users/')
     a = ap.parse_args()
     sys.exit(cmd_paginas(a) if a.cmd == 'paginas' else cmd_meta(a))
 

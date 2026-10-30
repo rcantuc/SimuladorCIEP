@@ -9,7 +9,7 @@
 //
 // entidadPagina(cfg)   cfg = {abrev, nombre, urls:{meta, ciclo, tasas, sankey (prefijo + corte)}, cortes, etiquetasCortes,
 //                      excluirTasas, selector, ids:{…}} (lo escribe entidades/_entidad.php).
-//   1. meta.json → llena los <span data-ent="ruta" data-ent-unidad="…">, el enlace al espejo (NL), las notas de sellos.
+//   1. meta.json → llena los <span data-ent="ruta" data-ent-unidad="…"> y las notas de sellos.
 //   2. Sankeys (FusionCharts, misma receta que la portada y /NTA): selector de corte (radios name=cfg.selector);
 //      cada corte se pide una vez y se cachea; el dataSource recibido queda en window.entidadData.sankeys[corte].
 //   3. Ciclo de vida (ApexCharts, la receta de «Tax burden by age» de la portada: barras horizontales apiladas por
@@ -273,24 +273,11 @@ function entidadNeto(cfg, meta) {
 	caja.innerHTML = svg.join('');
 }
 
-function entidadEspejo(cfg, meta) {
-	var p = document.getElementById(cfg.ids.espejo);
-	if (!p || !meta.espejo) return;
-	p.hidden = false;
-	if (meta.espejo.url) {
-		p.innerHTML = 'This state also has a mirror site: <a href="' + entidadEscapa(meta.espejo.url) + '" target="_blank" rel="noopener noreferrer">' + entidadEscapa(meta.espejo.etiqueta) + '</a>. The numbers shared by both come from the same engine run.';
-	} else {
-		p.innerHTML = 'This state also has a mirror site (' + entidadEscapa(meta.espejo.etiqueta) + '); its URL is not declared in this deploy (placeholder: pass --conl-url to generar-entidades.py meta).';
-	}
-	p.setAttribute('data-espejo', meta.espejo.url ? 'url' : 'placeholder');
-}
-
 function entidadPagina(cfg) {
 	var D = window.entidadData;
 	entidadAjax(cfg.urls.meta, function (meta) {
 		D.meta = meta;
 		entidadLlena(document, 'data-ent', meta);
-		entidadEspejo(cfg, meta);
 		var sellos = entidadSellos(meta, cfg);
 		D.sellos = sellos;
 		entidadNotasSellos(sellos, cfg);

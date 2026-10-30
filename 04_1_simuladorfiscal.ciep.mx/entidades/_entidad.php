@@ -15,7 +15,8 @@
 // CERO números en este archivo: todo valor viene en runtime de /jsonEntidad.php (users/<id>/<ABREV>/
 // {sankey-<corte>.json, ciclo-vida.json, tasas-efectivas.json, meta.json}); js/entidad.js llena los
 // <span data-ent="ruta.en.meta.json" data-ent-unidad="…"> y dibuja. El nombre y la clave vienen del catálogo
-// generado (_catalogo.php), no del JSON, porque el <title> se escribe en el servidor.
+// generado (_catalogo.php), no del JSON, porque el <title> se escribe en el servidor. La línea del espejo CoNL en NL
+// es texto fijo, sin enlace (decisión de Ricardo).
 $catalogo = require __DIR__ . '/_catalogo.php';
 if (!isset($ENTIDAD_ABREV) || !is_string($ENTIDAD_ABREV) || !array_key_exists($ENTIDAD_ABREV, $catalogo)) {
 	http_response_code(404);
@@ -54,7 +55,9 @@ metodo_cabecera(array(
 				<span><b>Policy year</b> <span data-ent="muestra.paquete" data-ent-unidad="texto"></span>, values of <span data-ent="muestra.anio_vp" data-ent-unidad="texto"></span></span>
 				<span><b>Engine run</b> <span data-ent="procedencia.modulos.ciclo" data-ent-unidad="texto"></span>, <span data-ent="procedencia.generado_el" data-ent-unidad="texto"></span></span>
 			</p>
-			<p class="ent-espejo lead-nota" id="ent-espejo" hidden></p>
+<?php if ($abrev === 'NL'): ?>
+			<p class="ent-espejo lead-nota" id="ent-espejo">Nuevo León also has a dedicated mirror (SimuladorCoNL) maintained with Consejo Nuevo León; available on request.</p>
+<?php endif; ?>
 		</section>
 
 		<section class="metodo-texto">
@@ -122,7 +125,7 @@ metodo_pie(array(
 		'etiquetasCortes' => $cortes,
 		'excluirTasas' => array('ISAN', 'IMPORT'),
 		'selector' => 'ent-corte',
-		'ids' => array('sankey' => 'ent-sankey', 'sankeySellos' => 'ent-sankey-sellos', 'cicloH' => 'ent-ciclo-H', 'cicloM' => 'ent-ciclo-M', 'cicloSellos' => 'ent-ciclo-sellos', 'tasas' => 'ent-tasas', 'tasasSellos' => 'ent-tasas-sellos', 'neto' => 'ent-neto', 'netoNd' => 'ent-neto-nd', 'netoCifra' => 'ent-neto-cifra', 'espejo' => 'ent-espejo'),
+		'ids' => array('sankey' => 'ent-sankey', 'sankeySellos' => 'ent-sankey-sellos', 'cicloH' => 'ent-ciclo-H', 'cicloM' => 'ent-ciclo-M', 'cicloSellos' => 'ent-ciclo-sellos', 'tasas' => 'ent-tasas', 'tasasSellos' => 'ent-tasas-sellos', 'neto' => 'ent-neto', 'netoNd' => 'ent-neto-nd', 'netoCifra' => 'ent-neto-cifra'),
 	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ');',
 	'fuente' => function ($meta) use ($nombre) {
 		$enigh = $meta['enigh_vintage'] !== '' ? 'ENIGH ' . htmlspecialchars($meta['enigh_vintage']) : 'ENIGH';

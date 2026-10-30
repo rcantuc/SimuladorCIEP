@@ -17,7 +17,7 @@
 //     los JSON del motor (sankeys: enlaces sello="1" en los 5 cortes; ciclo: celdas sello=1; tasas: impuestos sello=1);
 //     cada nota dice «n = <n>»; la numeración continúa la de las notas de método.
 //   - Encabezado y cifras: todos los <span data-ent> se llenaron (ninguno vacío; «n/a» solo en pibe.* cuando no hay PIBE);
-//     el n ENIGH del encabezado es el de meta.json; NL muestra la línea del espejo (URL o placeholder declarado).
+//     el n ENIGH del encabezado es el de meta.json; NL muestra la frase fija del espejo CoNL (sin enlace) y las demás no.
 //   - Sin errores de JS. Si se da <dirPng>, guarda <dirPng>/<ABREV>.png (página completa) y <dirPng>/indice.png.
 // Índice: 32 filas; las de las entidades de prueba llenas con los valores de entidades.json; sin errores.
 // Salida: 0 todo verde; 1 algún aserto falló. Imprime una línea por aserto.
@@ -173,9 +173,9 @@ async function probarEntidad(browser, abrev) {
   ok(cifras.length > 0 && vacias.length === 0, `las ${cifras.length} cifras <span data-ent> se llenaron desde meta.json (n/a solo donde meta.json trae null: ${cifras.filter(c => c.texto === 'n/a').length})${vacias.length ? ' (vacías o n/a indebidos: ' + vacias.map(c => c.ruta).join(', ') + ')' : ''}`);
   const nEnc = cifras.find(c => c.ruta === 'muestra.n');
   ok(nEnc && nEnc.texto === fmt(meta.muestra.n, 0, 0), `n ENIGH del encabezado = ${nEnc && nEnc.texto} (meta.json: ${fmt(meta.muestra.n, 0, 0)})`);
-  const espejo = await page.evaluate(() => { const p = document.getElementById('ent-espejo'); return p ? { hidden: p.hidden, tipo: p.getAttribute('data-espejo'), texto: p.textContent } : null; });
-  if (abrev === 'NL') ok(espejo && !espejo.hidden && (espejo.tipo === 'url' || espejo.tipo === 'placeholder'), `NL: línea del espejo CoNL presente (${espejo && espejo.tipo})`);
-  else ok(espejo && espejo.hidden, `${abrev}: sin línea de espejo`);
+  const espejo = await page.evaluate(() => { const p = document.getElementById('ent-espejo'); return p ? { texto: p.textContent.trim(), enlaces: p.querySelectorAll('a').length } : null; });
+  if (abrev === 'NL') ok(espejo && espejo.enlaces === 0 && espejo.texto === 'Nuevo León also has a dedicated mirror (SimuladorCoNL) maintained with Consejo Nuevo León; available on request.', 'NL: frase fija del espejo CoNL, sin enlace');
+  else ok(espejo === null, `${abrev}: sin línea de espejo`);
   const fuente = await page.evaluate(() => (document.querySelector('.metodo-fuente') || {}).textContent || '');
   ok(/Source/.test(fuente) && /ENIGH/.test(fuente), 'pie de fuente presente');
   ok(errores.length === 0, `sin errores de JS en la página${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`);

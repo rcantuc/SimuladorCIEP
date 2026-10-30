@@ -33,7 +33,7 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
   ciclo-vida.json, tasas-efectivas.json}` y `contrato-32.tsv` y escribe `users/<id>/<ABREV>/meta.json` (esquema
   `entidad-meta/v1`: cada celda sellada con su `n` y su top-1 por producto, conteos, top-1 en celdas no delgadas, PIBE y
   neto del ciclo, espejo, procedencia) y `users/<id>/entidades.json` (`entidades-indice/v1`: la tabla de las 32).
-  `contrato-32.sh` lo llama al final del recorrido (`--conl-url`, `--pibe-vintage`). Los sellos **no se cablean**: la
+  `contrato-32.sh` lo llama al final del recorrido (`--pibe-vintage`). Los sellos **no se cablean**: la
   página los lee de ahí.
 - **`entidades/_entidad.php`** (plantilla de método reutilizada: cabecera con migas, notas numeradas, pie). Orden:
   encabezado (nombre, clave INEGI, n ENIGH, población, vintage, corrida) → párrafo de método en inglés (qué es por
@@ -49,8 +49,8 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
   toda celda con n < sello_n o top-1 > sello_top1 lleva marca ⚠ en la gráfica (toolText y lista bajo el Sankey, «⚠» en
   la etiqueta del quinquenio, rayado en la barra de la tasa) y **nota al pie numerada** («n = 73 in this cell; read as
   indicative»), continuando la numeración de las cinco notas de método. Pie: fuente, versión, data_updated. La página
-  NL lleva la línea del espejo CoNL (URL por parámetro del generador; sin ella, **placeholder declarado**: hoy el
-  espejo se publica a Google Drive y no tiene URL pública).
+  NL lleva una línea fija, sin enlace: «Nuevo León also has a dedicated mirror (SimuladorCoNL) maintained with
+  Consejo Nuevo León; available on request.» (decisión de Ricardo; sin parámetro de URL).
 - **`entidades/index.php`**: tabla de las 32 (número, nombre, abreviatura, n ENIGH, celdas por debajo del umbral,
   celdas selladas Sankeys / ciclo / tasas, concentración top-1 en celdas no delgadas, neto/PIBE, enlace), filas del
   catálogo y columnas leídas de `entidades.json`.
@@ -79,7 +79,7 @@ sin mapa; reúso de `metodo/plantilla.php`; inglés.
 - **FLAG (metodología, Ricardo firma).** El cociente neto/PIBE es la única división fuera de Stata (la hace
   `generar-entidades.py`, igual que la vista previa §4b de `contrato-32.py`); lo limpio es que `CicloEntidad.do` emita
   `pibe` y `neto_pct_pibe` en una sesión del motor. ISAN/IMPORT omitidos de la gráfica de tasas por la FLAG TE de v8.13a.
-  El enlace al espejo CoNL queda en placeholder hasta tener URL pública.
+  
 - **Corrida de evidencia** (`~/CIEP_Simuladores/diag-v8.13b-entidades-2026-10-29/`, worktree de `b837c33` con `raw/` y
   `master/` de `-datos`, Stata 39 min): paridad byte-idéntica con `-datos` (`output.txt` `fcddfb84…`, 5 Sankeys),
   `gate-numeros.sh` VERDE, contrato-32.py PASÓ (32/32, aditividad del ciclo), **conteos de sellos idénticos a la tabla
