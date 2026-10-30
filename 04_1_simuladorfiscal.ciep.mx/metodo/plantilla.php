@@ -1,7 +1,7 @@
 <?php
 // metodo/plantilla.php — cabecera y pie de las páginas de MÉTODO del sitio
-// (/NTA es la primera; las hermanas previstas: Población → PIB/Deflactor →
-// Cuentas Nacionales → Expenditures → Households). Páginas estáticas de lectura:
+// (/NTA es la primera; /entidades y sus 32 páginas /entidades/<ABREV> desde v8.13.0; las hermanas
+// previstas: Población → PIB/Deflactor → Cuentas Nacionales → Expenditures → Households). Páginas estáticas de lectura:
 // sin «Calcular», sin selector, sin sesión; los datos los sirve un PHP de solo
 // lectura que lee en runtime lo que el motor ya exporta (jsonSankeyNTA.php, …).
 //
@@ -20,6 +20,7 @@
 // Índice de la sección, en el orden en que se leerá. Solo páginas que existen.
 $METODO_PAGINAS = array(
 	'NTA' => array('titulo' => 'Household NTA Sankey', 'lang' => 'en'),
+	'entidades' => array('titulo' => 'States', 'lang' => 'en'),
 );
 
 // Metadatos del deploy (DEPLOYED_COMMIT lo escribe la Fase 4 de publicar-vps.sh
@@ -81,9 +82,17 @@ function metodo_cabecera(array $p) {
 				<span class="sep">›</span>
 				<span class="metodo-seccion">Method</span>
 HTML;
+	// $p['migas'] (v8.13.0, entidades): migas extra debajo de la página de la sección (p. ej. la entidad bajo
+	// /entidades); cada una array('href' => …, 'texto' => …). La última es la página actual (activa); la
+	// página de la sección deja de marcarse activa cuando hay migas.
+	$migas = $p['migas'] ?? array();
 	foreach ($METODO_PAGINAS as $s => $pag) {
-		$activa = ($s === $slug) ? ' class="activa" aria-current="page"' : '';
+		$activa = ($s === $slug && !$migas) ? ' class="activa" aria-current="page"' : '';
 		echo "\n\t\t\t\t<span class=\"sep\">›</span>\n\t\t\t\t<a href=\"/" . htmlspecialchars($s) . "/\"{$activa}>" . htmlspecialchars($pag['titulo']) . "</a>";
+	}
+	foreach (array_values($migas) as $i => $miga) {
+		$activa = ($i === count($migas) - 1) ? ' class="activa" aria-current="page"' : '';
+		echo "\n\t\t\t\t<span class=\"sep\">›</span>\n\t\t\t\t<a href=\"" . htmlspecialchars($miga['href']) . "\"{$activa}>" . htmlspecialchars($miga['texto']) . "</a>";
 	}
 	echo <<<HTML
 
@@ -126,6 +135,9 @@ function metodo_notas(array $notas) {
 // $p['panel'] (v8.12.6, NTA-3): array('url' => endpoint JSON del panel, 'contenedor' => id base de los
 // <div> de los mini-Sankeys, 'selector' => name de los radios T/H/M) → metodoPanel() dibuja los cinco
 // mini-Sankeys por grupo de edad y cambia de sexo sin recargar.
+// $p['scripts'] (v8.13.0, entidades): rutas de <script src> adicionales (p. ej. /plugins/apexcharts/… y
+// /js/entidad.js), cargados después de metodo-sankey.js; $p['init']: una llamada JS (cadena) que corre al
+// final (p. ej. entidadPagina({...}) con su configuración en JSON). Sin números: la configuración son rutas e ids.
 function metodo_pie(array $p = array()) {
 	$meta = metodo_meta_deploy();
 	$fuente = $p['fuente'] ?? null;
@@ -139,12 +151,17 @@ function metodo_pie(array $p = array()) {
 	$sankeys = json_encode($p['sankeys'] ?? array(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 	$cifras = isset($p['cifras']) ? "\n\t<script>metodoCifras(" . json_encode($p['cifras'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ");</script>" : '';
 	$panel = isset($p['panel']) ? "\n\t<script>metodoPanel(" . json_encode($p['panel'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ");</script>" : '';
+	$scripts = '';
+	foreach ($p['scripts'] ?? array() as $src) {
+		$scripts .= "\n\t<script src=\"" . htmlspecialchars($src) . "\"></script>";
+	}
+	$init = isset($p['init']) ? "\n\t<script>" . $p['init'] . "</script>" : '';
 	echo <<<HTML
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
 	<script src="/plugins/jquery/jquery-3.4.1.min.js"></script>
-	<script src="/js/metodo-sankey.js"></script>
-	<script>metodoSankeys({$sankeys});</script>{$cifras}{$panel}
+	<script src="/js/metodo-sankey.js"></script>{$scripts}
+	<script>metodoSankeys({$sankeys});</script>{$cifras}{$panel}{$init}
 </body>
 </html>
 
