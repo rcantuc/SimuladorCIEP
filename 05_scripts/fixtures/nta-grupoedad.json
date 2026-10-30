@@ -21,4 +21,4 @@
 {"sexo":"Mujeres","pob":67967534,"S":1333216175771.5540,"Intra":2626151378872.2725,"YL":5375965686716.9512,"YA":3772029770597.6099,"C":14261521278116.0039,"Tmen":2110406521120.5054,"Tpub":3622935962165.5864}],
 "gates":{"residual_max_persona":7.4506e-09,"residual_max_quinq_sexo":8.3923e-03,"intra_nacional":0.0000,"intra_hogar_max":3.1665e-08,"S_menos_AhorroHog":0.0010,"ok":1},
 "flags":["ing_mixto del motor = 7523.9 bn, de los cuales 4570.7 bn (60.7 %) son transferencias y flujos financieros × TaltimirSelf; nta_mixto=crudo"],
-"procedencia":{"modulo":"01_modulos/NTA.do v1.3 (NTA-3)","base":"master/2024/households.dta + raw/ENIGH/2024/{poblacion,ingresos,gastohogar}.dta","anclas":"SCN/LIF/PEF 2024 (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","generado_el":"2026-10-30 10:44:00","stata":"19.5 SE"}}
+"procedencia":{"modulo":"01_modulos/NTA.do v1.3 (NTA-3)","base":"master/2024/households.dta + raw/ENIGH/2024/{poblacion,ingresos,gastohogar}.dta","anclas":"SCN/LIF/PEF 2024 (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","generado_el":"2026-10-30 13:52:11","stata":"19.5 SE"}}
