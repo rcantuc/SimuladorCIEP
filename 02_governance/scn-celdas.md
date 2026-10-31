@@ -179,7 +179,7 @@ Serie = clave del indicador en el BIE (`AccesoBIE <serie>`); variable = nombre e
 
 ## E. Cómo se refresca
 
-1. `bash 05_scripts/refrescar-scn.sh --comparar [--csi]` desde el clon con `set_token.do` (API oficial; si no responde, consulta pública de exportación del BIE, declarada por serie; los sufijos del periodo «p1»/«r1» son la etiqueta preliminar/revisada): imprime y guarda (en `--salida`, nunca en `raw/`) celda, valor congelado, valor BIE, Δ, Δ % del PIB, etiqueta INEGI (`OBS_STATUS`/`OBS_NOTE` del último dato, `LASTUPDATE` de la serie) y fecha de consulta; exit 0 sin revisión, 1 con diferencias, 3 no comparado.
+1. `bash 05_scripts/refrescar-scn.sh --comparar [--csi]` desde el clon con `set_token.do` (API oficial; si no responde, consulta pública de exportación del BIE, declarada por serie; los sufijos del periodo «p1»/«r1» son la etiqueta preliminar/revisada): compara hasta el año de referencia (`scalar anioenigh` de `SIM.do`; `--anio` lo sobreescribe; los años posteriores se listan como «fuera del año de referencia»), e imprime y guarda (en `--salida`, nunca en `raw/`) celda, valor congelado, valor BIE, Δ, Δ % del PIB, etiqueta INEGI (`OBS_STATUS`/`OBS_NOTE` del último dato, `LASTUPDATE` de la serie) y fecha de consulta; exit 0 sin revisión, 1 con diferencias, 3 no comparado.
 2. Con diferencias: PR de datos (runbook-actualizar-assets.md) con el reporte adjunto; `data_updated` y CHANGELOG declaran el Δ. `--congelar` (escritura en `raw/` + manifest) queda deshabilitado hasta 8.15b.
 3. `SIM.do` y los `.ado` nunca llaman a este script: el motor solo lee `master/SCN.dta` (y, cuando falta, `UpdateSCN` descarga: esa es la lectura en caliente que §4 bis retira en 8.15b).
 

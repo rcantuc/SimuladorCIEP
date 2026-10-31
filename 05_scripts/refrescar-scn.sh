@@ -8,7 +8,7 @@
 # master/SCN.dta como respaldo), y el reporte dice celda, valor congelado, valor BIE, Δ, Δ % PIB, etiqueta INEGI y fecha.
 #
 # Uso:
-#   bash 05_scripts/refrescar-scn.sh --comparar [--series "724014 724025 …"] [--todas] [--csi] [--salida <dir>] [--repo <root>]
+#   bash 05_scripts/refrescar-scn.sh --comparar [--series "724014 724025 …"] [--todas] [--csi] [--salida <dir>] [--repo <root>] [--anio AAAA]
 #   bash 05_scripts/refrescar-scn.sh --congelar          # documentado, DESHABILITADO hasta 8.15b (ver abajo)
 #
 #   --comparar   Descarga por API las series del inventario (las que llegan a un escalar que algún módulo lee: ~90) a un
@@ -20,6 +20,9 @@
 #   --csi        Además baja tabulados_CSI.zip (cuentas por sector institucional) a un temporal y compara el sha256 de los
 #                cuadros que lee el motor (CSI_103/106/109/112/115/118) y, celda a celda, las filas del inventario.
 #   --salida     Carpeta para refrescar-scn-<fecha>.md y .json (nunca raw/).
+#   --anio       Año de referencia. Default: `scalar anioenigh` de SIM.do (el año ENIGH con el que corrió el motor), sin escalar
+#                nuevo. Se comparan los años ≤ referencia; los posteriores (p. ej. «2025 p1») se listan como «fuera del año de
+#                referencia»: no son revisión ni cuentan como celdas distintas.
 #
 # Token: global BIE_API_TOKEN de set_token.do (raíz del repo) o variable de entorno BIE_API_TOKEN. Sin token NO se compara:
 # «no comparado» nunca equivale a «sin revisión» (spec, paso 9).
@@ -33,7 +36,7 @@
 # refrescar es el PR de datos a mano (runbook-actualizar-assets.md), con este reporte como evidencia.
 set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""
+MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --comparar) MODO="comparar"; shift ;;
@@ -43,6 +46,7 @@ while [[ $# -gt 0 ]]; do
         --csi)      CSI=1; shift ;;
         --salida)   SALIDA="$2"; shift 2 ;;
         --repo)     REPO_ROOT="$2"; shift 2 ;;
+        --anio)     ANIO="$2"; shift 2 ;;
         -h|--help)  sed -n '2,40p' "$0"; exit 0 ;;
         *) echo "refrescar-scn: argumento desconocido: $1" >&2; exit 2 ;;
     esac
@@ -71,9 +75,19 @@ if [[ -z "$TOKEN" || "$TOKEN" == "tu-token-aqui" ]]; then
 fi
 [[ -n "$SALIDA" ]] || SALIDA="$(mktemp -d -t refrescar-scn-XXXXXX)"
 mkdir -p "$SALIDA"
-BIE_API_TOKEN="$TOKEN" python3 -I - "$REPO_ROOT" "$SALIDA" "$TODAS" "$CSI" "$SERIES" <<'PYEOF'
+BIE_API_TOKEN="$TOKEN" python3 -I - "$REPO_ROOT" "$SALIDA" "$TODAS" "$CSI" "$SERIES" "$ANIO" <<'PYEOF'
 import datetime, hashlib, io, json, os, re, ssl, sys, tempfile, time, urllib.request, urllib.error, zipfile
-root, salida, todas, csi, series_arg = sys.argv[1], sys.argv[2], sys.argv[3] == '1', sys.argv[4] == '1', sys.argv[5]
+root, salida, todas, csi, series_arg, anio_arg = sys.argv[1], sys.argv[2], sys.argv[3] == '1', sys.argv[4] == '1', sys.argv[5], sys.argv[6]
+# Año de referencia: anioenigh del motor (SIM.do), sin escalar nuevo; --anio lo sobreescribe
+if anio_arg.strip():
+    ANIO_REF, anio_fuente = int(anio_arg), '--anio'
+else:
+    m_anio = re.search(r'^\s*scalar\s+anioenigh\s*=\s*(\d{4})', open(os.path.join(root, 'SIM.do'), encoding='utf-8').read(), flags=re.M)
+    if not m_anio:
+        print('refrescar-scn: no encuentro `scalar anioenigh = AAAA` en SIM.do; indica --anio (NO COMPARADO, exit 3)'); sys.exit(3)
+    ANIO_REF, anio_fuente = int(m_anio.group(1)), 'scalar anioenigh de SIM.do'
+def anio_de(p):
+    m = re.match(r'\d{4}', p); return int(m.group(0)) if m else None
 # TLS: el python.org de macOS no trae las CA del sistema; se usa el bundle de certifi (el mismo que requests en AccesoBIE.ado)
 try:
     import certifi
@@ -132,12 +146,18 @@ if faltan: print('AVISO  series que SCN.ado no descarga (no son del motor): ' + 
 # ── 2. Lo congelado: raw/temp/AccesoBIE/<serie>.csv (copia exacta de la descarga) o master/SCN.dta (×1e6; con pastcast) ──
 def sha_bytes(b): return hashlib.sha256(b).hexdigest()
 def leer_csv(p):
+    # AccesoBIE.ado guarda el periodo tal como lo exporta el BIE («2025 p1»); el sufijo lo quita Stata al cargar. Aquí se
+    # normaliza igual (misma regex) para que «2025 p1» congelado y «2025» del BIE sean el mismo año; el sufijo se conserva como nota.
     d = {}
     for l in open(p, encoding='utf-8').read().splitlines()[1:]:
         if ',' in l:
-            per, val = l.split(',', 1)
-            d[per.strip()] = (float(val) if val.strip() not in ('', 'None') else None)
+            per_raw, val = l.split(',', 1)
+            per = re.sub(r'\s*/?\s*[A-Za-z]+\d*\s*$', '', per_raw.strip()).strip()
+            d[per] = (float(val) if val.strip() not in ('', 'None') else None)
+            suf = per_raw.strip()[len(per):].strip()
+            if suf: CNOTAS.setdefault(os.path.basename(p), {})[per] = suf
     return d
+CNOTAS = {}
 scn = None
 def leer_dta():
     global scn
@@ -243,9 +263,11 @@ for s in series:
     bsha = sha_bytes(canon.encode('utf-8'))
     if cvals is None:
         nocomp.append((s, nombre[s], 'sin serie congelada (ni raw/temp/AccesoBIE ni master/SCN.dta)')); continue
-    comunes = sorted(set(cvals) & set(bvals), key=lambda x: (len(x), x))
-    solo_bie = sorted(set(bvals) - set(cvals), key=lambda x: (len(x), x))
-    solo_cong = sorted(set(cvals) - set(bvals), key=lambda x: (len(x), x))
+    en_ref = lambda p: anio_de(p) is not None and anio_de(p) <= ANIO_REF
+    fuera = sorted({p for p in set(cvals) | set(bvals) if not en_ref(p)}, key=lambda x: (len(x), x))
+    comunes = sorted({p for p in set(cvals) & set(bvals) if en_ref(p)}, key=lambda x: (len(x), x))
+    solo_bie = sorted({p for p in set(bvals) - set(cvals) if en_ref(p)}, key=lambda x: (len(x), x))
+    solo_cong = sorted({p for p in set(cvals) - set(bvals) if en_ref(p)}, key=lambda x: (len(x), x))
     dif = []
     for p in comunes:
         a, b = cvals[p], bvals[p]
@@ -257,13 +279,16 @@ for s in series:
             dif.append((p, a, b, d, dpib, bnotas.get(p, '')))
             filas.append((s, nombre[s], p, a, b, d, dpib, bnotas.get(p, ''), cfuente))
     etiqueta_ult = ''
-    if bvals:
-        ult = max(bvals, key=lambda x: (len(x), x))
+    dentro = [p for p in bvals if en_ref(p)]
+    if dentro:
+        ult = max(dentro, key=lambda x: (len(x), x))
         etiqueta_ult = f'{ult}: {bnotas.get(ult, "sin sufijo ni nota: cifra definitiva")}'
+    if fuera:
+        etiqueta_ult += ' · fuera de referencia: ' + '; '.join(f'{p} {bnotas.get(p, "")}'.strip() for p in fuera if p in bvals)
     resumen.append({'serie': s, 'nombre': nombre[s], 'etiqueta': etiqueta.get(nombre[s], ''), 'uso': INVENTARIO.get(s, '(solo UpdateSCN)'),
                     'congelado': {'fuente': cfuente, 'sha256': csha, 'fecha_archivo': cfecha, 'n': len(cvals)},
                     'bie': {'via': via, 'sha256_canonico': bsha, 'n': len(bvals), 'lastupdate': (bmeta or {}).get('LASTUPDATE') or (bmeta or {}).get('FECHA_CONSULTA_INEGI'), 'nota_serie': (bmeta or {}).get('NOTE') or (bmeta or {}).get('NOTAS_TITULO'), 'etiqueta_ultimo': etiqueta_ult, 'consulta': fecha},
-                    'comparacion': {'anios_comunes': len(comunes), 'diferencias': len(dif), 'solo_bie': solo_bie, 'solo_congelado': solo_cong,
+                    'comparacion': {'anio_referencia': ANIO_REF, 'anios_comunes': len(comunes), 'diferencias': len(dif), 'solo_bie': solo_bie, 'solo_congelado': solo_cong, 'fuera_referencia': fuera,
                                     'dmax': max((abs(x[3]) for x in dif if x[3] is not None), default=0.0)}})
 
 # ── 5. CSI (opcional): cuadros y filas que lee el motor (SCN.ado §9-§25b y SCNHogaresS14) ──
@@ -310,12 +335,14 @@ if csi:
 # ── 6. Reporte ──
 dif_tot = sum(r['comparacion']['diferencias'] for r in resumen)
 sellos = sum(1 for r in resumen if r['comparacion']['diferencias'] or r['comparacion']['solo_bie'] or r['comparacion']['solo_congelado'])
-md = [f'# refrescar-scn --comparar — {fecha}', '', f'Repo: `{root}` · series pedidas: {len(series)} · comparadas: {len(resumen)} · no comparadas: {len(nocomp)} · con celdas distintas: {sum(1 for r in resumen if r["comparacion"]["diferencias"])} · con años que lo congelado no tiene: {sum(1 for r in resumen if r["comparacion"]["solo_bie"])} · celdas distintas: {dif_tot}', '',
+con_fuera = sum(1 for r in resumen if r['comparacion']['fuera_referencia'])
+md = [f'# refrescar-scn --comparar — {fecha}', '', f'Repo: `{root}` · series pedidas: {len(series)} · comparadas: {len(resumen)} · no comparadas: {len(nocomp)} · con celdas distintas: {sum(1 for r in resumen if r["comparacion"]["diferencias"])} · con años ≤ referencia solo en un lado: {sum(1 for r in resumen if r["comparacion"]["solo_bie"] or r["comparacion"]["solo_congelado"])} · celdas distintas: {dif_tot}', '',
+      f'Año de referencia: **{ANIO_REF}** ({anio_fuente}); se comparan los años ≤ {ANIO_REF}. Series con años posteriores: {con_fuera} (sección «Fuera del año de referencia»; no son revisión).', '',
       'Tolerancia cero sobre el valor publicado. «Congelado» = lo que el motor leyó la última vez (raw/temp/AccesoBIE/<serie>.csv; si falta, master/SCN.dta). Nada se escribe en raw/ ni en el manifest.', '',
-      '## Resumen por serie', '', '| Serie | Variable | Uso en el motor | Congelado (fuente, fecha, sha256) | BIE (vía; LASTUPDATE o fecha de consulta INEGI; sha256 canónico) | Años comunes | Distintos | Solo BIE | Etiqueta INEGI último dato |', '|---|---|---|---|---|---:|---:|---|---|']
+      '## Resumen por serie', '', '| Serie | Variable | Uso en el motor | Congelado (fuente, fecha, sha256) | BIE (vía; LASTUPDATE o fecha de consulta INEGI; sha256 canónico) | Años comunes (≤ ref) | Distintos | Solo BIE (≤ ref) | Fuera de referencia | Etiqueta INEGI último dato (≤ ref) |', '|---|---|---|---|---|---:|---:|---|---|---|']
 for r in resumen:
     c, b, k = r['congelado'], r['bie'], r['comparacion']
-    md.append(f"| {r['serie']} | `{r['nombre']}` {r['etiqueta']} | {r['uso']} | {c['fuente']}, {c['fecha_archivo']}, `{(c['sha256'] or '')[:12]}` | {b['via']}; {b['lastupdate']}; `{b['sha256_canonico'][:12]}` | {k['anios_comunes']} | {k['diferencias']} | {' '.join(k['solo_bie']) or '—'} | {b['etiqueta_ultimo']} |")
+    md.append(f"| {r['serie']} | `{r['nombre']}` {r['etiqueta']} | {r['uso']} | {c['fuente']}, {c['fecha_archivo']}, `{(c['sha256'] or '')[:12]}` | {b['via']}; {b['lastupdate']}; `{b['sha256_canonico'][:12]}` | {k['anios_comunes']} | {k['diferencias']} | {' '.join(k['solo_bie']) or '—'} | {' '.join(k['fuera_referencia']) or '—'} | {b['etiqueta_ultimo']} |")
 if api_fallas:
     md += ['', f'**API oficial del BIE:** no respondió en {len(api_fallas)} serie(s) con el token configurado (p. ej. {sorted(api_fallas.items())[0][1]}); se usó la consulta pública de exportación del BIE (.aspx), el mismo respaldo de `AccesoBIE.ado`. Revisar el token (set_token.do) o la API antes de 8.15b.']
 md += ['', '## Celdas distintas (serie, año, congelado, BIE, Δ, Δ % del PIB del año, etiqueta INEGI)', '']
@@ -325,6 +352,12 @@ if filas:
         md.append(f"| {s} | `{n}` | {p} | {a if a is not None else 'N/E'} | {b if b is not None else 'N/E'} | {'' if d is None else f'{d:,.3f}'} | {'' if dp is None else f'{dp:.4f}'} | {et} | {f} |")
 else:
     md.append('Ninguna: sin revisión INEGI en las celdas comparadas.')
+if con_fuera:
+    md += ['', f'## Fuera del año de referencia ({ANIO_REF})', '', 'Años que el BIE o lo congelado traen después del año ENIGH del motor. No se comparan ni cuentan como revisión; un refresco los incorporaría y movería el pastcast/forecast de SCN.ado (entra solo por PR de datos).', '']
+    for r in resumen:
+        if r['comparacion']['fuera_referencia']:
+            cn = CNOTAS.get(f"{r['serie']}.csv", {})
+            md.append(f"- {r['serie']} `{r['nombre']}`: " + ', '.join(f"{a}{' (congelado: ' + cn[a] + ')' if a in cn else ''}" for a in r['comparacion']['fuera_referencia']))
 if nocomp:
     md += ['', '## No comparadas', ''] + [f'- {s} `{n}`: {m}' for s, n, m in nocomp]
 if csi_rep is not None:
@@ -337,7 +370,7 @@ if csi_rep is not None:
 texto = '\n'.join(md) + '\n'
 stamp = hoy.strftime('%Y-%m-%d')
 open(os.path.join(salida, f'refrescar-scn-{stamp}.md'), 'w', encoding='utf-8').write(texto)
-json.dump({'consulta': fecha, 'series': resumen, 'celdas_distintas': [dict(zip(('serie', 'nombre', 'anio', 'congelado', 'bie', 'delta', 'delta_pct_pib', 'etiqueta', 'fuente_congelada'), f)) for f in filas],
+json.dump({'consulta': fecha, 'anio_referencia': ANIO_REF, 'anio_referencia_fuente': anio_fuente, 'series': resumen, 'celdas_distintas': [dict(zip(('serie', 'nombre', 'anio', 'congelado', 'bie', 'delta', 'delta_pct_pib', 'etiqueta', 'fuente_congelada'), f)) for f in filas],
            'no_comparadas': nocomp, 'csi': csi_rep}, open(os.path.join(salida, f'refrescar-scn-{stamp}.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(texto)
 print(f'Reporte: {salida}/refrescar-scn-{stamp}.md (+ .json)')
@@ -346,8 +379,7 @@ if nocomp or (csi_rep and 'error' in csi_rep):
     print(f'RESULTADO: NO COMPARADO en {len(nocomp)} serie(s)' + (' y CSI con error' if csi_rep and 'error' in csi_rep else '') + ' (exit 3): «no comparado» no es «sin revisión».'); sys.exit(3)
 if dif_tot or csi_dist:
     print('RESULTADO: INEGI REVISÓ (exit 1): hay celdas distintas; el refresco entra solo por PR de datos (--congelar sigue deshabilitado).'); sys.exit(1)
-nuevos = sum(1 for r in resumen if r['comparacion']['solo_bie'])
-anios_nuevos = sorted({a for r in resumen for a in r['comparacion']['solo_bie']})
-extra = f'; {nuevos} serie(s) traen años que lo congelado no tiene ({", ".join(anios_nuevos)}): no es revisión, pero un refresco los incorporaría y movería el pastcast/forecast de SCN.ado (entra solo por PR de datos)' if nuevos else ''
-print('RESULTADO: sin revisión INEGI (exit 0): las celdas congeladas coinciden con el BIE' + extra + '.')
+anios_fuera = sorted({a for r in resumen for a in r['comparacion']['fuera_referencia']})
+extra = f'; {con_fuera} serie(s) con años fuera del año de referencia {ANIO_REF} ({", ".join(anios_fuera)}): no se comparan' if con_fuera else ''
+print(f'RESULTADO: sin revisión INEGI (exit 0): las celdas congeladas coinciden con el BIE hasta {ANIO_REF}' + extra + '.')
 PYEOF
