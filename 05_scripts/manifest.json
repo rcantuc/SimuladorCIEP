@@ -4,12 +4,1995 @@
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
   "enigh_vintage": "2024",
   "enigh_vintage_regla": "Año de la ENIGH con la que corrió el motor (scalar anioenigh de SIM.do y Web.Stata.do). La Fase 4 de publicar-vps.sh la escribe como 'EnighVintage:' en DEPLOYED_COMMIT y la sección de método del sitio (/NTA) la cita en su línea de fuente. Se bumpea al cambiar de ENIGH.",
-  "baseline": "v8.12.4",
-  "baseline_regla": "Tag desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión: la última corrección de datos declarada en el CHANGELOG (CUAD-0 §4 ter, decisión 14, 2026-10-31). Para v8.14.0 y anteriores es v8.12.4. Se mueve SOLO en una corrección de datos o un cambio metodológico que re-ancle el baseline de gate-numeros.sh (commit 'baseline: vX.Y.Z'); el Gate 11 de publicar.sh exige que exista y que sea un tag desde v8.15.0. La Fase 4 de publicar-vps.sh lo escribe como 'Baseline:' en DEPLOYED_COMMIT (health.php) y el sidecar lo copia a manifest-datos.json.",
+  "baseline": "v8.15.0",
+  "baseline_regla": "Tag desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión: la última corrección de datos declarada en el CHANGELOG (CUAD-0 §4 ter, decisión 14, 2026-10-31). Para v8.14.0 y anteriores es v8.12.4; desde v8.15.0 es v8.15.0 (Cuadratura I, sesión v8.15b: Households.do re-anclado al sector hogares S.14 con CUAD-0 firmado; output.txt, los 10 sankeys y las 32 entidades NO comparan con <= v8.14.0, CHANGELOG [v8.15.0]). Se mueve SOLO en una corrección de datos o un cambio metodológico que re-ancle el baseline de gate-numeros.sh (commit 'baseline: vX.Y.Z'); el Gate 11 de publicar.sh exige que exista y que sea un tag desde v8.15.0. La Fase 4 de publicar-vps.sh lo escribe como 'Baseline:' en DEPLOYED_COMMIT (health.php) y el sidecar lo copia a manifest-datos.json.",
   "release_tag": "v8.14.0",
   "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.14.0/",
   "generated_at": "2026-10-06T23:20:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
+  "scn_vintage": {
+    "regla": "Assets congelados del SCN (CUAD-0 §4 bis, v8.15b E4): raw/SCN/bie/<serie>.csv (periodo,valor; solo años <= anio_referencia) y raw/SCN/CSI_1xx.xlsx. SCN.ado (UpdateSCN, SCNHogaresS14) y AccesoBIE.ado los leen cuando existen y verifican su sha256 (sello verde); sin asset descargan en caliente y lo declaran (sello amarillo). Se reescriben SOLO con refrescar-scn.sh --congelar en un PR de datos (data_updated y CHANGELOG declaran el delta). raw/SCN/ no se versiona: viaja con la Release.",
+    "consulta": "2026-10-31T18:26:24Z",
+    "anio_referencia": 2024,
+    "anio_referencia_fuente": "scalar anioenigh de SIM.do",
+    "canal": "API oficial del BIE con respaldo en la consulta pública de exportación (.aspx); la vía real de cada serie va en bie.<serie>.via",
+    "series_congeladas": 93,
+    "bie": {
+      "723652": {
+        "variable": "ProdT",
+        "etiqueta": "Producción total",
+        "uso": "ProdT (cuenta A)",
+        "archivo": "raw/SCN/bie/723652.csv",
+        "sha256": "b673ea934cf52b8a4854816af4ac123e32f5b923219cf910f2d90ad1f9c8dbf6",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:26",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "723656": {
+        "variable": "ImpNet",
+        "etiqueta": "Impuestos netos",
+        "uso": "ImpNet: Households §9 Altimir, NTA, PerfilesSim",
+        "archivo": "raw/SCN/bie/723656.csv",
+        "sha256": "84a650ceb7e9ed532fc6a70339a742af551dba15e8162f594ed87d06c8204e03",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:27",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "723657": {
+        "variable": "ImpProd",
+        "etiqueta": "Impuestos a los productos",
+        "uso": "ImpProd (cuadre)",
+        "archivo": "raw/SCN/bie/723657.csv",
+        "sha256": "9e422d7be55fa650617f690dc4bf24930f35c90aa37942035f8661f580c1be86",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:28",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "723658": {
+        "variable": "SubProd",
+        "etiqueta": "Subsidios a los productos",
+        "uso": "SubProd: ImpNetProductos",
+        "archivo": "raw/SCN/bie/723658.csv",
+        "sha256": "b931280c280df58cb48b7c661b62c2a3d3308dcc1418c620972ccda81dead072",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:29",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "723663": {
+        "variable": "ConsInt",
+        "etiqueta": "Consumo intermedio",
+        "uso": "ConsInt (cuenta A)",
+        "archivo": "raw/SCN/bie/723663.csv",
+        "sha256": "3adf30faabf914f875d3b5db721a9e0bf4f708ecb6738a7be49d4634e667e7a0",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:31",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724014": {
+        "variable": "RemSalSS",
+        "etiqueta": "Remuneraciones a asalariados + CSS",
+        "uso": "RemSalSS: Households (via RemSal), TasasEfectivas, SCN B.1",
+        "archivo": "raw/SCN/bie/724014.csv",
+        "sha256": "13989b59435ce617464e4997423b91da2e43770dbd1692c8bac768335a1a1c93",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:32",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724015": {
+        "variable": "RemSal",
+        "etiqueta": "Remuneraciones a asalariados",
+        "uso": "RemSal: Households §1.1/§9, PerfilesSim, TasasEfectivas",
+        "archivo": "raw/SCN/bie/724015.csv",
+        "sha256": "390c5903ff00630755301a81aee324f4f0e9ca44c3b8f5b698ac80573ef2c56f",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:33",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724016": {
+        "variable": "SSEmpleadores",
+        "etiqueta": "CSS empleadores",
+        "uso": "SSEmpleadores: Households §1.1/§9, TasasEfectivas",
+        "archivo": "raw/SCN/bie/724016.csv",
+        "sha256": "bdcb8e242dc8187a2b023aec2d6b13b2998e4572cfc2740cdecf1aa79f5df80d",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:34",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724017": {
+        "variable": "Imp",
+        "etiqueta": "Impuestos a la producción",
+        "uso": "Imp: ImpuestosNetos",
+        "archivo": "raw/SCN/bie/724017.csv",
+        "sha256": "d2c00e16531a5d9ea7b6b1f07b1a5e9fa27b1adb1fc7f81ecc543ad6c2b6d0f4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:36",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724018": {
+        "variable": "ImpProductos",
+        "etiqueta": "Impuestos a los productos",
+        "uso": "ImpProductos: ImpNetProductos (Households §9 Altimir)",
+        "archivo": "raw/SCN/bie/724018.csv",
+        "sha256": "9e422d7be55fa650617f690dc4bf24930f35c90aa37942035f8661f580c1be86",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:37",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724022": {
+        "variable": "ImpProduccion",
+        "etiqueta": "Impuestos a la producción",
+        "uso": "ImpProduccion: ImpNetProduccion → ImpNetProduccionL/K (Households)",
+        "archivo": "raw/SCN/bie/724022.csv",
+        "sha256": "b99e928eb532982c32c1e93fd73ed1f556cbc0f2f66ee071284a04dcf7eb68d5",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:39",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724023": {
+        "variable": "Sub",
+        "etiqueta": "Subsidios (total)",
+        "uso": "Sub: ImpuestosNetos",
+        "archivo": "raw/SCN/bie/724023.csv",
+        "sha256": "ad42213d2d50969484272e69b019c709bbfab03ac5195702108a8bb1f769121f",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:40",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724024": {
+        "variable": "ExBOp",
+        "etiqueta": "Excedente bruto de operación",
+        "uso": "ExBOp: ExNOpSoc residuo (Households §9 TaltimirCap)",
+        "archivo": "raw/SCN/bie/724024.csv",
+        "sha256": "7378ce01975aa85fc889d5407eb10093d2629e0f9ddd553ba51d97c578629df9",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:41",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724025": {
+        "variable": "PIB",
+        "etiqueta": "Producto Interno Bruto",
+        "uso": "PIB: todos los módulos (escalar PIB / pibY)",
+        "archivo": "raw/SCN/bie/724025.csv",
+        "sha256": "8c1fbec7d69604ecfb52978718a3682b1de4e976c053b6601cf54946d23ca34f",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:43",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724028": {
+        "variable": "CapFij",
+        "etiqueta": "Consumo de capital fijo",
+        "uso": "CapFij: Households §11.3 (depreciación ∝ ing_capital), NTA",
+        "archivo": "raw/SCN/bie/724028.csv",
+        "sha256": "9f39481c489fbd3ddabb97701ba096a39aed43f2c7ce497fe3b774e221e78e0a",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:44",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724029": {
+        "variable": "PIN",
+        "etiqueta": "Producto interno neto",
+        "uso": "PIN: PerfilesSim, SCN C",
+        "archivo": "raw/SCN/bie/724029.csv",
+        "sha256": "a39867a5a28a2a0f0fc469cd121ca5558c435f5ce0ee44f966ebbdfcf3e020d3",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:45",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724030": {
+        "variable": "ROWRemR",
+        "etiqueta": "Remuneraciones recibidas del resto del mundo",
+        "uso": "ROWRemR → ROWRem: Households §12 ing_suborROW, Sankey",
+        "archivo": "raw/SCN/bie/724030.csv",
+        "sha256": "ff2716ffd8ff25f7c3e2778a5bdcd3a62e3c657242f41fedc8851d4b05835d10",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:46",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724031": {
+        "variable": "ROWRemP",
+        "etiqueta": "Remuneraciones pagadas al resto del mundo",
+        "uso": "ROWRemP → ROWRem",
+        "archivo": "raw/SCN/bie/724031.csv",
+        "sha256": "4a295d37df3ec693d17c38a0dd3b71060a9155157b0825aeaa940931bc37a438",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:48",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724032": {
+        "variable": "ROWPropR",
+        "etiqueta": "Ingresos a la propiedad recibidos del resto del mundo",
+        "uso": "ROWPropR → ROWProp: Households ing_capitalROW, Sankey",
+        "archivo": "raw/SCN/bie/724032.csv",
+        "sha256": "aa7a8d8a5ac62865e57ec6268d878ca4bf6874930592dc1ef16f0f75eac422a1",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:49",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724033": {
+        "variable": "ROWPropP",
+        "etiqueta": "Ingresos a la propiedad pagados al resto del mundo",
+        "uso": "ROWPropP → ROWProp",
+        "archivo": "raw/SCN/bie/724033.csv",
+        "sha256": "4380c5cc011f7c793ecd16c1104aaa0f978d688bd61103e69606c9333ff6b735",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:50",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724034": {
+        "variable": "ROWTransR",
+        "etiqueta": "Transferencias recibidas del resto del mundo",
+        "uso": "ROWTransR → ROWTrans: Households §9 TaltimirROWTrans (remesas), Sankey",
+        "archivo": "raw/SCN/bie/724034.csv",
+        "sha256": "d59439f4b7abbff669751e59c02e8edc345aec537294040d02a4fcf95207d1dd",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:52",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724035": {
+        "variable": "ROWTransP",
+        "etiqueta": "Transferencias pagadas al resto del mundo",
+        "uso": "ROWTransP → ROWTrans",
+        "archivo": "raw/SCN/bie/724035.csv",
+        "sha256": "2eca7b0d6748ca982d8aa0570ee374a9212b9abc425b5d8a2e76a9358221b4bd",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:53",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724600": {
+        "variable": "ConHog",
+        "etiqueta": "Consumo de hogares e ISFLSH",
+        "uso": "ConHog: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724600.csv",
+        "sha256": "49340d7653b890d0f3f37b5c23cf563cc635e09d352a34785d9ddaa8f26acc33",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:54",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724601": {
+        "variable": "AlimBebT",
+        "etiqueta": "Alimentos y bebidas",
+        "uso": "AlimBebT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724601.csv",
+        "sha256": "c24a1bbfaab6f9fc0d67111b5404918d3a992e49e74cd3622eab2979609ef0f4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:56",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724602": {
+        "variable": "Alim",
+        "etiqueta": "Alimentos",
+        "uso": "Alim: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724602.csv",
+        "sha256": "c1325e0340a888f673ff19513c6bf35b4aedfaf849eb9f925e5c03c3206a2e79",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:57",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724603": {
+        "variable": "BebN",
+        "etiqueta": "Bebidas no alcohólicas",
+        "uso": "BebN: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724603.csv",
+        "sha256": "3ab74dc50c7fcdb4898e0c1be56377fcc0b3c051a9f3ea4c7376ec67b26a4c4c",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:26:58",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724604": {
+        "variable": "BebTabT",
+        "etiqueta": "Bebidas alcohólicas y tabaco",
+        "uso": "BebTabT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724604.csv",
+        "sha256": "ecf25578c9667b335a5ddcb5b65533ccfadba4b237fc2ebc3f1d400518e6d094",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:00",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724605": {
+        "variable": "BebA",
+        "etiqueta": "Bebidas alcohólicas",
+        "uso": "BebA: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724605.csv",
+        "sha256": "8731dda717949ff1ea45d7f6546b660d925495364e69a6b28f6c0ec7562c6dad",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:01",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724606": {
+        "variable": "Taba",
+        "etiqueta": "Tabaco",
+        "uso": "Taba: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724606.csv",
+        "sha256": "79d8f96b8f5a1834db3ff4645effd5418e447c696a798df39bb0040e664b66ad",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:02",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724607": {
+        "variable": "VestCalT",
+        "etiqueta": "Prendas de vestir y calzado",
+        "uso": "VestCalT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724607.csv",
+        "sha256": "97326f4297448b9cb30e752661c00cb12ea4f60efac381bebe3807f8f272a6ea",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:04",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724608": {
+        "variable": "Vest",
+        "etiqueta": "Prendas de vestir",
+        "uso": "Vest: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724608.csv",
+        "sha256": "ec4b558faed09e9e3af6791c58d48dab947cfa039d365a8700d70bf67ccdc6a2",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:05",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724609": {
+        "variable": "Calz",
+        "etiqueta": "Calzado",
+        "uso": "Calz: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724609.csv",
+        "sha256": "09209be9db14d20e5b18fcfc2d969e63996a02888a37dc4a14895c4f9b05b3ac",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:06",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724610": {
+        "variable": "AlojT",
+        "etiqueta": "Alquiler efectivo y conservación de la vivienda",
+        "uso": "AlojT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724610.csv",
+        "sha256": "46b309b953e6c54e4876162c6de31ac9bd631b5800b75fba3a6f85f7b38193b4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:07",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724611": {
+        "variable": "Alqu",
+        "etiqueta": "Alquiler efectivo",
+        "uso": "Alqu: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724611.csv",
+        "sha256": "5beb4f95802741e01d06b6b76042443ece1d2af1c52f391e9f7843af3ff6d70e",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:09",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724612": {
+        "variable": "CRep",
+        "etiqueta": "Conservación y reparación de la vivienda",
+        "uso": "CRep: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724612.csv",
+        "sha256": "fda9ece9ff0f2faf4225e8511239561cc782af6fc2cbf74d70ea89b3575e0c1b",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:10",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724613": {
+        "variable": "Agua",
+        "etiqueta": "Agua",
+        "uso": "Agua: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724613.csv",
+        "sha256": "2cc418ef9cbb0083807ab9111f0585b2e4aba00c900eb8a5a7e36b062e720323",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:11",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724614": {
+        "variable": "Elec",
+        "etiqueta": "Electricidad, gas y otros combustibles",
+        "uso": "Elec: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724614.csv",
+        "sha256": "0d4e1857188a33d3e3ba0fffd171be267f24bb0da69a84feeb9ff1e228784cf2",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:13",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724615": {
+        "variable": "HogaT",
+        "etiqueta": "Artículos para el hogar",
+        "uso": "HogaT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724615.csv",
+        "sha256": "47cfcb8aaf5f6e9839b80059eafa1bbafc7b34df0dc670d370493b907766c4f4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:14",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724616": {
+        "variable": "Mueb",
+        "etiqueta": "Muebles",
+        "uso": "Mueb: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724616.csv",
+        "sha256": "dceb8ea8e2ff58d45451f02cdec154c47eb1341408dafecfebdbb9fa410d184f",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:15",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724617": {
+        "variable": "Text",
+        "etiqueta": "Textiles",
+        "uso": "Text: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724617.csv",
+        "sha256": "a0f6253588c467f39b5151b548f25264c21646c8ca93e679a886077aa65b97a0",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:16",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724618": {
+        "variable": "Arte",
+        "etiqueta": "Artefactos eléctricos",
+        "uso": "Arte: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724618.csv",
+        "sha256": "6efb90fb154928891efc5ac8c97b2fdbe818b759cfc91c5e0056cd6d1fb7d9c4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:18",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724619": {
+        "variable": "Vajil",
+        "etiqueta": "Vajillas y utensilios",
+        "uso": "Vajil: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724619.csv",
+        "sha256": "f51d678cb69378b8ab4150a9a9c824634e45b2ae9cdcb62b0de3970ed2673887",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:19",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724620": {
+        "variable": "Herr",
+        "etiqueta": "Herramientas",
+        "uso": "Herr: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724620.csv",
+        "sha256": "84eef50836789d56e1dcb52d050d2c98e63858034945c048d89a910b9cef6cb3",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:20",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724621": {
+        "variable": "ConH",
+        "etiqueta": "Consumo de salud",
+        "uso": "ConH: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724621.csv",
+        "sha256": "0c599b3ab47729665a6d4760dfbbf18fbb7c8a2aed363553a39aac4df1d4c4f6",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:22",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724622": {
+        "variable": "SaluT",
+        "etiqueta": "Salud",
+        "uso": "SaluT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724622.csv",
+        "sha256": "cd40e5dba7524fa19207ddce74dcddd5b6842e88eefd84ab79d542b3078df3d9",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:23",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724623": {
+        "variable": "Smed",
+        "etiqueta": "Servicios médicos",
+        "uso": "Smed: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724623.csv",
+        "sha256": "9c5324a3377c7d927be4e571af26dc971b1e4e2af64f28b057503978da090a5f",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:24",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724624": {
+        "variable": "Sext",
+        "etiqueta": "Servicios dentales",
+        "uso": "Sext: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724624.csv",
+        "sha256": "cab237726d4855cd9ad5ecbbc6263a45a5936737f12eccc16936213806a53cc4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:25",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724625": {
+        "variable": "Hosp",
+        "etiqueta": "Hospitales",
+        "uso": "Hosp: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724625.csv",
+        "sha256": "ee5b5886e379178f7b7c2b62d10288f2d8827c7bdb68c23e83fbfb46e6516c80",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:27",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724626": {
+        "variable": "TraT",
+        "etiqueta": "Transporte",
+        "uso": "TraT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724626.csv",
+        "sha256": "563cb2791113aba89ff5771d25dac5d38e6db94d9035581b968354ac5516af8e",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:28",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724627": {
+        "variable": "Vehi",
+        "etiqueta": "Adquisición de vehículos",
+        "uso": "Vehi: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724627.csv",
+        "sha256": "b44ef4e533bddb6d1aae12c3090a9dfba572cdd6488a54e9bc6a67f1a05f2303",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:29",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724628": {
+        "variable": "FTra",
+        "etiqueta": "Funcionamiento de transporte",
+        "uso": "FTra: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724628.csv",
+        "sha256": "1429d4d984a050373b1af1f95f2023206c969aafae32a65592532b9efa05f58e",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:31",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724629": {
+        "variable": "STra",
+        "etiqueta": "Servicios de transporte",
+        "uso": "STra: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724629.csv",
+        "sha256": "b6687d98a8c174b0be33a92eda45ade336048456a73e89517ac1d78cb20f99bd",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:32",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724630": {
+        "variable": "ComuT",
+        "etiqueta": "Comunicaciones",
+        "uso": "ComuT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724630.csv",
+        "sha256": "77d99a5e862c0175f34f29739881c677edfceaea2dfe412497b595e25c918779",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:33",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724631": {
+        "variable": "Post",
+        "etiqueta": "Correos",
+        "uso": "Post: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724631.csv",
+        "sha256": "71e546c8fbce179ba8c8abb85091a763813cf56b442ce1a44c39b42ba99888e3",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:34",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724632": {
+        "variable": "TelEq",
+        "etiqueta": "Teléfonos y equipo de comunicación",
+        "uso": "TelEq: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724632.csv",
+        "sha256": "d9fbb44e37c7afe275c67f933795236aca47d4916648ddc2ae50a6c8c17f8538",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:36",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724633": {
+        "variable": "TelS",
+        "etiqueta": "Servicios telefónicos",
+        "uso": "TelS: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724633.csv",
+        "sha256": "59903ba538fc36c4529e3907000d5e178e5b4965f10c76da53edaf76c3e8331e",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:37",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724634": {
+        "variable": "RecrT",
+        "etiqueta": "Recreación y cultura",
+        "uso": "RecrT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724634.csv",
+        "sha256": "6bfeedf9e28da7a21b5e9b90fe699269a1715e9e5483422c0f3eb9855d3d9695",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:38",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724635": {
+        "variable": "Audi",
+        "etiqueta": "Aparatos de audio y video",
+        "uso": "Audi: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724635.csv",
+        "sha256": "a0ec8b503c917027a74c59395f9a24e8631398911791c1b5ec0061508f9b9d75",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:39",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724636": {
+        "variable": "Durab",
+        "etiqueta": "Durables",
+        "uso": "Durab: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724636.csv",
+        "sha256": "c474a1b1dc91fa7a62d1d5abfdb23cd12114f610aecd2362183a7d0d424c8b80",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:41",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724637": {
+        "variable": "ArtEq",
+        "etiqueta": "Artículos de esparcimiento",
+        "uso": "ArtEq: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724637.csv",
+        "sha256": "18cb1b781aa1d52692265144645306aef9ba32a4dd7b44c313b691570788ef8b",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:42",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724638": {
+        "variable": "Culs",
+        "etiqueta": "Cultura",
+        "uso": "Culs: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724638.csv",
+        "sha256": "3f8efddc3d852a3a815cf46850de5f70424ff2352b98a72d328990682aabd50c",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:43",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724639": {
+        "variable": "Publ",
+        "etiqueta": "Publicaciones",
+        "uso": "Publ: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724639.csv",
+        "sha256": "35768ebe537db07ea683bbfeebd92df4f64dacc6aa2db8b03dac69100da7f236",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:44",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724640": {
+        "variable": "Turis",
+        "etiqueta": "Turismo",
+        "uso": "Turis: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724640.csv",
+        "sha256": "831971fc43a0a414f769da5b6b75b68a57f00860ded40248de3db82676ef9871",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:46",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724641": {
+        "variable": "EducT",
+        "etiqueta": "Educación",
+        "uso": "EducT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724641.csv",
+        "sha256": "eb179be48fc5a6f208c86228cc1bbeb232a1e063ee94a682cfea92bdd6533270",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:47",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724642": {
+        "variable": "PrePri",
+        "etiqueta": "Preescolar y primaria",
+        "uso": "PrePri: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724642.csv",
+        "sha256": "f0aed01e11b8b4b9ba00e80121334b2ea36b94b21007ec015a29e1b1e35f9c39",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:48",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724643": {
+        "variable": "Secu",
+        "etiqueta": "Secundaria",
+        "uso": "Secu: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724643.csv",
+        "sha256": "8f9dd1ecb7526611b205783c99feaa808c05625ba4d9eefd4c374481117bae52",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:49",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724644": {
+        "variable": "PostNT",
+        "etiqueta": "Postsecundaria no terciaria",
+        "uso": "PostNT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724644.csv",
+        "sha256": "5c08141e91f1b4810430c475ebb07a0f7e75b2010a7a1bb085a9dd2eeceb9c33",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:51",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724645": {
+        "variable": "Terc",
+        "etiqueta": "Terciaria",
+        "uso": "Terc: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724645.csv",
+        "sha256": "2e45666b46d7c12aacc61d3387234a79ede6023b18594f33f89c29dabcdc059a",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:52",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724646": {
+        "variable": "NoAtr",
+        "etiqueta": "No atribuible",
+        "uso": "NoAtr: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724646.csv",
+        "sha256": "59f37307f1806359ae19b7a205e715c0edcd39dcefeba57772916c7c1597df53",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:53",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724647": {
+        "variable": "RestT",
+        "etiqueta": "Restaurantes y hoteles",
+        "uso": "RestT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724647.csv",
+        "sha256": "1cd8e22667537b58fda3823ffc4a2916fe7823e094a169ec6ff518073a17bb6a",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:54",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724648": {
+        "variable": "Comi",
+        "etiqueta": "Comidas",
+        "uso": "Comi: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724648.csv",
+        "sha256": "97313043259d87119b0f5a714d53e28bdc1ed55cf9812a8953256a45dfcd5568",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:56",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724649": {
+        "variable": "Hote",
+        "etiqueta": "Hoteles",
+        "uso": "Hote: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724649.csv",
+        "sha256": "d7878cb78a81b6fbf9df2fb2f3580a4e32fe4ce9280a5e99d469707a64adc2ff",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:57",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724650": {
+        "variable": "DiveT",
+        "etiqueta": "Bienes y servicios diversos",
+        "uso": "DiveT: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724650.csv",
+        "sha256": "c6906368a24f90633b02623ced752a976d10ce82d743b0dc00ec8d81e862e528",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:27:58",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724651": {
+        "variable": "Cuid",
+        "etiqueta": "Cuidado personal",
+        "uso": "Cuid: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724651.csv",
+        "sha256": "228442a09f64015ff69e32cd2ad5813700f333624b89f1518331af15d80eba66",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:00",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724652": {
+        "variable": "EfeP",
+        "etiqueta": "Efectos personales",
+        "uso": "EfeP: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724652.csv",
+        "sha256": "1e59b3965aecc1e3591222a6622ea0855546611401369356f0467343613756c0",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:01",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724653": {
+        "variable": "Prot",
+        "etiqueta": "Productos de protección",
+        "uso": "Prot: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724653.csv",
+        "sha256": "eb0e40930a325aa4ab924a1ba3a583cfaaa712032708498a634e543772bf42d7",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:02",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724654": {
+        "variable": "Segu",
+        "etiqueta": "Seguros",
+        "uso": "Segu: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724654.csv",
+        "sha256": "c13bdbde641d32bb4dd2c1599ef9d000a1db17bad3adb1172e091c80790a73dd",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:03",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724655": {
+        "variable": "ServF",
+        "etiqueta": "Servicios financieros",
+        "uso": "ServF: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724655.csv",
+        "sha256": "36ed954ba937811190cc403e24563a0737aea76c0cf435489add0e22cfeb6be1",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:05",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724656": {
+        "variable": "OtrS",
+        "etiqueta": "Otros servicios",
+        "uso": "OtrS: Expenditure.do (anclas TT* de consumo) / TasasEfectivas",
+        "archivo": "raw/SCN/bie/724656.csv",
+        "sha256": "4ca5fd7bd1e2184e3dd7cac57905b9dd1c2a97a83a7c72a83bf7325ab17d7040",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:06",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724771": {
+        "variable": "GastPrivT",
+        "etiqueta": "Gastos de consumo privado - Total",
+        "uso": "GastPrivT (SCN D)",
+        "archivo": "raw/SCN/bie/724771.csv",
+        "sha256": "387ad0128c4cefd668fb3c741d847c1bab69df4359fc9891d2b36d9f9a12ffe4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:07",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724777": {
+        "variable": "ComprasN",
+        "etiqueta": "Compras netas de residentes y no residentes",
+        "uso": "ComprasN: Households, NTA (gasto_anualComprasN), Sankey",
+        "archivo": "raw/SCN/bie/724777.csv",
+        "sha256": "c5ae5077ed0db86fde44d47994908e44e2bda724a310fd82c8ef3e68fa77ed6d",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:09",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "724959": {
+        "variable": "ConGob",
+        "etiqueta": "Gastos de consumo de gobierno general - Total",
+        "uso": "ConGob: Households gasto_anualGobierno, NTA (colectivo), Sankey",
+        "archivo": "raw/SCN/bie/724959.csv",
+        "sha256": "088dff61552b3f6757240cb87ed147543fdd5f4e63bd5a07ce9375c42e5c481b",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:10",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "725116": {
+        "variable": "ConsPriv_21",
+        "etiqueta": "21 Minería",
+        "uso": "ConsPriv_21 → ConsPriv21PIB: TasasEfectivas (IEPS petrolero)",
+        "archivo": "raw/SCN/bie/725116.csv",
+        "sha256": "17ec76030d37b75a72a7d7803245072e70492957c415a6813319099ddf296320",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:11",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "725126": {
+        "variable": "ConsPriv_54",
+        "etiqueta": "54 Servicios profesionales, científicos y técnicos",
+        "uso": "ConsPriv_54 → ConsPriv54: Households §1.2 (honorarios pf/PM)",
+        "archivo": "raw/SCN/bie/725126.csv",
+        "sha256": "0d313bd23c53b4f8d9f16dcf9c4fa975f5a2a5834c1e31c4ea549c12277ca28e",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:12",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "725130": {
+        "variable": "ConsPriv_62",
+        "etiqueta": "62 Servicios de salud y de asistencia social",
+        "uso": "ConsPriv_62 → ConsPriv62: Households §1.2 (salud pf/PM)",
+        "archivo": "raw/SCN/bie/725130.csv",
+        "sha256": "0c32d509620451dbc692028fe9480dcbda08fc19aa3951c763579351970ef339",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:13",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780054": {
+        "variable": "Inmob5311",
+        "etiqueta": "5311 Alquiler sin intermediación de bienes raíces",
+        "uso": "Inmob5311: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780054.csv",
+        "sha256": "b60a47fce1ac0923d780e260536196daff367d21af0666c7db0cc142845c4fe1",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:15",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780055": {
+        "variable": "Inmob5312",
+        "etiqueta": "5312 Inmob5312 y corredores",
+        "uso": "Inmob5312: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780055.csv",
+        "sha256": "1dd5b4bad43f58f33f330f8f1a9a52d06a532af69ae03b6481b4694f776cde86",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:16",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780065": {
+        "variable": "Prof541_T",
+        "etiqueta": "Total subsector 541: Servicios profesionales, científicos y técnicos",
+        "uso": "Prof541_T: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780065.csv",
+        "sha256": "a5702acb7c6fb35cbb12d578a7d4b07bf7a161359a20019bea0dc89019191a41",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:17",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780103": {
+        "variable": "Salud6211",
+        "etiqueta": "6211 Consultorios médicos",
+        "uso": "Salud6211: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780103.csv",
+        "sha256": "0a95acf0124985b0e8ebae73f0dd0901d3f7e76439c0bb5dc683381ed4ec48b4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:19",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780104": {
+        "variable": "Salud6212",
+        "etiqueta": "6212 Consultorios dentales",
+        "uso": "Salud6212: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780104.csv",
+        "sha256": "9f202fb33f353f4f7cd09c21d67148c436f810186b53dffd572938d33c59d6d4",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:20",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780105": {
+        "variable": "Salud6213",
+        "etiqueta": "6213 Otros consultorios para el cuidado de la salud",
+        "uso": "Salud6213: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780105.csv",
+        "sha256": "7b570a710df3fd505cb8583ec262a5474b2ec36c564904528bfb0f76baed9496",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:21",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780108": {
+        "variable": "Salud6216",
+        "etiqueta": "6216 Servicios de enfermería a domicilio",
+        "uso": "Salud6216: Households §1.2 (shares pf/PM de honorarios y rentas)",
+        "archivo": "raw/SCN/bie/780108.csv",
+        "sha256": "46938317f3ff9e64bd75486f5d456208859e53d692411521fb4c117e3af87aca",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:22",
+        "consulta": "2026-10-31T18:26:24Z"
+      },
+      "780135": {
+        "variable": "Recre7132",
+        "etiqueta": "7132 Casinos, loterías y otros juegos de azar",
+        "uso": "Recre7132: TasasEfectivas (IEPS no petrolero: juegos)",
+        "archivo": "raw/SCN/bie/780135.csv",
+        "sha256": "250f6c1b9d8fa6a65800a6d27622e4e72e0422df35d6d464660a4ae0c5f5f913",
+        "n": 22,
+        "ultimo": "2024",
+        "etiqueta_inegi_ultimo": "sin sufijo ni nota: cifra definitiva",
+        "fuera_de_referencia": [
+          "2025"
+        ],
+        "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
+        "lastupdate": "31/10/2026 12:28:24",
+        "consulta": "2026-10-31T18:26:24Z"
+      }
+    },
+    "csi": {
+      "zip": "https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip",
+      "zip_sha256": "b26145b5bb8bbf7cfc301bafe7c3a21156c45a488348745eb12bfe246a84ca9b",
+      "consulta": "2026-10-31T18:26:24Z",
+      "cuadros": {
+        "CSI_103": {
+          "archivo": "raw/SCN/CSI_103.xlsx",
+          "sha256": "c28d560709f57d01c82c4f602e5d3410242c32c238e18fc16a3544fa61ce95d7",
+          "igual_al_anterior": true
+        },
+        "CSI_106": {
+          "archivo": "raw/SCN/CSI_106.xlsx",
+          "sha256": "b498099f959dbd6ad961f8912ed7e524fd0a0104ccc2fe75309f585737794cf9",
+          "igual_al_anterior": true
+        },
+        "CSI_109": {
+          "archivo": "raw/SCN/CSI_109.xlsx",
+          "sha256": "230c609766cf1167901a006d9eb72567242a33f570b8dc68a5ed16b8d5ae8370",
+          "igual_al_anterior": true
+        },
+        "CSI_112": {
+          "archivo": "raw/SCN/CSI_112.xlsx",
+          "sha256": "3b981612648c8a9dda6717f30bdb00d058dff9c7b0d4974d6a65519f2f2a0f66",
+          "igual_al_anterior": true
+        },
+        "CSI_115": {
+          "archivo": "raw/SCN/CSI_115.xlsx",
+          "sha256": "f0e9fecfd9f854d73966c36714bbc40736c771cbacf5bac2739cfceb877c08d1",
+          "igual_al_anterior": true
+        },
+        "CSI_118": {
+          "archivo": "raw/SCN/CSI_118.xlsx",
+          "sha256": "9bf053f965f0bd02fe48fdf339b2ee2bc7832258213a7bc848ed34a3bf5332b1",
+          "igual_al_anterior": true
+        },
+        "CSI_121": {
+          "archivo": "raw/SCN/CSI_121.xlsx",
+          "sha256": "71db4d656ce99590cdf25659b82f87659f5004ea85ac6cf6076ee09172b80581",
+          "igual_al_anterior": true
+        }
+      },
+      "celdas": [
+        {
+          "cuadro": "CSI_103",
+          "fila": 60,
+          "descripcion": "IngMixto B.3b (U/A)",
+          "rotulo": "B.3b - Ingreso mixto bruto",
+          "anio": 2024,
+          "UA": 7480868.024,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 41,
+          "descripcion": "SSImputada D.122 (U/A)",
+          "rotulo": "D.122 - Contribuciones sociales imputadas de los empleadores",
+          "anio": 2024,
+          "UA": 221829.775,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 54,
+          "descripcion": "SubProductos D.31 (U/A)",
+          "rotulo": "D.31 - Subsidios a los productos",
+          "anio": 2024,
+          "UA": -94052.683,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 58,
+          "descripcion": "SubProduccion D.39 (U/A)",
+          "rotulo": "D.39 - Otros subsidios a la producción",
+          "anio": 2024,
+          "UA": -12008.618,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 62,
+          "descripcion": "DepMix P.51c mixto (U/A)",
+          "rotulo": "P.51c2 - Consumo de capital fijo sobre ingreso mixto bruto",
+          "anio": 2024,
+          "UA": 523884.31,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 170,
+          "descripcion": "AhorroB B.8b (U/A)",
+          "rotulo": "B.8b - Ahorro bruto",
+          "anio": 2024,
+          "UA": 6149926.836,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 152,
+          "descripcion": "IngDisp B.6b (U/A)",
+          "rotulo": "B.6b - Ingreso disponible bruto",
+          "anio": 2024,
+          "UA": 33827423.103,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 25,
+          "descripcion": "ImpProductosS1 D.21 (R/P)",
+          "rotulo": "D.21 - Impuestos sobre los productos",
+          "anio": 2024,
+          "UA": null,
+          "RP": 2269960.144
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 26,
+          "descripcion": "SubProductosS1 D.31 (R/P)",
+          "rotulo": "D.31 - Subsidios a los productos",
+          "anio": 2024,
+          "UA": null,
+          "RP": -94052.683
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 27,
+          "descripcion": "PIBCSI B.1b (U/A)",
+          "rotulo": "B.1b - Valor agregado bruto / Producto interno bruto",
+          "anio": 2024,
+          "UA": 33582899.277,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 28,
+          "descripcion": "CapFijCSI P.51c (U/A)",
+          "rotulo": "P.51c - Consumo de capital fijo",
+          "anio": 2024,
+          "UA": 6458352.277,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_103",
+          "fila": 110,
+          "descripcion": "B5nS1 B.5n (U/A)",
+          "rotulo": "B.5n - Saldo de Ingresos primarios neto / Ingreso nacional neto",
+          "anio": 2024,
+          "UA": 26188047.063,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_106",
+          "fila": 59,
+          "descripcion": "ExBOpNoFin B.2b (U/A)",
+          "rotulo": "B.2b - Excedente bruto de operación",
+          "anio": 2024,
+          "UA": 10157033.026,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_106",
+          "fila": 63,
+          "descripcion": "ExNOpNoFin B.2n (U/A)",
+          "rotulo": "B.2n - Excedente neto de operación",
+          "anio": 2024,
+          "UA": 5522904.792,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_106",
+          "fila": 110,
+          "descripcion": "B5nNoFin B.5n (U/A)",
+          "rotulo": "B.5n - Saldo de Ingresos primarios neto / Ingreso nacional neto",
+          "anio": 2024,
+          "UA": -1116929.429,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_109",
+          "fila": 59,
+          "descripcion": "ExBOpFin B.2b (U/A)",
+          "rotulo": "B.2b - Excedente bruto de operación",
+          "anio": 2024,
+          "UA": 1263329.064,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_109",
+          "fila": 63,
+          "descripcion": "ExNOpFin B.2n (U/A)",
+          "rotulo": "B.2n - Excedente neto de operación",
+          "anio": 2024,
+          "UA": 1200594.287,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_109",
+          "fila": 110,
+          "descripcion": "B5nFin B.5n (U/A)",
+          "rotulo": "B.5n - Saldo de Ingresos primarios neto / Ingreso nacional neto",
+          "anio": 2024,
+          "UA": 2070833.399,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_112",
+          "fila": 59,
+          "descripcion": "ExBOpGob B.2b (U/A)",
+          "rotulo": "B.2b - Excedente bruto de operación",
+          "anio": 2024,
+          "UA": 8992.989,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_112",
+          "fila": 63,
+          "descripcion": "ExNOpGob B.2n (U/A)",
+          "rotulo": "B.2n - Excedente neto de operación",
+          "anio": 2024,
+          "UA": 0,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_112",
+          "fila": 110,
+          "descripcion": "B5nGob B.5n (U/A)",
+          "rotulo": "B.5n - Saldo de Ingresos primarios neto / Ingreso nacional neto",
+          "anio": 2024,
+          "UA": 1594101.765,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_112",
+          "fila": 80,
+          "descripcion": "ImpProdGobR D.2 (R/P)",
+          "rotulo": "D.2 - Impuestos sobre la producción y las importaciones",
+          "anio": 2024,
+          "UA": null,
+          "RP": 2537083.253
+        },
+        {
+          "cuadro": "CSI_112",
+          "fila": 89,
+          "descripcion": "SubGobR D.3 (R/P)",
+          "rotulo": "D.3 - Subsidios (-)",
+          "anio": 2024,
+          "UA": null,
+          "RP": -106061.301
+        },
+        {
+          "cuadro": "CSI_112",
+          "fila": 95,
+          "descripcion": "RentaPropGob D.4 (R/P y U/A)",
+          "rotulo": "D.4 - Renta de la propiedad",
+          "anio": 2024,
+          "UA": 1205787.31,
+          "RP": 368867.123
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 59,
+          "descripcion": "ExBOpHog B.2b (U/A)",
+          "rotulo": "B.2b - Excedente bruto de operación",
+          "anio": 2024,
+          "UA": 2107569.107,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 63,
+          "descripcion": "ExNOpHog B.2n (U/A)",
+          "rotulo": "B.2n - Excedente neto de operación",
+          "anio": 2024,
+          "UA": 910359.498,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 170,
+          "descripcion": "AhorroHogB B.8b",
+          "rotulo": "B.8b - Ahorro bruto",
+          "anio": 2024,
+          "UA": 3622119.935,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 171,
+          "descripcion": "AhorroHogN B.8n",
+          "rotulo": "B.8n - Ahorro neto",
+          "anio": 2024,
+          "UA": 1901026.016,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 166,
+          "descripcion": "ConHogS14 P.3",
+          "rotulo": "P.3 - Gastos de consumo final",
+          "anio": 2024,
+          "UA": 23381329.137,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 176,
+          "descripcion": "ConEfecHogS14 P.4",
+          "rotulo": "P.4 - Consumo final efectivo",
+          "anio": 2024,
+          "UA": 25780497.353,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 117,
+          "descripcion": "ContribSocHog D.61",
+          "rotulo": "D.61 - Contribuciones sociales netas",
+          "anio": 2024,
+          "UA": 2335021.748,
+          "RP": 0
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 127,
+          "descripcion": "ContribComplHog D.614",
+          "rotulo": "D.614 - Contribuciones sociales complementarias de los hogares",
+          "anio": 2024,
+          "UA": 605932.331,
+          "RP": 0
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 169,
+          "descripcion": "AjustePensHog D.8 (R/P)",
+          "rotulo": "D.8 - Ajuste por cambio en los derechos de pensiones",
+          "anio": 2024,
+          "UA": 0,
+          "RP": 1270276.524
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 131,
+          "descripcion": "PrestSocHog D.62 (R/P)",
+          "rotulo": "D.62 - Prestaciones sociales distintas a las prestaciones sociales en especie",
+          "anio": 2024,
+          "UA": 0,
+          "RP": 1839951.757
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 151,
+          "descripcion": "OtrasTransfHog D.759 (R/P)",
+          "rotulo": "D.759 - Otras transferencias corrientes diversas",
+          "anio": 2024,
+          "UA": 23577.511,
+          "RP": 1605191.166
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 69,
+          "descripcion": "ExNOpHogS14 B.2n (R/P)",
+          "rotulo": "B.2n - Excedente neto de operación",
+          "anio": 2024,
+          "UA": null,
+          "RP": 910359.498
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 70,
+          "descripcion": "MixNHogS14 B.3n (R/P)",
+          "rotulo": "B.3n - Ingreso mixto neto",
+          "anio": 2024,
+          "UA": null,
+          "RP": 6956983.714
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 95,
+          "descripcion": "RentaPropHog D.4 (R/P y U/A)",
+          "rotulo": "D.4 - Renta de la propiedad",
+          "anio": 2024,
+          "UA": 513293.48,
+          "RP": 6116262.828
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 157,
+          "descripcion": "D.63 (verificación P.4 − P.3)",
+          "rotulo": "D.63 - Transferencias sociales en especie",
+          "anio": 2024,
+          "UA": null,
+          "RP": 2399168.216
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 71,
+          "descripcion": "D1HogS14 D.1 (R/P)",
+          "rotulo": "D.1 - Remuneración de los asalariados",
+          "anio": 2024,
+          "UA": null,
+          "RP": 10052961.73
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 103,
+          "descripcion": "D442Hog D.442 (R/P)",
+          "rotulo": "D.442 - Renta de inversión a pagar sobre derechos de pensión",
+          "anio": 2024,
+          "UA": 0,
+          "RP": 605932.331
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 150,
+          "descripcion": "RemesasHogS14 D.752 (R/P)",
+          "rotulo": "D.752 - Transferencias corrientes entre hogares residentes y no residentes",
+          "anio": 2024,
+          "UA": 23888.736,
+          "RP": 1188474.174
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 114,
+          "descripcion": "ImpIngHog D.5 (U/A)",
+          "rotulo": "D.5 - Impuestos corrientes sobre el ingreso, la riqueza, etc.",
+          "anio": 2024,
+          "UA": 1540049.937,
+          "RP": 0
+        },
+        {
+          "cuadro": "CSI_115",
+          "fila": 139,
+          "descripcion": "OtrasTransfHogR/U D.7 (R/P y U/A)",
+          "rotulo": "D.7 - Otras transferencias corrientes",
+          "anio": 2024,
+          "UA": 438209.296,
+          "RP": 2962133.563
+        },
+        {
+          "cuadro": "CSI_118",
+          "fila": 59,
+          "descripcion": "ExBOpISFLSH B.2b (U/A)",
+          "rotulo": "B.2b - Excedente bruto de operación",
+          "anio": 2024,
+          "UA": 133844.559,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_118",
+          "fila": 63,
+          "descripcion": "ExNOpISFLSH B.2n (U/A)",
+          "rotulo": "B.2n - Excedente neto de operación",
+          "anio": 2024,
+          "UA": 102442.201,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_118",
+          "fila": 110,
+          "descripcion": "B5nISFLSH B.5n (U/A)",
+          "rotulo": "B.5n - Saldo de Ingresos primarios neto / Ingreso nacional neto",
+          "anio": 2024,
+          "UA": 116767.038,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_121",
+          "fila": 71,
+          "descripcion": "RemRowU D.1 (U/A)",
+          "rotulo": "D.1 - Remuneración de los asalariados",
+          "anio": 2024,
+          "UA": 52721.174,
+          "RP": null
+        },
+        {
+          "cuadro": "CSI_121",
+          "fila": 95,
+          "descripcion": "RentaPropRow D.4 (U/A y R/P)",
+          "rotulo": "D.4 - Renta de la propiedad",
+          "anio": 2024,
+          "UA": 361554.121,
+          "RP": 1350775.232
+        }
+      ]
+    }
+  },
   "assets": [
     {
       "name": "2014.zip",
