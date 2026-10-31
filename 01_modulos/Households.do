@@ -38,6 +38,9 @@
 ****                                  (D.614 ya estaba fuera de las cuotas de NTA). Alternativa actual (D.442 dentro de YA; brecha de S +605.9).
 ****   oye_en_hub = off               «OyE fuera del hub» — OyE (P.11 de Pemex/CFE + D.45) no es ingreso de personas: ing_Sector_Publico no se crea;
 ****                                  en los Sankeys entra como fila de sector «Empresas publicas → Gobierno». Alternativa on (v8.14.0).
+****   FLAG ISR PM (decision de Ricardo, 2026-10-31; se corrige en 8.16, ISR_Mod/TasasEfectivas): la base de personas morales
+****                                  (ing_bruto_tpm) son hoy los negocios propios (P068-P081), que tributan como PF (actividad empresarial);
+****                                  el ISR PM es de sociedades y su incidencia a personas debe ir ∝ d4_relativo (regla P de CUAD-0 Tabla 2).
 ****   Impuestos embebidos:           ningun Taltimir* lleva impuestos a productos ni a la produccion; ImpNetProductos (BIE 723656 ∝ gastoanualTOT)
 ****                                  e ImpNetProduccion (D.29 − D.39 BIE ∝ ing_bruto_tax + ing_bruto_tpm) se reparten explicitos en §12, fuera de Yl/Yk.
 ****   Gates (§9.1 y Sankey, 1e-9 relativo): Σ ing_subor = D.1 S.14; Σ ing_mixto = B.3n; Σ ing_estim_alqu (+ cap3) = B.2n; Σ ing_capital = D.4 neto
@@ -2300,7 +2303,9 @@ egen exen_tot = rsum(exen_t4_cap1 exen_t4_cap2 exen_t4_cap3 exen_t4_cap4 exen_t4
 label var exen_tot "Exenciones totales"
 
 * v8.15b: sin particion pf/PM, la base del ISR de personas morales (Titulo II del codigo) son los negocios propios (ya escalados a B.3n con
-* ing_mixto); ing_capital (D.4 neto) no entra. Antes, cap2PM/cap3PM (particion por shares del SCN, cap3PM negativo) sumaban aqui. *
+* ing_mixto); ing_capital (D.4 neto) no entra. Antes, cap2PM/cap3PM (particion por shares del SCN, cap3PM negativo) sumaban aqui.
+* FLAG (Ricardo, 2026-10-31): NO es correcto; los negocios propios tributan como PF y el ISR PM es de sociedades, con incidencia a personas
+* ∝ d4_relativo (regla P de CUAD-0 Tabla 2). Se declara y se corrige en 8.16 (ISR_Mod/TasasEfectivas), no aqui. *
 egen ing_bruto_tpm = rsum(ing_t2_cap1 ing_t2_cap8)
 label var ing_bruto_tpm "Ingreso gravable PM"
 
@@ -2706,12 +2711,12 @@ noisily _cuadfila "(+) Depreciación (CCF BIE ∝ ing_capital)" `gini_gasto_anua
 * Filas de sector (CSI 2024; sin edad; CONC-1 §4.3): lo que el PIB contiene y no es ingreso de las personas
 noisily _cuadsector "(+) Circuito D.442 → D.614 (S.12 ↔ S.14; cuotas_d614=$cuotas_d614)" `D442n' `PIBSCN'
 noisily _cuadsector "(+) Excedente retenido S.11 + S.12 (B.5n)" `S11S12' `PIBSCN'
-noisily _cuadsector "(+) Gobierno S.13 (B.5n = D.2 − D.3 + D.4 neto)" `B5nGob' `PIBSCN'
+noisily _cuadsector "(+) S.13: impuestos netos + renta de la propiedad neta (B.5n)" `B5nGob' `PIBSCN'
 noisily _cuadsector "    · de los cuales D.2 − D.3 recibidos" `ImpNetGobR' `PIBSCN'
 noisily _cuadsector "    · de los cuales D.4 neto del gobierno" `RentaPropGobNeta' `PIBSCN'
 noisily _cuadsector "(+) ISFLSH S.15 (B.5n)" `B5nISFLSH' `PIBSCN'
 noisily _cuadsector "(+) Renta primaria neta pagada al exterior (S.2)" `RowPrimNeto' `PIBSCN'
-noisily _cuadsector "(+) Vintage BIE − CSI (PIB y CCF)" `Vintage' `PIBSCN'
+noisily _cuadsector "(+) Vintage BIE vs CSI (PIB y CCF)" `Vintage' `PIBSCN'
 noisily di in g _dup(90) "-"
 escalar pctpib FPIBSCNPIB = 100
 escalar pctpib FPIBHHSPIB = `Identidad'/`PIBSCN'*100

@@ -95,8 +95,8 @@ if "$suborrow" == "on" {
 label define to 103 "Otros sectores", add
 local vint = scalar(PIB) - scalar(PIBCSI) + scalar(CapFijCSI) - scalar(CapFij)
 local d442 = cond("$cuotas_d614" == "neto", scalar(D442Hog), 0)
-foreach fila in "-3 Sociedades_S11_S12 `=scalar(B5nNoFin) + scalar(B5nFin)'" "-4 Gobierno_S13 `=scalar(B5nGob)'" "-5 ISFLSH_S15 `=scalar(B5nISFLSH)'" ///
-	"-1 El_mundo `=scalar(RowPrimNeto)'" "-6 Vintage_BIE_CSI `vint'" "-7 Fondos_de_pensión_D442 `d442'" {
+foreach fila in "-3 Sociedades_S11_S12 `=scalar(B5nNoFin) + scalar(B5nFin)'" "-4 S13_impuestos_netos_y_renta_de_la_propiedad_neta `=scalar(B5nGob)'" "-5 ISFLSH_S15 `=scalar(B5nISFLSH)'" ///
+	"-1 El_mundo `=scalar(RowPrimNeto)'" "-6 Vintage_BIE_vs_CSI `vint'" "-7 Fondos_de_pensión_D442 `d442'" {
 	gettoken code fila : fila
 	gettoken lab val : fila
 	local val = trim("`val'")
