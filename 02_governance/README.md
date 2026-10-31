@@ -41,7 +41,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 
 **`perf/`** — Perfiles de rendimiento fechados del flujo web «Calcular» (dónde se va el tiempo, qué es invariante al escenario, metas propuestas). Son medición, no norma ni decisión; el instrumento es `05_scripts/perfilar-web.sh`. Tiene su propio README.
 
-**`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` en esta carpeta, memo de Cuadratura para firma.
+**`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` en esta carpeta, memo de Cuadratura firmado por Ricardo el 2026-10-31 en `CUAD-0-firma.md` (v3; manda donde difiera) e implementado en v8.15b; `metodo/fuentes/` guarda los PDF citados con sha256.
 
 **`historico/`** — Documentos congelados: reportes fechados ya ejecutados, auditorías, la bitácora v1.0–v1.57 del documento de arquitectura. No se editan. Cada uno abre con una nota de cuándo se retiró, por qué y qué documento vigente lo reemplaza.
 

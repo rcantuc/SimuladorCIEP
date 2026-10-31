@@ -46,15 +46,15 @@
 *                Altimir embebía de ImpNet en Yk y Yl (ImpNetProductos_mixK/_soc/_hog, Households.do l. 2420-2427) se saca de YA
 *                (_soc, _hog y ⅓ de _mixK) y de YL (⅔ de _mixK: v8.14) para no contarlo dos veces. Así los indirectos de τ⁻ ya no
 *                son doble resta. D.29 − D.39 sigue en Yl/Yk (FLAG).
-*   YL         = Yl del motor − pensiones (ing_jubila × TaltimirSal, lo que Households.do metió a Yl: FLAG motor v9.x; v8.15b-pre: con el
-*                parámetro pensiones_en_yl = off de Households.do no viajan en Yl y la resta es 0)
-*                − 2/3 de las transferencias y flujos financieros que viajan dentro de ing_mixto (× TaltimirSelf)
-*                − 2/3 de ImpNetProductos_mixK (v8.14) + ing_suborROW.
-*   YA         = YA_base + YA_d8 [+ YA_ajuste solo con nta_anclaS = aditivo]. YA_motor = Yk − depreciación (CapFij: base NETA,
-*                consistente con S = B.8n) − ImpNet embebido en Yk (_soc, _hog, ⅓ _mixK) − 1/3 de lo mismo de ing_mixto + ing_capitalROW + alquiler imputado
-*                reasignado al jefe del hogar (ingreso). YA_base = YA_motor × YAHogS14/Σ YA_motor con nta_YA = S14 (NTA-1c: el total
-*                de YA al del sector hogares B.2n + 1/3 B.3n + D.4 neto, misma distribución; el alquiler se escala igual) o = YA_motor
-*                con nta_YA = motor. YA_d8 = D.8 ∝ YL de quienes cotizan (nta_d8). FLAG motor v8.14: Yk lleva ExNOpSoc bruto (−1,765 bn).
+*   YL         = Yl del motor (v8.15b, CUAD-0 firma: Yl = D.1 S.14 + 2/3 B.3n al peso). Las correcciones que compensaban al motor hasta
+*                v8.14 (pensiones × TaltimirSal, 2/3 de las transferencias y flujos financieros de ing_mixto, 2/3 de ImpNetProductos_mixK,
+*                + ing_suborROW) siguen cableadas pero valen 0 con los parámetros firmados (pensiones_en_yl = off, ing_mixto_depurado =
+*                transf_negocios, sin impuestos embebidos, suborrow = off) y se reportan; con los alternos (base v8.14) vuelven a actuar.
+*   YA         = YA_base + YA_d8 [+ YA_ajuste solo con nta_anclaS = aditivo]. YA_motor = Yk − depreciación (CapFij: base NETA, consistente
+*                con S = B.8n) + alquiler imputado reasignado al jefe del hogar (ingreso) [− ImpNet embebido − 1/3 transf + ing_capitalROW:
+*                0 con la firma]. YA_base = YA_motor × fYA, fYA = (YAHogS14 − D.442 con cuotas_d614 = neto) / Σ YA_motor con nta_YA = S14:
+*                desde v8.15b el motor ya trae Yk − CCF = YAHogS14 − D.442 al peso, así que fYA = 1.0000 y se exige a 1e-9 (FLAG si no).
+*                YA_d8 = D.8 ∝ YL de quienes cotizan (nta_d8).
 *   τ⁺ público = EFECTIVO: pensiones contributivas y Pensión Bienestar ancladas al PEF del año (∝ ing_jubila jubilados, ∝ ing_PAM,
 *                como PerfilesSim.do) + becas/programas observados en la ENIGH (ing_benef + P101-P103/P106-P108), todo × UN factor
 *                global TauPubS14 / Σ para anclar a D.62 + D.759 de S.14 (nta_anclaTau, default on);
@@ -125,8 +125,9 @@ if "$nta_alqu" == "" global nta_alqu "jefe"
 if "$nta_tauCash" == "" global nta_tauCash "PEF"
 if "$nta_otorgado" == "" global nta_otorgado "efectivo"
 if "$nta_mixto" == "" global nta_mixto "crudo"
-* v8.15b-pre (CUAD-0 §4): parametro de Households.do; si es "off" las pensiones ya no viajan en Yl y aqui no se restan (§4.1) *
-if "$pensiones_en_yl" == "" global pensiones_en_yl "on"
+* v8.15b (CUAD-0 firma): parametros de Households.do. En la sesion de SIM.do llegan como globals; sueltos se leen del char cuad_params de
+* households.dta (§2.4); si tampoco estan, rige el valor firmado. Se declaran en nta-identidad.txt y en el JSON. *
+local cuad_firma "pensiones_en_yl off ing_mixto_depurado transf_negocios rentas_celda b3n d4_relativo proxy_propiedad yk_ancla b2n_b3n_d4 cap4 fuera suborrow off cuotas_d614 neto oye_en_hub off"
 local adulto = 18
 local tol = 1e-9
 capture mkdir "${SIMROOT}/users/$id"
@@ -191,6 +192,15 @@ else {
 	if "$nta_YA" == "S14" {
 		global nta_YA "motor"
 		local flags `"`flags' "SCN sin YAHogS14 (B.2n + 1/3 B.3n + D.4 neto de CSI_115): nta_YA cae a motor""'
+	}
+}
+* v8.15b (CUAD-0 firma 11): D.442 (f.103) sale de YA con cuotas_d614 = neto; D.5 (f.114) y D.7 recibidas/pagadas (f.139) sostienen la
+* descomposicion de la brecha de S («De donde sale la brecha», CUAD-0 Δ esperado). Si SCN no las trae (base anterior a v8.15b): 0 y FLAG. *
+foreach k in D1HogS14 D442Hog ImpIngHog OtrasTransfHogR OtrasTransfHogU {
+	capture local `k' = scalar(`k')
+	if _rc != 0 {
+		local `k' = 0
+		local flags `"`flags' "SCN sin `k' (CSI_115, v8.15b): se toma 0""'
 	}
 }
 capture confirm scalar TauPubS14
@@ -279,6 +289,18 @@ quietly {
 * 2.4 Base conciliada del motor *
 use "${SIMROOT}/master/`anio'/households.dta", clear
 drop if folioviv == ""
+* v8.15b: parametros de Households desde la base (char cuad_params) cuando no hay sesion; luego el valor firmado *
+local cuad : char _dta[cuad_params]
+local cuad_linea ""
+while "`cuad_firma'" != "" {
+	gettoken p cuad_firma : cuad_firma
+	gettoken firmado cuad_firma : cuad_firma
+	if "${`p'}" == "" & regexm("`cuad'", "`p'=([^ ]+)") global `p' = regexs(1)
+	if "${`p'}" == "" global `p' "`firmado'"
+	local cuad_linea "`cuad_linea' `p'=${`p'}"
+}
+global cuad_params "`cuad_linea'"
+noisily di in g "  Parametros de Households (CUAD-0 firma):" in y "$cuad_params"
 quietly {
 	merge 1:1 folioviv foliohog numren using `prog', nogen keep(master match)
 	merge m:1 folioviv foliohog using `otor', nogen keep(master match)
@@ -286,11 +308,14 @@ quietly {
 	foreach v in nta_prog_raw nta_otor_ef nta_otor_esp {
 		replace `v' = 0 if `v' == .
 	}
-	foreach v of varlist ing_jubila ing_PAM ing_dona ing_heren ing_benef ing_prest ing_otrocap ing_ahorro ///
+	* v8.15b: las variables ROW y los impuestos embebidos ya no existen con la firma (suborrow = off, sin Altimir con impuestos): valen 0 *
+	foreach v in ing_jubila ing_PAM ing_dona ing_heren ing_benef ing_prest ing_otrocap ing_ahorro ///
 		ing_autor ing_trabmenor ing_remesas ing_t4_cap9 ing_t4_cap5 ing_estim_alqu gasto_anualDepreciacion ///
 		gasto_anualComprasN ing_capitalROW ing_suborROW ISR_asalariados ISR_PF ISR_PM cuotasTP infonavit IVA ISAN Importaciones gas_pc_SaluT ///
 		ImpNetProductos_mixK ImpNetProductos_soc ImpNetProductos_hog {
-		replace `v' = 0 if `v' == .
+		capture confirm variable `v'
+		if _rc != 0 g double `v' = 0
+		else replace `v' = 0 if `v' == .
 	}
 	capture g pob = 1
 	egen long nta_hhid = group(folioviv foliohog)
@@ -316,17 +341,30 @@ quietly {
 	local TSelf_base = `ALT'[1,1]/`ALT'[1,2]
 	local TSal_base = `ALT'[1,3]/(`ALT'[1,4] + `ALT'[1,5] + `ALT'[1,6])
 }
+* v8.15b: Households.do deja los factores en chars de la base (TaltimirSal, TaltimirSelf, TaltimirHouse, TaltimirROWTrans); la reconstruccion
+* desde cap5/cap4 ya no aplica (factor 1 con la firma) y solo se usa si no hay ni scalars ni chars (base anterior a v8.15b). *
+local TSelf_c : char _dta[TaltimirSelf]
+local TSal_c : char _dta[TaltimirSal]
+local TRow_c : char _dta[TaltimirROWTrans]
 capture confirm scalar TaltimirSelf
 if _rc == 0 {
 	local TSelf = scalar(TaltimirSelf)
 	local TSal = scalar(TaltimirSal)
-	if reldif(`TSelf', `TSelf_base') > 1e-6 | reldif(`TSal', `TSal_base') > 1e-6 {
-		local flags `"`flags' "Taltimir vivos (Self `TSelf', Sal `TSal') difieren de los reconstruidos (`TSelf_base', `TSal_base')""'
+	if "`TSelf_c'" != "" & (reldif(`TSelf', `TSelf_c') > 1e-9 | reldif(`TSal', `TSal_c') > 1e-9) {
+		local flags `"`flags' "Taltimir vivos (Self `TSelf', Sal `TSal') difieren de los chars de la base (`TSelf_c', `TSal_c')""'
 	}
+}
+else if "`TSelf_c'" != "" {
+	local TSelf = `TSelf_c'
+	local TSal = `TSal_c'
+	scalar TaltimirSelf = `TSelf'
+	scalar TaltimirSal = `TSal'
+	scalar TaltimirROWTrans = `TRow_c'
 }
 else {
 	local TSelf = `TSelf_base'
 	local TSal = `TSal_base'
+	local flags `"`flags' "base sin chars Taltimir (anterior a v8.15b): factores reconstruidos de cap5/cap4""'
 }
 escalar pct NTATaltimirSelf = `TSelf'*100
 escalar pct NTATaltimirSal = `TSal'*100
@@ -341,10 +379,19 @@ quietly {
 
 ** 4.1 Lo que viaja dentro de ing_mixto y no es ingreso factorial (crudo; ing_t4_cap9 ya está × TaltimirSelf) **
 * remesas crudas = cap9/TaltimirSelf − (lo demás crudo de cap9); transferencias = dona + heren + benef; financieros = prest + otrocap + ahorro *
-g double nta_rem_raw = ing_t4_cap9/`TSelf' - (ing_autor + ing_trabmenor + ing_prest + ing_otrocap + ing_ahorro + ing_benef + ing_heren)
-replace nta_rem_raw = 0 if nta_rem_raw < 0 & nta_rem_raw > -1e-6
-g double nta_mixto_transf = (ing_dona + ing_heren + ing_benef + nta_rem_raw)*cond("$nta_mixto" == "crudo", 1, `TSelf')
-g double nta_mixto_fin = (ing_prest + ing_otrocap + ing_ahorro)*cond("$nta_mixto" == "crudo", 1, `TSelf')
+* v8.15b (CUAD-0 firma, decision 3): con ing_mixto_depurado = transf_negocios ninguna transferencia ni flujo financiero viaja dentro de
+* ing_mixto (cap5, cap7, cap9 con factor 1, fuera de Yl/Yk): no hay nada que restar y nta_rem_raw son las remesas crudas de la ENIGH. *
+if "$ing_mixto_depurado" == "transf_negocios" {
+	g double nta_rem_raw = ing_remesas/scalar(TaltimirROWTrans)
+	g double nta_mixto_transf = 0
+	g double nta_mixto_fin = 0
+}
+else {
+	g double nta_rem_raw = ing_t4_cap9/`TSelf' - (ing_autor + ing_trabmenor + ing_prest + ing_otrocap + ing_ahorro + ing_benef + ing_heren)
+	replace nta_rem_raw = 0 if nta_rem_raw < 0 & nta_rem_raw > -1e-6
+	g double nta_mixto_transf = (ing_dona + ing_heren + ing_benef + nta_rem_raw)*cond("$nta_mixto" == "crudo", 1, `TSelf')
+	g double nta_mixto_fin = (ing_prest + ing_otrocap + ing_ahorro)*cond("$nta_mixto" == "crudo", 1, `TSelf')
+}
 if "$nta_mixto" == "reancla" {
 	* ingreso mixto sin transferencias ni flujos financieros, re-anclado al total del motor (Σ ing_mixto = SCN) *
 	tempvar mixpuro
@@ -357,7 +404,7 @@ if "$nta_mixto" == "reancla" {
 }
 g double nta_pens_enYl = cond("$pensiones_en_yl" == "off", 0, min(ing_jubila*`TSal', ing_subor))	// v8.15b-pre: con pensiones_en_yl = off no hay nada que restar
 * tamaño del FLAG: lo que ing_mixto trae de transferencias y flujos financieros, escalado como ingreso de cuenta propia *
-g double nta_mixto_flag = (ing_dona + ing_heren + ing_benef + nta_rem_raw + ing_prest + ing_otrocap + ing_ahorro)*`TSelf'
+g double nta_mixto_flag = cond("$ing_mixto_depurado" == "transf_negocios", 0, (ing_dona + ing_heren + ing_benef + nta_rem_raw + ing_prest + ing_otrocap + ing_ahorro)*`TSelf')
 
 ** 4.2 YL (v8.14, CONC-1 §6.1: Yl = ing_subor + ing_mixtoL y ing_mixtoL = ⅔ ing_mixto trae ⅔ de los impuestos netos a los productos
 **     que Altimir embebió en ing_mixto, ImpNetProductos_mixK; se sacan de aquí, el ⅓ que viaja en Yk se saca de YA en §4.3) **
@@ -395,10 +442,15 @@ label var YA_motor "Ingreso de activos del motor (neto de depreciación, sin el 
 **      dentro aparte (pieza 4): no se duplican. El alquiler imputado (parte de YA_motor) se escala con el mismo factor. **
 tabstat YA_motor [fw=factor], stat(sum) save
 local YA_motor_tot = r(StatTotal)[1,1]
-local fYA = cond("$nta_YA" == "S14", `YAHogS14'/`YA_motor_tot', 1)
+* v8.15b (firma 11): con cuotas_d614 = neto la ancla de YA es YAHogS14 − D.442 (el circuito D.442/D.614 es neutral en el hogar) *
+local YAHogS14n = `YAHogS14' - cond("$cuotas_d614" == "neto", `D442Hog', 0)
+local fYA = cond("$nta_YA" == "S14", `YAHogS14n'/`YA_motor_tot', 1)
+if "$nta_YA" == "S14" & "$yk_ancla" == "b2n_b3n_d4" & reldif(`fYA', 1) > 1e-9 {
+	local flags `"`flags' "factor YA = `=string(`fYA', "%8.6f")' ≠ 1: el motor (yk_ancla = b2n_b3n_d4) debia traer Yk − CCF = YAHogS14 − D.442 al peso""'
+}
 g double YA_base = YA_motor*`fYA'
 replace ALQ = ALQ*`fYA'
-label var YA_base "Ingreso de activos NTA sin D.8 (nta_YA = $nta_YA: YA_motor × factor a B.2n + 1/3 B.3n + D.4 neto S.14)"
+label var YA_base "Ingreso de activos NTA sin D.8 (nta_YA = $nta_YA: YA_motor × factor a B.2n + 1/3 B.3n + D.4 neto S.14 − D.442 con cuotas_d614 = neto)"
 
 ** 4.4 Consumo privado (precios de comprador; residentes) **
 g double Cpriv = gastoanualTOT + gasto_anualComprasN
@@ -574,6 +626,10 @@ local S_micro = r(StatTotal)[1,1]
 local D = `AhorroHog' - `S_micro'
 local fS = `AhorroHog'/`S_micro'
 local brecha = (`S_micro'/`AhorroHog' - 1)*100
+* v8.15b (CUAD-0 firma C): brecha esperada ≈ +11 % (2,116.145 bn con cuotas_d614 = neto, CUAD-0 Δ esperado); si difiere en mas de 3 puntos
+* se FLAGuea y la descomposicion de abajo (nta-identidad.txt) dice partida por partida de donde sale. *
+local brecha_esp = 11.3
+if abs(`brecha' - `brecha_esp') > 3 local flags `"`flags' "brecha Σ S vs B.8n = `=string(`brecha', "%6.1f")' % difiere en mas de 3 puntos de la esperada (+`=string(`brecha_esp', "%4.1f")' %, firma C): ver la descomposicion""'
 if "$nta_anclaS" == "auto" {
 	if abs(`brecha') <= `brecha_max' global nta_anclaS "multiplicativo"
 	else {
@@ -618,7 +674,8 @@ escalar mxn NTAMixtoMotor = r(StatTotal)[1,1]
 escalar mxn NTAMixtoTransfFin = r(StatTotal)[1,2]
 escalar pct NTAMixtoTransfFinPct = r(StatTotal)[1,2]/r(StatTotal)[1,1]*100
 escalar mxn NTAPensEnYl = r(StatTotal)[1,3]
-local flags `"`flags' "ing_mixto del motor = `=string(scalar(NTAMixtoMotor)/1e9, "%9.1f")' bn, de los cuales `=string(scalar(NTAMixtoTransfFin)/1e9, "%9.1f")' bn (`=string(scalar(NTAMixtoTransfFinPct), "%4.1f")' %) son transferencias y flujos financieros × TaltimirSelf; nta_mixto=$nta_mixto""'
+if "$ing_mixto_depurado" == "transf_negocios" local flags `"`flags' "ing_mixto del motor = `=string(scalar(NTAMixtoMotor)/1e9, "%9.1f")' bn = B.3n S.14 (honorarios + negocios propios; sin transferencias ni flujos financieros dentro: ing_mixto_depurado=transf_negocios)""'
+else local flags `"`flags' "ing_mixto del motor = `=string(scalar(NTAMixtoMotor)/1e9, "%9.1f")' bn, de los cuales `=string(scalar(NTAMixtoTransfFin)/1e9, "%9.1f")' bn (`=string(scalar(NTAMixtoTransfFinPct), "%4.1f")' %) son transferencias y flujos financieros × TaltimirSelf; nta_mixto=$nta_mixto""'
 escalar mxn NTAAjusteS = `D'
 escalar pct NTAFactorS = `fS'*100
 escalar mxn NTASsinAncla = `S_micro'
@@ -628,7 +685,7 @@ escalar pct NTAFactorYA = `fYA'*100
 quietly tabstat YA_base S_ajuste [fw=factor], stat(sum) save
 escalar mxn NTAYABaseNac = r(StatTotal)[1,1]
 escalar mxn NTASAjusteNac = r(StatTotal)[1,2]
-noisily di in g "  YA: motor " in y %16.0fc `YA_motor_tot' in g "  YAHogS14 (B.2n + 1/3 B.3n + D.4 neto) " in y %16.0fc `YAHogS14' in g " (B.2n " in y %16.0fc `ExNOpHogS14' in g ", 1/3 B.3n " in y %16.0fc `MixNHogS14'/3 in g ", D.4 neto " in y %16.0fc `RentaPropHogNeta' in g ")  factor " in y %7.4f `fYA' in g "  nta_YA=" in y "$nta_YA"
+noisily di in g "  YA: motor " in y %16.0fc `YA_motor_tot' in g "  YAHogS14 (B.2n + 1/3 B.3n + D.4 neto) " in y %16.0fc `YAHogS14' in g " (B.2n " in y %16.0fc `ExNOpHogS14' in g ", 1/3 B.3n " in y %16.0fc `MixNHogS14'/3 in g ", D.4 neto " in y %16.0fc `RentaPropHogNeta' in g ")  − D.442 (cuotas_d614=$cuotas_d614) " in y %16.0fc `YAHogS14' - `YAHogS14n' in g " = ancla " in y %16.0fc `YAHogS14n' in g "  factor " in y %8.6f `fYA' in g "  nta_YA=" in y "$nta_YA"
 quietly tabstat TmenDir TmenInd TmenFuera nta_CUOTAS [fw=factor], stat(sum) save
 escalar mxn NTATmenFueraNac = r(StatTotal)[1,3]
 escalar mxn NTACuotasNac = r(StatTotal)[1,4]
@@ -791,7 +848,8 @@ forvalues g = 1/5 {
 }
 file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTAS_sinancla0)/1e9) `f1' (scalar(NTAS0)/1e9) `f1' ((scalar(NTAS0) - scalar(NTAS_sinancla0))/1e9) _n
 file write `fh' "B.8n (AhorroHog) " `f1' (`AhorroHog'/1e9) "; factor implícito B.8n / Σ S sin ajuste " %8.4f (`fS') "; brecha (Σ S − B.8n)/B.8n " %7.1f (scalar(NTABrechaSPct)) " %; ajuste aditivo que exigiría el ancla " `f1' (`D'/1e9) "; nta_anclaS=$nta_anclaS (param $nta_anclaS_param; auto = multiplicativo si |brecha| <= `brecha_max' %)" _n
-file write `fh' "YA: motor " `f1' (`YA_motor_tot'/1e9) " vs YAHogS14 (B.2n " `f1' (`ExNOpHogS14'/1e9) " + 1/3 B.3n " `f1' (`MixNHogS14'/3e9) " + D.4 neto " `f1' (`RentaPropHogNeta'/1e9) ") = " `f1' (`YAHogS14'/1e9) "; factor " %7.4f (`fYA') "; nta_YA=$nta_YA; Σ YA_base " `f1' (scalar(NTAYABaseNac)/1e9) _n
+file write `fh' "YA: motor " `f1' (`YA_motor_tot'/1e9) " vs YAHogS14 (B.2n " `f1' (`ExNOpHogS14'/1e9) " + 1/3 B.3n " `f1' (`MixNHogS14'/3e9) " + D.4 neto " `f1' (`RentaPropHogNeta'/1e9) ") = " `f1' (`YAHogS14'/1e9) " − D.442 " `f1' ((`YAHogS14' - `YAHogS14n')/1e9) " = ancla " `f1' (`YAHogS14n'/1e9) "; factor " %8.6f (`fYA') " (v8.15b: debe ser 1); nta_YA=$nta_YA; Σ YA_base " `f1' (scalar(NTAYABaseNac)/1e9) _n
+file write `fh' "Parámetros de Households (CUAD-0 firma 2026-10-31, FLAGs declarados):$cuad_params" _n
 file write `fh' "YA del motor vs re-anclado por decil (bn): "
 forvalues d = 1/10 {
 	file write `fh' "D`d' " %7.1f (scalar(NTAYAMotorD`d')/1e9) "->" %7.1f (scalar(NTAYABaseD`d')/1e9) " "
@@ -819,6 +877,29 @@ file write `fh' "D.8 AjustePension " `f1' (`AjustePension'/1e9) " → YA_d8 ($nt
 file write `fh' "ConGob partido: individual (D.63) Σ " `f1' (scalar(NTACpubIndNac)/1e9) " vs TransfEspecie " `f1' (`TransfEspecie'/1e9) " (educación " `f1' (scalar(NTACpubEduc0)/1e9) ", salud " `f1' (scalar(NTACpubSalud0)/1e9) ", resto individual per cápita " `f1' (scalar(NTACpubRestoInd0)/1e9) "); colectivo (ConGob − D.63, per cápita) Σ " `f1' (scalar(NTACpubColNac)/1e9) "; ConGob " `f1' (`ConGob'/1e9) _n
 file write `fh' "Σ Cpriv " `f1' (scalar(NTACprivNac)/1e9) " vs P.3 S.14 " `f1' (`ConHogS14'/1e9) "; ConHog (BIE) " `f1' (`ConHog'/1e9) "; ComprasN " `f1' (`ComprasN'/1e9) _n
 file write `fh' "Gates: residual máx por persona " %9.2e (`maxres') " MXN; Σ intra nacional " %12.2f (`Intra_nac') " MXN; Σ S − AhorroHog " %12.2f (`S_nac' - `AhorroHog') " MXN -> `okstr'" _n
+* v8.15b: «De dónde sale la brecha» (CUAD-0 Δ esperado): Σ S sin ancla − B.8n partida por partida, NTA vs S.14 (bn) *
+quietly tabstat YL YA_base YA_d8 ImpProd TmenInd nta_ISRAS nta_ISRPF nta_CUOTAS TpubEf InterRec Remesas InterOtor Cpriv CpubInd CpubCol TpubEsp TpubCol [fw=factor], stat(sum) save
+tempname BR
+matrix `BR' = r(StatTotal)
+local b_prim = (`BR'[1,1] + `BR'[1,2]) - `YAHogS14n' - `D1HogS14' - `MixNHogS14'*2/3
+local b_d8 = `BR'[1,3] - `AjustePension'
+local b_impprod = `BR'[1,4] - `BR'[1,5]
+local b_d5 = -(`BR'[1,6] + `BR'[1,7]) + `ImpIngHog'
+local b_d61 = -`BR'[1,8] + `CuotasHogS14'
+local b_tau = (`BR'[1,9] + `BR'[1,10] + `BR'[1,11] - `BR'[1,12]) - (`TauPubS14' + `OtrasTransfHogR' - `OtrasTransfHog' - `OtrasTransfHogU')
+local b_cpriv = -`BR'[1,13] + `ConHogS14'
+local b_cpub = (`BR'[1,16] + `BR'[1,17]) - (`BR'[1,14] + `BR'[1,15])
+local b_tot = `b_prim' + `b_d8' + `b_impprod' + `b_d5' + `b_d61' + `b_tau' + `b_cpriv' + `b_cpub'
+file write `fh' _n "De dónde sale la brecha (Σ S sin ancla − B.8n = " `f1' ((`S_micro' - `AhorroHog')/1e9) " bn): partida NTA vs S.14 (bn) y efecto en S" _n
+file write `fh' %-58s ("YL + YA_base vs D.1 + B.3n + B.2n + D.4 neto (− D.442)") `f1' ((`BR'[1,1] + `BR'[1,2])/1e9) `f1' ((`YAHogS14n' + `D1HogS14' + `MixNHogS14'*2/3)/1e9) `f1' (`b_prim'/1e9) _n
+file write `fh' %-58s ("D.8: YA_d8 vs AjustePension") `f1' (`BR'[1,3]/1e9) `f1' (`AjustePension'/1e9) `f1' (`b_d8'/1e9) _n
+file write `fh' %-58s ("ImpProd (ingreso) vs τ⁻ indirectos LIF") `f1' (`BR'[1,4]/1e9) `f1' (`BR'[1,5]/1e9) `f1' (`b_impprod'/1e9) _n
+file write `fh' %-58s ("D.5: ISR LIF (asalariados + PF) vs D.5 S.14") `f1' ((`BR'[1,6] + `BR'[1,7])/1e9) `f1' (`ImpIngHog'/1e9) `f1' (`b_d5'/1e9) _n
+file write `fh' %-58s ("D.61: cuotas vs D.61 − D.614 S.14") `f1' (`BR'[1,8]/1e9) `f1' (`CuotasHogS14'/1e9) `f1' (`b_d61'/1e9) _n
+file write `fh' %-58s ("τ netas: efectivo + inter + remesas − otorgado vs D.62 + D.7 netas") `f1' ((`BR'[1,9] + `BR'[1,10] + `BR'[1,11] - `BR'[1,12])/1e9) `f1' ((`TauPubS14' + `OtrasTransfHogR' - `OtrasTransfHog' - `OtrasTransfHogU')/1e9) `f1' (`b_tau'/1e9) _n
+file write `fh' %-58s ("Consumo: Cpriv vs P.3 S.14") `f1' (`BR'[1,13]/1e9) `f1' (`ConHogS14'/1e9) `f1' (`b_cpriv'/1e9) _n
+file write `fh' %-58s ("Consumo público: τ⁺ especie + colectivo vs Cpub (neutro)") `f1' ((`BR'[1,16] + `BR'[1,17])/1e9) `f1' ((`BR'[1,14] + `BR'[1,15])/1e9) `f1' (`b_cpub'/1e9) _n
+file write `fh' %-58s ("Total (debe igualar la brecha)") %10s ("") %10s ("") `f1' (`b_tot'/1e9) "  (brecha " `f1' ((`S_micro' - `AhorroHog')/1e9) "; esperada CUAD-0 +" %4.1f (`brecha_esp') " %, observada " %6.1f (`brecha') " %)" _n
 file close `fh'
 
 * 6.2 JSON por grupo de edad *
@@ -828,10 +909,10 @@ local fm "%20.4f"
 file open `fh' using `"`dirnta'/nta-grupoedad.json"', write replace text
 file write `fh' `"{"esquema":"nta/v1","anio":`anio',"unidad":"MXN corrientes de `anio', sumas [fw=factor]","corte":"grupoedad","' _n
 file write `fh' `""identidad":"C - YL - ImpProd - (tau_mas - tau_menos) - (YA - YA_ajuste - S_sinancla) - intra = 0 (sin ancla); con ancla multiplicativa el residual declarado es S_ajuste = S - S_sinancla; ImpProd = impuestos netos a los productos como ingreso (∝ Cpriv); tau_mas = tau_pub_efectivo + tau_pub_especie (individual D.63) + tau_pub_colectivo (ConGob - D.63) + inter_recibido + remesas; tau_menos = tau_pub + inter_otorgado","' _n
-file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_anclaS_param":"$nta_anclaS_param","nta_YA":"$nta_YA","nta_cuotas":"$nta_cuotas","nta_d8":"$nta_d8","nta_anclaTau":"$nta_anclaTau","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","adulto":`adulto',"tolerancia":1e-9},"' _n
+file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_anclaS_param":"$nta_anclaS_param","nta_YA":"$nta_YA","nta_cuotas":"$nta_cuotas","nta_d8":"$nta_d8","nta_anclaTau":"$nta_anclaTau","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","households":"`=trim("$cuad_params")'","adulto":`adulto',"tolerancia":1e-9},"' _n
 file write `fh' `""anclas":{"AhorroHog_B8n":`=trim(string(`AhorroHog', "`fm'"))',"AhorroHogB_B8b":`=trim(string(`AhorroHogB', "`fm'"))',"TransfEspecie_D63":`=trim(string(`TransfEspecie', "`fm'"))',"ConHogS14_P3":`=trim(string(`ConHogS14', "`fm'"))',"ConHog":`=trim(string(`ConHog', "`fm'"))',"ConGob":`=trim(string(`ConGob', "`fm'"))',"SerEGob":`=trim(string(`SerEGob', "`fm'"))',"SaluGob":`=trim(string(`SaluGob', "`fm'"))',"ComprasN":`=trim(string(`ComprasN', "`fm'"))',"ROWTrans":`=trim(string(`ROWTrans', "`fm'"))',"ROWRem":`=trim(string(`ROWRem', "`fm'"))',"ROWProp":`=trim(string(`ROWProp', "`fm'"))',"CapFij":`=trim(string(`CapFij', "`fm'"))',"IngDisp":`=trim(string(`IngDisp', "`fm'"))',"AhorroN":`=trim(string(`AhorroN', "`fm'"))',"OyE":`=trim(string(`OyE', "`fm'"))',"PEF_Pensiones":`=trim(string(`Pensiones', "`fm'"))',"PEF_PensionAM":`=trim(string(`PenBienestar', "`fm'"))',"TaltimirSelf":`=trim(string(`TSelf', "%12.8f"))',"TaltimirSal":`=trim(string(`TSal', "%12.8f"))'},"' _n
 file write `fh' `""S_vs_B8n":{"S_sin_ajuste":`=trim(string(`S_micro', "`fm'"))',"AhorroHog":`=trim(string(`AhorroHog', "`fm'"))',"factor_implicito":`=trim(string(`fS', "%12.8f"))',"brecha_pct":`=trim(string(scalar(NTABrechaSPct), "%12.6f"))',"ajuste_aditivo_que_exigiria":`=trim(string(`D', "`fm'"))',"S_final":`=trim(string(`S_nac', "`fm'"))',"S_ajuste":`=trim(string(scalar(NTASAjusteNac), "`fm'"))',"modo":"$nta_anclaS","modo_param":"$nta_anclaS_param","brecha_max_pct":`brecha_max',"mixto_motor":`=trim(string(scalar(NTAMixtoMotor), "`fm'"))',"mixto_transf_fin_escalado":`=trim(string(scalar(NTAMixtoTransfFin), "`fm'"))',"pensiones_en_Yl":`=trim(string(scalar(NTAPensEnYl), "`fm'"))',"regla":"off: S residual sin tapón; aditivo: suma ∝ (YL+YA) de adultos con contrapartida en YA_ajuste; multiplicativo: S × factor, sin contrapartida (cae a intra)"},"' _n
-file write `fh' `""ya_s14":{"YA_motor":`=trim(string(`YA_motor_tot', "`fm'"))',"YAHogS14":`=trim(string(`YAHogS14', "`fm'"))',"B2n":`=trim(string(`ExNOpHogS14', "`fm'"))',"tercio_B3n":`=trim(string(`MixNHogS14'/3, "`fm'"))',"D4_neto":`=trim(string(`RentaPropHogNeta', "`fm'"))',"factor":`=trim(string(`fYA', "%12.8f"))',"nta_YA":"$nta_YA","YA_base_micro":`=trim(string(scalar(NTAYABaseNac), "`fm'"))',"por_decil":["'
+file write `fh' `""ya_s14":{"YA_motor":`=trim(string(`YA_motor_tot', "`fm'"))',"YAHogS14":`=trim(string(`YAHogS14', "`fm'"))',"D442":`=trim(string(`YAHogS14' - `YAHogS14n', "`fm'"))',"YAHogS14_ancla":`=trim(string(`YAHogS14n', "`fm'"))',"B2n":`=trim(string(`ExNOpHogS14', "`fm'"))',"tercio_B3n":`=trim(string(`MixNHogS14'/3, "`fm'"))',"D4_neto":`=trim(string(`RentaPropHogNeta', "`fm'"))',"factor":`=trim(string(`fYA', "%12.8f"))',"nta_YA":"$nta_YA","YA_base_micro":`=trim(string(scalar(NTAYABaseNac), "`fm'"))',"por_decil":["'
 forvalues d = 1/10 {
 	file write `fh' `"`=cond(`d' > 1, ",", "")'{"decil":`d',"pob":`=trim(string(scalar(NTAPobD`d'), "%20.0f"))',"YA_motor":`=trim(string(scalar(NTAYAMotorD`d'), "`fm'"))',"YA_base":`=trim(string(scalar(NTAYABaseD`d'), "`fm'"))'}"'
 }
@@ -921,7 +1002,7 @@ restore
 * Compras netas de no residentes: ya restadas de C (gasto_anualComprasN), por eso no hay nodo "Turistas".
 local BF = scalar(NTAInterRec0) - scalar(NTAInterOtor0)
 local BG = scalar(NTATmen0) + `OyE' - scalar(NTATpubEf0) - scalar(NTACpub0)
-local lbl3 `"1 "Ingreso 0 a 4" 2 "Ingreso 5 a 17" 3 "Ingreso 18 a 24" 4 "Ingreso 25 a 64" 5 "Ingreso 65 y más" 11 "Gobierno" 12 "Familias" 13 "Activos" 21 "Desahorro 0 a 4" 22 "Desahorro 5 a 17" 23 "Desahorro 18 a 24" 24 "Desahorro 25 a 64" 25 "Desahorro 65 y más" 31 "Otras transferencias privadas" 32 "Déficit público" 41 "Consumo 0 a 4" 42 "Consumo 5 a 17" 43 "Consumo 18 a 24" 44 "Consumo 25 a 64" 45 "Consumo 65 y más" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 61 "Futuro 0 a 4" 62 "Futuro 5 a 17" 63 "Futuro 18 a 24" 64 "Futuro 25 a 64" 65 "Futuro 65 y más" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 81 "Ancla S14 recorte" 82 "Ancla S14 complemento" 999 "Ing nacional""'
+local lbl3 `"1 "Ingreso 0 a 4" 2 "Ingreso 5 a 17" 3 "Ingreso 18 a 24" 4 "Ingreso 25 a 64" 5 "Ingreso 65 y más" 11 "Gobierno" 12 "Familias" 13 "Activos" 21 "Desahorro 0 a 4" 22 "Desahorro 5 a 17" 23 "Desahorro 18 a 24" 24 "Desahorro 25 a 64" 25 "Desahorro 65 y más" 31 "Otras transferencias privadas" 32 "Déficit público" 41 "Consumo 0 a 4" 42 "Consumo 5 a 17" 43 "Consumo 18 a 24" 44 "Consumo 25 a 64" 45 "Consumo 65 y más" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 61 "Futuro 0 a 4" 62 "Futuro 5 a 17" 63 "Futuro 18 a 24" 64 "Futuro 25 a 64" 65 "Futuro 65 y más" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 81 "Ancla S14 recorte" 82 "Ancla S14 complemento" 15 "Empresas públicas" 999 "Ing nacional""'
 quietly {
 	tempfile per2 e1 e2 e3 e4 e5
 	save `per2'
@@ -933,10 +1014,13 @@ quietly {
 	rename ing_ profile
 	replace grupoedad = -1 if tipo == "Remesas"
 	collapse (sum) profile, by(grupoedad tipo)
-	set obs `=_N+1'
-	replace grupoedad = -2 in -1
-	replace tipo = "Ing_capital" in -1
-	replace profile = `OyE' in -1
+	* v8.15b (oye_en_hub = off, firmado): OyE no entra al hub por «Ing capital»; con on (v8.14.0) si *
+	if "$oye_en_hub" == "on" {
+		set obs `=_N+1'
+		replace grupoedad = -2 in -1
+		replace tipo = "Ing_capital" in -1
+		replace profile = `OyE' in -1
+	}
 	encode tipo, g(to)
 	rename grupoedad from
 	label define grupoedad -1 "El mundo" -2 "OyE públicas", add
@@ -963,6 +1047,7 @@ quietly {
 	}
 	replace to = 11 in 6
 	replace profile = `OyE' in 6
+	if "$oye_en_hub" == "off" replace from = 15 in 6		// v8.15b: «Empresas públicas → Gobierno», no desde el hub
 	replace to = 12 in 7
 	replace profile = scalar(NTARemesas0) in 7
 	forvalues g = 1/5 {
@@ -1163,7 +1248,7 @@ program define _nta_v3rank
 	quietly replace `lab' = subinstr(`lab', "_", " ", .)
 	quietly g int `new' = .
 	local k = 0
-	foreach l in "El mundo" "De 0 a 4" "De 5 a 17" "De 18 a 24" "De 25 a 64" "De 65 y más" "OyE públicas" "Desahorro" ///
+	foreach l in "El mundo" "De 0 a 4" "De 5 a 17" "De 18 a 24" "De 25 a 64" "De 65 y más" "OyE públicas" "Empresas públicas" "Desahorro" ///
 		"Otras transferencias privadas" "Déficit público" "Ajuste a cuentas nacionales S14" ///
 		"Remesas" "Impuestos a productos" "Ing capital" "Ing laboral" "Alquiler propio" "Derechos de pensión D8" "Ajuste ancla S 14" ///
 		"Ing nacional" "Gobierno" "Activos" "Transferencias en efectivo" "Colectivo" "Futuro" "Resto del gasto público" ///
@@ -1179,7 +1264,7 @@ program define _nta_v3rank
 		exit 459
 	}
 end
-local lbl4 `"11 "Gobierno" 13 "Activos" 14 "Transferencias en efectivo" 20 "Desahorro" 31 "Otras transferencias privadas" 32 "Déficit público" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 60 "Futuro" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 80 "Ajuste a cuentas nacionales S14" 999 "Ing nacional""'
+local lbl4 `"11 "Gobierno" 13 "Activos" 14 "Transferencias en efectivo" 15 "Empresas públicas" 20 "Desahorro" 31 "Otras transferencias privadas" 32 "Déficit público" 51 "_De 0 a 4" 52 "_De 5 a 17" 53 "_De 18 a 24" 54 "_De 25 a 64" 55 "_De 65 y más" 60 "Futuro" 71 "Resto del gasto público" 72 "Transferencias privadas netas" 80 "Ajuste a cuentas nacionales S14" 999 "Ing nacional""'
 quietly {
 	tempfile catg fin f1 f2 f3 f4 f5
 
@@ -1254,7 +1339,14 @@ quietly {
 	set obs `=_N+1'
 	replace from = 999 in -1
 	replace to = 11 in -1
-	replace profile = scalar(NTATmen0) + `OyE' in -1
+	replace profile = scalar(NTATmen0) + cond("$oye_en_hub" == "on", `OyE', 0) in -1
+	if "$oye_en_hub" == "off" {
+		* v8.15b (firma 10): OyE no es ingreso de personas; entra a Gobierno como fila de sector «Empresas públicas → Gobierno» *
+		set obs `=_N+1'
+		replace from = 15 in -1
+		replace to = 11 in -1
+		replace profile = `OyE' in -1
+	}
 	set obs `=_N+1'
 	replace from = 999 in -1
 	replace to = 13 in -1
@@ -1372,7 +1464,7 @@ quietly {
 		* orden vertical explícito (v8.14b, punto 14): solo en las copias del v3; e1/e2 del v2 siguen como estaban *
 		_nta_v3rank from nta_rf
 		_nta_v3rank to nta_rt
-		if "`e'" == "f3" replace nta_rf = 0 if from == 999		// Ing nacional → Gobierno / Activos / categorías primero
+		if "`e'" == "f3" replace nta_rf = 0 if from == 999		// Ing nacional → Gobierno / Activos / categorías primero (Empresas públicas → Gobierno después)
 		sort nta_rf nta_rt
 		drop nta_rf nta_rt
 		if "`e'" == "e1" save `f1'
@@ -1399,7 +1491,7 @@ escalar mxn NTAV3Recorte = `rec_tot'
 escalar mxn NTAV3Complemento = `comp_tot'
 noisily SankeySumSim, anio(`anio') name(v3-grupoedad) folder(SankeyNTA) a(`f1') b(`f2') c(`f3') d(`f4') e(`f5')
 quietly use `per2', clear
-noisily di in g "  Sankey v3: PIB `anio' " in y %20.0fc `PIBY' in g "; Ing nacional " in y %6.2f scalar(NTAV3IngNacPIB) in g " % del PIB; → Gobierno " in y %20.0fc scalar(NTATmen0) + `OyE' in g " (τ⁻ + OyE); → Activos " in y %20.0fc `Spos_tot' + `rec_tot' in g " (S sin ancla de los que ahorran); Transferencias en efectivo " in y %20.0fc scalar(NTATpubEf0) in g "; Desahorro " in y %20.0fc `Sneg_tot' in g "; Futuro " in y %20.0fc `Spos_tot' in g "; ajuste S.14 neto " in y %20.0fc `ajuste_neto' in g " (recorte " in y %20.0fc `rec_tot' in g " − complemento " in y %20.0fc `comp_tot' in g ")"
+noisily di in g "  Sankey v3: PIB `anio' " in y %20.0fc `PIBY' in g "; Ing nacional " in y %6.2f scalar(NTAV3IngNacPIB) in g " % del PIB; → Gobierno " in y %20.0fc scalar(NTATmen0) + `OyE' in g " (τ⁻ + OyE; oye_en_hub=$oye_en_hub: con off OyE llega de «Empresas públicas»); → Activos " in y %20.0fc `Spos_tot' + `rec_tot' in g " (S sin ancla de los que ahorran); Transferencias en efectivo " in y %20.0fc scalar(NTATpubEf0) in g "; Desahorro " in y %20.0fc `Sneg_tot' in g "; Futuro " in y %20.0fc `Spos_tot' in g "; ajuste S.14 neto " in y %20.0fc `ajuste_neto' in g " (recorte " in y %20.0fc `rec_tot' in g " − complemento " in y %20.0fc `comp_tot' in g ")"
 
 
 
@@ -1604,7 +1696,7 @@ quietly {
 	char _dta[nta_anio] "`anio'"
 	char _dta[nta_AhorroHog] "`AhorroHog'"
 	char _dta[nta_TransfEspecie] "`TransfEspecie'"
-	char _dta[nta_parametros] "nta_anclaS=$nta_anclaS nta_YA=$nta_YA nta_cuotas=$nta_cuotas nta_d8=$nta_d8 nta_anclaTau=$nta_anclaTau nta_alqu=$nta_alqu nta_tauCash=$nta_tauCash nta_otorgado=$nta_otorgado nta_mixto=$nta_mixto"
+	char _dta[nta_parametros] "nta_anclaS=$nta_anclaS nta_YA=$nta_YA nta_cuotas=$nta_cuotas nta_d8=$nta_d8 nta_anclaTau=$nta_anclaTau nta_alqu=$nta_alqu nta_tauCash=$nta_tauCash nta_otorgado=$nta_otorgado nta_mixto=$nta_mixto$cuad_params"
 	compress
 	save `"`dirnta'/nta-persona.dta"', replace
 }

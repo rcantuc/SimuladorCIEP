@@ -1,4 +1,4 @@
-*! version 8.4 CIEP 28oct2026 (NTA-1c: YAHogS14 = B.2n + 1/3 B.3n + D.4 neto del sector hogares; aditivo)
+*! version 8.5 CIEP 31oct2026 (v8.15b: celdas S.14 D.1/D.442/D.752/D.5/D.7 y filas de sector B.5n S.11-S.15, S.2, S.1 de los tabulados CSI; aditivo)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -61,9 +61,12 @@ quietly {
 	* y se guardan en master/SCN.dta; no se vuelve a correr UpdateSCN ni se toca el BIE. Si falta cualquiera
 	* de las series de la lista se releen todas (update replace: una base enriquecida por NTA-1 se completa).
 	* Si el tabulado no está, las series faltan y los escalares de abajo no se definen (FLAG, no se inventa).
+	* v8.15b (E4, CUAD-0 §4 bis): sello de las anclas SCN. Una vez por sesion se verifica el asset congelado raw/SCN/ (sha256 contra
+	* manifest.json scn_vintage): verde si todo esta y coincide; amarillo si no hay asset (el motor leyo raw/temp/, descarga en caliente). *
+	if "$SCN_CONGELADO_SELLO" == "" noisily SCNCongelado
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -72,7 +75,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -640,6 +643,28 @@ quietly {
 		escalar mxn ExNOpHogS14 = ExNOpHogS14[`obs']
 		escalar mxn MixNHogS14 = MixNHogS14[`obs']
 		escalar mxn RentaPropHogNeta = RentaPropHogR[`obs'] - RentaPropHogU[`obs']
+	}
+	* v8.15b (CUAD-0 firma; sesion v8.15b E1/E3): celdas de la Tabla 1 firmada (D.1, D.442, D.752 de S.14) y filas de sector de la identidad
+	* PIB = YL + YA + D.442 + B.5n S.11 + S.12 + B.5n S.13 + B.5n S.15 + CCF + RowPrimNeto + vintage BIE−CSI (Households.do §9.1, Sankey.do) *
+	capture confirm variable B5nS1
+	if _rc == 0 {
+		escalar mxn D1HogS14 = D1HogS14[`obs']
+		escalar mxn D442Hog = D442Hog[`obs']
+		escalar mxn RemesasHogS14 = RemesasHogS14[`obs']
+		escalar mxn ImpIngHog = ImpIngHog[`obs']
+		escalar mxn OtrasTransfHogR = OtrasTransfHogR[`obs']
+		escalar mxn OtrasTransfHogU = OtrasTransfHogU[`obs']
+		escalar mxn B5nNoFin = B5nNoFin[`obs']
+		escalar mxn B5nFin = B5nFin[`obs']
+		escalar mxn B5nGob = B5nGob[`obs']
+		escalar mxn B5nISFLSH = B5nISFLSH[`obs']
+		escalar mxn ImpNetGobR = ImpProdGobR[`obs'] + SubGobR[`obs']
+		escalar mxn RentaPropGobNeta = RentaPropGobR[`obs'] - RentaPropGobU[`obs']
+		escalar mxn RemRowU = RemRowU[`obs']
+		escalar mxn RowPrimNeto = RowPrimNeto[`obs']
+		escalar mxn PIBCSI = PIBCSI[`obs']
+		escalar mxn CapFijCSI = CapFijCSI[`obs']
+		escalar mxn B5nS1 = B5nS1[`obs']
 	}
 
 	** R.3. Graph **
@@ -1223,6 +1248,9 @@ end
 
 
 program define UpdateSCN
+	* v8.15b (E4): si existe el asset congelado raw/SCN/ (refrescar-scn.sh --congelar), sus csv y xlsx se copian a raw/temp/ y
+	* AccesoBIE no toca la red para esas series (las no congeladas se descargan y se declaran). *
+	noisily SCNCongelado, copiar
 
 	args update
 
@@ -2713,7 +2741,7 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14, before(IngDisp)
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto, before(IngDisp)
 	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
@@ -2742,8 +2770,19 @@ program define SCNHogaresS14
 	local specs `"`specs' "CSI_103 25 ImpProductosS1 D.21 R" "CSI_103 26 SubProductosS1 D.31 R""'
 	local specs `"`specs' "CSI_115 169 AjustePensHog D.8 R" "CSI_115 131 PrestSocHog D.62 R" "CSI_115 151 OtrasTransfHog D.759 R""'
 	local specs `"`specs' "CSI_115 69 ExNOpHogS14 B.2n R" "CSI_115 70 MixNHogS14 B.3n R" "CSI_115 95 RentaPropHogR D.4 R" "CSI_115 95 RentaPropHogU D.4 U""'
+* v8.15b (CUAD-0 firma B.11/B.13; sesion v8.15b E1/E3): D.1 y D.442 de S.14 (anclas de ing_subor y del circuito D.614/D.442), D.752 (remesas
+* recibidas, informativo), D.5 y D.7 de S.14 (descomposicion de la brecha de S en NTA.do), y las filas de sector de la identidad
+* PIB = YL + YA + B.5n S.11 + S.12 + B.5n S.13 + B.5n S.15 + CCF + renta primaria neta pagada al exterior + vintage BIE−CSI
+* (CONC-1 §4.3): B.5n de CSI_106/109/112/118 (f.110 U/A), D.2 y D.3 recibidos por S.13 y su D.4 (CSI_112 f.80, 89, 95), D.1 y D.4 del resto
+* del mundo (CSI_121 f.71, 95: U/A = pagado por el mundo a residentes, R/P = recibido por el mundo), y B.1b, P.51c y B.5n de S.1 (CSI_103). *
+	local specs `"`specs' "CSI_115 71 D1HogS14 D.1 R" "CSI_115 103 D442Hog D.442 R" "CSI_115 150 RemesasHogS14 D.752 R" "CSI_115 114 ImpIngHog D.5 U" "CSI_115 139 OtrasTransfHogR D.7 R" "CSI_115 139 OtrasTransfHogU D.7 U""'
+	local specs `"`specs' "CSI_106 110 B5nNoFin B.5n U" "CSI_109 110 B5nFin B.5n U" "CSI_112 110 B5nGob B.5n U" "CSI_118 110 B5nISFLSH B.5n U""'
+	local specs `"`specs' "CSI_112 80 ImpProdGobR D.2 R" "CSI_112 89 SubGobR D.3 R" "CSI_112 95 RentaPropGobR D.4 R" "CSI_112 95 RentaPropGobU D.4 U""'
+	local specs `"`specs' "CSI_121 71 RemRowU D.1 U" "CSI_121 95 RentaPropRowU D.4 U" "CSI_121 95 RentaPropRowR D.4 R""'
+	local specs `"`specs' "CSI_103 27 PIBCSI B.1b U" "CSI_103 28 CapFijCSI P.51c U" "CSI_103 110 B5nS1 B.5n U""'
+	noisily SCNCongelado, copiar
 	local dir "${SIMROOT}/raw/temp/SCN"
-	foreach cuadro in CSI_115 CSI_103 {
+	foreach cuadro in CSI_115 CSI_103 CSI_106 CSI_109 CSI_112 CSI_118 CSI_121 {
 		local f "`dir'/`cuadro'.xlsx"
 		capture confirm file "`f'"
 		if _rc != 0 {
@@ -2855,6 +2894,31 @@ program define SCNHogaresS14
 	g double YAHogS14 = ExNOpHogS14 + MixNHogS14/3 + RentaPropHogR - RentaPropHogU
 	format YAHogS14 %20.0fc
 	label var YAHogS14 "Ingreso de activos NTA del sector hogares (S.14 B.2n + 1/3 B.3n + D.4 neto)"
+	* v8.15b: etiquetas de las celdas de sector y renta primaria neta pagada al exterior (D.4 recibida por el mundo − D.4 pagada por el mundo −
+	* D.1 pagada por el mundo a residentes): PIB − INB = RowPrimNeto (SNA 2008 §7.21) *
+	label var D1HogS14 "Remuneracion de los asalariados recibida por los hogares (S.14 D.1, fila 71, R/P; incluye la del exterior)"
+	label var D442Hog "Renta de inversion a pagar sobre derechos de pension recibida por los hogares (S.14 D.442, fila 103, R/P)"
+	label var RemesasHogS14 "Transferencias corrientes entre hogares residentes y no residentes recibidas (S.14 D.752, fila 150, R/P)"
+	label var ImpIngHog "Impuestos corrientes sobre el ingreso y la riqueza pagados por los hogares (S.14 D.5, fila 114, U/A)"
+	label var OtrasTransfHogR "Otras transferencias corrientes recibidas por los hogares (S.14 D.7, fila 139, R/P)"
+	label var OtrasTransfHogU "Otras transferencias corrientes pagadas por los hogares (S.14 D.7, fila 139, U/A)"
+	label var B5nNoFin "Saldo de ingresos primarios neto, sociedades no financieras (S.11 B.5n, fila 110)"
+	label var B5nFin "Saldo de ingresos primarios neto, sociedades financieras (S.12 B.5n, fila 110)"
+	label var B5nGob "Saldo de ingresos primarios neto, gobierno general (S.13 B.5n, fila 110)"
+	label var B5nISFLSH "Saldo de ingresos primarios neto, ISFLSH (S.15 B.5n, fila 110)"
+	label var ImpProdGobR "Impuestos sobre la produccion y las importaciones recibidos por el gobierno (S.13 D.2, fila 80, R/P)"
+	label var SubGobR "Subsidios pagados por el gobierno, con signo (S.13 D.3, fila 89, R/P)"
+	label var RentaPropGobR "Renta de la propiedad recibida por el gobierno (S.13 D.4, fila 95, R/P)"
+	label var RentaPropGobU "Renta de la propiedad pagada por el gobierno (S.13 D.4, fila 95, U/A)"
+	label var RemRowU "Remuneracion de asalariados pagada por el resto del mundo a residentes (S.2 D.1, fila 71, U/A)"
+	label var RentaPropRowU "Renta de la propiedad pagada por el resto del mundo a residentes (S.2 D.4, fila 95, U/A)"
+	label var RentaPropRowR "Renta de la propiedad recibida por el resto del mundo de residentes (S.2 D.4, fila 95, R/P)"
+	label var PIBCSI "Producto interno bruto, economia total, vintage CSI (S.1 B.1b, fila 27)"
+	label var CapFijCSI "Consumo de capital fijo, economia total, vintage CSI (S.1 P.51c, fila 28)"
+	label var B5nS1 "Saldo de ingresos primarios neto, economia total (S.1 B.5n, fila 110)"
+	g double RowPrimNeto = RentaPropRowR - RentaPropRowU - RemRowU
+	format RowPrimNeto %20.0fc
+	label var RowPrimNeto "Renta primaria neta pagada al resto del mundo (S.2: D.4 recibida − D.4 pagada − D.1 pagada; PIB − INB)"
 	summarize anio, meanonly
 	local u = r(max)
 	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]
@@ -2864,4 +2928,100 @@ program define SCNHogaresS14
 	noisily di in g "  S.14 hogares `u': B.8n " in y %20.0fc AhorroHogN[_N] in g "  B.8b " in y %20.0fc AhorroHogB[_N] in g "  P.4-P.3 " in y %20.0fc `p4p3' ///
 		in g "  D.61-D.614 " in y %20.0fc CuotasHogS14[_N]
 	save "${SIMROOT}/raw/temp/HogaresS14.dta", replace
+end
+
+
+program define SCNCongelado, rclass
+* v8.15b (E4, 2026-10-31; CUAD-0 §4 bis «congelamiento»): assets congelados del SCN en raw/SCN/ (refrescar-scn.sh --congelar):
+* bie/<serie>.csv (periodo,valor; solo años <= año de referencia) y CSI_1xx.xlsx, registrados en 05_scripts/manifest.json bajo
+* scn_vintage (sha256, fecha de consulta, etiqueta INEGI, vía). Verifica cada archivo presente contra su sha256; con copiar los deja
+* en raw/temp/AccesoBIE/ y raw/temp/SCN/, que es lo que UpdateSCN y SCNHogaresS14 leen (AccesoBIE salta la red cuando el sello
+* esta puesto). Un sha distinto es el candado de ensure_asset: aborta (198), salvo con `global rawwip` (avisa). Deja el sello en
+* $SCN_CONGELADO_SELLO (verde | amarillo) y el resumen en $SCN_CONGELADO_RES; Households.do lo imprime junto a las anclas S.14.
+	syntax [, Copiar]
+	global SCN_CONGELADO_ERR ""
+	global SCN_CONGELADO_RES ""
+	* Asset del manifest (raw/SCN/scn-congelado-2024.zip, refrescar-scn.sh --congelar): en una maquina sin raw/SCN/ se descarga de la
+	* Release (ensure_asset, sha256) y se desempaca; si el asset no esta declarado o la Release no lo trae, se sigue sin el (sello amarillo) *
+	capture confirm file "${SIMROOT}/raw/SCN/bie/724025.csv"
+	if _rc != 0 {
+		capture noisily ensure_asset "scn-congelado-2024.zip"
+		if _rc == 0 {
+			local cwd0 "`c(pwd)'"
+			cd "${SIMROOT}/raw/SCN"
+			capture noisily unzipfile "scn-congelado-2024.zip", replace
+			if _rc != 0 noisily di as err "  SCNCongelado: no se pudo desempacar raw/SCN/scn-congelado-2024.zip"
+			cd "`cwd0'"
+		}
+	}
+	python: scn_congelado("`copiar'", "$rawwip")
+	if "$SCN_CONGELADO_ERR" != "" {
+		noisily di as err "SCNCongelado: $SCN_CONGELADO_ERR"
+		exit 198
+	}
+	noisily di as text "  SCN congelado (raw/SCN, manifest scn_vintage): $SCN_CONGELADO_RES -> sello " as result "$SCN_CONGELADO_SELLO"
+	global scn_sello "$SCN_CONGELADO_SELLO"
+	return local sello "$SCN_CONGELADO_SELLO"
+end
+
+python:
+import hashlib, json, os, shutil
+from sfi import Macro
+
+def _sha(p):
+    h = hashlib.sha256()
+    with open(p, 'rb') as f:
+        for ch in iter(lambda: f.read(65536), b''):
+            h.update(ch)
+    return h.hexdigest()
+
+def scn_congelado(copiar, rawwip):
+    root = Macro.getGlobal('SIMROOT')
+    mp = os.path.join(root, '05_scripts', 'manifest.json')
+    try:
+        man = json.load(open(mp, encoding='utf-8'))
+    except Exception as e:
+        Macro.setGlobal('SCN_CONGELADO_SELLO', 'amarillo')
+        Macro.setGlobal('SCN_CONGELADO_RES', f'sin manifest legible ({e}); el motor lee raw/temp/ (descarga en caliente)')
+        return
+    sv = man.get('scn_vintage')
+    if not sv:
+        Macro.setGlobal('SCN_CONGELADO_SELLO', 'amarillo')
+        Macro.setGlobal('SCN_CONGELADO_RES', 'manifest sin scn_vintage: nada congelado (refrescar-scn.sh --congelar); el motor lee raw/temp/ (descarga en caliente)')
+        return
+    ok = falta = 0
+    malos = []
+    pares = []
+    for s, e in (sv.get('bie') or {}).items():
+        pares.append((os.path.join(root, e['archivo']), e['sha256'], os.path.join(root, 'raw', 'temp', 'AccesoBIE', f'{s}.csv')))
+    for c, e in ((sv.get('csi') or {}).get('cuadros') or {}).items():
+        pares.append((os.path.join(root, e['archivo']), e['sha256'], os.path.join(root, 'raw', 'temp', 'SCN', f'{c}.xlsx')))
+    for src, sha, dst in pares:
+        if not os.path.isfile(src):
+            falta += 1
+            continue
+        if _sha(src) != sha:
+            malos.append(os.path.relpath(src, root))
+            continue
+        ok += 1
+        if copiar:
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copyfile(src, dst)
+    res = (f"{ok} archivo(s) verificados por sha256 (consulta {sv.get('consulta', '?')}, año de referencia {sv.get('anio_referencia', '?')}, "
+           f"{sv.get('series_congeladas', '?')} series + {len((sv.get('csi') or {}).get('cuadros') or {})} cuadros CSI); {falta} ausente(s); {len(malos)} con sha distinto")
+    if malos:
+        msg = 'sha256 distinto al manifest (scn_vintage) en: ' + ', '.join(malos[:5]) + ('…' if len(malos) > 5 else '')
+        msg = msg + '. Si no los editaste, borra raw/SCN/ y re-corre refrescar-scn.sh --congelar; si los actualizaste a proposito, declaralo en el manifest (PR de datos).'
+        if rawwip:
+            print('  AVISO (rawwip): ' + msg)
+        else:
+            Macro.setGlobal('SCN_CONGELADO_ERR', msg)
+            Macro.setGlobal('SCN_CONGELADO_SELLO', 'rojo')
+            Macro.setGlobal('SCN_CONGELADO_RES', res)
+            return
+    sello = 'verde' if (ok and not falta and not malos) else 'amarillo'
+    if ok == 0:
+        res += '; sin assets en raw/SCN/: el motor lee raw/temp/ (descarga en caliente)'
+    Macro.setGlobal('SCN_CONGELADO_SELLO', sello)
+    Macro.setGlobal('SCN_CONGELADO_RES', res)
 end

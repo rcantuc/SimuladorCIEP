@@ -426,8 +426,21 @@ gate_release_remota() {
         return 0
     fi
     remote="$(remote_assets "$version")"
-    local missing="" name local_path sha why con_digest=0
+    local missing="" name local_path sha why con_digest=0 posteriores
+    # v8.15b: un asset declarado con `desde` posterior a esta version (p. ej. raw/SCN/scn-congelado-2024.zip, desde v8.15.0) entra a la
+    # Release al publicar ESA version; no se le exige a la Release vigente (ensure_asset lo declara ausente mientras tanto)
+    posteriores="$(python3 -c 'import json,sys
+v=sys.argv[2]
+def key(s):
+    return [int(x) for x in s.lstrip("v").split(".") if x.isdigit()]
+for a in json.load(open(sys.argv[1], encoding="utf-8")).get("assets", []):
+    d=a.get("desde")
+    if d and key(d) > key(v): print(a["name"])' "$REPO_ROOT/05_scripts/manifest.json" "$version" 2>/dev/null)"
     while IFS=$'\t' read -r name local_path sha; do
+        if grep -qx -- "$name" <<< "$posteriores"; then
+            log_info "Gate 8: $name declarado desde una version posterior a $version; no se exige en esta Release"
+            continue
+        fi
         if ! why="$(remote_asset_ok "$name" "$sha" "$local_path" "$remote")"; then
             missing+=$'\n'"  - $name ($why)"
         fi

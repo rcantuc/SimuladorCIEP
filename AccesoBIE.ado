@@ -1,4 +1,4 @@
-*! version 8.3 CIEP 16oct2026
+*! version 8.4 CIEP 31oct2026 (v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
@@ -109,8 +109,21 @@ program define AccesoBIE
 				noisily display as text "  {c A'}rea " as result "`area'" as text " de `serie' | tabla completa: `nfilas' filas, consulta INEGI ${INEGI_AREAS_FECHA_`serie'}, checksum `chk'"
 			}
 			else {
-				// Llamar a Python para obtener datos via API oficial
-				python: inegi_api("`serie'", "`token'")
+				// v8.15b (E4): asset congelado raw/SCN/bie/<serie>.csv (refrescar-scn.sh --congelar; sha256 verificado por
+				// SCNCongelado, que deja el sello): se usa sin tocar la red. Sin asset: descarga (API, respaldo .aspx) y se declara.
+				capture confirm file "${SIMROOT}/raw/SCN/bie/`serie'.csv"
+				if _rc == 0 & "$SCN_CONGELADO_SELLO" != "" & "$SCN_CONGELADO_SELLO" != "rojo" {
+					copy "${SIMROOT}/raw/SCN/bie/`serie'.csv" "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", replace
+					global INEGI_VARNAME_`serie' "v`serie'"
+					global INEGI_LABEL_`serie' "Serie `serie' (asset congelado raw/SCN)"
+					global INEGI_DESC_`serie' "asset congelado raw/SCN/bie/`serie'.csv (manifest scn_vintage; sin descarga)"
+					noisily display as text "  Serie `serie': asset congelado raw/SCN/bie/`serie'.csv (sin descarga)"
+				}
+				else {
+					if "$SCN_CONGELADO_SELLO" != "" noisily display as text "  Serie `serie': sin asset congelado; descarga en caliente (sello amarillo)"
+					// Llamar a Python para obtener datos via API oficial
+					python: inegi_api("`serie'", "`token'")
+				}
 				
 				// Importar los datos
 				import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)

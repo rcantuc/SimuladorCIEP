@@ -9,7 +9,7 @@
 #
 # Uso:
 #   bash 05_scripts/refrescar-scn.sh --comparar [--series "724014 724025 …"] [--todas] [--csi] [--salida <dir>] [--repo <root>] [--anio AAAA]
-#   bash 05_scripts/refrescar-scn.sh --congelar          # documentado, DESHABILITADO hasta 8.15b (ver abajo)
+#   bash 05_scripts/refrescar-scn.sh --congelar [--todas] [--salida <dir>] [--repo <root>] [--anio AAAA] [--desde vX.Y.Z]   # v8.15b (E4): escribe los assets
 #
 #   --comparar   Descarga por API las series del inventario (las que llegan a un escalar que algún módulo lee: ~90) a un
 #                directorio temporal, calcula sha256 de la serie congelada y de la descargada y compara valor a valor con
@@ -30,13 +30,20 @@
 # Exit: 0 = sin revisión INEGI (todas las celdas iguales); 1 = hay diferencias (tabla impresa); 3 = no comparado (sin token,
 # sin red, el BIE no respondió alguna serie, o falta lo congelado); 2 = uso / modo deshabilitado.
 #
-# Modo --congelar (spec pasos 6-7; queda documentado y DESHABILITADO hasta 8.15b): escribiría cada serie como asset de
-# raw/ (raw/SCN/<serie>.csv y los CSI_*.xlsx) con sha256, fecha de consulta y etiqueta INEGI en 05_scripts/manifest.json,
-# bumpearía data_updated y declararía el Δ en el CHANGELOG, todo en una rama de datos. Hasta entonces el único camino para
-# refrescar es el PR de datos a mano (runbook-actualizar-assets.md), con este reporte como evidencia.
+# Modo --congelar (v8.15b, sesion 2026-10-31; spec pasos 6-7, CUAD-0 §4 bis): hace lo mismo que --comparar (con --csi forzado) y ADEMAS
+# escribe los assets congelados en raw/SCN/: bie/<serie>.csv (periodo,valor; solo los años ≤ año de referencia: los posteriores se listan
+# «fuera del año de referencia» y NO se incorporan) para las series del inventario (--todas: las 525 de UpdateSCN) y los siete cuadros
+# CSI_1xx.xlsx que lee SCN.ado, y los registra en 05_scripts/manifest.json bajo `scn_vintage`: fecha de consulta, año de referencia,
+# canal (API | exportación pública), y por serie variable, uso, sha256, n, etiqueta INEGI del último dato y vía; por cuadro CSI sha256 y
+# las celdas del inventario (cuadro, fila, columna, código, variable, valor del año de referencia). SCN.ado (UpdateSCN, SCNHogaresS14) y
+# AccesoBIE.ado leen esos assets cuando existen y los verifican contra el sha256 del manifest (sello verde); sin asset, descargan y lo
+# declaran (sello amarillo). data_updated y el CHANGELOG los mueve el PR de datos (runbook-actualizar-assets.md), no este script.
+# raw/SCN/ no se versiona (como el resto de raw/): --congelar empaqueta ademas raw/SCN/scn-congelado-<anio>.zip (csv + xlsx) y lo declara en
+# `assets` del manifest con `desde` = la version en que entra a la Release (--desde; default: `baseline` del manifest): publicar.sh lo sube al
+# publicar esa version y su Gate 8 no lo exige en Releases anteriores; ensure_asset lo descarga en una maquina sin raw/ (SCNCongelado lo desempaca).
 set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""
+MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""; DESDE=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --comparar) MODO="comparar"; shift ;;
@@ -47,21 +54,19 @@ while [[ $# -gt 0 ]]; do
         --salida)   SALIDA="$2"; shift 2 ;;
         --repo)     REPO_ROOT="$2"; shift 2 ;;
         --anio)     ANIO="$2"; shift 2 ;;
+        --desde)    DESDE="$2"; shift 2 ;;
         -h|--help)  sed -n '2,40p' "$0"; exit 0 ;;
         *) echo "refrescar-scn: argumento desconocido: $1" >&2; exit 2 ;;
     esac
 done
+CONGELAR=0
 if [[ "$MODO" == "congelar" ]]; then
-    cat <<'EOF'
-refrescar-scn --congelar: DESHABILITADO hasta 8.15b (CUAD-0 §4 bis, pasos 6-7).
-  Lo que hará: escribir las series descargadas como assets congelados de raw/ (sha256, fecha de consulta y etiqueta INEGI en
-  05_scripts/manifest.json), mover data_updated y declarar el Δ en el CHANGELOG, en una rama de datos con su PR.
-  Mientras tanto: corre --comparar, adjunta el reporte al PR de datos y sigue 02_governance/runbook-actualizar-assets.md.
-EOF
-    exit 2
+    CONGELAR=1
+    CSI=1
+    [[ -n "$SALIDA" ]] || SALIDA="$REPO_ROOT/raw/SCN"
 fi
-if [[ "$MODO" != "comparar" ]]; then
-    echo "refrescar-scn: indica --comparar (o --congelar, deshabilitado). Ver --help." >&2
+if [[ "$MODO" != "comparar" && "$MODO" != "congelar" ]]; then
+    echo "refrescar-scn: indica --comparar o --congelar. Ver --help." >&2
     exit 2
 fi
 # token: set_token.do o entorno; nunca se imprime
@@ -75,9 +80,11 @@ if [[ -z "$TOKEN" || "$TOKEN" == "tu-token-aqui" ]]; then
 fi
 [[ -n "$SALIDA" ]] || SALIDA="$(mktemp -d -t refrescar-scn-XXXXXX)"
 mkdir -p "$SALIDA"
-BIE_API_TOKEN="$TOKEN" python3 -I - "$REPO_ROOT" "$SALIDA" "$TODAS" "$CSI" "$SERIES" "$ANIO" <<'PYEOF'
+BIE_API_TOKEN="$TOKEN" python3 -I - "$REPO_ROOT" "$SALIDA" "$TODAS" "$CSI" "$SERIES" "$ANIO" "$CONGELAR" "$DESDE" <<'PYEOF'
 import datetime, hashlib, io, json, os, re, ssl, sys, tempfile, time, urllib.request, urllib.error, zipfile
 root, salida, todas, csi, series_arg, anio_arg = sys.argv[1], sys.argv[2], sys.argv[3] == '1', sys.argv[4] == '1', sys.argv[5], sys.argv[6]
+congelar = sys.argv[7] == '1'
+desde_arg = sys.argv[8]
 # Año de referencia: anioenigh del motor (SIM.do), sin escalar nuevo; --anio lo sobreescribe
 if anio_arg.strip():
     ANIO_REF, anio_fuente = int(anio_arg), '--anio'
@@ -252,6 +259,7 @@ def bie(s):
 
 # ── 4. Comparar ──
 filas, resumen, nocomp = [], [], []
+BVALS = {}
 pib_cong = congelado('724025')[0] or {}
 for s in series:
     if s not in nombre: continue
@@ -285,6 +293,7 @@ for s in series:
         etiqueta_ult = f'{ult}: {bnotas.get(ult, "sin sufijo ni nota: cifra definitiva")}'
     if fuera:
         etiqueta_ult += ' · fuera de referencia: ' + '; '.join(f'{p} {bnotas.get(p, "")}'.strip() for p in fuera if p in bvals)
+    BVALS[s] = (bvals, bnotas, bmeta, via)
     resumen.append({'serie': s, 'nombre': nombre[s], 'etiqueta': etiqueta.get(nombre[s], ''), 'uso': INVENTARIO.get(s, '(solo UpdateSCN)'),
                     'congelado': {'fuente': cfuente, 'sha256': csha, 'fecha_archivo': cfecha, 'n': len(cvals)},
                     'bie': {'via': via, 'sha256_canonico': bsha, 'n': len(bvals), 'lastupdate': (bmeta or {}).get('LASTUPDATE') or (bmeta or {}).get('FECHA_CONSULTA_INEGI'), 'nota_serie': (bmeta or {}).get('NOTE') or (bmeta or {}).get('NOTAS_TITULO'), 'etiqueta_ultimo': etiqueta_ult, 'consulta': fecha},
@@ -304,7 +313,14 @@ if csi:
               ('CSI_115', 117, 'ContribSocHog D.61'), ('CSI_115', 127, 'ContribComplHog D.614'), ('CSI_103', 25, 'ImpProductosS1 D.21 (R/P)'),
               ('CSI_103', 26, 'SubProductosS1 D.31 (R/P)'), ('CSI_115', 169, 'AjustePensHog D.8 (R/P)'), ('CSI_115', 131, 'PrestSocHog D.62 (R/P)'),
               ('CSI_115', 151, 'OtrasTransfHog D.759 (R/P)'), ('CSI_115', 69, 'ExNOpHogS14 B.2n (R/P)'), ('CSI_115', 70, 'MixNHogS14 B.3n (R/P)'),
-              ('CSI_115', 95, 'RentaPropHog D.4 (R/P y U/A)'), ('CSI_115', 157, 'D.63 (verificación P.4 − P.3)')]
+              ('CSI_115', 95, 'RentaPropHog D.4 (R/P y U/A)'), ('CSI_115', 157, 'D.63 (verificación P.4 − P.3)'),
+              # v8.15b (E1/E3): anclas firmadas y filas de sector de la identidad del PIB (SCNHogaresS14)
+              ('CSI_115', 71, 'D1HogS14 D.1 (R/P)'), ('CSI_115', 103, 'D442Hog D.442 (R/P)'), ('CSI_115', 150, 'RemesasHogS14 D.752 (R/P)'),
+              ('CSI_115', 114, 'ImpIngHog D.5 (U/A)'), ('CSI_115', 139, 'OtrasTransfHogR/U D.7 (R/P y U/A)'),
+              ('CSI_106', 110, 'B5nNoFin B.5n (U/A)'), ('CSI_109', 110, 'B5nFin B.5n (U/A)'), ('CSI_112', 110, 'B5nGob B.5n (U/A)'), ('CSI_118', 110, 'B5nISFLSH B.5n (U/A)'),
+              ('CSI_112', 80, 'ImpProdGobR D.2 (R/P)'), ('CSI_112', 89, 'SubGobR D.3 (R/P)'), ('CSI_112', 95, 'RentaPropGob D.4 (R/P y U/A)'),
+              ('CSI_121', 71, 'RemRowU D.1 (U/A)'), ('CSI_121', 95, 'RentaPropRow D.4 (U/A y R/P)'),
+              ('CSI_103', 27, 'PIBCSI B.1b (U/A)'), ('CSI_103', 28, 'CapFijCSI P.51c (U/A)'), ('CSI_103', 110, 'B5nS1 B.5n (U/A)')]
     csi_rep = {'zip': 'https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip', 'cuadros': {}, 'celdas': []}
     try:
         import openpyxl
@@ -313,6 +329,7 @@ if csi:
         with abrir(csi_rep['zip'], 300) as r:
             open(zp, 'wb').write(r.read())
         csi_rep['zip_sha256'] = sha_bytes(open(zp, 'rb').read())
+        csi_rep['zip_local'] = zp
         z = zipfile.ZipFile(zp)
         for c in sorted({c for c, _, _ in CELDAS}):
             nuevo = z.read(f'{c}.xlsx')
@@ -327,7 +344,10 @@ if csi:
                 ra = [x.value for x in next(wa.iter_rows(min_row=fila, max_row=fila, min_col=1, max_col=45))]
                 rb = [x.value for x in next(wb.iter_rows(min_row=fila, max_row=fila, min_col=1, max_col=45))]
                 difs = [(i, ra[i], rb[i]) for i in range(1, 45) if ra[i] != rb[i]]
+                # columnas del año de referencia: pares (U/A, R/P) desde B = 2003; U/A = 2 + 2*(anio−2003), R/P = la siguiente (1-based)
+                cu_ = 2 + 2*(ANIO_REF - 2003)
                 csi_rep['celdas'].append({'cuadro': c, 'fila': fila, 'descripcion': desc, 'rotulo_congelado': ra[0], 'rotulo_bie': rb[0], 'columnas_distintas': len(difs),
+                                          'anio_referencia': ANIO_REF, 'UA': rb[cu_ - 1] if cu_ - 1 < len(rb) else None, 'RP': rb[cu_] if cu_ < len(rb) else None,
                                           'detalle': [{'col': i + 1, 'congelado': a, 'bie': b} for i, a, b in difs][:50]})
     except Exception as e:
         csi_rep['error'] = str(e)
@@ -374,6 +394,69 @@ json.dump({'consulta': fecha, 'anio_referencia': ANIO_REF, 'anio_referencia_fuen
            'no_comparadas': nocomp, 'csi': csi_rep}, open(os.path.join(salida, f'refrescar-scn-{stamp}.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(texto)
 print(f'Reporte: {salida}/refrescar-scn-{stamp}.md (+ .json)')
+
+# ── 7. --congelar (v8.15b, E4): assets en raw/SCN/ y registro scn_vintage en el manifest ──
+if congelar:
+    if nocomp or csi_rep is None or 'error' in csi_rep:
+        print('refrescar-scn --congelar: NO se congela (hay series no comparadas o la CSI falló): «no comparado» no es «sin revisión» (exit 3).'); sys.exit(3)
+    dest = os.path.join(root, 'raw', 'SCN')
+    os.makedirs(os.path.join(dest, 'bie'), exist_ok=True)
+    reg_bie = {}
+    for r in resumen:
+        s = r['serie']
+        bvals, bnotas, bmeta, via = BVALS[s]
+        pers = [p for p in bvals if anio_de(p) is not None and anio_de(p) <= ANIO_REF]
+        pers.sort(key=lambda x: (len(x), x))
+        canon = 'periodo,valor\n' + ''.join(f'{p},{"" if bvals[p] is None else repr(bvals[p])}\n' for p in pers)
+        fp = os.path.join(dest, 'bie', f'{s}.csv')
+        open(fp, 'w', encoding='utf-8', newline='\n').write(canon)
+        ult = max(pers, key=lambda x: (len(x), x)) if pers else ''
+        reg_bie[s] = {'variable': r['nombre'], 'etiqueta': r['etiqueta'], 'uso': r['uso'], 'archivo': f'raw/SCN/bie/{s}.csv',
+                      'sha256': sha_bytes(canon.encode('utf-8')), 'n': len(pers), 'ultimo': ult,
+                      'etiqueta_inegi_ultimo': bnotas.get(ult, 'sin sufijo ni nota: cifra definitiva'),
+                      'fuera_de_referencia': r['comparacion']['fuera_referencia'], 'via': via, 'lastupdate': r['bie']['lastupdate'], 'consulta': fecha}
+    reg_csi = {'zip': csi_rep['zip'], 'zip_sha256': csi_rep['zip_sha256'], 'consulta': fecha, 'cuadros': {}, 'celdas': []}
+    z = zipfile.ZipFile(csi_rep['zip_local'])
+    for c in sorted(csi_rep['cuadros']):
+        b = z.read(f'{c}.xlsx')
+        open(os.path.join(dest, f'{c}.xlsx'), 'wb').write(b)
+        reg_csi['cuadros'][c] = {'archivo': f'raw/SCN/{c}.xlsx', 'sha256': sha_bytes(b), 'igual_al_anterior': csi_rep['cuadros'][c]['igual']}
+    for x in csi_rep['celdas']:
+        lim = lambda v: (None if v is None or (isinstance(v, str) and not v.strip()) else v)
+        reg_csi['celdas'].append({'cuadro': x['cuadro'], 'fila': x['fila'], 'descripcion': x['descripcion'], 'rotulo': (x['rotulo_bie'] or '').strip(),
+                                  'anio': x['anio_referencia'], 'UA': lim(x['UA']), 'RP': lim(x['RP'])})
+    mp = os.path.join(root, '05_scripts', 'manifest.json')
+    man = json.load(open(mp, encoding='utf-8'))
+    man_new = {}
+    for k, v in man.items():
+        if k == 'assets':
+            man_new['scn_vintage'] = {
+                'regla': 'Assets congelados del SCN (CUAD-0 §4 bis, v8.15b E4): raw/SCN/bie/<serie>.csv (periodo,valor; solo años <= anio_referencia) y raw/SCN/CSI_1xx.xlsx. SCN.ado (UpdateSCN, SCNHogaresS14) y AccesoBIE.ado los leen cuando existen y verifican su sha256 (sello verde); sin asset descargan en caliente y lo declaran (sello amarillo). Se reescriben SOLO con refrescar-scn.sh --congelar en un PR de datos (data_updated y CHANGELOG declaran el delta). raw/SCN/ no se versiona: viaja con la Release.',
+                'consulta': fecha, 'anio_referencia': ANIO_REF, 'anio_referencia_fuente': anio_fuente,
+                'canal': 'API oficial del BIE con respaldo en la consulta pública de exportación (.aspx); la vía real de cada serie va en bie.<serie>.via',
+                'series_congeladas': len(reg_bie), 'bie': reg_bie, 'csi': reg_csi}
+        man_new[k] = v
+    if 'scn_vintage' not in man_new:
+        man_new['scn_vintage'] = man.get('scn_vintage')
+    # asset: raw/SCN/scn-congelado-<anio>.zip (csv + xlsx, orden fijo, fecha fija: zip determinista) declarado en `assets` con `desde`
+    zname = f'scn-congelado-{ANIO_REF}.zip'
+    zpath = os.path.join(dest, zname)
+    import zipfile as _zf
+    with _zf.ZipFile(zpath, 'w', compression=_zf.ZIP_DEFLATED) as zz:
+        for rel in sorted([f'bie/{s}.csv' for s in reg_bie] + [f'{c}.xlsx' for c in reg_csi['cuadros']]):
+            zi = _zf.ZipInfo(rel, date_time=(ANIO_REF, 12, 31, 0, 0, 0)); zi.compress_type = _zf.ZIP_DEFLATED
+            zz.writestr(zi, open(os.path.join(dest, rel), 'rb').read())
+    zb = open(zpath, 'rb').read()
+    desde = desde_arg.strip() or man.get('baseline') or man.get('version')
+    entrada = {'name': zname, 'local_path': f'raw/SCN/{zname}', 'sha256': sha_bytes(zb), 'size_bytes': len(zb), 'desde': desde,
+               'regla': 'Asset congelado del SCN (refrescar-scn.sh --congelar): bie/<serie>.csv (años <= anio_referencia) y CSI_1xx.xlsx; SCNCongelado lo desempaca en raw/SCN/ cuando faltan los archivos. `desde` = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores.'}
+    assets = [a for a in man_new.get('assets', []) if a.get('name') != zname] + [entrada]
+    man_new['assets'] = assets
+    man_new['scn_vintage']['asset'] = zname
+    json.dump(man_new, open(mp, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    open(mp, 'a', encoding='utf-8').write('\n')
+    print(f'ASSET: {zpath} ({len(zb)} bytes, sha256 {sha_bytes(zb)[:12]}…, desde {desde}) declarado en manifest.assets')
+    print(f'CONGELADO: {len(reg_bie)} series en {dest}/bie/ (años <= {ANIO_REF}), {len(reg_csi["cuadros"])} cuadros CSI en {dest}/, registro scn_vintage en {mp}')
 csi_dist = bool(csi_rep) and ('error' in csi_rep or any(not v['igual'] for v in csi_rep['cuadros'].values()))
 if nocomp or (csi_rep and 'error' in csi_rep):
     print(f'RESULTADO: NO COMPARADO en {len(nocomp)} serie(s)' + (' y CSI con error' if csi_rep and 'error' in csi_rep else '') + ' (exit 3): «no comparado» no es «sin revisión».'); sys.exit(3)

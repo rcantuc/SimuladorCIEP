@@ -23,24 +23,24 @@
  "sellos": {
   "conteo": {
    "sankeys_micro": [
-    15,
+    20,
     155
    ],
    "ciclo": [
-    18,
+    16,
     46
    ],
    "tasas": [
-    1,
+    0,
     10
    ]
   },
-  "texto": "15/155 / 18/46 / 1/10",
+  "texto": "20/155 / 16/46 / 0/10",
   "celdas_n_menor": {
-   "sankeys_micro": 13,
+   "sankeys_micro": 16,
    "ciclo": 14,
    "tasas": 0,
-   "total": 27
+   "total": 30
   },
   "sankeys": {
    "quintil": {
@@ -50,48 +50,55 @@
      {
       "from": "I",
       "to": "  Imp al capital",
-      "n": 56,
-      "top1": 17.96238352117145,
+      "n": 28,
+      "top1": 19.71607998993106,
       "motivo": "n"
      },
      {
       "from": "II",
       "to": "  Imp al capital",
-      "n": 86,
-      "top1": 8.510726036518173,
+      "n": 50,
+      "top1": 9.817500877036967,
+      "motivo": "n"
+     },
+     {
+      "from": "III",
+      "to": "  Imp al capital",
+      "n": 59,
+      "top1": 9.609518513926972,
       "motivo": "n"
      }
     ],
     "celdas": [
      {
       "celda": "I",
-      "n": "3110",
-      "hog": "833",
-      "pob": "190399"
+      "n": "2494",
+      "hog": "785",
+      "pob": "160112"
      },
      {
       "celda": "II",
-      "n": "2228",
-      "hog": "680",
-      "pob": "173091"
+      "n": "2481",
+      "hog": "716",
+      "pob": "175249"
      },
      {
       "celda": "III",
-      "n": "1864",
-      "hog": "625",
-      "pob": "150893"
+      "n": "1948",
+      "hog": "619",
+      "pob": "159633"
      },
      {
       "celda": "IV",
-      "n": "1669",
-      "hog": "624",
-      "pob": "129277"
+      "n": "1772",
+      "hog": "622",
+      "pob": "142216"
      },
      {
       "celda": "V",
-      "n": "1330",
-      "hog": "589",
-      "pob": "112338"
+      "n": "1506",
+      "hog": "609",
+      "pob": "118788"
      }
     ]
    },
@@ -108,10 +115,17 @@
      },
      {
       "from": "De 18 a 24",
+      "to": "Imp al trabajo",
+      "n": 648,
+      "top1": 26.55013229845651,
+      "motivo": "top1"
+     },
+     {
+      "from": "De 18 a 24",
       "to": "  Imp al capital",
-      "n": 53,
-      "top1": 6.095366065753057,
-      "motivo": "n"
+      "n": 8,
+      "top1": 76.22506963421961,
+      "motivo": "n+top1"
      }
     ],
     "celdas": [
@@ -150,7 +164,15 @@
    "sexo": {
     "corte": "sexo",
     "enlaces_micro": 16,
-    "sellados": [],
+    "sellados": [
+     {
+      "from": "Mujeres",
+      "to": "  Imp al capital",
+      "n": 169,
+      "top1": 41.76068464795087,
+      "motivo": "top1"
+     }
+    ],
     "celdas": [
      {
       "celda": "Hombres",
@@ -174,14 +196,14 @@
       "from": "Indígena",
       "to": "Imp al trabajo",
       "n": 71,
-      "top1": 33.26285336714353,
+      "top1": 32.18482333563004,
       "motivo": "n+top1"
      },
      {
       "from": "Indígena",
       "to": "  Imp al capital",
-      "n": 5,
-      "top1": 38.95808407526445,
+      "n": 2,
+      "top1": 58.19605640962212,
       "motivo": "n+top1"
      },
      {
@@ -234,22 +256,36 @@
      {
       "from": "Sin escolaridad",
       "to": "  Imp al capital",
-      "n": 13,
-      "top1": 35.36447313888052,
+      "n": 12,
+      "top1": 19.65051585935938,
+      "motivo": "n"
+     },
+     {
+      "from": "Media Superior",
+      "to": "  Imp al capital",
+      "n": 93,
+      "top1": 44.06879699470869,
       "motivo": "n+top1"
+     },
+     {
+      "from": "Superior",
+      "to": "  Imp al capital",
+      "n": 76,
+      "top1": 13.33479738075044,
+      "motivo": "n"
      },
      {
       "from": "Posgrado",
       "to": "Imp al trabajo",
-      "n": 92,
-      "top1": 6.470745105121242,
+      "n": 83,
+      "top1": 7.209246163903195,
       "motivo": "n"
      },
      {
       "from": "Posgrado",
       "to": "  Imp al capital",
-      "n": 21,
-      "top1": 31.94900897979042,
+      "n": 6,
+      "top1": 37.44558554691498,
       "motivo": "n+top1"
      },
      {
@@ -312,40 +348,10 @@
    {
     "sexo": "Hombres",
     "s": 1,
-    "g": 11,
-    "quinquenio": "50-54",
-    "n": 350,
-    "top1_aporta": 36.100684,
-    "top1_recibe": 5.662267,
-    "motivo": "top1"
-   },
-   {
-    "sexo": "Hombres",
-    "s": 1,
-    "g": 14,
-    "quinquenio": "65-69",
-    "n": 216,
-    "top1_aporta": 29.735617,
-    "top1_recibe": 9.440551,
-    "motivo": "top1"
-   },
-   {
-    "sexo": "Hombres",
-    "s": 1,
-    "g": 15,
-    "quinquenio": "70-74",
-    "n": 150,
-    "top1_aporta": 34.224196,
-    "top1_recibe": 13.164984,
-    "motivo": "top1"
-   },
-   {
-    "sexo": "Hombres",
-    "s": 1,
     "g": 17,
     "quinquenio": "80-84",
     "n": 49,
-    "top1_aporta": 35.341194,
+    "top1_aporta": 45.388755,
     "top1_recibe": 27.049613,
     "motivo": "n+top1"
    },
@@ -355,7 +361,7 @@
     "g": 18,
     "quinquenio": "85-89",
     "n": 32,
-    "top1_aporta": 25.405854,
+    "top1_aporta": 18.468938,
     "top1_recibe": 35.995183,
     "motivo": "n+top1"
    },
@@ -365,7 +371,7 @@
     "g": 19,
     "quinquenio": "90-94",
     "n": 7,
-    "top1_aporta": 95.024614,
+    "top1_aporta": 91.857933,
     "top1_recibe": 69.404255,
     "motivo": "n+top1"
    },
@@ -375,7 +381,7 @@
     "g": 20,
     "quinquenio": "95-99",
     "n": 5,
-    "top1_aporta": 87.730656,
+    "top1_aporta": 88.302974,
     "top1_recibe": 56.378317,
     "motivo": "n+top1"
    },
@@ -412,11 +418,21 @@
    {
     "sexo": "Mujeres",
     "s": 2,
-    "g": 9,
-    "quinquenio": "40-44",
-    "n": 356,
-    "top1_aporta": 25.553822,
-    "top1_recibe": 2.148619,
+    "g": 5,
+    "quinquenio": "20-24",
+    "n": 404,
+    "top1_aporta": 27.006619,
+    "top1_recibe": 2.75169,
+    "motivo": "top1"
+   },
+   {
+    "sexo": "Mujeres",
+    "s": 2,
+    "g": 7,
+    "quinquenio": "30-34",
+    "n": 396,
+    "top1_aporta": 51.703844,
+    "top1_recibe": 2.876646,
     "motivo": "top1"
    },
    {
@@ -425,7 +441,7 @@
     "g": 17,
     "quinquenio": "80-84",
     "n": 66,
-    "top1_aporta": 17.768373,
+    "top1_aporta": 13.097399,
     "top1_recibe": 31.225826,
     "motivo": "n+top1"
    },
@@ -435,7 +451,7 @@
     "g": 18,
     "quinquenio": "85-89",
     "n": 43,
-    "top1_aporta": 31.362143,
+    "top1_aporta": 39.728651,
     "top1_recibe": 14.177426,
     "motivo": "n+top1"
    },
@@ -445,7 +461,7 @@
     "g": 19,
     "quinquenio": "90-94",
     "n": 11,
-    "top1_aporta": 35.02559,
+    "top1_aporta": 34.98441,
     "top1_recibe": 43.445656,
     "motivo": "n+top1"
    },
@@ -455,7 +471,7 @@
     "g": 20,
     "quinquenio": "95-99",
     "n": 4,
-    "top1_aporta": 73.730128,
+    "top1_aporta": 73.723725,
     "top1_recibe": 47.593072,
     "motivo": "n+top1"
    },
@@ -490,33 +506,26 @@
     "motivo": "n"
    }
   ],
-  "tasas": [
-   {
-    "impuesto": "ISRPF",
-    "n": 10201,
-    "top1": 29.981754,
-    "motivo": "top1"
-   }
-  ],
+  "tasas": [],
   "top1_n100": {
-   "pct": 36.100684,
-   "donde": "ciclo Hombres 50-54 aporta (n=350)"
+   "pct": 51.703844,
+   "donde": "ciclo Mujeres 30-34 aporta (n=396)"
   },
   "top1_te": {
-   "pct": 29.981754,
-   "impuesto": "ISRPF"
+   "pct": 17.934008,
+   "impuesto": "ISRPM"
   }
  },
  "ciclo": {
-  "neto_pesos": 16408783478.78,
-  "aporta_pesos": 53577016221.51,
+  "neto_pesos": 14240821759.62,
+  "aporta_pesos": 51409054502.35,
   "recibe_pesos": 37168232742.72,
   "pob": 755998
  },
  "pibe": {
   "pibe_pesos": 257334843776.51132,
-  "neto_pesos": 16408783478.78194,
-  "neto_pct_pibe": 6.376432836678949,
+  "neto_pesos": 14240821759.62288,
+  "neto_pct_pibe": 5.533965610965092,
   "vintage": "2026-10-19",
   "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32)",
   "anio_vp": 2027,
@@ -530,19 +539,19 @@
   "neto_pct_pib": 3.171000000000003,
   "fuente_pct": "entidades-pibe32.json escalar NetoCicloPIBNac (contrato-32.do; null si la corrida no lo exportó)",
   "share_pob": 0.0055838,
-  "share_neto": 0.01312714,
+  "share_neto": 0.01139275,
   "n": 308598,
   "pob": 135391415
  },
  "tabla_32": {
   "fuente": "contrato-32.md §4, columna «selladas: sankeys micro / ciclo / TE»",
-  "tabla": "15/155 / 18/46 / 1/10",
-  "corrida": "15/155 / 18/46 / 1/10",
+  "tabla": "20/155 / 16/46 / 0/10",
+  "corrida": "20/155 / 16/46 / 0/10",
   "coincide": true
  },
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "46e10ba",
+  "commit": "b670faf",
   "insumos": [
    "ciclo-vida.json",
    "tasas-efectivas.json",
@@ -558,7 +567,7 @@
    "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
    "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
   },
-  "generado_el": "2026-10-30 14:23:49"
+  "generado_el": "2026-10-31 14:05:01"
  },
  "pibe_32": {
   "suma_pesos": 39629803600641.83,
