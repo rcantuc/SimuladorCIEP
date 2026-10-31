@@ -1,4 +1,4 @@
-*! version 8.12 CIEP 18oct2026
+*! version 8.15.1 CIEP 31oct2026
 * Precache — produce el cache de lo invariante al escenario (v8.12 fase 2a).
 *
 * Perfil del flujo web «Calcular» (02_governance/perf/perfil-web-2026-10-18.md):
@@ -27,8 +27,8 @@
 *                                 aniobase) de users/<id>/bootstraps/<B>/<var>RECprom.dta
 *                                 (lo que FiscalGap §4.2/§5.2 colapsaba 24 veces por clic).
 *   sello.txt                     tab-separado. Líneas:
-*                                   sello  <clave>  <valor>      (version, data_updated,
-*                                                                 commit, generado, id, bootstrap)
+*                                   sello  <clave>  <valor>      (version, data_updated, baseline,
+*                                                                 commit, generado, id, bootstrap, aniope)
 *                                   item   <item>   <archivo>
 *                                   insumo <item>   <ruta relativa a SIMROOT>  <bytes>  -
 *
@@ -69,6 +69,7 @@ program define Precache, rclass
 	_precache_manifest
 	local version "`r(version)'"
 	local data_updated "`r(data_updated)'"
+	local baseline "`r(baseline)'"
 	local commit "n/a"
 	tempfile gitout
 	capture quietly shell git -C "${SIMROOT}" rev-parse --short HEAD > "`gitout'" 2>/dev/null
@@ -84,6 +85,7 @@ program define Precache, rclass
 	}
 	file write `sello' "sello" _tab "version" _tab "`version'" _n
 	file write `sello' "sello" _tab "data_updated" _tab "`data_updated'" _n
+	file write `sello' "sello" _tab "baseline" _tab "`baseline'" _n
 	file write `sello' "sello" _tab "commit" _tab "`commit'" _n
 	file write `sello' "sello" _tab "generado" _tab "`c(current_date)' `c(current_time)'" _n
 	file write `sello' "sello" _tab "id" _tab "$id" _n
