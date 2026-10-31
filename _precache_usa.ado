@@ -1,5 +1,8 @@
-*! version 8.12 CIEP 18oct2026
+*! version 8.15.1 CIEP 31oct2026
 * _precache_usa — consumidor del cache de lo invariante (v8.12 fase 2a).
+* (8.15.1, hotfix fix/precache-manifest: el candado 2 llama a _precache_manifest, que ya
+* tolera texto libre con acentos graves, comillas y paréntesis en manifest.json; este
+* programa no expande ninguna línea del manifest: solo compara r(data_updated).)
 *
 * El flujo web «Calcular» recalculaba en cada clic piezas que no dependen del
 * formulario (PEF histórico sobre 3.56 M filas, base de hogares de GastoPC,
