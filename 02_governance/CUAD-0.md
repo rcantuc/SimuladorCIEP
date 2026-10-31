@@ -1,6 +1,6 @@
 # CUAD-0 — Capítulo `Households` del método: estado en v8.14.0 y propuesta de Cuadratura 8.15
 
-**Fecha:** 2026-10-30 · **Sesión:** v8.15a (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `ee410a3` (v8.14.0) · **Estado:** para firma de Ricardo; es el insumo de 8.15b.
+**Fecha:** 2026-10-30 · **Sesión:** v8.15a (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `ee410a3` (v8.14.0) · **Estado:** **firmado** por Ricardo el 2026-10-31 (`02_governance/CUAD-0-firma.md`, que manda donde difiera) e **implementado en la sesión v8.15b** (rama `sesion/v8.15b`; §4 lleva los valores firmados, §5 la columna «factor obtenido 8.15b», §7 los gates nuevos, §8 los FLAGs cerrados y §10 la verificación contra el manual). El paso 0 de v8.15b cambió una celda de la Tabla 1 respecto a la firma D: las rentas efectivas de hogares van a **B.2n** junto al alquiler imputado (firma §E, §10 bis).
 
 ## Encabezado
 
@@ -72,19 +72,23 @@ Estado en v8.14.0.
 
 ## §4 Decisiones: cada cambio de 8.15 como parámetro
 
-«Default» es lo que propone este memo para 8.15b; `actual` es el comportamiento de v8.14.0. Todo valor distinto de `actual` lleva FLAG en el header del módulo y en `nta-identidad.txt`. Los parámetros de 8.15 aún no existen en el código. «Añadido»: no estaba en el encargo; sale de la Tabla 1.
+**Firmado** (Ricardo, 2026-10-31, `CUAD-0-firma.md` §B) e **implementado en v8.15b**: «Firmado» es el default del código (`SIM.do` §0.8 lo declara; `Households.do` §0.0 lo valida y, suelto, lo impone); todo valor distinto imprime FLAG en el log de `Households.do` y en `nta-identidad.txt` y deja los números fuera del baseline (`manifest.json: baseline = v8.15.0`). «Añadido»: no estaba en el encargo; sale de la Tabla 1. Los Δ de nivel que esta tabla anotaba en v8.15a («saca 751.330 de Yl») eran ciertos solo si el ancla cambiaba a la vez (v8.15b-pre lo midió): en v8.15b cambian base y ancla juntas, así que los Δ reales están en el CHANGELOG `[v8.15.0]`.
 
-| Parámetro | Default | Alternativas | FLAG | Memo | Qué cambia si se mueve |
+| Parámetro | Firmado (default v8.15b) | Alternativas | FLAG | Memo | Qué hace |
 |---|---|---|---|---|---|
-| `pensiones_en_yl` | `off` | `on` (actual) | «pensiones fuera de Yl: D.62» | CUAD-0 | Saca 751.330 de `Yl` y de `ing_subor`; D.1 deja de cargar con D.62. |
-| `ing_mixto_depurado` | `transf_negocios` | `off` (actual), `transf` | «base de B.3n = …» | CUAD-0 | `transf`: quita 742.684 crudos y sube el factor a 14.50. `transf_negocios`: además mueve negocios a B.3n; factor 5.05 y `ing_capital` pierde 1,019.131 crudos. |
-| `yk_ancla` | `b2n_b3n_d4` | `actual` | «Yk = B.2n + ⅓ B.3n + D.4 neto de S.14» | CUAD-0; `C1 §6.1` | `Yk` neto de CCF pasa de 10,478.495 a 8,832.323; el factor 1.1938 de `NTA.do` queda en 1. |
-| `cap4` | `fuera` | `mixto` (actual) | «enajenaciones fuera de la cuenta corriente» | CUAD-0 | 95.936 crudos salen de `ing_mixto` (hoy 590.4 × 6.15); siguen en la base del ISR. |
-| `cap3_particion` (añadido) | `acotada` (share en [0,1]) | `actual` | «partición de rentas acotada» | CUAD-0 | `cap3PM` deja de ser −160.094. Con el default: B.3n 5.05 → 5.71, D.4 10.55 → 8.11. |
-| `alq_en_capital` (añadido) | `off` | `on` (actual) | «alquiler fuera de la base de capital» | CUAD-0 | Saca 352.038 crudos de la base de `ing_capital`: hoy ese alquiler pesa 1,283.4 bn anclado a sociedades, además de ir en `ing_estim_alqu`. |
-| `suborrow` (añadido) | `off` con ancla D.1 de S.14 | `on` (actual) | «ROW dentro de D.1» | CUAD-0 | Evita duplicar 52.721. |
-| `oye_en_hub` (añadido) | `on` (actual) | `off` | «OyE fuera del hub» | `C1 §4.4` D2 | Con `off` el hub baja 1,601.824. Ricardo decide; el default no cambia. |
-| `cuotas_d614` (añadido) | `neto` | `actual` | «circuito D.614/D.442 neteado» | CUAD-0; `C1 §4.4` D5 | Cierra 605.9 bn de la brecha de S (Δ esperado). Sin esto, el ancla de S cae a `off` por la regla `auto`. |
+| `pensiones_en_yl` | `off` | `on` (v8.14.0) | «pensiones fuera de Yl: D.62» | CUAD-0; firma A.1 | `ing_jubila` no entra a `ing_t4_cap1` ni a `ing_subor`; el ancla D.1 se reparte solo sobre salarios y YL coincide con D.1 + ⅔ B.3n. |
+| `ing_mixto_depurado` | `transf_negocios` | `off` (v8.14.0) | «base de B.3n = honorarios + negocios propios» | CUAD-0; firma B.3 | `ing_mixto` = `ing_t4_cap2` íntegro + `ing_t2_cap1` + `ing_t2_cap8` (P068–P081); cap5, cap7, cap9 (transferencias, financieros, remesas crudas) y cap6, cap8 (intereses, dividendos) quedan con factor 1 fuera de Yl/Yk (siguen en `ing_bruto_tax`). `transf` (sin negocios) desaparece: sin partición pf/PM, B.3n es la única celda de los negocios. |
+| `rentas_celda` (añadido en v8.15b, paso 0) | `b2n` | `b3n` (firma D) | «rentas efectivas en B.2n junto al alquiler imputado» | firma §E; §10 bis | `ing_t4_cap3` (P023–P025, P031) se ancla con `TaltimirHouse` a B.2n junto con `ing_estim_alqu` y viaja en Yk; con `b3n` entra a `ing_mixto`. |
+| `d4_relativo` (añadido, firma) | `proxy_propiedad` | `enigh` | «D.4 por proxy de propiedad; la ENIGH cubre <1 % de la celda» (**sello rojo**) | firma A.2, B | `ing_capital` = `Distribucion` de D.4 neto S.14 (− D.442 con `cuotas_d614=neto`) ∝ (cap6 + cap8 + cap3 + alquiler imputado + negocios, crudos); `enigh` = cap6 + cap8 (factor ≈ 250). `escalar D4CoberturaENIGH` declara la cobertura. |
+| `yk_ancla` | `b2n_b3n_d4` | `actual` (v8.14.0) | «Yk = B.2n + ⅓ B.3n + D.4 neto de S.14» | CUAD-0; `C1 §6.1`; firma B.5 | Yk = `ing_capital` + `ing_mixtoK` + `ing_estim_alqu` (+ cap3 con `b2n`) + CCF BIE ∝ `ing_capital`; gate Σ Yk − CCF = YAHogS14 − D.442 a 1e-9; el factor de `NTA.do` es 1 y se exige. `actual` reproduce las fórmulas de v8.14.0 y rompe los gates (declarado). |
+| `cap4` | `fuera` | `dentro` (v8.14.0) | «enajenaciones fuera de la cuenta corriente» | CUAD-0; firma B.6 | `ing_t4_cap4` con factor 1, fuera de Yl/Yk; sigue en `ing_bruto_tax`. Con `dentro` entra a `ing_mixto` con el mismo factor (ya no dos factores). |
+| `cap3_particion` | **sin objeto** | — | — | firma B.7 | Murió con la decisión 3: no existen `*pf`/`*PM`; `Households.do` rechaza el global. |
+| `alq_en_capital` | `off` (único valor) | — | «alquiler fuera de la base de capital» | CUAD-0; firma B.8 | El alquiler imputado vive solo en `ing_estim_alqu` (B.2n); `ing_capital` ya no es suma de variables ENIGH. |
+| `suborrow` | `off` | `on` (v8.14.0) | «ROW dentro de D.1» | CUAD-0; firma B.9 | D.1 S.14 (f.71) ya incluye los 52.721 del exterior (CSI_121 f.71); no existen `ing_suborROW` ni `ing_capitalROW`. |
+| `oye_en_hub` | `off` | `on` (v8.14.0) | «OyE fuera del hub» | `C1 §4.4` D2; firma B.10 | OyE no se reparte a personas (`ing_Sector_Publico` no existe); en los Sankeys NTA entra como «Empresas públicas → Gobierno», en el fiscal (`SankeySF`) ya entraba como «Empresas públicas → CGPE». |
+| `cuotas_d614` | `neto` | `actual` | «circuito D.614/D.442 neteado» | CUAD-0; `C1 §4.4` D5; firma B.11 | D.442 (605.932) sale de la celda de `ing_capital` y de YA (`NTA.do`); D.614 ya estaba fuera de las cuotas. YA_base = 8,226.391. |
+| Impuestos embebidos | explícitos | — | «sin impuestos en los factores» | firma; E1 | Ningún `Taltimir*` lleva impuestos a productos ni a la producción; `ImpNetProductos` (∝ gasto) e `ImpNetProduccion` (∝ base gravable) se reparten explícitos en §12 y no entran a Yl/Yk. |
+| Filas de sector (decisión 13) | en `Sankey.do` y `output.txt` | — | «PIB = YL + YA + sectores» | firma B.13; `C1 §4.3` | PIB (BIE) = YL + YA + D.442 + B.5n S.11 + S.12 + B.5n S.13 + B.5n S.15 + CCF + renta primaria neta pagada al exterior + vintage BIE−CSI; gate a 1e-9 en `Households.do` §9.1; llave `CUADRATURA` en `output.txt`. |
 
 **Decisiones ya vivas** (la plantilla exige que aparezcan). Las tres primeras no son parámetro en v8.14.0: se declaran aquí para que existan.
 
@@ -92,7 +96,7 @@ Estado en v8.14.0.
 |---|---|---|---|---|---|
 | `informalidad` | `corte` | `probabilistica` (8.16) | No existe aún | `plantilla`; cap0 fila 12 | Pasa de corte por ranking a esperanza p × obligación. Fuera de 8.15. |
 | `perfilpc` | perfil edad-sexo | per cápita | Sin parámetro en `Households.do` | Header de `Households.do` l. 5–7 | Reparte gasto, alquiler y depreciación del hogar entre sus miembros de otro modo. |
-| `ImpNetProductos_mixK` | ⅓ en YA, ⅔ en YL | YA completo (hasta v8.13) | Sin parámetro; fijo en `NTA.do` l. 361, 386 | `C1 §6.1` | Con v8.13 YL llevaba 331.707 de impuestos a productos. Desaparece con `yk_ancla` y `ing_mixto_depurado`. |
+| `ImpNetProductos_mixK` | **desapareció en v8.15b** (no hay impuestos embebidos; `NTA.do` conserva la resta cableada, que vale 0 con la firma) | ⅓ en YA, ⅔ en YL (v8.14.0) | Sin parámetro | `C1 §6.1` | Con v8.13 YL llevaba 331.707 de impuestos a productos; con v8.14, 0 en YA y YL llevaba ⅔. |
 | `altimir` | `yes` | no | `H l.16`, `l.2108` | CUAD-0 | Sin factores: los ingresos quedan crudos y los impuestos se suman explícitos (`H l.2448–2457`). |
 
 ### §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)
@@ -101,7 +105,7 @@ Estado en v8.14.0.
 - **Congelamiento:** cada descarga queda en `raw/` como asset del manifest, con sha256 y vintage (fecha de consulta + etiqueta INEGI preliminar/revisada) en el header del módulo y en `manifest.json`.
 - **Refresco deliberado:** nunca hay lectura en caliente. Un cambio de INEGI entra solo por PR de datos.
 
-**Spec de `05_scripts/refrescar-scn.sh` (se implementa en 8.15b):**
+**Spec de `05_scripts/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde, y descargan solo si falta, sello amarillo):**
 
 ```text
 Uso: 05_scripts/refrescar-scn.sh --comparar [--series <lista>]
@@ -118,7 +122,7 @@ Uso: 05_scripts/refrescar-scn.sh --comparar [--series <lista>]
 
 ### §4 ter — Campo `baseline`
 
-`manifest-datos.json` y `manifest.json` ganan `baseline: "<tag desde el que los números son comparables>"`. El CHANGELOG lleva la línea «a partir de vX los números no comparan con ≤vY por…». Se llena por primera vez en 8.15b. **Gate propuesto:** `publicar.sh --check` exige `baseline` desde v8.15.0.
+`manifest-datos.json` y `manifest.json` ganan `baseline: "<tag desde el que los números son comparables>"`. El CHANGELOG lleva la línea «a partir de vX los números no comparan con ≤vY por…». Se llena por primera vez en 8.15b: `baseline = v8.15.0` (firma B.14). **Gate 11** de `publicar.sh` (v8.15b-pre) exige `baseline` desde v8.15.0.
 
 ---
 
@@ -244,22 +248,23 @@ La versión de cierre es **propuesta** de este memo.
 
 | # | FLAG abierto | Magnitud (bn) | Cierre propuesto |
 |---|---|---:|---|
-| 1 | Transferencias y flujos financieros en `ing_mixto` | 4,570.687 | 8.15b |
-| 2 | Pensiones en `Yl` | 751.330 | 8.15b |
-| 3 | `Yk` anclado fuera de S.14 | 10,478.495 vs 8,832.323 | 8.15b |
-| 4 | `*_t4_cap4` con dos factores | 95.936 crudos | 8.15b |
-| 5 | Partición de `cap3` con share 2.4455 y `cap3PM` negativo | −160.094 crudos | 8.15b |
-| 6 | Alquiler imputado en la base de `ing_capital` | 352.038 crudos | 8.15b |
-| 7 | Remesas escaladas dos veces | 141.526 crudos | 8.15b |
-| 8 | Impuestos embebidos por Altimir en `Yl`/`Yk` | 247 de D.29 − D.39 | 8.15b |
-| 9 | CSI y BIE sin asset congelado | toda ancla S.14 | 8.15b (§4 bis) |
-| 10 | Vintage BIE vs CSI | 84.901 en NNI | 8.15b: se declara; una sola fuente, después |
-| 11 | OyE duplica frente al SCN | 1,601.824 | Decisión de Ricardo |
-| 12 | Circuito D.614 / D.442 | 605.932 | 8.15b, si se conserva el ancla de S |
+| 1 | Transferencias y flujos financieros en `ing_mixto` | 4,570.687 | **Cerrado en v8.15b**: `ing_mixto_depurado = transf_negocios` (cap5, cap7, cap9 con factor 1 fuera de Yl/Yk) |
+| 2 | Pensiones en `Yl` | 751.330 | **Cerrado en v8.15b**: `pensiones_en_yl = off` |
+| 3 | `Yk` anclado fuera de S.14 | 10,478.495 vs 8,832.323 | **Cerrado en v8.15b**: `yk_ancla = b2n_b3n_d4` completo (Σ Yk − CCF = YAHogS14 − D.442 = 8,226.391, gate 1e-9; factor NTA = 1) |
+| 4 | `*_t4_cap4` con dos factores | 95.936 crudos | **Cerrado en v8.15b**: `cap4 = fuera` (factor 1); con `dentro` un solo factor |
+| 5 | Partición de `cap3` con share 2.4455 y `cap3PM` negativo | −160.094 crudos | **Cerrado en v8.15b**: sin partición pf/PM; `cap3` íntegro a B.2n (`rentas_celda = b2n`, paso 0) |
+| 6 | Alquiler imputado en la base de `ing_capital` | 352.038 crudos | **Cerrado en v8.15b**: `alq_en_capital = off`; `ing_capital` = Distribución de D.4 neto |
+| 7 | Remesas escaladas dos veces | 141.526 crudos | **Cerrado en v8.15b**: cap9 con factor 1; `ing_remesas` × ROWTrans una sola vez (D.752 S.14 1,188.474 se reporta) |
+| 8 | Impuestos embebidos por Altimir en `Yl`/`Yk` | 247 de D.29 − D.39 | **Cerrado en v8.15b**: ningún `Taltimir*` lleva impuestos; `ImpNetProductos`/`ImpNetProduccion` explícitos, fuera de Yl/Yk |
+| 9 | CSI y BIE sin asset congelado | toda ancla S.14 | **Cerrado en v8.15b**: `refrescar-scn.sh --congelar` → `raw/SCN/` + `manifest.json: scn_vintage`; `SCN.ado`/`AccesoBIE.ado` lo verifican (sello verde) |
+| 10 | Vintage BIE vs CSI | 84.124 en PIB (B.1b CSI 33,582.899 vs BIE 33,667.023); 0.776 en CCF | **Declarado en v8.15b** como fila «Vintage BIE−CSI» de la identidad (`CUADRATURA`); una sola fuente, después |
+| 11 | OyE duplica frente al SCN | 1,601.824 | **Cerrado en v8.15b**: `oye_en_hub = off` (firma B.10); «Empresas públicas → Gobierno» |
+| 12 | Circuito D.614 / D.442 | 605.932 | **Cerrado en v8.15b**: `cuotas_d614 = neto` (firma B.11); fila «Circuito D.442 → D.614» en la identidad |
 | 13 | Cuotas todas a Gobierno | 1,045.130 | Sin fecha (Sankey de economía completa) |
 | 14 | τ⁺ con D.62 privado en Gobierno | 442.344 | Sin fecha |
 | 15 | ISFLSH mezcladas con hogares y Gobierno: D.63 en la especie; colectivo corto | 388.320 / 379.839 | Sin fecha |
-| 16 | Catálogo ENIGH de P068–P081 sin verificar contra el descriptor | 1,019.131 crudos | Antes de 8.15b |
+| 16 | Catálogo ENIGH de P068–P081 sin verificar contra el descriptor | 1,019.131 crudos | **Cerrado en v8.15b-pre (4a)**: «ingresos por negocio propio» (trabajo independiente) |
+| 18 | Rentas efectivas de hogares: B.3n (SNA §7.9, firma D) o B.2n (SNA §24.55, CSVM 2024) | 110.753 crudos; B.2b − alquiler imputado = 221.184 | **Decidido en v8.15b (paso 0)**: `rentas_celda = b2n`; sello amarillo hasta leer la metodología CSI base 2018 (§10 bis) |
 | 17 | Subreporte de top incomes en la ENIGH | Sin magnitud en este memo | Estructural |
 
 ## §9 Específico de México
@@ -293,6 +298,20 @@ La versión de cierre es **propuesta** de este memo.
 | §7 | `05_scripts/gate-numeros.sh`; `diag-v8.15a-2026-10-30/gate-numeros.txt`; `NTA.do` l. 128, 686–698; `05_scripts/test-nta-identidad.sh`; `02-ritual/commit.txt` |
 | §9 | `Households.do` l. 2106, 2178–2253; `Poblacion.ado` l. 650–655; `metodo/cap0-requerimientos.md`; `diag-v8.14.0-2026-10-30/02-ritual/wrap.log` l. 586–600, 1529–1537 |
 | Δ esperado | Aritmética de Tabla 1, `nta-identidad.txt` y CSI_115 f.114–171 |
+
+### §10 bis — Verificación contra el manual (sesión v8.15b, 2026-10-31; párrafos literales y URL)
+
+Regla de la firma §D: ninguna frase del método nace fuera del repo; lo citado se copia literal. Leído en la sesión: SNA 2008 (texto final, PDF de la ONU, caps. 7 y 24), la metodología de la CSI base 2008 de INEGI (base 2018 no localizada: la guía rápida remite a «Fuentes y metodologías. Año base 2018», sin PDF público encontrado), el glosario de la CSI 2003 de INEGI y la Cuenta Satélite de Vivienda de México 2024.
+
+1. **Ingreso mixto vs excedente de operación de los hogares — SNA 2008 §7.9** (https://unstats.un.org/unsd/nationalaccount/docs/SNA2008.pdf; borrador idéntico en https://unstats.un.org/unsd/statcom/doc08/SNA-Chapter7.pdf): «In practice, all unincorporated enterprises owned by households that are not quasi-corporations are deemed to have mixed income as their balancing item, except owner-occupiers in their capacity as producers of housing services for own final consumption and households employing paid domestic staff. For owner-occupiers, all value added is operating surplus and for domestic staff all value added is compensation of employees.»
+2. **Saldo de ingresos primarios de los hogares — SNA 2008 §7.19(c)**: «The balance of primary incomes of the household sector consists of compensation of employees and mixed incomes accruing to households, plus property income receivable less property income payable. It also includes the operating surplus from housing services produced for own consumption by owner-occupiers.»
+3. **Arrendamiento de vivienda — SNA 2008 §24.55** (cap. 24, «The households sector», p. 466–467 del PDF): «By convention, all the value added arising from leasing dwellings is treated as operating surplus, not mixed income.» Y §24.7: «Moreover, many households without any other production activities will contain unincorporated enterprises providing housing services from owner-occupied dwellings and from employing domestic staff.» Y §24.6 sobre cuasisociedades: «To the extent possible, the production activities within households are treated as quasi-corporations, included in one of the corporations sectors and separated from the rest of the household. However, as explained in paragraphs 4.155 to 4.157 a quasi-corporation can only be created when a full set of accounts, including balance sheet entries and information about withdrawals of income from the quasi-corporation, is available.»
+4. **PIB vs INB — SNA 2008 §7.21** (sostiene la fila «Renta primaria neta pagada al exterior» de la identidad): «It follows that the difference between the numerical values of GNI and GDP is equal to the difference between the total primary incomes receivable by residents from non-residents and the total primary incomes payable by residents to non-residents (that is, net income from abroad).»
+5. **INEGI, Cuentas por sectores institucionales 2003–2013, año base 2008, fuentes y metodología (2014), p. 33** (https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/metodologias/SCNM/702825068479.pdf): «…el excedente derivado de las actividades productivas de una empresa no constituida en sociedad perteneciente a un hogar representa una combinación de dos clases diferentes de ingreso, razón por la cual el actual SCN lo denomina “Ingreso Mixto” en lugar de “excedente de operación”, excepto cuando se trata del excedente derivado de la producción por cuenta propia de los servicios de vivienda.» Y p. 12: «Se denominan “cuasisociedades” a las empresas que no están constituidas en sociedad pero funcionan como tal, pues se comportan en forma autónoma e independiente de sus propietarios y disponen de conjuntos completos de cuentas, condición necesaria para que sean tratadas como cuasisociedades. Como consecuencia de ello, las cuasisociedades que son propiedad de los Hogares o del Gobierno se agrupan junto con las [sociedades]».
+6. **INEGI, SCNM, Cuentas por sectores institucionales 2003 (glosario)** (https://www.inegi.org.mx/contenidos/programas/hogares/2003/doc/702825000150.pdf): «EXCEDENTE BRUTO DE OPERACIÓN. … El Manual del Sistema de Cuentas Nacionales indica que se debe computar como excedente bruto de operación al importe de la imputación hecha por los alquileres de las viviendas que son propiedad de los Hogares.» Y: «La Producción para uso final propio se realiza únicamente en las empresas no constituídas en sociedad con bienes producidos por los miembros del hogar, los servicios de alquiler de viviendas ocupadas por los propietarios y el servicio doméstico remunerado.»
+7. **INEGI, Cuenta Satélite de Vivienda de México 2024, Reporte de resultados 47/25 (21-nov-2025), p. 7–8** (https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2025/viviendasat/CSVM2024_RR.pdf): «Adicionalmente, la CSVM proporciona datos sobre la valoración del alquiler imputado, que representa el monto que pagaría una persona propietaria si alquilara la vivienda que habita … En 2024, dicho concepto alcanzó un monto de 1 886 385 millones de pesos. Esta cifra representó 6.0 % del PIB de la economía total.»
+8. **Prueba empírica (paso 0)**: B.2b S.14 = 2,107.569 (CSI_115 f.59) > alquiler imputado 1,886.385 por 221.184 bn (11.7 %); B.2n = 910.359 tras P.51c1 = 1,197.210. INEGI registra en B.2 de los hogares más que el alquiler imputado: consistente con §24.55 (el arrendamiento de vivienda por hogares es excedente de operación) y con la serie BIE 724611 «04.1 Alquileres efectivos de alojamiento» = 2,763.650, que no separa efectivos de imputados. Decisión: `rentas_celda = b2n`. Lo que la firma D leyó en §7.9 (toda empresa no constituida → B.3n) no contempla la convención de §24.55 para el arrendamiento de vivienda.
+9. **D.442/D.614 y D.752**: firma §D.3 y §D.5 (SNA 2008 cap. 8 borrador §8.77, §8.83, §8.26(e)); en la CSI mexicana D.442 = D.614 = 605.932 (CSI_115 f.103 y f.127) y D.752 recibida = 1,188.474 (f.150).
 
 ---
 
