@@ -106,6 +106,11 @@ log_ok()    { log "${GREEN}[OK]${NC}   $*"; }
 log_warn()  { log "${YELLOW}[WARN]${NC} $*"; }
 log_error() { log "${RED}[ERROR]${NC} $*"; }
 die()       { log_error "$*"; exit 1; }
+# v8.15a: lo que el operador tiene que ver (pregunta del cutover, línea de rollback) va directo a /dev/tty, para que
+# un `| tee | grep` no lo esconda; sin tty, a stdout. Al log siempre.
+hay_tty()   { { : > /dev/tty; } 2>/dev/null; }
+tty_o_out() { if hay_tty; then printf '%s' "$*" > /dev/tty; else printf '%s' "$*"; fi; }
+log_tty()   { tty_o_out "$*"$'\n'; printf '%s\n' "$*" >> "$LOG_FILE"; }
 
 usage() {
     cat <<'EOF'
@@ -1306,9 +1311,10 @@ if [[ $DRY_RUN -eq 1 ]]; then
     log_info "  ln -sfn '$VPS_SIM_ROOT/$VPS_SIM_VERSION' '$VPS_SIM_ROOT/current'"
 else
     if [[ $FORCE -eq 0 ]]; then
-        log_warn "A punto de cambiar el symlink current: ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"} → $VERSION_ARG"
+        log_tty "${YELLOW}[WARN]${NC} A punto de cambiar el symlink current: ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"} → $VERSION_ARG"
         answer=""
-        read -r -p "¿Continuar con el cutover? [y/N] " answer || true
+        tty_o_out "¿Continuar con el cutover? [y/N] "
+        read -r answer || true
         if [[ ! "$answer" =~ ^[yY]$ ]]; then
             die "Cutover cancelado por el operador. El código ya está en el VPS pero NO activado (symlink intacto)."
         fi
@@ -1502,7 +1508,7 @@ log_info "Gate humano del default (Fase 3b-ter): curl -s '${VPS_HEALTH_URL%/*}/c
 log_info "                                       curl -s '${VPS_HEALTH_URL%/*}/jsonSankey.php' | head -c 300"
 log_info "(JSON con los números de la corrida local fresca, no los fósiles)."
 if [[ -n "$PREVIOUS_DEPLOYMENT" && $DRY_RUN -eq 0 ]]; then
-    log_info "Rollback manual si lo necesitas después:"
-    log_info "  ssh ${VPS_USER}@${VPS_HOST} \"ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'\""
+    log_tty "${BLUE}[INFO]${NC} Rollback manual si lo necesitas después:"
+    log_tty "${BLUE}[INFO]${NC}   ssh ${VPS_USER}@${VPS_HOST} \"ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'\""
 fi
 exit 0
