@@ -16,8 +16,10 @@
 #      tasas efectivas, sellos y concentración top-1) -> <evidencia>/contrato-32.md
 #
 # Uso:
-#   bash 05_scripts/contrato-32.sh --evidencia <dir> [--refs <dir con output.txt y sankey-*.json de referencia>]
+#   bash 05_scripts/contrato-32.sh --evidencia <dir> [--refs <dir con output.txt y sankey-*.json o SankeySF/>]
 #        [--statajson <statajson_entidad-nl.json>] [--entidad-sesion "Nuevo León"] [--stata <ruta>] [--sin-sim]
+#   --refs (v8.15a): sankey-*.json planos junto a output.txt, o el layout de correr-sim.sh (SankeySF/). Una referencia
+#   que falta es «referencia ausente: <ruta>» y hace FALLÓ, con mensaje distinto de «difiere».
 #   --sin-sim reutiliza la sesión anterior (exige <evidencia>/escalares.do, como compuertas-entidad.sh).
 #   --statajson: testigo NL; default (v8.14) 05_scripts/fixtures/statajson_entidad-nl.json (motor actual, post-v8.12.4).
 #   6. (v8.13.0) generar-entidades.py meta: users/<id>/<ABREV>/meta.json (sellos con su n; PIBE y neto del

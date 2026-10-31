@@ -51,13 +51,19 @@ def main():
     P('## 1 Paridad: el flujo nacional no cambia un byte')
     prods = ['output.txt'] + [f'sankey-{k}.json' for k in ('decil', 'grupoedad', 'sexo', 'rural', 'escol')]
     if a.refs:
+        # v8.15a: --refs acepta los dos layouts: plano (sankey-*.json junto a output.txt) o el de correr-sim.sh (SankeySF/; SankeyNTA/ trae los mismos nombres y no se compara aquí)
+        dir_sk = a.refs if glob.glob(os.path.join(a.refs, 'sankey-*.json')) else os.path.join(a.refs, 'SankeySF')
+        P(f'- Referencia: `{a.refs}`; Sankeys en `{dir_sk}`')
         P(); P('| producto | sha256 sesión | sha256 referencia | |'); P('|---|---|---|---|')
         for p in prods:
-            s1 = sha(os.path.join(U, p)) if os.path.isfile(os.path.join(U, p)) else '(ausente)'
-            s2 = sha(os.path.join(a.refs, p)) if os.path.isfile(os.path.join(a.refs, p)) else '(ausente)'
-            ok = s1 == s2 and s1 != '(ausente)'
-            if not ok: fallas.append(f'paridad: {p} difiere de la referencia')
-            P(f'| {p} | `{s1[:16]}…` | `{s2[:16]}…` | {"✓ byte-idéntico" if ok else "✗ DIFIERE"} |')
+            r1 = os.path.join(U, p); r2 = os.path.join(a.refs if p == 'output.txt' else dir_sk, p)
+            s1 = sha(r1) if os.path.isfile(r1) else '(ausente)'
+            s2 = sha(r2) if os.path.isfile(r2) else '(ausente)'
+            if s2 == '(ausente)': fallas.append(f'referencia ausente: {r2}')
+            if s1 == '(ausente)': fallas.append(f'producto de la sesión ausente: {r1}')
+            ausente = '(ausente)' in (s1, s2)
+            if not ausente and s1 != s2: fallas.append(f'paridad: {p} difiere de la referencia')
+            P(f'| {p} | `{s1[:16]}…` | `{s2[:16]}…` | {"✗ AUSENTE" if ausente else ("✓ byte-idéntico" if s1 == s2 else "✗ DIFIERE")} |')
     else:
         P('- (sin --refs: se registran los sha256 de la sesión, sin comparar)')
         for p in prods:
