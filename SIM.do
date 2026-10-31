@@ -76,11 +76,19 @@ if "$output" != "" {
 	}
 }
 
-** 0.8 Parámetros de Cuadratura (v8.15b-pre, 2026-10-31; CUAD-0 §4). Default = comportamiento de v8.14.0; cualquier otro valor es un
-**     FLAG declarado en el header de Households.do (y NTA.do) y deja los números fuera del baseline publicado (manifest: baseline).
-global pensiones_en_yl "on"							// on (actual: ing_jubila dentro de ing_t4_cap1 -> ing_subor -> Yl) | off (pensiones fuera de Yl: D.62)
-global yk_ancla "actual"							// actual (ExNOpSoc residuo BIE + impuestos − OyE; ExNOpHog) | b2n_b3n_d4 (celdas S.14: D.4 neto y B.2n)
-global cap4 "dentro"								// dentro (enajenaciones en ing_mixto) | fuera (fuera de ing_mixto y de Yl/Yk; siguen en la base del ISR)
+** 0.8 Parámetros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 firmado en 02_governance/CUAD-0-firma.md §B). Default = valor FIRMADO
+**     (baseline v8.15.0); cualquier otro valor es un FLAG declarado en el header de Households.do (y en nta-identidad.txt) y deja los
+**     números fuera del baseline publicado (manifest: baseline). Alternativas entre paréntesis; v8.14.0 = on/actual/dentro/off/on/actual/on.
+global pensiones_en_yl "off"						// off: ing_jubila fuera de ing_t4_cap1 -> ing_subor -> Yl (D.62) | on (v8.14.0)
+global ing_mixto_depurado "transf_negocios"			// transf_negocios: ing_mixto = honorarios + negocios propios -> B.3n S.14 | off (cap5-cap9 dentro, v8.14.0)
+global rentas_celda "b3n"							// b3n: rentas efectivas (cap3) en ing_mixto -> B.3n S.14 (firma D: SNA §7.9, INEGI p. 33/45) | b2n (SNA §24.55; paso 0: B.2b > alquiler imputado CSVM)
+global alq_en_capital "off"							// off: alquiler imputado solo en ing_estim_alqu (único valor)
+global d4_relativo "proxy_propiedad"				// proxy_propiedad: D.4 neto S.14 ∝ cap6+cap8+cap3+alqu+negocios crudos (SELLO ROJO) | enigh (cap6+cap8)
+global yk_ancla "b2n_b3n_d4"						// b2n_b3n_d4: Yk = D.4 neto + 1/3 B.3n + B.2n (+ CCF) | actual (ExNOpSoc residuo BIE + impuestos − OyE)
+global cap4 "fuera"									// fuera: enajenaciones con factor 1, fuera de Yl/Yk (siguen en ing_bruto_tax) | dentro
+global suborrow "off"								// off: D.1 S.14 ya incluye el exterior; sin ing_suborROW/ing_capitalROW | on (v8.14.0)
+global cuotas_d614 "neto"							// neto: D.442 fuera de la celda de ing_capital y de YA (D.614 ya fuera de cuotas) | actual
+global oye_en_hub "off"								// off: OyE no llega a personas; «Empresas públicas → Gobierno» en los Sankeys | on (v8.14.0)
 
 
 ***

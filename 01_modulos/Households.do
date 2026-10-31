@@ -8,15 +8,42 @@
 **** Las imputaciones macro-micro de este archivo usan Distribucion.ado (y_i = x_i * MACRO / sum_w x): son per capita
 **** solo cuando el relativo es pob; con relativo(factor) reparten en proporcion al factor de expansion de cada persona.
 ****
-**** Parametros de Cuadratura (v8.15b-pre, 2026-10-31; CUAD-0 §4). Globals que SIM.do §0.8 declara y este archivo lee en §0.0;
-**** sueltos, el default es el comportamiento de v8.14.0. Cada valor distinto del default es un FLAG declarado, no un cambio de metodo:
-****   FLAG pensiones_en_yl = off  «pensiones fuera de Yl: D.62»  — ing_jubila (P032 de jubilados) sale de ing_t4_cap1 (§2.2) y de
-****                               exen_t4_cap1 (§3); ya no llega a ing_subor ni a Yl. NTA.do deja de restarlas (nta_pens_enYl = 0).
-****   FLAG yk_ancla = b2n_b3n_d4  «Yk = B.2n + 1/3 B.3n + D.4 neto de S.14» — en §9 TaltimirCap ancla ing_capital a D.4 neto del
-****                               sector hogares (CSI_115 f.95 R/P − U/A) y TaltimirHouse ancla ing_estim_alqu a B.2n (f.69), sin
-****                               impuestos embebidos ni resta de OyE; el 1/3 de B.3n sigue en ing_mixtoK con TaltimirSelf.
-****   FLAG cap4 = fuera           «enajenaciones fuera de la cuenta corriente» — ing_t4_cap4 (P054-P056, P059-P063) sale de
-****                               ing_mixto (§4.2) y por tanto de Yl/Yk; sigue en ing_bruto_tax (§10) como base del ISR.
+**** Parametros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 y 02_governance/CUAD-0-firma.md §B). Globals que SIM.do §0.8 declara y este
+**** archivo lee en §0.0; sueltos, el default es el valor FIRMADO. Cada valor es un FLAG declarado (tambien en users/$id/NTA/nta-identidad.txt):
+****   pensiones_en_yl = off          «pensiones fuera de Yl: D.62» — ing_jubila (P032 de jubilados) sale de ing_t4_cap1 (§2.2) y de exen_t4_cap1 (§3);
+****                                  no llega a ing_subor ni a Yl. Alternativa on (v8.14.0).
+****   ing_mixto_depurado = transf_negocios  «base de B.3n = honorarios + negocios propios» — ing_mixto = ing_t4_cap2 (honorarios integros) +
+****                                  ing_t2_cap1 + ing_t2_cap8 (P068-P081, negocio propio segun el catalogo ENIGH 2024) [+ ing_t4_cap3 con
+****                                  rentas_celda = b3n]; TaltimirSelf lo ancla a B.3n S.14 (CSI_115 f.70) sin impuestos embebidos. Donativos
+****                                  (cap5), loteria (cap7), remesas crudas, prestamos/retiros/otrocap, benef/heren, autor/trabmenor (cap9),
+****                                  intereses (cap6) y dividendos (cap8) quedan con factor 1 FUERA de Yl/Yk (siguen en ing_bruto_tax, donde la
+****                                  LISR los grava). Sin particion pf/PM de honorarios y rentas (decision 3: cap3_particion murio; no existen
+****                                  las variables *PM ni *pf). Alternativa off: cap5-cap9 (y cap4 si dentro) dentro de ing_mixto × TaltimirSelf.
+****   rentas_celda = b3n             «rentas efectivas de hogares en B.3n» (firma D: SNA 2008 §7.9 y §7.19c; INEGI CSI base 2008 p. 33 y 45:
+****                                  el B.2 de hogares es solo el alquiler imputado) — ing_t4_cap3 (P023-P025, P031) entra a ing_mixto con TaltimirSelf.
+****                                  Alternativa b2n (SNA 2008 §24.55 «all the value added arising from leasing dwellings is treated as operating
+****                                  surplus»): cap3 con TaltimirHouse a B.2n junto con ing_estim_alqu y viaja en Yk. Paso 0 de v8.15b: B.2b S.14
+****                                  2,107.569 > alquiler imputado CSVM 2024 1,886.385 (+221.184): se reporta como vintage/lectura, no cambia la celda.
+****   alq_en_capital = off           «alquiler fuera de la base de capital» — el alquiler imputado vive solo en ing_estim_alqu (ancla B.2n). Unico valor.
+****   d4_relativo = proxy_propiedad  «D.4 por proxy de propiedad; la ENIGH cubre <1 % de la celda» (SELLO ROJO) — ing_capital deja de ser suma de
+****                                  variables ENIGH: es Distribucion de D.4 neto S.14 (f.95 R/P − U/A; − D.442 con cuotas_d614 = neto) con el
+****                                  relativo ing_d4_rel = cap6 + cap8 + cap3 + estim_alqu + t2_cap1 + t2_cap8 (crudos). Alternativa enigh: cap6 + cap8.
+****                                  escalar D4CoberturaENIGH = Σ(cap6 + cap8 crudos) / D.4 neto. Correccion por top incomes (SAT) = linea 9.x.
+****   yk_ancla = b2n_b3n_d4          «Yk = B.2n + 1/3 B.3n + D.4 neto de S.14» — Yk = ing_capital + ing_mixtoK + ing_estim_alqu (+ cap3 con b2n) +
+****                                  depreciacion (CapFij BIE ∝ ing_capital). Gate: Σ Yk − CCF = YAHogS14 (− D.442) a 1e-9. Alternativa actual (v8.14.0).
+****   cap4 = fuera                   «enajenaciones fuera de la cuenta corriente» — ing_t4_cap4 con factor 1, fuera de Yl/Yk; sigue en ing_bruto_tax.
+****   suborrow = off                 «ROW dentro de D.1» — D.1 S.14 (f.71) ya incluye los 52.721 bn del exterior (CSI_121 f.71): no existen
+****                                  ing_suborROW ni ing_capitalROW (D.4 neto S.14 ya es neto del mundo). Alternativa on (v8.14.0).
+****   cuotas_d614 = neto             «circuito D.614/D.442 neteado» — D.442 (f.103, 605.932) sale de la celda de ing_capital y NTA.do lo saca de YA
+****                                  (D.614 ya estaba fuera de las cuotas de NTA). Alternativa actual (D.442 dentro de YA; brecha de S +605.9).
+****   oye_en_hub = off               «OyE fuera del hub» — OyE (P.11 de Pemex/CFE + D.45) no es ingreso de personas: ing_Sector_Publico no se crea;
+****                                  en los Sankeys entra como fila de sector «Empresas publicas → Gobierno». Alternativa on (v8.14.0).
+****   Impuestos embebidos:           ningun Taltimir* lleva impuestos a productos ni a la produccion; ImpNetProductos (BIE 723656 ∝ gastoanualTOT)
+****                                  e ImpNetProduccion (D.29 − D.39 BIE ∝ ing_bruto_tax + ing_bruto_tpm) se reparten explicitos en §12, fuera de Yl/Yk.
+****   Gates (§9.1 y Sankey, 1e-9 relativo): Σ ing_subor = D.1 S.14; Σ ing_mixto = B.3n; Σ ing_estim_alqu (+ cap3) = B.2n; Σ ing_capital = D.4 neto
+****                                  (− D.442); componentes de ing_mixto = agregado; Σ Yl = D.1 + 2/3 B.3n; Σ Yk − CCF = YAHogS14 (− D.442); identidad
+****                                  PIB (BIE) = YL + YA + D.442 + B.5n S.11 + S.12 + B.5n S.13 + B.5n S.15 + CCF + renta primaria neta al exterior +
+****                                  vintage BIE−CSI (output.txt: CUADRATURA). Sello de las anclas S.14: amarillo (vintage BIE vs CSI declarado).
 ****
 **** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-0 §9, 2026-10-30):
 ****   | Elemento                    | Que requiere genericamente                                  | Por que Mexico lo resuelve asi                                  |
@@ -107,25 +134,32 @@ if `1' >= 2014 & `1' < 2016 {
 }
 
 
-** 0.0 Parametros de Cuadratura (v8.15b-pre; CUAD-0 §4). Default = comportamiento de v8.14.0; ver FLAGs del header.
-if "$pensiones_en_yl" == "" global pensiones_en_yl "on"
-if !inlist("$pensiones_en_yl", "on", "off") {
-	noisily di as err `"Households: pensiones_en_yl = "$pensiones_en_yl" no es on | off"'
+** 0.0 Parametros de Cuadratura (v8.15b; CUAD-0 §4 + 02_governance/CUAD-0-firma.md §B). Default = valor FIRMADO; ver FLAGs del header.
+*    Cada entrada: nombre, valor firmado (default) y alternativas aceptadas. SIM.do §0.8 los declara; sueltos (sin SIM.do) rige el firmado. *
+local cuad_params `""pensiones_en_yl off on" "ing_mixto_depurado transf_negocios off" "rentas_celda b3n b2n" "alq_en_capital off" "d4_relativo proxy_propiedad enigh""'
+local cuad_params `"`cuad_params' "yk_ancla b2n_b3n_d4 actual" "cap4 fuera dentro" "suborrow off on" "cuotas_d614 neto actual" "oye_en_hub off on""'
+local cuad_linea ""
+local cuad_flag = 0
+foreach p of local cuad_params {
+	gettoken nombre valores : p
+	gettoken firmado : valores
+	if "${`nombre'}" == "" global `nombre' "`firmado'"
+	local ok : list posof "${`nombre'}" in valores
+	if `ok' == 0 {
+		noisily di as err `"Households: `nombre' = "${`nombre'}" no es `=subinstr(trim("`valores'"), " ", " | ", .)'"'
+		exit 198
+	}
+	local cuad_linea "`cuad_linea' `nombre'=${`nombre'}"
+	if "${`nombre'}" != "`firmado'" local cuad_flag = 1
+}
+if "$cap3_particion" != "" {
+	noisily di as err "Households: cap3_particion no existe desde v8.15b (decision 3 de la firma: honorarios y rentas integros, sin particion pf/PM)."
 	exit 198
 }
-if "$yk_ancla" == "" global yk_ancla "actual"
-if !inlist("$yk_ancla", "actual", "b2n_b3n_d4") {
-	noisily di as err `"Households: yk_ancla = "$yk_ancla" no es actual | b2n_b3n_d4"'
-	exit 198
-}
-if "$cap4" == "" global cap4 "dentro"
-if !inlist("$cap4", "dentro", "fuera") {
-	noisily di as err `"Households: cap4 = "$cap4" no es dentro | fuera"'
-	exit 198
-}
-noisily di in g "  Parametros CUAD-0: pensiones_en_yl = " in y "$pensiones_en_yl" in g "  yk_ancla = " in y "$yk_ancla" in g "  cap4 = " in y "$cap4"
-if "$pensiones_en_yl" != "on" | "$yk_ancla" != "actual" | "$cap4" != "dentro" {
-	noisily di as err "  FLAG Households (CUAD-0): parametro fuera de su default; los numeros NO son comparables con el baseline publicado."
+global cuad_params "`cuad_linea'"
+noisily di in g "  Parametros CUAD-0 (firma 2026-10-31):" in y "$cuad_params"
+if `cuad_flag' {
+	noisily di as err "  FLAG Households (CUAD-0): algun parametro esta fuera de su valor firmado; los numeros NO son comparables con el baseline publicado (manifest: baseline)."
 }
 
 
@@ -183,6 +217,21 @@ local DepMix = scalar(DepMix)
 * v8.15b-pre (yk_ancla): celdas del sector hogares S.14 que SCN.ado deja solo si SCNHogaresS14 corrio (CSI_115 f.69 B.2n y f.95 D.4) *
 capture local ExNOpHogS14 = scalar(ExNOpHogS14)
 capture local RentaPropHogNeta = scalar(RentaPropHogNeta)
+
+* v8.15b (CUAD-0 firma; E1/E3): celdas del sector hogares S.14 y de los demas sectores (tabulados CSI via SCNHogaresS14) que anclan la Tabla 1
+* firmada y la identidad de sectores de §9.1. Sin ellas no hay anclas: se exige (exit 459), no se inventa. *
+local faltan ""
+foreach s in D1HogS14 MixNHogS14 ExNOpHogS14 RentaPropHogNeta D442Hog RemesasHogS14 B5nNoFin B5nFin B5nGob B5nISFLSH ImpNetGobR RentaPropGobNeta RemRowU RowPrimNeto PIBCSI CapFijCSI B5nS1 YAHogS14 {
+	capture local `s' = scalar(`s')
+	if _rc != 0 local faltan "`faltan' `s'"
+}
+if "`faltan'" != "" {
+	noisily di as err "  FLAG Households (v8.15b): SCN.ado no dejo las celdas CSI`faltan' (faltan los tabulados CSI_1xx.xlsx en raw/temp/SCN, o master/SCN.dta es anterior a v8.15b); sin ellas no hay anclas S.14."
+	exit 459
+}
+local D4Hog = `RentaPropHogNeta' - cond("$cuotas_d614" == "neto", `D442Hog', 0)
+noisily di in g "  Anclas S.14 (CSI_115 2024): D.1 " in y %16.0fc `D1HogS14' in g "  B.3n " in y %16.0fc `MixNHogS14' in g "  B.2n " in y %16.0fc `ExNOpHogS14' ///
+	in g "  D.4 neto " in y %16.0fc `RentaPropHogNeta' in g "  D.442 " in y %16.0fc `D442Hog' in g "  -> sello " in y "$scn_sello" in g " (asset congelado raw/SCN: verde; sin asset: amarillo)"
 
 
 ** 1.2 Ajustes Rentas y Servicios Profesionales
@@ -509,8 +558,6 @@ replace ing_honor = ing_anual if clave == "P012" | clave == "P013" ///
 
 * TOTAL *
 egen double ing_t4_cap2 = rsum(ing_honor)
-g ing_t4_cap2pf = ing_t4_cap2*((`ServProfH'+`SaludH')/(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi'))
-g ing_t4_cap2PM = ing_t4_cap2*(1-(`ServProfH'+`SaludH')/(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi'))
 
 
 ** 2.4 Capitulo III. DE LOS INGRESOS POR ARRENDAMIENTO Y EN GENERAL POR OTORGAR EL USO O GOCE TEMPORAL DE BIENES INMUEBLES
@@ -519,8 +566,6 @@ g ing_rent = ing_anual if clave == "P023" | clave == "P024" | clave == "P025" | 
 
 * TOTAL *
 egen double ing_t4_cap3 = rsum(ing_rent)
-g ing_t4_cap3pf = ing_t4_cap3*((`SNAAlojamiento'-`SNAExBOpHog')/(`SNAAlquiler'+`SNAInmobiliarias'-`SNAExBOpHog'))
-g ing_t4_cap3PM = ing_t4_cap3*(1-(`SNAAlojamiento'-`SNAExBOpHog')/(`SNAAlquiler'+`SNAInmobiliarias'-`SNAExBOpHog'))
 
 
 ** 2.5 Capitulo IV. DE LOS INGRESOS POR ENAJENACION DE BIENES
@@ -837,8 +882,6 @@ noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
 g exen_honor = min(0.634768962*ing_honor,ing_honor)
 egen double exen_t4_cap2 = rsum(exen_honor)
 
-g exen_t4_cap2pf = exen_t4_cap2*((`ServProfH'+`SaludH')/(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi'))
-g exen_t4_cap2PM = exen_t4_cap2*(1-(`ServProfH'+`SaludH')/(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi'))
 
 
 ** 3.4 Capitulo III. DE LOS INGRESOS POR ARRENDAMIENTO Y EN GENERAL POR OTORGAR EL USO O GOCE TEMPORAL DE BIENES INMUEBLES
@@ -862,8 +905,6 @@ g exen_rent = .35*ing_rent+.02*ing_rent
 
 * TOTAL *
 egen double exen_t4_cap3 = rsum(exen_rent)
-g exen_t4_cap3pf = exen_t4_cap3*((`SNAAlojamiento'-`SNAExBOpHog')/(`SNAAlquiler'+`SNAInmobiliarias'-`SNAExBOpHog'))
-g exen_t4_cap3PM = exen_t4_cap3*(1-(`SNAAlojamiento'-`SNAExBOpHog')/(`SNAAlquiler'+`SNAInmobiliarias'-`SNAExBOpHog'))
 
 
 ** 3.5 Capitulo IV. DE LOS INGRESOS POR ENAJENACION DE BIENES
@@ -1116,17 +1157,28 @@ g exen_sueldos = exen_t4_cap1
 label var exen_sueldos "Exenciones a las remuneraciones de asalariados"
 
 * 4.2 Mixto
-* v8.15b-pre (CUAD-0 §4; FLAG cap4): "dentro" (default, v8.14.0) suma las enajenaciones (ing_t4_cap4) al ingreso mixto, que §9
-* escala con TaltimirSelf (la variable sola sigue con TaltimirSal); "fuera" las saca de ing_mixto (y de Yl/Yk): ganancia de capital,
-* fuera de la cuenta corriente. En los dos casos ing_t4_cap4 permanece en ing_bruto_tax (§10) como base del ISR. *
+* v8.15b (CUAD-0 firma, decision 3; FLAG ing_mixto_depurado, rentas_celda, cap4): base de B.3n = honorarios (ing_t4_cap2 integro, sin particion
+* pf/PM) + negocios propios (ing_t2_cap1, ing_t2_cap8: P068-P081, trabajo independiente segun el catalogo ENIGH 2024); con rentas_celda = b3n
+* tambien las rentas efectivas (ing_t4_cap3; con b2n van a B.2n con el alquiler imputado, §9). Transferencias y flujos financieros (cap5, cap7,
+* cap9), intereses y dividendos (cap6, cap8) quedan FUERA (factor 1: su celda es D.4 via ing_capital o no son ingreso corriente); con
+* ing_mixto_depurado = off siguen dentro como en v8.14.0. cap4 (enajenaciones) entra solo con cap4 = dentro. §9 escala ing_mixto a B.3n. *
+local mixbase "ing_t4_cap2 ing_t2_cap1 ing_t2_cap8"
+local exmixbase "exen_t4_cap2 exen_t2_cap1 exen_t2_cap8"
+if "$rentas_celda" == "b3n" {
+	local mixbase "`mixbase' ing_t4_cap3"
+	local exmixbase "`exmixbase' exen_t4_cap3"
+}
+if "$ing_mixto_depurado" == "off" {
+	local mixbase "`mixbase' ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9"
+	local exmixbase "`exmixbase' exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9"
+}
 if "$cap4" == "dentro" {
-	egen double ing_mixto = rsum(ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap4 ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
-	egen double exen_mixto = rsum(exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap4 exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
+	local mixbase "`mixbase' ing_t4_cap4"
+	local exmixbase "`exmixbase' exen_t4_cap4"
 }
-else {
-	egen double ing_mixto = rsum(ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
-	egen double exen_mixto = rsum(exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
-}
+egen double ing_mixto = rsum(`mixbase')
+egen double exen_mixto = rsum(`exmixbase')
+global cuad_mixbase "`mixbase'"
 label var ing_mixto "Ingreso mixto"
 label var exen_mixto "Exenciones a los ingresos mixtos"
 
@@ -1149,9 +1201,20 @@ egen double exen_laboral = rsum(exen_sueldos exen_mixtoL)
 label var exen_laboral "Exenciones a los ingresos laborales"
 
 * 4.4 Capital
-egen double ing_capital = rsum(ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM ing_estim_alqu)
-label var ing_capital "Ingresos de capital (anual)"
-egen double exen_capital = rsum(exen_t2_cap1 exen_t2_cap8 exen_t4_cap2PM exen_t4_cap3PM)
+* v8.15b (CUAD-0 firma, d4_relativo): ing_capital = renta de la propiedad. Aqui, antes de Altimir, es lo que la ENIGH observa de D.4
+* (intereses cap6 + dividendos cap8: < 1 % de la celda; escalar D4CoberturaENIGH); en §9 se sustituye por la Distribucion de D.4 neto S.14
+* con el relativo ing_d4_rel (crudo, antes de escalar): proxy_propiedad = cap6 + cap8 + cap3 + estim_alqu + t2_cap1 + t2_cap8; enigh = cap6 + cap8
+* (factor ≈ 250: no se usa). SELLO ROJO: la celda del SCN fija el total; el relativo es un parametro declarado. *
+egen double ing_capital = rsum(ing_t4_cap6 ing_t4_cap8)
+label var ing_capital "Renta de la propiedad (D.4 neto S.14; antes de §9: cap6 + cap8 crudos)"
+if "$d4_relativo" == "proxy_propiedad" {
+	egen double ing_d4_rel = rsum(ing_t4_cap6 ing_t4_cap8 ing_t4_cap3 ing_estim_alqu ing_t2_cap1 ing_t2_cap8)
+}
+else {
+	egen double ing_d4_rel = rsum(ing_t4_cap6 ing_t4_cap8)
+}
+label var ing_d4_rel "Relativo de reparto de D.4 neto S.14 (d4_relativo = $d4_relativo; crudo ENIGH)"
+egen double exen_capital = rsum(exen_t4_cap6 exen_t4_cap8)
 label var exen_capital "Exenciones a los ingresos de capital"
 
 * 4.5 Total
@@ -1184,11 +1247,11 @@ noisily di _newline _col(04) in g "{bf:Producto Interno Neto" ///
 	_col(77) %7s "Diferencia" "}"
 
 * Remuneración de asalariados
-escalar pctpib RemSalSCNPIB = `RemSal'/`PIBSCN'*100
+escalar pctpib RemSalSCNPIB = `D1HogS14'/`PIBSCN'*100
 escalar pctpib RemSalHHSPIB = `ing_sueldos'/`PIBSCN'*100
 escalar pctpib giniRemSal = `gini_ing_sueldos'
-escalar pct DifRemSal = (`ing_sueldos'/`RemSal'-1)*100
-noisily di _col(04) in g "(+) Remuneración de asalariados" ///
+escalar pct DifRemSal = (`ing_sueldos'/`D1HogS14'-1)*100
+noisily di _col(04) in g "(+) Remuneración de asalariados (D.1 S.14)" ///
 	_col(44) in y "(" %5.3f giniRemSal ")" ///
 	_col(57) in y %7.3f RemSalHHSPIB ///
 	_col(66) in y %7.3f RemSalSCNPIB ///
@@ -1206,11 +1269,11 @@ noisily di _col(04) in g "(+) Contribuc. sociales" ///
 	_col(77) in y %7.1f DifCSSI "%"
 
 * Ingreso mixto (laboral)
-escalar pctpib MixLSCNPIB = `MixL'/`PIBSCN'*100
+escalar pctpib MixLSCNPIB = `=`MixNHogS14'*2/3'/`PIBSCN'*100
 escalar pctpib MixLHHSPIB = `ing_mixtoL'/`PIBSCN'*100
 escalar pctpib giniMixL = `gini_ing_mixtoL'
-escalar pct DifMixL = (`ing_mixtoL'/`MixL'-1)*100
-noisily di _col(04) in g "(+) Ingreso mixto (laboral)" ///
+escalar pct DifMixL = (`ing_mixtoL'/`=`MixNHogS14'*2/3'-1)*100
+noisily di _col(04) in g "(+) Ingreso mixto (laboral; 2/3 B.3n S.14)" ///
 	_col(44) in y "(" %5.3f giniMixL ")" ///
 	_col(57) in y %7.3f MixLHHSPIB ///
 	_col(66) in y %7.3f MixLSCNPIB ///
@@ -1242,33 +1305,33 @@ noisily di _col(04) in g "{bf:(=) Ingreso laboral (L)" ///
 noisily di in g _dup(84) "="
 
 * Sociedades e ISFLSH
-escalar pctpib SocSCNPIB = `ExNOpSoc'/`PIBSCN'*100
+escalar pctpib SocSCNPIB = `D4Hog'/`PIBSCN'*100
 escalar pctpib SocHHSPIB = `ing_capital'/`PIBSCN'*100
 escalar pctpib giniSoc = `gini_ing_capital'
-escalar pct DifSoc = (`ing_capital'/`ExNOpSoc'-1)*100
-noisily di _col(04) in g "(+) Sociedades e ISFLSH" ///
+escalar pct DifSoc = (`ing_capital'/`D4Hog'-1)*100
+noisily di _col(04) in g "(+) Renta de la propiedad (D.4 neto S.14; ENIGH: cap6 + cap8)" ///
 	_col(44) in y "(" %5.3f giniSoc ")" ///
 	_col(57) in y %7.3f SocHHSPIB ///
 	_col(66) in y %7.3f SocSCNPIB ///
 	_col(77) in y %7.1f DifSoc "%"
 
 * Ingreso mixto (capital)
-escalar pctpib MixKSCNPIB = `MixKN'/`PIBSCN'*100
+escalar pctpib MixKSCNPIB = `=`MixNHogS14'/3'/`PIBSCN'*100
 escalar pctpib MixKHHSPIB = (`ing_mixtoK')/`PIBSCN'*100
 escalar pctpib giniMixK = `gini_ing_mixtoK'
-escalar pct DifMixK = ((`ing_mixtoK')/`MixKN'-1)*100
-noisily di _col(04) in g "(+) Ingreso mixto (capital)" ///
+escalar pct DifMixK = ((`ing_mixtoK')/`=`MixNHogS14'/3'-1)*100
+noisily di _col(04) in g "(+) Ingreso mixto (capital; 1/3 B.3n S.14)" ///
 	_col(44) in y "(" %5.3f giniMixK ")" ///
 	_col(57) in y %7.3f MixKHHSPIB ///
 	_col(66) in y %7.3f MixKSCNPIB ///
 	_col(77) in y %7.1f DifMixK "%"
 
 * Alquiler imputado
-escalar pctpib AlqSCNPIB = `ExNOpHog'/`PIBSCN'*100
+escalar pctpib AlqSCNPIB = `ExNOpHogS14'/`PIBSCN'*100
 escalar pctpib AlqHHSPIB = `ing_estim_alqu'/`PIBSCN'*100
 escalar pctpib giniAlq = `gini_ing_estim_alqu'
-escalar pct DifAlq = (`ing_estim_alqu'/`ExNOpHog'-1)*100
-noisily di _col(04) in g "(+) Alquiler imputado" ///
+escalar pct DifAlq = (`ing_estim_alqu'/`ExNOpHogS14'-1)*100
+noisily di _col(04) in g "(+) Alquiler imputado (B.2n S.14)" ///
 	_col(44) in y "(" %5.3f giniAlq ")" ///
 	_col(57) in y %7.3f AlqHHSPIB ///
 	_col(66) in y %7.3f AlqSCNPIB ///
@@ -2137,74 +2200,89 @@ label values tipo_contribuyente tipo_contribuyente
 label var ing_jubila "Pensiones"
 label var ing_subor "Sueldos y salarios"
 label var ing_mixto "Ingreso mixto"
-label var ing_capital "Sociedades e ISFLSH"
+label var ing_capital "Renta de la propiedad (D.4 neto S.14)"
 label var ing_estim_alqu "Imputación de alquiler"
 
-* Crear empresas públicas ANTES de Altimir
+* v8.15b (oye_en_hub): con "on" (v8.14.0) OyE de la LIF se reparte per capita a las personas ANTES de Altimir; con "off" (firmado) no se crea
+* ing_Sector_Publico: OyE (P.11 de Pemex/CFE + D.45) no es ingreso de personas y entra a los Sankeys como fila «Empresas publicas → Gobierno». *
 g pob = 1
-Distribucion ing_cap_imss, relativo(pob) macro(`IMSSpropio')
-Distribucion ing_cap_issste, relativo(pob) macro(`ISSSTEpropio')
-Distribucion ing_cap_cfe, relativo(pob) macro(`CFEpropio')
-Distribucion ing_cap_pemex, relativo(pob) macro(`Pemexpropio')
-Distribucion ing_cap_fmp, relativo(pob) macro(`FMP')
-Distribucion ing_cap_otrasempr, relativo(pob) macro(`OtrasEmpresas')
-egen ing_Sector_Publico = rsum(ing_cap_imss ing_cap_issste ing_cap_cfe ing_cap_pemex ing_cap_fmp ing_cap_otrasempr)
-Gini ing_Sector_Publico, hogar(folioviv foliohog) factor(factor)
-local gini_ing_Sector_Publico = r(gini_ing_Sector_Publico)
+local OyE = `IMSSpropio'+`ISSSTEpropio'+`CFEpropio'+`Pemexpropio'+`FMP'+`OtrasEmpresas'
+if "$oye_en_hub" == "on" {
+	Distribucion ing_cap_imss, relativo(pob) macro(`IMSSpropio')
+	Distribucion ing_cap_issste, relativo(pob) macro(`ISSSTEpropio')
+	Distribucion ing_cap_cfe, relativo(pob) macro(`CFEpropio')
+	Distribucion ing_cap_pemex, relativo(pob) macro(`Pemexpropio')
+	Distribucion ing_cap_fmp, relativo(pob) macro(`FMP')
+	Distribucion ing_cap_otrasempr, relativo(pob) macro(`OtrasEmpresas')
+	egen ing_Sector_Publico = rsum(ing_cap_imss ing_cap_issste ing_cap_cfe ing_cap_pemex ing_cap_fmp ing_cap_otrasempr)
+	Gini ing_Sector_Publico, hogar(folioviv foliohog) factor(factor)
+	local gini_ing_Sector_Publico = r(gini_ing_Sector_Publico)
+}
+else {
+	local gini_ing_Sector_Publico = 0
+}
 
 
 *******************
 **# 9. Altimirs ***
 *******************
-tabstat ing_subor ing_mixto ing_capital ing_estim_alqu ing_remesas [aw=factor], stat(sum) f(%20.0fc) save by(formal)
+* v8.15b (CUAD-0 firma; principio C: una celda S.14 por variable, sin impuestos embebidos):
+*   ing_subor      -> D.1 S.14 (CSI_115 f.71; con suborrow = on, menos los 52.721 del exterior que ing_suborROW vuelve a sumar)
+*   ing_mixto      -> B.3n S.14 (f.70): honorarios + negocios propios + rentas efectivas (rentas_celda = b3n, firmado)
+*   ing_estim_alqu -> B.2n S.14 (f.69); con rentas_celda = b2n (alternativa, SNA 2008 §24.55) la misma ancla cubre ing_t4_cap3
+*   ing_capital    -> Distribucion de D.4 neto S.14 (f.95 R/P − U/A; − D.442 f.103 con cuotas_d614 = neto) ∝ ing_d4_rel (d4_relativo)
+*   ing_remesas    -> ROWTrans BIE (transferencias netas del exterior), como en v8.14.0; D.752 S.14 (1,188.474) se reporta
+* yk_ancla = actual reproduce las formulas de v8.14.0 para el capital (ExNOpSoc residuo BIE + impuestos − OyE; ExNOpHog + impuestos) y rompe
+* los gates de §9.1 (declarado). cap4..cap9 fuera de ing_mixto quedan con factor 1 (fuera de Yl/Yk; siguen en ing_bruto_tax). *
+tabstat ing_subor ing_mixto ing_estim_alqu ing_remesas ing_t4_cap3 ing_d4_rel ing_capital [aw=factor], stat(sum) f(%20.0fc) save
 tempname ALTIMIR0
 matrix `ALTIMIR0' = r(StatTotal)
-
-// Step 5 //
-scalar TaltimirSal = (`RemSal'+`SSEmpleadores'+`SSImputada' ///
-	+`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'))/`ALTIMIR0'[1,1]
-scalar TaltimirSelf = (`MixKN'+`MixL' ///
-	+`ImpNetProduccionL'*(`MixL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL') ///
-	+`ImpNetProduccionK'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
-	+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`ALTIMIR0'[1,2]
-scalar TaltimirCap = (`ExNOpSoc' ///
-	+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
-	+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
-	-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'-`Pemexpropio'-`FMP'-`OtrasEmpresas')/`ALTIMIR0'[1,3]
-	//-`Mejoras'-`Derechos'-`Productos'-`Aprovechamientos'-`OtrosTributarios'
-scalar TaltimirHouse = (`ExNOpHog' ///
-	+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
-	+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`ALTIMIR0'[1,4]
-scalar TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,5]
-
-* v8.15b-pre (CUAD-0 §4; FLAG yk_ancla): con "b2n_b3n_d4" los dos factores de capital anclan a celdas del sector hogares S.14 de
-* SCN.ado: ing_capital a D.4 neto (renta de la propiedad recibida − pagada, CSI_115 f.95) e ing_estim_alqu a B.2n (f.69), sin los
-* impuestos embebidos ni la resta de OyE de las formulas de arriba. El 1/3 de B.3n sigue viajando en ing_mixtoK con TaltimirSelf
-* (moverlo es ing_mixto_depurado, otro parametro). Default "actual" = las formulas de v8.14.0 tal cual. *
-if "$yk_ancla" == "b2n_b3n_d4" {
-	if "`RentaPropHogNeta'" == "" | "`ExNOpHogS14'" == "" {
-		noisily di as err "  FLAG Households (yk_ancla = b2n_b3n_d4): SCN.ado no dejo RentaPropHogNeta / ExNOpHogS14 (faltan las series S.14 de CSI_115.xlsx)."
-		exit 459
-	}
-	scalar TaltimirCap = `RentaPropHogNeta'/`ALTIMIR0'[1,3]
-	scalar TaltimirHouse = `ExNOpHogS14'/`ALTIMIR0'[1,4]
-	noisily di in g "   yk_ancla = b2n_b3n_d4: TaltimirCap " in y %8.4f TaltimirCap in g " (D.4 neto S.14)  TaltimirHouse " in y %8.4f TaltimirHouse in g " (B.2n S.14)"
+local D1Hog = `D1HogS14' - cond("$suborrow" == "on", `RemRowU', 0)
+local cap3b2n = cond("$rentas_celda" == "b2n", "ing_t4_cap3", "")
+scalar TaltimirSal = `D1Hog'/`ALTIMIR0'[1,1]
+scalar TaltimirSelf = `MixNHogS14'/`ALTIMIR0'[1,2]
+if "$rentas_celda" == "b2n" scalar TaltimirHouse = `ExNOpHogS14'/(`ALTIMIR0'[1,3] + `ALTIMIR0'[1,5])
+else scalar TaltimirHouse = `ExNOpHogS14'/`ALTIMIR0'[1,3]
+scalar TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,4]
+local MacroCap = `D4Hog'
+if "$yk_ancla" == "actual" {
+	scalar TaltimirHouse = (`ExNOpHog' ///
+		+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
+		+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/(`ALTIMIR0'[1,3] + cond("$rentas_celda" == "b2n", `ALTIMIR0'[1,5], 0))
+	local MacroCap = `ExNOpSoc' ///
+		+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
+		+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
+		-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'-`Pemexpropio'-`FMP'-`OtrasEmpresas'
+	noisily di as err "  FLAG Households (yk_ancla = actual): capital anclado al residuo BIE con impuestos embebidos, como v8.14.0; los gates de §9.1 no cierran."
 }
+scalar TaltimirCap = `MacroCap'/`ALTIMIR0'[1,6]
+escalar pct D4CoberturaENIGH = `ALTIMIR0'[1,7]/`D4Hog'*100
+noisily di in g "   Anclas S.14: TaltimirSal " in y %8.4f TaltimirSal in g " (D.1)  TaltimirSelf " in y %8.4f TaltimirSelf in g " (B.3n)  TaltimirHouse " in y %8.4f TaltimirHouse ///
+	in g " (B.2n; rentas_celda=$rentas_celda)  D.4 neto / relativo " in y %8.4f TaltimirCap in g " (d4_relativo=$d4_relativo; cobertura ENIGH cap6+cap8 " in y %6.2f D4CoberturaENIGH in g " %)  TaltimirROWTrans " in y %8.4f TaltimirROWTrans
 
 if "`altimir'" == "yes" {
 	noisily di in g "   Altimir: " in y "`altimir'"
 	replace ing_estim_alqu = ing_estim_alqu*TaltimirHouse
 	replace ing_remesas = ing_remesas*TaltimirROWTrans
-
-	foreach k of varlist ing_subor *_t4_cap4 {
-		replace `k' = `k'*TaltimirSal
+	replace ing_subor = ing_subor*TaltimirSal
+	if "$rentas_celda" == "b2n" {
+		replace ing_t4_cap3 = ing_t4_cap3*TaltimirHouse
+		replace exen_t4_cap3 = exen_t4_cap3*TaltimirHouse
 	}
-	foreach k of varlist ing_mixto* *_t4_cap2pf *_t4_cap3pf *_t4_cap5 *_t4_cap6 *_t4_cap7 *_t4_cap8 *_t4_cap9 {
+	* ing_mixto, sus componentes y sus exenciones (ing_x y exen_x) con el mismo factor: los componentes siguen sumando el agregado *
+	local mixpat : subinstr global cuad_mixbase "ing_" "*_", all
+	foreach k of varlist ing_mixto* `mixpat' {
 		replace `k' = `k'*TaltimirSelf
 	}
-	foreach k of varlist ing_capital ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM {
-		replace `k' = `k'*TaltimirCap
-	}
+	* Distribucion sobre una variable existente la re-escala por macro/Σ relativo (PerfilesSim la usa asi, con relativo = la misma variable);
+	* aqui el relativo es otro (ing_d4_rel), asi que ing_capital se borra y se crea de nuevo = ing_d4_rel × D.4 neto / Σ ing_d4_rel *
+	local lab_cap : variable label ing_capital
+	drop ing_capital
+	Distribucion ing_capital, relativo(ing_d4_rel) macro(`MacroCap')
+	label var ing_capital "`lab_cap'"
+}
+else {
+	noisily di as err "  FLAG Households: altimir = no (ingresos crudos ENIGH, sin anclas S.14; los gates de §9.1 no cierran)."
 }
 
 
@@ -2212,20 +2290,22 @@ if "`altimir'" == "yes" {
 **# 10. Re-calculo de ISR ***
 *****************************
 noisily di _newline(2) _col(04) in g "{bf:Paso 3: Sumar ingresos por individuo y re-calcular ISR}"
-egen ing_bruto_tax = rsum(ing_subor ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap4 ing_t4_cap5 ///
+egen ing_bruto_tax = rsum(ing_subor ing_t4_cap2 ing_t4_cap3 ing_t4_cap4 ing_t4_cap5 ///
 	ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
 replace ing_bruto_tax = 0 if ing_bruto_tax < 0
 label var ing_bruto_tax "Ingreso gravable"
 
-egen exen_tot = rsum(exen_t4_cap1 exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap4 exen_t4_cap5 ///
+egen exen_tot = rsum(exen_t4_cap1 exen_t4_cap2 exen_t4_cap3 exen_t4_cap4 exen_t4_cap5 ///
 	exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
 label var exen_tot "Exenciones totales"
 
-egen ing_bruto_tpm = rsum(ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM)
+* v8.15b: sin particion pf/PM, la base del ISR de personas morales (Titulo II del codigo) son los negocios propios (ya escalados a B.3n con
+* ing_mixto); ing_capital (D.4 neto) no entra. Antes, cap2PM/cap3PM (particion por shares del SCN, cap3PM negativo) sumaban aqui. *
+egen ing_bruto_tpm = rsum(ing_t2_cap1 ing_t2_cap8)
 label var ing_bruto_tpm "Ingreso gravable PM"
 
-egen exen_tpm = rsum(exen_t2_cap1 exen_t2_cap8 exen_t4_cap2PM exen_t4_cap3PM)
-label var exen_tot "Exenciones PM"
+egen exen_tpm = rsum(exen_t2_cap1 exen_t2_cap8)
+label var exen_tpm "Exenciones PM"
 
 ** Subsidio al empleo EMPRESAS **
 Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`GROSSISR'[1,2]')
@@ -2497,50 +2577,15 @@ noisily di _col(04) in g "ISR total" ///
 
 
 
-* Distribucines finales *
-Distribucion ImpNetProduccionL_subor, relativo(ing_subor) ///
-	macro(`=`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')')
-
-Distribucion ImpNetProduccionL_mixL, relativo(ing_mixtoL) ///
-	macro(`=`ImpNetProduccionL'*(`MixL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')')
-
-Distribucion ImpNetProduccionK_mixK, relativo(ing_mixtoK) ///
-	macro(`=`ImpNetProduccionK'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
-
-Distribucion ImpNetProduccionK_soc, relativo(ing_capital) ///
-	macro(`=`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
-
-Distribucion ImpNetProduccionK_hog, relativo(ing_estim_alqu) ///
-	macro(`=`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
-
-Distribucion ImpNetProductos_mixK, relativo(ing_mixtoK) ///
-	macro(`=`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
-
-Distribucion ImpNetProductos_soc, relativo(ing_capital) ///
-	macro(`=`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
-
-Distribucion ImpNetProductos_hog, relativo(ing_estim_alqu) ///
-	macro(`=`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
-
+* Distribuciones finales *
+* v8.15b: los impuestos a productos y a la produccion ya NO viajan embebidos en los factores ni se reparten aqui ∝ capital: se reparten explicitos
+* en §12 (ImpNetProductos ∝ gastoanualTOT, ImpNetProduccion ∝ base gravable) y no entran a Yl/Yk. ROW solo con suborrow = on (v8.14.0):
+* con off (firmado) D.1 y D.4 de S.14 ya son netos del mundo (CSI_121 f.71 y f.95) y las variables no existen. El bloque de v8.14.0 que
+* sumaba impuestos a los ingresos crudos cuando altimir != yes se retira: sin factores, los impuestos son explicitos de todos modos. *
 Distribucion gasto_anualGobierno, relativo(factor) macro(`ConGob')
-
-Distribucion ing_capitalROW, relativo(ing_capital) macro(`ROWProp')
-
-Distribucion ing_suborROW, relativo(ing_subor) macro(`ROWRem')
-
-* Ingresos finales *
-* NOTA: Si altimir=="yes", los impuestos están en los factores Taltimir
-* Si altimir!="yes", agregar impuestos explícitamente
-if "`altimir'" != "yes" {
-	replace ing_subor = ing_subor + ImpNetProduccionL_subor
-	
-	replace ing_mixtoL = ing_mixtoL + ImpNetProduccionL_mixL
-	replace ing_mixtoK = ing_mixtoK + ImpNetProduccionK_mixK + ImpNetProductos_mixK
-	replace ing_mixto = ing_mixtoL + ing_mixtoK
-	
-	*replace ing_capital = ing_capital_sinEP_temp + ing_Sector_Publico
-	
-	replace ing_estim_alqu = ing_estim_alqu + ImpNetProduccionK_hog + ImpNetProductos_hog
+if "$suborrow" == "on" {
+	Distribucion ing_capitalROW, relativo(ing_capital) macro(`ROWProp')
+	Distribucion ing_suborROW, relativo(ing_subor) macro(`ROWRem')
 }
 
 Gini ing_subor, hogar(folioviv foliohog) factor(factor)
@@ -2552,125 +2597,163 @@ local gini_ing_mixto = r(gini_ing_mixto)
 Gini ing_estim_alqu, hogar(folioviv foliohog) factor(factor)
 local gini_ing_estim_alqu = r(gini_ing_estim_alqu)
 
+Gini ing_capital, hogar(folioviv foliohog) factor(factor)
+local gini_ing_capital = r(gini_ing_capital)
+
 * Totales *
-egen double ingbrutotot = rsum(ing_subor ing_mixto ing_capital ing_estim_alqu ing_remesas)
+egen double ingbrutotot = rsum(ing_subor ing_mixto ing_capital ing_estim_alqu ing_remesas `cap3b2n')
 label var ingbrutotot "Ingreso total bruto"
 
 Gini ingbrutotot, hogar(folioviv foliohog) factor(factor)
 local gini_ingbrutotot = r(gini_ingbrutotot)
 
 * Results *
-tabstat ing_subor ing_mixto ing_capital ing_estim_alqu gasto_anualDepreciacion ing_Sector_Publico [aw=factor], stat(sum) f(%20.0fc) save by(formal)	
+* Results: anclas S.14 (Tabla 1 firmada), filas de sector e identidad del PIB (v8.15b, CUAD-0 firma B.13; CONC-1 §4.3) *
+tabstat ing_subor ing_mixto ing_capital ing_estim_alqu gasto_anualDepreciacion ing_remesas `cap3b2n' [aw=factor], stat(sum) f(%20.0fc) save
 tempname ALTIMIR
 matrix `ALTIMIR' = r(StatTotal)
+local SumSubor = `ALTIMIR'[1,1]
+local SumMixto = `ALTIMIR'[1,2]
+local SumCap = `ALTIMIR'[1,3]
+local SumAlqu = `ALTIMIR'[1,4]
+local SumDep = `ALTIMIR'[1,5]
+local SumRem = `ALTIMIR'[1,6]
+if "`cap3b2n'" != "" local SumAlqu = `SumAlqu' + `ALTIMIR'[1,7]
+local SumOyE = 0
+if "$oye_en_hub" == "on" {
+	tabstat ing_Sector_Publico [aw=factor], stat(sum) save
+	local SumOyE = r(StatTotal)[1,1]
+}
+tabstat $cuad_mixbase [aw=factor], stat(sum) save
+tempname MIXC
+matrix `MIXC' = r(StatTotal)
+local SumMixComp = 0
+forvalues c = 1/`=colsof(`MIXC')' {
+	local SumMixComp = `SumMixComp' + `MIXC'[1,`c']
+}
+local D442n = cond("$cuotas_d614" == "neto", `D442Hog', 0)
+local YLmotor = `SumSubor' + `SumMixto'*2/3
+local YAmotor = `SumCap' + `SumMixto'/3 + `SumAlqu'
+local Vintage = (`PIBSCN' - `PIBCSI') + (`CapFijCSI' - `ConCapFij')
+local S11S12 = `B5nNoFin' + `B5nFin'
+local Identidad = `YLmotor' + `YAmotor' + `D442n' + `S11S12' + `B5nGob' + `B5nISFLSH' + `ConCapFij' + `RowPrimNeto' + `Vintage'
 
-// Step 5 //
-noisily di _newline(2) _col(04) in g "{bf:Paso 4: Factores de escala" ///
-	_col(44) in g "(Gini)" ///
-	_col(57) in g %7s "`enigh'" ///
-	_col(66) %7s "Macro" in g ///
-	_col(77) %7s "Factor" "}"
+* (los programas se invocan con noisily: un noisily DENTRO de un programa no vence al quietly del run del do-file) *
+capture program drop _cuadfila
+program define _cuadfila
+	args texto gini motor celda factor pib
+	di _col(04) in g "`texto'" _col(50) in y "(" %5.3f `gini' ")" _col(59) in y %9.3f `motor'/`pib'*100 _col(70) in y %9.3f `celda'/`pib'*100 _col(82) in y %8.4f `factor'
+end
+capture program drop _cuadsector
+program define _cuadsector
+	args texto celda pib
+	di _col(04) in g "`texto'" _col(50) in y "(sector)" _col(70) in y %9.3f `celda'/`pib'*100 _col(82) in y "CSI"
+end
 
-* Rem. asalariados + CSS + Impuestos
-escalar pctpib REMFSCNPIB = ((`RemSal'+`SSEmpleadores'+`SSImputada'+`ImpNetProduccionL'*(`RemSal' ///
-		+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'))/`PIBSCN'*100)
-escalar pctpib REMFHHSPIB = (`ALTIMIR'[1,1]/`PIBSCN'*100)
+noisily di _newline(2) _col(04) in g "{bf:Paso 4: Anclas S.14 (Tabla 1 firmada) y filas de sector; % del PIB BIE " in y %20.0fc `PIBSCN' in g "}"
+noisily di _col(04) in g "{bf:Celda" _col(50) "(Gini)" _col(59) %9s "Motor" _col(70) %9s "SCN" _col(82) "Factor}"
+
+* Remuneracion de asalariados -> D.1 S.14
+escalar pctpib REMFSCNPIB = `D1Hog'/`PIBSCN'*100
+escalar pctpib REMFHHSPIB = `SumSubor'/`PIBSCN'*100
 escalar pctpib giniREMF = `gini_ing_subor'
 escalar pctpib TaltimirSalF = TaltimirSal
-noisily di _col(04) in g "(+) Rem. asalariados + CSS + Impuestos" ///
-	_col(44) in y "(" %5.3f giniREMF ")" ///
-	_col(57) in y %7.3f REMFHHSPIB ///
-	_col(66) in y %7.3f REMFSCNPIB ///
-	_col(77) in y %7.1f TaltimirSalF
+noisily _cuadfila "(+) Remuneración de asalariados (D.1 S.14)" `gini_ing_subor' `SumSubor' `D1Hog' `=TaltimirSal' `PIBSCN'
 
-* Ingreso mixto + Impuestos
-escalar pctpib MIXFSCNPIB = ((`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL')/(`RemSal' ///
-		+`SSEmpleadores'+`SSImputada'+`MixL')+`ImpNetProduccionK'*(`MixKN')/(`MixKN' ///
-		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100)
-escalar pctpib MIXFHHSPIB = (`ALTIMIR'[1,2]/`PIBSCN'*100)
+* Ingreso mixto -> B.3n S.14
+escalar pctpib MIXFSCNPIB = `MixNHogS14'/`PIBSCN'*100
+escalar pctpib MIXFHHSPIB = `SumMixto'/`PIBSCN'*100
 escalar pctpib giniMIXF = `gini_ing_mixto'
 escalar pctpib TaltimirSelfF = TaltimirSelf
-noisily di _col(04) in g "(+) Ingreso mixto + Impuestos" ///
-	_col(44) in y "(" %5.3f giniMIXF ")" ///
-	_col(57) in y %7.3f MIXFHHSPIB ///
-	_col(66) in y %7.3f MIXFSCNPIB ///
-	_col(77) in y %7.1f TaltimirSelfF
+noisily _cuadfila "(+) Ingreso mixto (B.3n S.14)" `gini_ing_mixto' `SumMixto' `MixNHogS14' `=TaltimirSelf' `PIBSCN'
 
-* Sociedades e ISFLSH + Impuestos
-escalar pctpib SOCFSCNPIB = ((`ExNOpSoc'+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN' ///
-		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
-		-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'-`Pemexpropio'-`FMP'-`OtrasEmpresas')/`PIBSCN'*100)
-escalar pctpib SOCFHHSPIB = (`ALTIMIR'[1,3]/`PIBSCN'*100)
+* Renta de la propiedad -> D.4 neto S.14 (− D.442 con cuotas_d614 = neto), Distribucion ∝ relativo (d4_relativo)
+escalar pctpib SOCFSCNPIB = `D4Hog'/`PIBSCN'*100
+escalar pctpib SOCFHHSPIB = `SumCap'/`PIBSCN'*100
 escalar pctpib giniSOCF = `gini_ing_capital'
 escalar pctpib TaltimirCapF = TaltimirCap
-noisily di _col(04) in g "(+) Sociedades e ISFLSH + Impuestos" ///
-	_col(44) in y "(" %5.3f giniSOCF ")" ///
-	_col(57) in y %7.3f SOCFHHSPIB ///
-	_col(66) in y %7.3f SOCFSCNPIB ///
-	_col(77) in y %7.1f TaltimirCapF
+noisily _cuadfila "(+) Renta de la propiedad (D.4 neto S.14; $d4_relativo)" `gini_ing_capital' `SumCap' `D4Hog' `=TaltimirCap' `PIBSCN'
 
-* Organismos y empresas públicas
-escalar pctpib EMPFSCNPIB = ((`IMSSpropio'+`ISSSTEpropio'+`CFEpropio'+`Pemexpropio'+`FMP'+`OtrasEmpresas')/`PIBSCN'*100)
-escalar pctpib EMPFHHSPIB = (`ALTIMIR'[1,6]/`PIBSCN'*100)
-escalar pctpib giniEMPF = `gini_ing_Sector_Publico'
-escalar pctpib FactorEMPF = 1
-noisily di _col(04) in g "(+) Organismos y empresas públicas" ///
-	_col(44) in y "(" %5.3f giniEMPF ")" ///
-	_col(57) in y %7.3f EMPFHHSPIB ///
-	_col(66) in y %7.3f EMPFSCNPIB ///
-	_col(77) in y %7.1f FactorEMPF
-
-* Alquiler imputado + Impuestos
-escalar pctpib ALQFSCNPIB = ((`ExNOpHog'+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN' ///
-		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100)
-escalar pctpib ALQFHHSPIB = (`ALTIMIR'[1,4]/`PIBSCN'*100)
+* Alquiler imputado (+ rentas efectivas con b2n) -> B.2n S.14
+escalar pctpib ALQFSCNPIB = `ExNOpHogS14'/`PIBSCN'*100
+escalar pctpib ALQFHHSPIB = `SumAlqu'/`PIBSCN'*100
 escalar pctpib giniALQF = `gini_ing_estim_alqu'
 escalar pctpib TaltimirHouseF = TaltimirHouse
-noisily di _col(04) in g "(+) Alquiler imputado + Impuestos" ///
-	_col(44) in y "(" %5.3f giniALQF ")" ///
-	_col(57) in y %7.3f ALQFHHSPIB ///
-	_col(66) in y %7.3f ALQFSCNPIB ///
-	_col(77) in y %7.1f TaltimirHouseF
+noisily _cuadfila "(+) Alquiler imputado + rentas b2n (B.2n S.14)" `gini_ing_estim_alqu' `SumAlqu' `ExNOpHogS14' `=TaltimirHouse' `PIBSCN'
 
-* Producto Interno Neto
-noisily di in g _dup(83) "-"
-escalar pctpib PINFSCNPIB = ((`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
-		+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100)
-escalar pctpib PINFHHSPIB = ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,6])/`PIBSCN'*100)
+* Organismos y empresas publicas (LIF): fila de sector con oye_en_hub = off (no llega a personas)
+escalar pctpib EMPFSCNPIB = `OyE'/`PIBSCN'*100
+escalar pctpib EMPFHHSPIB = `SumOyE'/`PIBSCN'*100
+escalar pctpib giniEMPF = `gini_ing_Sector_Publico'
+escalar pctpib FactorEMPF = cond("$oye_en_hub" == "on", 1, 0)
+noisily _cuadfila "(+) Organismos y empresas públicas (oye_en_hub=$oye_en_hub)" `gini_ing_Sector_Publico' `SumOyE' `OyE' `=cond("$oye_en_hub" == "on", 1, 0)' `PIBSCN'
+
+* Ingreso primario de las personas = B.5n S.14 (− D.442)
+noisily di in g _dup(90) "-"
+escalar pctpib PINFSCNPIB = (`D1Hog'+`MixNHogS14'+`D4Hog'+`ExNOpHogS14')/`PIBSCN'*100
+escalar pctpib PINFHHSPIB = (`YLmotor'+`YAmotor')/`PIBSCN'*100
 escalar pctpib giniPINF = `gini_ingbrutotot'
-escalar pctpib TPINF = (((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,6])/(`RemSal'+`SSEmpleadores' ///
-		+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'))^(-1))
-noisily di _col(04) in g "(=) Producto Interno Neto" ///
-	_col(44) in y "(" %5.3f giniPINF ")" ///
-	_col(57) in y %7.3f PINFHHSPIB ///
-	_col(66) in y %7.3f PINFSCNPIB ///
-	_col(77) in y %7.1f TPINF
+escalar pctpib TPINF = (`YLmotor'+`YAmotor')/(`D1Hog'+`MixNHogS14'+`D4Hog'+`ExNOpHogS14')
+noisily _cuadfila "(=) YL + YA de las personas (B.5n S.14 − D.442)" `gini_ingbrutotot' `=`YLmotor'+`YAmotor'' `=`D1Hog'+`MixNHogS14'+`D4Hog'+`ExNOpHogS14'' `=scalar(TPINF)' `PIBSCN'
 
-* Depreciación
+* Depreciacion: CapFij BIE ∝ ing_capital (CCF de toda la economia; el vintage CSI − BIE va a la fila de vintage)
 escalar pctpib DEPFSCNPIB = (`ConCapFij'/`PIBSCN'*100)
-escalar pctpib DEPFHHSPIB = (`ALTIMIR'[1,5]/`PIBSCN'*100)
+escalar pctpib DEPFHHSPIB = (`SumDep'/`PIBSCN'*100)
 escalar pctpib giniDEPF = `gini_gasto_anualDepreciacion'
-escalar pctpib TaltimirDepF = (`ALTIMIR'[1,5]/`ConCapFij')^(-1)
-noisily di _col(04) in g "(+) Depreciación" ///
-	_col(44) in y "(" %5.3f giniDEPF ")" ///
-	_col(57) in y %7.3f DEPFHHSPIB ///
-	_col(66) in y %7.3f DEPFSCNPIB ///
-	_col(77) in y %7.1f TaltimirDepF
+escalar pctpib TaltimirDepF = (`SumDep'/`ConCapFij')^(-1)
+noisily _cuadfila "(+) Depreciación (CCF BIE ∝ ing_capital)" `gini_gasto_anualDepreciacion' `SumDep' `ConCapFij' `=scalar(TaltimirDepF)' `PIBSCN'
 
-* Producto Interno Bruto
-noisily di in g _dup(83) "-"
-escalar pctpib FPIBSCNPIB = ((`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
-		+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')/`PIBSCN'*100)
-escalar pctpib FPIBHHSPIB = ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5]+`ALTIMIR'[1,6])/`PIBSCN'*100)
+* Filas de sector (CSI 2024; sin edad; CONC-1 §4.3): lo que el PIB contiene y no es ingreso de las personas
+noisily _cuadsector "(+) Circuito D.442 → D.614 (S.12 ↔ S.14; cuotas_d614=$cuotas_d614)" `D442n' `PIBSCN'
+noisily _cuadsector "(+) Excedente retenido S.11 + S.12 (B.5n)" `S11S12' `PIBSCN'
+noisily _cuadsector "(+) Gobierno S.13 (B.5n = D.2 − D.3 + D.4 neto)" `B5nGob' `PIBSCN'
+noisily _cuadsector "    · de los cuales D.2 − D.3 recibidos" `ImpNetGobR' `PIBSCN'
+noisily _cuadsector "    · de los cuales D.4 neto del gobierno" `RentaPropGobNeta' `PIBSCN'
+noisily _cuadsector "(+) ISFLSH S.15 (B.5n)" `B5nISFLSH' `PIBSCN'
+noisily _cuadsector "(+) Renta primaria neta pagada al exterior (S.2)" `RowPrimNeto' `PIBSCN'
+noisily _cuadsector "(+) Vintage BIE − CSI (PIB y CCF)" `Vintage' `PIBSCN'
+noisily di in g _dup(90) "-"
+escalar pctpib FPIBSCNPIB = 100
+escalar pctpib FPIBHHSPIB = `Identidad'/`PIBSCN'*100
 escalar pctpib giniPIBF = `gini_ingbrutotot'
-escalar pctpib TPIBF = (((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5]+`ALTIMIR'[1,6])/(`RemSal' ///
-		+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK' ///
-		+`ImpNetProductos'+`ConCapFij'))^(-1))
-noisily di _col(04) in g "(=) Producto Interno Bruto" ///
-	_col(44) in y "(" %5.3f giniPIBF ")" ///
-	_col(57) in y %7.3f FPIBHHSPIB ///
-	_col(66) in y %7.3f FPIBSCNPIB ///
-	_col(77) in y %7.1f TPIBF
+escalar pctpib TPIBF = `Identidad'/`PIBSCN'
+noisily _cuadfila "(=) Producto Interno Bruto (BIE)" `gini_ingbrutotot' `Identidad' `PIBSCN' `=scalar(TPIBF)' `PIBSCN'
+
+* Escalares de la identidad (output.txt: CUADRATURA; gate-numeros los conoce) *
+escalar mxn CuadYL = `YLmotor'
+escalar mxn CuadYA = `YAmotor'
+escalar mxn CuadD442 = `D442n'
+escalar mxn CuadS11S12 = `S11S12'
+escalar mxn CuadS13 = `B5nGob'
+escalar mxn CuadS15 = `B5nISFLSH'
+escalar mxn CuadCCF = `ConCapFij'
+escalar mxn CuadRow = `RowPrimNeto'
+escalar mxn CuadVintage = `Vintage'
+escalar mxn CuadPIB = `Identidad'
+foreach k in YL YA D442 S11S12 S13 S15 CCF Row Vintage PIB {
+	escalar pctpib Cuad`k'PIB = scalar(Cuad`k')/`PIBSCN'*100
+}
+escalar mxn CuadImpNetGobR = `ImpNetGobR'
+escalar mxn CuadRentaPropGob = `RentaPropGobNeta'
+escalar mxn CuadRemesasS14 = `RemesasHogS14'
+escalar pct CuadRemesasFactor = TaltimirROWTrans*100
+
+* Gates (1e-9 relativo): anclas S.14 por construccion, componentes crudos = agregado, YA, identidad de sectores *
+local gates_ok = 1
+foreach par in `""Σ ing_subor = D.1 S.14" `SumSubor' `D1Hog'"' `""Σ ing_mixto = B.3n S.14" `SumMixto' `MixNHogS14'"' ///
+	`""Σ ing_estim_alqu (+ rentas b2n) = B.2n S.14" `SumAlqu' `ExNOpHogS14'"' `""Σ ing_capital = D.4 neto S.14 (− D.442)" `SumCap' `D4Hog'"' ///
+	`""componentes de ing_mixto = agregado" `SumMixComp' `SumMixto'"' `""YA = ing_capital + 1/3 ing_mixto + B.2n = YAHogS14 (− D.442)" `YAmotor' `=`YAHogS14' - `D442n''"' ///
+	`""PIB BIE = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage" `Identidad' `PIBSCN'"' {
+	gettoken txt par : par
+	gettoken a b : par
+	local b = trim("`b'")
+	local d = reldif(`a', `b')
+	noisily di in g "  GATE Households (1e-9): `txt': " in y %18.3fc `a'/1e9 in g " vs " in y %18.3fc `b'/1e9 in g " (reldif " in y %9.2e `d' in g ") -> " in y cond(`d' <= 1e-9, "OK", "ROJO")
+	if `d' > 1e-9 local gates_ok = 0
+}
+escalar pct CuadGatesOK = `gates_ok'*100
+if !`gates_ok' noisily di as err "  GATE Households: alguna ancla S.14 o la identidad de sectores no cierra a 1e-9 (esperado solo con yk_ancla = actual o altimir = no)."
+noisily di in g "  Remesas: Σ ing_remesas " in y %16.0fc `SumRem' in g " = ROWTrans BIE (factor " in y %8.4f TaltimirROWTrans in g "); D.752 S.14 CSI " in y %16.0fc `RemesasHogS14' in g " (una sola vez: ya no viajan dentro de ing_mixto)"
 
 
 
@@ -2723,6 +2806,16 @@ label values formalmax formalidad
 egen gastoanualTOT = rsum(gas_pc_*)
 label var gastoanualTOT "Gasto total (anual)"
 
+* v8.15b (CUAD-0 firma; «impuestos embebidos»): los impuestos netos a los productos (BIE 723656) y a la produccion (D.29 − D.39 BIE: L + K)
+* se reparten EXPLICITOS y declarados, fuera de Yl/Yk: ∝ gasto total los de productos (quien los paga al consumir) y ∝ base gravable
+* (ing_bruto_tax + ing_bruto_tpm) los de produccion. Ningun Taltimir* los lleva. NTA.do reparte los suyos desde la CSI (ImpProd ∝ Cpriv). *
+Distribucion ImpNetProductos, relativo(gastoanualTOT) macro(`ImpNetProductos')
+label var ImpNetProductos "Impuestos netos a los productos (BIE 723656) ∝ gasto total: explicitos, fuera de Yl/Yk (v8.15b)"
+tempvar basegrav
+egen double `basegrav' = rsum(ing_bruto_tax ing_bruto_tpm)
+Distribucion ImpNetProduccion, relativo(`basegrav') macro(`=`ImpNetProduccionL'+`ImpNetProduccionK'')
+label var ImpNetProduccion "Impuestos netos a la produccion (D.29 − D.39 BIE) ∝ base gravable: explicitos, fuera de Yl/Yk (v8.15b)"
+
 * Compras netas fuera del pais *
 Distribucion gasto_anualComprasN, relativo(gastoanualTOT) macro(`ComprasN')
 
@@ -2747,16 +2840,36 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 * Yl, Yk y las variables de consumo que leen Sankey.do y NTA.do son POR PERSONA: el ingreso por perceptor (ENIGH) anclado a
 * SCN con Altimir, y el consumo del hogar repartido entre sus miembros por perfilpc.ado (perfil edad-sexo, punto fijo;
 * Expenditure.do §2), no per capita: un menor de 0-4 recibe ~11 % del gasto en alimentos de un adulto de 30-64. (v8.14) *
+* v8.15b (CUAD-0 firma): Yl = D.1 S.14 + 2/3 B.3n; Yk = D.4 neto (− D.442) + 1/3 B.3n + B.2n (alquiler imputado + rentas efectivas con
+* rentas_celda = b2n) + depreciacion (CapFij BIE ∝ ing_capital). Yl + Yk + OyE ya NO suma el PIB: la identidad vive en §9.1 con las filas de sector. *
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral (anual)"
 
 *noisily Perfiles Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral")
 noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral (anual)") reboot boot($bootstrap)
 
-egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
+egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu `cap3b2n' gasto_anualDepreciacion)
 label var Yk "Ingresos de capital (anual)"
 *noisily Perfiles Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital")
 noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingresos de capital (anual)") reboot boot($bootstrap)
+
+* Gates de Yl y Yk contra las celdas S.14 (1e-9 relativo) *
+tabstat Yl Yk gasto_anualDepreciacion [aw=factor], stat(sum) save
+local SumYl = r(StatTotal)[1,1]
+local SumYkNeto = r(StatTotal)[1,2] - r(StatTotal)[1,3]
+foreach par in `""Σ Yl = D.1 S.14 + 2/3 B.3n" `SumYl' `=`D1Hog' + `MixNHogS14'*2/3'"' `""Σ Yk − CCF = YAHogS14 (− D.442)" `SumYkNeto' `=`YAHogS14' - `D442n''"' {
+	gettoken txt par : par
+	gettoken a b : par
+	local b = trim("`b'")
+	local d = reldif(`a', `b')
+	noisily di in g "  GATE Households (1e-9): `txt': " in y %18.3fc `a'/1e9 in g " vs " in y %18.3fc `b'/1e9 in g " (reldif " in y %9.2e `d' in g ") -> " in y cond(`d' <= 1e-9, "OK", "ROJO")
+	if `d' > 1e-9 {
+		local gates_ok = 0
+		escalar pct CuadGatesOK = 0
+	}
+}
+escalar mxn CuadYlNac = `SumYl'
+escalar mxn CuadYkNetoNac = `SumYkNeto'
 
 *noisily Perfiles ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total")
 noisily Simulador ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total") reboot boot($bootstrap)
@@ -2764,15 +2877,22 @@ noisily Simulador ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh
 *noisily Perfiles gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto anual total")
 noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto total (anual)") reboot boot($bootstrap)
 
-*noisily Perfiles ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW")
-noisily Simulador ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW") reboot boot($bootstrap)
+* v8.15b (suborrow): con "off" (firmado) D.1 y D.4 de S.14 ya son netos del mundo y las variables ROW no existen *
+local rowL = 0
+local rowK = 0
+if "$suborrow" == "on" {
+	*noisily Perfiles ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW")
+	noisily Simulador ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW") reboot boot($bootstrap)
+	local rowL "ing_suborROW"
+	local rowK "ing_capitalROW"
+}
 
-g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
+g Ciclodevida = Yl + Yk + ing_remesas + `rowL' - gastoanualTOT
 label var Ciclodevida "Ciclo de vida"
 *noisily Perfiles Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida")
 noisily Simulador Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida") reboot boot($bootstrap)
 
-g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW ///
+g Ahorro = ingbrutotot + `rowK' + `rowL' ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro (anual)"
 *noisily Perfiles Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro")
@@ -2829,6 +2949,12 @@ else {
 capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
+* v8.15b: factores y parametros a la base, para NTA.do suelto, Sankey.do y test-nta-identidad.do (sin la sesion de SIM.do) *
+char _dta[cuad_params] "$cuad_params"
+char _dta[TaltimirSal] "`=string(TaltimirSal, "%21.16g")'"
+char _dta[TaltimirSelf] "`=string(TaltimirSelf, "%21.16g")'"
+char _dta[TaltimirHouse] "`=string(TaltimirHouse, "%21.16g")'"
+char _dta[TaltimirROWTrans] "`=string(TaltimirROWTrans, "%21.16g")'"
 save "${SIMROOT}/master/`anioenigh'/households.dta", replace
 
 
