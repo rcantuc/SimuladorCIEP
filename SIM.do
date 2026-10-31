@@ -76,6 +76,12 @@ if "$output" != "" {
 	}
 }
 
+** 0.8 Parámetros de Cuadratura (v8.15b-pre, 2026-10-31; CUAD-0 §4). Default = comportamiento de v8.14.0; cualquier otro valor es un
+**     FLAG declarado en el header de Households.do (y NTA.do) y deja los números fuera del baseline publicado (manifest: baseline).
+global pensiones_en_yl "on"							// on (actual: ing_jubila dentro de ing_t4_cap1 -> ing_subor -> Yl) | off (pensiones fuera de Yl: D.62)
+global yk_ancla "actual"							// actual (ExNOpSoc residuo BIE + impuestos − OyE; ExNOpHog) | b2n_b3n_d4 (celdas S.14: D.4 neto y B.2n)
+global cap4 "dentro"								// dentro (enajenaciones en ing_mixto) | fuera (fuera de ing_mixto y de Yl/Yk; siguen en la base del ISR)
+
 
 ***
 **# 1. DEMOGRAFÍA

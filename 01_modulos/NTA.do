@@ -46,7 +46,8 @@
 *                Altimir embebía de ImpNet en Yk y Yl (ImpNetProductos_mixK/_soc/_hog, Households.do l. 2420-2427) se saca de YA
 *                (_soc, _hog y ⅓ de _mixK) y de YL (⅔ de _mixK: v8.14) para no contarlo dos veces. Así los indirectos de τ⁻ ya no
 *                son doble resta. D.29 − D.39 sigue en Yl/Yk (FLAG).
-*   YL         = Yl del motor − pensiones (ing_jubila × TaltimirSal, lo que Households.do metió a Yl: FLAG motor v9.x)
+*   YL         = Yl del motor − pensiones (ing_jubila × TaltimirSal, lo que Households.do metió a Yl: FLAG motor v9.x; v8.15b-pre: con el
+*                parámetro pensiones_en_yl = off de Households.do no viajan en Yl y la resta es 0)
 *                − 2/3 de las transferencias y flujos financieros que viajan dentro de ing_mixto (× TaltimirSelf)
 *                − 2/3 de ImpNetProductos_mixK (v8.14) + ing_suborROW.
 *   YA         = YA_base + YA_d8 [+ YA_ajuste solo con nta_anclaS = aditivo]. YA_motor = Yk − depreciación (CapFij: base NETA,
@@ -124,6 +125,8 @@ if "$nta_alqu" == "" global nta_alqu "jefe"
 if "$nta_tauCash" == "" global nta_tauCash "PEF"
 if "$nta_otorgado" == "" global nta_otorgado "efectivo"
 if "$nta_mixto" == "" global nta_mixto "crudo"
+* v8.15b-pre (CUAD-0 §4): parametro de Households.do; si es "off" las pensiones ya no viajan en Yl y aqui no se restan (§4.1) *
+if "$pensiones_en_yl" == "" global pensiones_en_yl "on"
 local adulto = 18
 local tol = 1e-9
 capture mkdir "${SIMROOT}/users/$id"
@@ -352,7 +355,7 @@ if "$nta_mixto" == "reancla" {
 	replace nta_mixto_transf = ing_mixto - nta_mixto_re
 	replace nta_mixto_fin = 0
 }
-g double nta_pens_enYl = min(ing_jubila*`TSal', ing_subor)
+g double nta_pens_enYl = cond("$pensiones_en_yl" == "off", 0, min(ing_jubila*`TSal', ing_subor))	// v8.15b-pre: con pensiones_en_yl = off no hay nada que restar
 * tamaño del FLAG: lo que ing_mixto trae de transferencias y flujos financieros, escalado como ingreso de cuenta propia *
 g double nta_mixto_flag = (ing_dona + ing_heren + ing_benef + nta_rem_raw + ing_prest + ing_otrocap + ing_ahorro)*`TSelf'
 

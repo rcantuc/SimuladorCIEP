@@ -24,6 +24,8 @@
 #      manifest-datos.json (sha256 por archivo, commit, data_updated, vintages que registró el motor)
 #      y los sube a la Release como assets; Gate 9 exige que exista y cuadre (desde v8.14.0),
 #      Gate 10 que CITATION.cff lleve la versión y la fecha del manifest.
+#   5c. (v8.15b-pre) Gate 11: manifest.json declara `baseline` (tag desde el que los números publicados son
+#      comparables; CUAD-0 §4 ter) y ese tag existe. Obligatorio desde v8.15.0; antes, informativo. También en --ci.
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
@@ -97,8 +99,8 @@ Opciones:
                         .clon-desarrollo, con <version> opcional (default: la del
                         manifest.json) y SIN el Gate 2 (el tag lo crea publicar.sh al
                         publicar; un PR de release lleva el manifest bumpeado antes del tag).
-                        Gates 1, 3, 4, 5 (solo rawwip: en CI no hay raw/), 6, 7 y 8 (lectura
-                        de la Release con gh; necesita GH_TOKEN). Exit 0/1 como --check.
+                        Gates 1, 3, 4, 5 (solo rawwip: en CI no hay raw/), 6, 7, 8 (lectura
+                        de la Release con gh; necesita GH_TOKEN), 10 y 11. Exit 0/1 como --check.
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
   --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
@@ -865,6 +867,7 @@ manifest = {
     'esquema': 'ciep.datos-sidecar/v1',
     'version': version, 'release_tag': man.get('release_tag'), 'commit': commit,
     'data_updated': man.get('data_updated'), 'enigh_vintage': man.get('enigh_vintage'),
+    'baseline': man.get('baseline'),   # v8.15b-pre (CUAD-0 §4 ter): tag desde el que estos números son comparables
     'descripcion': 'Corte de datos citable del Simulador Fiscal CIEP: lo que el motor dejó en users/ricardo/ (escenario default del sitio, cuenta NTA, Sankeys, las 32 entidades) en la corrida que publicó esta versión.',
     'cita': 'CIEP (%s). Simulador Fiscal CIEP %s, datos al %s. https://github.com/rcantuc/SimuladorCIEP/releases/tag/%s' % (anio, version, man.get('data_updated'), version),
     'zip': {'name': os.path.basename(zpath), 'sha256': sha(zpath), 'bytes': os.path.getsize(zpath)},
@@ -1008,6 +1011,44 @@ gate_citation() {
     return 0
 }
 
+# Gate 11 — baseline (v8.15b-pre, 2026-10-31; CUAD-0 §4 ter, decisión 14). 05_scripts/manifest.json declara `baseline`: el tag
+# desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión (la última
+# corrección de datos). El gate exige que el campo exista, que sea un tag (local o en origin: el checkout de CI puede venir
+# sin tags) y que no sea posterior a la versión. Obligatorio desde BASELINE_DESDE; para versiones anteriores solo informa.
+# Estático: corre también en --ci. El sidecar (manifest-datos.json) y DEPLOYED_COMMIT (health.php) copian el mismo valor.
+BASELINE_DESDE="v8.15.0"
+gate_baseline() {
+    local version="$1" man="$REPO_ROOT/05_scripts/manifest.json" baseline aplica=0 nota=""
+    [[ "$(printf '%s\n%s\n' "$BASELINE_DESDE" "$version" | sort -V | head -n 1)" == "$BASELINE_DESDE" ]] && aplica=1
+    (( aplica )) || nota=" (informativo: se exige desde $BASELINE_DESDE)"
+    baseline="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("baseline","") or "")' "$man" 2>/dev/null)"
+    if [[ -z "$baseline" ]]; then
+        if (( aplica )); then
+            log_error "Gate 11 FALLO: 05_scripts/manifest.json no declara 'baseline' (obligatorio desde $BASELINE_DESDE)."
+            log_error "        Escribe el tag desde el que los números publicados son comparables (CUAD-0 §4 ter)."
+            return 1
+        fi
+        log_warn "Gate 11: manifest.json sin 'baseline'$nota."
+        return 0
+    fi
+    if [[ "$(printf '%s\n%s\n' "$baseline" "$version" | sort -V | head -n 1)" != "$baseline" ]]; then
+        if (( aplica )); then log_error "Gate 11 FALLO: baseline $baseline es posterior a la versión $version."; return 1; fi
+        log_warn "Gate 11: baseline $baseline es posterior a la versión $version$nota."
+        return 0
+    fi
+    if git rev-parse -q --verify "refs/tags/$baseline^{commit}" >/dev/null 2>&1 \
+       || git ls-remote --exit-code --tags origin "refs/tags/$baseline" >/dev/null 2>&1; then
+        log_info "✓ Gate 11: baseline $baseline declarado y existe como tag$nota"
+        return 0
+    fi
+    if (( aplica )); then
+        log_error "Gate 11 FALLO: baseline $baseline no existe como tag (ni local ni en origin)."
+        return 1
+    fi
+    log_warn "Gate 11: baseline $baseline no existe como tag$nota."
+    return 0
+}
+
 # Assets del sidecar en la Release: subir los dos (idempotente) y verificar por digest sha256.
 sidecar_upload() {
     local version="$1" dir="$SIDECAR_ROOT/$1"
@@ -1128,14 +1169,15 @@ if [[ "$CHECK_MODE" == "true" ]]; then
         gate_sidecar_datos "$VERSION" || GATE_FAILURES=$((GATE_FAILURES+1))
     fi
     gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_baseline "$VERSION"       || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."   # también en --ci
         exit 1
     fi
     if [[ "$CI_MODE" == "true" ]]; then
-        log_info "--ci: los 8 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
+        log_info "--ci: los 9 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
     else
-        log_info "--check: los 10 gates pasaron para $VERSION."
+        log_info "--check: los 11 gates pasaron para $VERSION."
     fi
     exit 0
 fi
@@ -1207,6 +1249,7 @@ gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_baseline "$VERSION"       || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi

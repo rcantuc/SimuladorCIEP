@@ -185,6 +185,8 @@ Cada versión publicada deja en su Release de GitHub un **corte de datos citable
 
 Sustituye la versión y la fecha por las de la Release que usaste (están en `manifest-datos.json` y en `CITATION.cff`). No hay DOI externo: la Release de GitHub, con sus SHA-256, es la referencia.
 
+**Comparabilidad entre versiones:** `manifest.json` y `manifest-datos.json` declaran `baseline`, el tag desde el que los números publicados (escenario default, Sankeys, 32 entidades) son comparables con esa versión; para v8.14.0 y anteriores es `v8.12.4`. Si dos versiones tienen el mismo `baseline`, sus números comparan; si no, el CHANGELOG dice por qué (`publicar.sh` lo exige desde v8.15.0 con el Gate 11 y `health.php` lo muestra como `Baseline:`).
+
 <h2 style="color: #ff7020;">Cómo reproducir resultados de una versión específica</h2>
 
 Si necesitas replicar un análisis hecho con una versión anterior del Simulador Fiscal CIEP (por ejemplo, para verificar los resultados de una publicación, revisar un artículo, o comparar cambios entre versiones), este es el proceso:
