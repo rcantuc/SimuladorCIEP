@@ -33,6 +33,22 @@ noisily di in w "DEUDAPARAM: [" ///
 	%20.0g scalar(tasaEfectiva) /// Tasa de interés efectiva (FLAG-5: precision completa, el web la devuelve como {{DEUDA0}})
 "]"
 
+* v8.15b (CUAD-0 firma 13; Households.do §9.1): identidad de sectores del PIB BIE en % del PIB: YL, YA, circuito D.442, B.5n S.11+S.12,
+* B.5n S.13, B.5n S.15, CCF, renta primaria neta al exterior, vintage BIE−CSI y la suma (= 100 a 1e-9: gate de Households). gate-numeros.sh
+* compara output.txt byte a byte, asi que una llave que se mueva sin que la firma lo explique se ve aqui. *
+noisily di in w "CUADRATURA: [" ///
+	%8.3f scalar(CuadYLPIB) "," /// YL = D.1 S.14 + 2/3 B.3n - 0
+	%8.3f scalar(CuadYAPIB) "," /// YA = D.4 neto (− D.442) + 1/3 B.3n + B.2n - 1
+	%8.3f scalar(CuadD442PIB) "," /// circuito D.442 → D.614 - 2
+	%8.3f scalar(CuadS11S12PIB) "," /// B.5n S.11 + S.12 (excedente retenido) - 3
+	%8.3f scalar(CuadS13PIB) "," /// B.5n S.13 - 4
+	%8.3f scalar(CuadS15PIB) "," /// B.5n S.15 - 5
+	%8.3f scalar(CuadCCFPIB) "," /// CCF (BIE) - 6
+	%8.3f scalar(CuadRowPIB) "," /// renta primaria neta pagada al exterior - 7
+	%8.3f scalar(CuadVintagePIB) "," /// vintage BIE − CSI - 8
+	%8.3f scalar(CuadPIBPIB) /// suma = PIB BIE (100) - 9
+"]"
+
 noisily di in w "INGRESOS: " in w "["  ///
 	%8.3f scalar(ISRASPIB) "," /// ISR (salarios) - 0
 	%8.3f scalar(ISRPFPIB) "," /// ISR (físicas) - 1
