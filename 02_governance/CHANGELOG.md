@@ -21,7 +21,7 @@ Formato de cada entrada:
 Sesión v8.15a: memo e higiene del ritual. **Ningún `.do`/`.ado` ni número publicado cambia** (`gate-numeros.sh` verde; sin bump de manifest).
 
 - **Institucional — CUAD-0.** `02_governance/CUAD-0.md`: capítulo `Households` del método en v8.14.0 y columna «propuesto 8.15» (Tabla 1 principio C, Tabla 2 principio B, parámetros, política de fuente SCN, campo `baseline`, Δ esperado). Es insumo de 8.15b, pendiente de firma.
-- **Institucional — `02_governance/metodo/`.** `plantilla-capitulo.md` y `cap0-requerimientos.md` (borradores de Ricardo, sin editar) y README de la carpeta. CUAD-0 queda escrito en esa plantilla.
+- **Institucional — `02_governance/metodo/`.** `plantilla-capitulo.md` y `cap0-requerimientos.md` (borradores de Ricardo; plantilla y cap0 con cinco correcciones de Ricardo) y README de la carpeta. CUAD-0 queda escrito en esa plantilla.
 - **Comandos — `contrato-32.py --refs`.** Acepta `sankey-*.json` planos o `SankeySF/`. Una referencia que falta es «referencia ausente: <ruta>» y hace FALLÓ, con mensaje distinto de «difiere».
 - **Comandos — `gate-numeros.sh`.** Acepta `sankey-*.json` planos o `SankeySF/`. Un archivo que falta es «ausente: <ruta>» y da NO EVALUABLE (exit 2), ya no «los números cambiaron»; si además algún número difiere, sigue siendo ROJO (exit 1).
 - **Comandos — `publicar-vps.sh`.** La pregunta del cutover y la línea de rollback van a `/dev/tty` (sin tty, a stdout), para que `| tee | grep` no las esconda. `publicar.sh` no tiene prompts interactivos.

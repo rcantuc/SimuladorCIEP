@@ -272,12 +272,12 @@ La versión de cierre es **propuesta** de este memo.
 | Altimir | Tabla de correspondencia encuesta → SCN, una celda por variable | La distancia es grande: Yl + Yk crudos son 33.36 % del PIB (`L`) y se escala por tipo de ingreso | §0.3, «Ajuste encuesta–SCN» |
 | Informalidad por cotización | Afiliación o cotización por persona, y una definición oficial para validar | La ENIGH trae seguridad social; probit más corte por ranking contra la recaudación (89,518 personas con cuotas > 0, `L`) | Fila 12 |
 
-**Comparación con cap0:** los cinco están; **no se copió ningún renglón y cap0 entró sin editar.** Cuatro diferencias quedan para Ricardo, porque cap0 es suyo:
+**Comparación con cap0:** los cinco están; **no se copió ningún renglón.** cap0 ya está corregido en este PR; las cuatro diferencias que salieron de esta comparación quedan **resueltas en #51**:
 
-1. **Fila 1**, «vintage anual»: el motor usa un solo vintage, pry23 de 2023 (`Poblacion.ado` l. 650–655).
-2. **Fila 4**, «CSI; BIE como vintage alterno»: §4 bis firma el BIE como canal, y el motor usa los dos. Además, la lista de partidas omite celdas que las Tablas 1 y 2 usan: D.21/D.31, D.29/D.39, P.3, P.32, P.51c.
-3. **Fila 15**, «Banxico»: el motor no lee Banxico; ancla remesas a ROWTrans del BIE (`H l.2106`).
-4. **§0.3**, «Altimir por variable contra su celda» y «reglas con sello» describen el estado propuesto, no v8.14.0: este memo documenta justo esa distancia. Son ciertos desde 8.15b, si se firma.
+1. **Fila 1**, «vintage anual»: el motor usa un solo vintage, pry23 de 2023 (`Poblacion.ado` l. 650–655). Ahora dice «un vintage fijo por versión; hoy CONAPO pry23».
+2. **Fila 4**, «CSI; BIE como vintage alterno»: §4 bis firma el BIE como canal. Ahora dice «canal BIE, congelado en `raw/`», y la lista de partidas agrega las que las Tablas 1 y 2 usan: D.21/D.31, D.29/D.39, P.3, P.32, P.51c.
+3. **Fila 15**, «Banxico»: el motor no lee Banxico; ancla remesas a ROWTrans del BIE (`H l.2106`). Ahora dice ROWTrans del BIE, con Banxico como contraste.
+4. **§0.3**, principios C y B: describían el estado propuesto como hecho. Ahora dicen «vigente desde 8.15b si se firma CUAD-0».
 
 ## §10 Procedencia
 
