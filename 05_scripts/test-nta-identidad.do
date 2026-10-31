@@ -34,6 +34,12 @@ foreach k in TransfEspecie ImpNetosProd AjustePension TauPubS14 YAHogS14 {
 local sinancla = strpos("`params'", "nta_anclaS=off") > 0
 local tauon = strpos("`params'", "nta_anclaTau=on") > 0
 local yas14 = strpos("`params'", "nta_YA=S14") > 0
+* v8.15b (CUAD-0 firma 11): con cuotas_d614 = neto D.442 sale de YA, asi que Σ YA_base = YAHogS14 − D442Hog *
+if strpos("`params'", "cuotas_d614=neto") > 0 {
+	capture local D442 = scalar(D442Hog)
+	if _rc local D442 = 0
+	local YAHogS14 = `YAHogS14' - `D442'
+}
 use `"`dta'"', clear
 capture confirm variable ImpProd
 if _rc != 0 quietly g double ImpProd = 0
