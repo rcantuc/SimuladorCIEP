@@ -8,6 +8,29 @@
 **** Las imputaciones macro-micro de este archivo usan Distribucion.ado (y_i = x_i * MACRO / sum_w x): son per capita
 **** solo cuando el relativo es pob; con relativo(factor) reparten en proporcion al factor de expansion de cada persona.
 ****
+**** Parametros de Cuadratura (v8.15b-pre, 2026-10-31; CUAD-0 §4). Globals que SIM.do §0.8 declara y este archivo lee en §0.0;
+**** sueltos, el default es el comportamiento de v8.14.0. Cada valor distinto del default es un FLAG declarado, no un cambio de metodo:
+****   FLAG pensiones_en_yl = off  «pensiones fuera de Yl: D.62»  — ing_jubila (P032 de jubilados) sale de ing_t4_cap1 (§2.2) y de
+****                               exen_t4_cap1 (§3); ya no llega a ing_subor ni a Yl. NTA.do deja de restarlas (nta_pens_enYl = 0).
+****   FLAG yk_ancla = b2n_b3n_d4  «Yk = B.2n + 1/3 B.3n + D.4 neto de S.14» — en §9 TaltimirCap ancla ing_capital a D.4 neto del
+****                               sector hogares (CSI_115 f.95 R/P − U/A) y TaltimirHouse ancla ing_estim_alqu a B.2n (f.69), sin
+****                               impuestos embebidos ni resta de OyE; el 1/3 de B.3n sigue en ing_mixtoK con TaltimirSelf.
+****   FLAG cap4 = fuera           «enajenaciones fuera de la cuenta corriente» — ing_t4_cap4 (P054-P056, P059-P063) sale de
+****                               ing_mixto (§4.2) y por tanto de Yl/Yk; sigue en ing_bruto_tax (§10) como base del ISR.
+****
+**** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-0 §9, 2026-10-30):
+****   | Elemento                    | Que requiere genericamente                                  | Por que Mexico lo resuelve asi                                  |
+****   | ENIGH bienal                | Encuesta con ingreso y gasto por persona, factor de         | Unica fuente con ingreso por fuente y gasto en el mismo hogar;  |
+****   |                             | expansion y folio hogar-persona                              | bienal: anioenigh se separa del anio fiscal y las anclas se     |
+****   |                             |                                                              | toman del anio ENIGH                                            |
+****   | CONAPO edad simple          | Proyecciones por edad simple, sexo y unidad subnacional      | Proyecciones oficiales por entidad; sostienen perfiles y 2070   |
+****   | CSI por sector              | Cuentas integradas con hogares separados, vintage            | INEGI publica S.11-S.15 y S.2 con vintage distinto al del BIE   |
+****   |                             | identificable                                                | (canal BIE firmado en CUAD-0 §4 bis, congelado en raw/)         |
+****   | Altimir                     | Tabla de correspondencia encuesta -> SCN, una celda por      | La distancia es grande: Yl + Yk crudos son 33.36 % del PIB; se  |
+****   |                             | variable                                                     | escala por tipo de ingreso (§9 de este archivo)                 |
+****   | Informalidad por cotizacion | Afiliacion o cotizacion por persona y una definicion oficial | La ENIGH trae seguridad social; probit (§10.2-10.4) mas corte   |
+****   |                             | para validar                                                 | por ranking contra la recaudacion LIF (§11)                     |
+****
 if "`1'" == "" {
 	clear all
 	local 1 = 2024
@@ -84,6 +107,28 @@ if `1' >= 2014 & `1' < 2016 {
 }
 
 
+** 0.0 Parametros de Cuadratura (v8.15b-pre; CUAD-0 §4). Default = comportamiento de v8.14.0; ver FLAGs del header.
+if "$pensiones_en_yl" == "" global pensiones_en_yl "on"
+if !inlist("$pensiones_en_yl", "on", "off") {
+	noisily di as err `"Households: pensiones_en_yl = "$pensiones_en_yl" no es on | off"'
+	exit 198
+}
+if "$yk_ancla" == "" global yk_ancla "actual"
+if !inlist("$yk_ancla", "actual", "b2n_b3n_d4") {
+	noisily di as err `"Households: yk_ancla = "$yk_ancla" no es actual | b2n_b3n_d4"'
+	exit 198
+}
+if "$cap4" == "" global cap4 "dentro"
+if !inlist("$cap4", "dentro", "fuera") {
+	noisily di as err `"Households: cap4 = "$cap4" no es dentro | fuera"'
+	exit 198
+}
+noisily di in g "  Parametros CUAD-0: pensiones_en_yl = " in y "$pensiones_en_yl" in g "  yk_ancla = " in y "$yk_ancla" in g "  cap4 = " in y "$cap4"
+if "$pensiones_en_yl" != "on" | "$yk_ancla" != "actual" | "$cap4" != "dentro" {
+	noisily di as err "  FLAG Households (CUAD-0): parametro fuera de su default; los numeros NO son comparables con el baseline publicado."
+}
+
+
 ** 0.1 Log-file
 capture log close households
 capture mkdir "${SIMROOT}/raw"
@@ -134,6 +179,10 @@ local ComprasN = scalar(ComprasN)
 local ConCapFij = scalar(CapFij)
 local ConGob = scalar(ConGob)
 local DepMix = scalar(DepMix)
+
+* v8.15b-pre (yk_ancla): celdas del sector hogares S.14 que SCN.ado deja solo si SCNHogaresS14 corrio (CSI_115 f.69 B.2n y f.95 D.4) *
+capture local ExNOpHogS14 = scalar(ExNOpHogS14)
+capture local RentaPropHogNeta = scalar(RentaPropHogNeta)
 
 
 ** 1.2 Ajustes Rentas y Servicios Profesionales
@@ -440,7 +489,14 @@ g ing_indemn3 = ing_anual if clave == "P034"
 g ing_jubila = ing_anual if clave == "P032" & jubilacion == 1
 
 * TOTAL *
-egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima ing_util ing_agui ing_indemn ing_indemn2 ing_indemn3 ing_jubila)
+* v8.15b-pre (CUAD-0 §4; FLAG pensiones_en_yl): "on" (default, v8.14.0) mete ing_jubila a ing_t4_cap1 y por ahi a ing_subor y Yl;
+* "off" las deja fuera (D.62: transferencia, no ingreso laboral). ing_jubila sigue existiendo para PerfilesSim.do y NTA.do. *
+if "$pensiones_en_yl" == "on" {
+	egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima ing_util ing_agui ing_indemn ing_indemn2 ing_indemn3 ing_jubila)
+}
+else {
+	egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima ing_util ing_agui ing_indemn ing_indemn2 ing_indemn3)
+}
 
 
 ** 2.3 Capitulo II. DE LOS INGRESOS POR ACTIVIDADES EMPRESARIALES Y PROFESIONALES
@@ -752,8 +808,15 @@ Reglamento de esta Ley.*/
 g exen_jubila = min(9*`smdf',ing_jubila) if jubilado == 1
 
 * TOTAL *
-egen double exen_t4_cap1 = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima exen_agui exen_util ///
-	exen_indemn exen_indemn2 exen_jubila)
+* v8.15b-pre (pensiones_en_yl): la exencion de pensiones sale con el ingreso cuando las pensiones quedan fuera de ing_t4_cap1 *
+if "$pensiones_en_yl" == "on" {
+	egen double exen_t4_cap1 = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima exen_agui exen_util ///
+		exen_indemn exen_indemn2 exen_jubila)
+}
+else {
+	egen double exen_t4_cap1 = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima exen_agui exen_util ///
+		exen_indemn exen_indemn2)
+}
 
 
 ** 3.3 Capitulo II. DE LOS INGRESOS POR ACTIVIDADES EMPRESARIALES Y PROFESIONALES
@@ -1053,9 +1116,18 @@ g exen_sueldos = exen_t4_cap1
 label var exen_sueldos "Exenciones a las remuneraciones de asalariados"
 
 * 4.2 Mixto
-egen double ing_mixto = rsum(ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap4 ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
+* v8.15b-pre (CUAD-0 §4; FLAG cap4): "dentro" (default, v8.14.0) suma las enajenaciones (ing_t4_cap4) al ingreso mixto, que §9
+* escala con TaltimirSelf (la variable sola sigue con TaltimirSal); "fuera" las saca de ing_mixto (y de Yl/Yk): ganancia de capital,
+* fuera de la cuenta corriente. En los dos casos ing_t4_cap4 permanece en ing_bruto_tax (§10) como base del ISR. *
+if "$cap4" == "dentro" {
+	egen double ing_mixto = rsum(ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap4 ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
+	egen double exen_mixto = rsum(exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap4 exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
+}
+else {
+	egen double ing_mixto = rsum(ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
+	egen double exen_mixto = rsum(exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
+}
 label var ing_mixto "Ingreso mixto"
-egen double exen_mixto = rsum(exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap4 exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
 label var exen_mixto "Exenciones a los ingresos mixtos"
 
 * 4.2.1 Laboral
@@ -2104,6 +2176,20 @@ scalar TaltimirHouse = (`ExNOpHog' ///
 	+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
 	+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`ALTIMIR0'[1,4]
 scalar TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,5]
+
+* v8.15b-pre (CUAD-0 §4; FLAG yk_ancla): con "b2n_b3n_d4" los dos factores de capital anclan a celdas del sector hogares S.14 de
+* SCN.ado: ing_capital a D.4 neto (renta de la propiedad recibida − pagada, CSI_115 f.95) e ing_estim_alqu a B.2n (f.69), sin los
+* impuestos embebidos ni la resta de OyE de las formulas de arriba. El 1/3 de B.3n sigue viajando en ing_mixtoK con TaltimirSelf
+* (moverlo es ing_mixto_depurado, otro parametro). Default "actual" = las formulas de v8.14.0 tal cual. *
+if "$yk_ancla" == "b2n_b3n_d4" {
+	if "`RentaPropHogNeta'" == "" | "`ExNOpHogS14'" == "" {
+		noisily di as err "  FLAG Households (yk_ancla = b2n_b3n_d4): SCN.ado no dejo RentaPropHogNeta / ExNOpHogS14 (faltan las series S.14 de CSI_115.xlsx)."
+		exit 459
+	}
+	scalar TaltimirCap = `RentaPropHogNeta'/`ALTIMIR0'[1,3]
+	scalar TaltimirHouse = `ExNOpHogS14'/`ALTIMIR0'[1,4]
+	noisily di in g "   yk_ancla = b2n_b3n_d4: TaltimirCap " in y %8.4f TaltimirCap in g " (D.4 neto S.14)  TaltimirHouse " in y %8.4f TaltimirHouse in g " (B.2n S.14)"
+}
 
 if "`altimir'" == "yes" {
 	noisily di in g "   Altimir: " in y "`altimir'"
