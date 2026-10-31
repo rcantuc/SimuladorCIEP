@@ -12,7 +12,7 @@
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "scn_vintage": {
     "regla": "Assets congelados del SCN (CUAD-0 §4 bis, v8.15b E4): raw/SCN/bie/<serie>.csv (periodo,valor; solo años <= anio_referencia) y raw/SCN/CSI_1xx.xlsx. SCN.ado (UpdateSCN, SCNHogaresS14) y AccesoBIE.ado los leen cuando existen y verifican su sha256 (sello verde); sin asset descargan en caliente y lo declaran (sello amarillo). Se reescriben SOLO con refrescar-scn.sh --congelar en un PR de datos (data_updated y CHANGELOG declaran el delta). raw/SCN/ no se versiona: viaja con la Release.",
-    "consulta": "2026-10-31T18:26:24Z",
+    "consulta": "2026-10-31T20:27:51Z",
     "anio_referencia": 2024,
     "anio_referencia_fuente": "scalar anioenigh de SIM.do",
     "canal": "API oficial del BIE con respaldo en la consulta pública de exportación (.aspx); la vía real de cada serie va en bie.<serie>.via",
@@ -31,8 +31,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:26",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:27:54",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "723656": {
         "variable": "ImpNet",
@@ -47,8 +47,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:27",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:27:57",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "723657": {
         "variable": "ImpProd",
@@ -63,8 +63,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:28",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:00",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "723658": {
         "variable": "SubProd",
@@ -79,8 +79,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:29",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:01",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "723663": {
         "variable": "ConsInt",
@@ -95,8 +95,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:31",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:03",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724014": {
         "variable": "RemSalSS",
@@ -111,8 +111,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:32",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:04",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724015": {
         "variable": "RemSal",
@@ -127,8 +127,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:33",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:05",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724016": {
         "variable": "SSEmpleadores",
@@ -143,8 +143,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:34",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:07",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724017": {
         "variable": "Imp",
@@ -159,8 +159,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:36",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:08",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724018": {
         "variable": "ImpProductos",
@@ -175,8 +175,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:37",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:09",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724022": {
         "variable": "ImpProduccion",
@@ -191,8 +191,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:39",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:11",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724023": {
         "variable": "Sub",
@@ -207,8 +207,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:40",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:12",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724024": {
         "variable": "ExBOp",
@@ -223,8 +223,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:41",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:14",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724025": {
         "variable": "PIB",
@@ -239,8 +239,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:43",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:15",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724028": {
         "variable": "CapFij",
@@ -255,8 +255,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:44",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:16",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724029": {
         "variable": "PIN",
@@ -271,8 +271,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:45",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:17",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724030": {
         "variable": "ROWRemR",
@@ -287,8 +287,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:46",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:19",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724031": {
         "variable": "ROWRemP",
@@ -303,8 +303,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:48",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:20",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724032": {
         "variable": "ROWPropR",
@@ -319,8 +319,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:49",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:21",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724033": {
         "variable": "ROWPropP",
@@ -335,8 +335,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:50",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:23",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724034": {
         "variable": "ROWTransR",
@@ -351,8 +351,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:52",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:24",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724035": {
         "variable": "ROWTransP",
@@ -367,8 +367,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:53",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:25",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724600": {
         "variable": "ConHog",
@@ -383,8 +383,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:54",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:27",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724601": {
         "variable": "AlimBebT",
@@ -399,8 +399,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:56",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:28",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724602": {
         "variable": "Alim",
@@ -415,8 +415,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:57",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:29",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724603": {
         "variable": "BebN",
@@ -431,8 +431,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:26:58",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:31",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724604": {
         "variable": "BebTabT",
@@ -447,8 +447,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:00",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:32",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724605": {
         "variable": "BebA",
@@ -463,8 +463,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:01",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:33",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724606": {
         "variable": "Taba",
@@ -479,8 +479,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:02",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:35",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724607": {
         "variable": "VestCalT",
@@ -495,8 +495,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:04",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:36",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724608": {
         "variable": "Vest",
@@ -511,8 +511,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:05",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:38",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724609": {
         "variable": "Calz",
@@ -527,8 +527,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:06",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:39",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724610": {
         "variable": "AlojT",
@@ -543,8 +543,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:07",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:40",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724611": {
         "variable": "Alqu",
@@ -559,8 +559,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:09",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:42",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724612": {
         "variable": "CRep",
@@ -575,8 +575,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:10",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:43",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724613": {
         "variable": "Agua",
@@ -591,8 +591,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:11",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:45",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724614": {
         "variable": "Elec",
@@ -607,8 +607,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:13",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:46",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724615": {
         "variable": "HogaT",
@@ -623,8 +623,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:14",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:47",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724616": {
         "variable": "Mueb",
@@ -639,8 +639,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:15",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:49",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724617": {
         "variable": "Text",
@@ -655,8 +655,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:16",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:50",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724618": {
         "variable": "Arte",
@@ -671,8 +671,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:18",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:52",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724619": {
         "variable": "Vajil",
@@ -687,8 +687,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:19",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:53",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724620": {
         "variable": "Herr",
@@ -703,8 +703,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:20",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:54",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724621": {
         "variable": "ConH",
@@ -719,8 +719,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:22",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:56",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724622": {
         "variable": "SaluT",
@@ -735,8 +735,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:23",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:57",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724623": {
         "variable": "Smed",
@@ -751,8 +751,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:24",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:28:58",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724624": {
         "variable": "Sext",
@@ -767,8 +767,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:25",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:00",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724625": {
         "variable": "Hosp",
@@ -783,8 +783,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:27",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:01",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724626": {
         "variable": "TraT",
@@ -799,8 +799,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:28",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:02",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724627": {
         "variable": "Vehi",
@@ -815,8 +815,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:29",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:04",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724628": {
         "variable": "FTra",
@@ -831,8 +831,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:31",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:05",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724629": {
         "variable": "STra",
@@ -847,8 +847,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:32",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:06",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724630": {
         "variable": "ComuT",
@@ -863,8 +863,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:33",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:08",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724631": {
         "variable": "Post",
@@ -879,8 +879,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:34",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:09",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724632": {
         "variable": "TelEq",
@@ -895,8 +895,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:36",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:10",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724633": {
         "variable": "TelS",
@@ -911,8 +911,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:37",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:11",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724634": {
         "variable": "RecrT",
@@ -927,8 +927,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:38",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:13",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724635": {
         "variable": "Audi",
@@ -943,8 +943,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:39",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:14",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724636": {
         "variable": "Durab",
@@ -959,8 +959,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:41",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:15",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724637": {
         "variable": "ArtEq",
@@ -975,8 +975,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:42",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:17",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724638": {
         "variable": "Culs",
@@ -991,8 +991,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:43",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:18",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724639": {
         "variable": "Publ",
@@ -1007,8 +1007,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:44",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:19",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724640": {
         "variable": "Turis",
@@ -1023,8 +1023,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:46",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:21",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724641": {
         "variable": "EducT",
@@ -1039,8 +1039,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:47",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:22",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724642": {
         "variable": "PrePri",
@@ -1055,8 +1055,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:48",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:23",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724643": {
         "variable": "Secu",
@@ -1071,8 +1071,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:49",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:25",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724644": {
         "variable": "PostNT",
@@ -1087,8 +1087,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:51",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:26",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724645": {
         "variable": "Terc",
@@ -1103,8 +1103,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:52",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:27",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724646": {
         "variable": "NoAtr",
@@ -1119,8 +1119,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:53",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:29",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724647": {
         "variable": "RestT",
@@ -1135,8 +1135,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:54",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:30",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724648": {
         "variable": "Comi",
@@ -1151,8 +1151,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:56",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:32",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724649": {
         "variable": "Hote",
@@ -1167,8 +1167,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:57",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:33",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724650": {
         "variable": "DiveT",
@@ -1183,8 +1183,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:27:58",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:34",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724651": {
         "variable": "Cuid",
@@ -1199,8 +1199,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:00",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:36",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724652": {
         "variable": "EfeP",
@@ -1215,8 +1215,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:01",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:37",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724653": {
         "variable": "Prot",
@@ -1231,8 +1231,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:02",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:38",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724654": {
         "variable": "Segu",
@@ -1247,8 +1247,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:03",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:40",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724655": {
         "variable": "ServF",
@@ -1263,8 +1263,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:05",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:41",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724656": {
         "variable": "OtrS",
@@ -1279,8 +1279,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:06",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:43",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724771": {
         "variable": "GastPrivT",
@@ -1295,8 +1295,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:07",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:44",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724777": {
         "variable": "ComprasN",
@@ -1311,8 +1311,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:09",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:46",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "724959": {
         "variable": "ConGob",
@@ -1327,8 +1327,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:10",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:47",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "725116": {
         "variable": "ConsPriv_21",
@@ -1343,8 +1343,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:11",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:48",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "725126": {
         "variable": "ConsPriv_54",
@@ -1359,8 +1359,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:12",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:50",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "725130": {
         "variable": "ConsPriv_62",
@@ -1375,8 +1375,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:13",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:51",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780054": {
         "variable": "Inmob5311",
@@ -1391,8 +1391,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:15",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:52",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780055": {
         "variable": "Inmob5312",
@@ -1407,8 +1407,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:16",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:54",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780065": {
         "variable": "Prof541_T",
@@ -1423,8 +1423,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:17",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:55",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780103": {
         "variable": "Salud6211",
@@ -1439,8 +1439,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:19",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:56",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780104": {
         "variable": "Salud6212",
@@ -1455,8 +1455,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:20",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:58",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780105": {
         "variable": "Salud6213",
@@ -1471,8 +1471,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:21",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:29:59",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780108": {
         "variable": "Salud6216",
@@ -1487,8 +1487,8 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:22",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:30:00",
+        "consulta": "2026-10-31T20:27:51Z"
       },
       "780135": {
         "variable": "Recre7132",
@@ -1503,14 +1503,14 @@
           "2025"
         ],
         "via": "exportación pública (.aspx) [API: BISE: HTTP 400]",
-        "lastupdate": "31/10/2026 12:28:24",
-        "consulta": "2026-10-31T18:26:24Z"
+        "lastupdate": "31/10/2026 14:30:02",
+        "consulta": "2026-10-31T20:27:51Z"
       }
     },
     "csi": {
       "zip": "https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip",
       "zip_sha256": "b26145b5bb8bbf7cfc301bafe7c3a21156c45a488348745eb12bfe246a84ca9b",
-      "consulta": "2026-10-31T18:26:24Z",
+      "consulta": "2026-10-31T20:27:51Z",
       "cuadros": {
         "CSI_103": {
           "archivo": "raw/SCN/CSI_103.xlsx",
@@ -1991,7 +1991,8 @@
           "RP": 1350775.232
         }
       ]
-    }
+    },
+    "asset": "scn-congelado-2024.zip"
   },
   "assets": [
     {
@@ -2149,6 +2150,14 @@
       "local_path": "raw/CONAPO/Poblacion_Estimada_Mitad_Anio.zip",
       "sha256": "e77873cd581bc43565357543030496d4fd2379783c0eca4d7b8faa0100d4a256",
       "size_bytes": 4866001
+    },
+    {
+      "name": "scn-congelado-2024.zip",
+      "local_path": "raw/SCN/scn-congelado-2024.zip",
+      "sha256": "2b578e55886e948b2d30097d7efb1300060fd7b7f2d4098b606457cb73b61135",
+      "size_bytes": 631619,
+      "desde": "v8.15.0",
+      "regla": "Asset congelado del SCN (refrescar-scn.sh --congelar): bie/<serie>.csv (años <= anio_referencia) y CSI_1xx.xlsx; SCNCongelado lo desempaca en raw/SCN/ cuando faltan los archivos. `desde` = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores."
     }
   ]
 }

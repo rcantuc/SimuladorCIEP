@@ -9,7 +9,7 @@
 #
 # Uso:
 #   bash 05_scripts/refrescar-scn.sh --comparar [--series "724014 724025 …"] [--todas] [--csi] [--salida <dir>] [--repo <root>] [--anio AAAA]
-#   bash 05_scripts/refrescar-scn.sh --congelar [--todas] [--salida <dir>] [--repo <root>] [--anio AAAA]   # v8.15b (E4): escribe los assets
+#   bash 05_scripts/refrescar-scn.sh --congelar [--todas] [--salida <dir>] [--repo <root>] [--anio AAAA] [--desde vX.Y.Z]   # v8.15b (E4): escribe los assets
 #
 #   --comparar   Descarga por API las series del inventario (las que llegan a un escalar que algún módulo lee: ~90) a un
 #                directorio temporal, calcula sha256 de la serie congelada y de la descargada y compara valor a valor con
@@ -38,10 +38,12 @@
 # las celdas del inventario (cuadro, fila, columna, código, variable, valor del año de referencia). SCN.ado (UpdateSCN, SCNHogaresS14) y
 # AccesoBIE.ado leen esos assets cuando existen y los verifican contra el sha256 del manifest (sello verde); sin asset, descargan y lo
 # declaran (sello amarillo). data_updated y el CHANGELOG los mueve el PR de datos (runbook-actualizar-assets.md), no este script.
-# raw/SCN/ no se versiona (como el resto de raw/): el asset viaja con la Release; `assets` del manifest lo gana con el bump de version.
+# raw/SCN/ no se versiona (como el resto de raw/): --congelar empaqueta ademas raw/SCN/scn-congelado-<anio>.zip (csv + xlsx) y lo declara en
+# `assets` del manifest con `desde` = la version en que entra a la Release (--desde; default: `baseline` del manifest): publicar.sh lo sube al
+# publicar esa version y su Gate 8 no lo exige en Releases anteriores; ensure_asset lo descarga en una maquina sin raw/ (SCNCongelado lo desempaca).
 set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""
+MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""; DESDE=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --comparar) MODO="comparar"; shift ;;
@@ -52,6 +54,7 @@ while [[ $# -gt 0 ]]; do
         --salida)   SALIDA="$2"; shift 2 ;;
         --repo)     REPO_ROOT="$2"; shift 2 ;;
         --anio)     ANIO="$2"; shift 2 ;;
+        --desde)    DESDE="$2"; shift 2 ;;
         -h|--help)  sed -n '2,40p' "$0"; exit 0 ;;
         *) echo "refrescar-scn: argumento desconocido: $1" >&2; exit 2 ;;
     esac
@@ -77,10 +80,11 @@ if [[ -z "$TOKEN" || "$TOKEN" == "tu-token-aqui" ]]; then
 fi
 [[ -n "$SALIDA" ]] || SALIDA="$(mktemp -d -t refrescar-scn-XXXXXX)"
 mkdir -p "$SALIDA"
-BIE_API_TOKEN="$TOKEN" python3 -I - "$REPO_ROOT" "$SALIDA" "$TODAS" "$CSI" "$SERIES" "$ANIO" "$CONGELAR" <<'PYEOF'
+BIE_API_TOKEN="$TOKEN" python3 -I - "$REPO_ROOT" "$SALIDA" "$TODAS" "$CSI" "$SERIES" "$ANIO" "$CONGELAR" "$DESDE" <<'PYEOF'
 import datetime, hashlib, io, json, os, re, ssl, sys, tempfile, time, urllib.request, urllib.error, zipfile
 root, salida, todas, csi, series_arg, anio_arg = sys.argv[1], sys.argv[2], sys.argv[3] == '1', sys.argv[4] == '1', sys.argv[5], sys.argv[6]
 congelar = sys.argv[7] == '1'
+desde_arg = sys.argv[8]
 # Año de referencia: anioenigh del motor (SIM.do), sin escalar nuevo; --anio lo sobreescribe
 if anio_arg.strip():
     ANIO_REF, anio_fuente = int(anio_arg), '--anio'
@@ -434,8 +438,24 @@ if congelar:
         man_new[k] = v
     if 'scn_vintage' not in man_new:
         man_new['scn_vintage'] = man.get('scn_vintage')
+    # asset: raw/SCN/scn-congelado-<anio>.zip (csv + xlsx, orden fijo, fecha fija: zip determinista) declarado en `assets` con `desde`
+    zname = f'scn-congelado-{ANIO_REF}.zip'
+    zpath = os.path.join(dest, zname)
+    import zipfile as _zf
+    with _zf.ZipFile(zpath, 'w', compression=_zf.ZIP_DEFLATED) as zz:
+        for rel in sorted([f'bie/{s}.csv' for s in reg_bie] + [f'{c}.xlsx' for c in reg_csi['cuadros']]):
+            zi = _zf.ZipInfo(rel, date_time=(ANIO_REF, 12, 31, 0, 0, 0)); zi.compress_type = _zf.ZIP_DEFLATED
+            zz.writestr(zi, open(os.path.join(dest, rel), 'rb').read())
+    zb = open(zpath, 'rb').read()
+    desde = desde_arg.strip() or man.get('baseline') or man.get('version')
+    entrada = {'name': zname, 'local_path': f'raw/SCN/{zname}', 'sha256': sha_bytes(zb), 'size_bytes': len(zb), 'desde': desde,
+               'regla': 'Asset congelado del SCN (refrescar-scn.sh --congelar): bie/<serie>.csv (años <= anio_referencia) y CSI_1xx.xlsx; SCNCongelado lo desempaca en raw/SCN/ cuando faltan los archivos. `desde` = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores.'}
+    assets = [a for a in man_new.get('assets', []) if a.get('name') != zname] + [entrada]
+    man_new['assets'] = assets
+    man_new['scn_vintage']['asset'] = zname
     json.dump(man_new, open(mp, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
     open(mp, 'a', encoding='utf-8').write('\n')
+    print(f'ASSET: {zpath} ({len(zb)} bytes, sha256 {sha_bytes(zb)[:12]}…, desde {desde}) declarado en manifest.assets')
     print(f'CONGELADO: {len(reg_bie)} series en {dest}/bie/ (años <= {ANIO_REF}), {len(reg_csi["cuadros"])} cuadros CSI en {dest}/, registro scn_vintage en {mp}')
 csi_dist = bool(csi_rep) and ('error' in csi_rep or any(not v['igual'] for v in csi_rep['cuadros'].values()))
 if nocomp or (csi_rep and 'error' in csi_rep):

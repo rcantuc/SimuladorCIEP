@@ -2941,6 +2941,19 @@ program define SCNCongelado, rclass
 	syntax [, Copiar]
 	global SCN_CONGELADO_ERR ""
 	global SCN_CONGELADO_RES ""
+	* Asset del manifest (raw/SCN/scn-congelado-2024.zip, refrescar-scn.sh --congelar): en una maquina sin raw/SCN/ se descarga de la
+	* Release (ensure_asset, sha256) y se desempaca; si el asset no esta declarado o la Release no lo trae, se sigue sin el (sello amarillo) *
+	capture confirm file "${SIMROOT}/raw/SCN/bie/724025.csv"
+	if _rc != 0 {
+		capture noisily ensure_asset "scn-congelado-2024.zip"
+		if _rc == 0 {
+			local cwd0 "`c(pwd)'"
+			cd "${SIMROOT}/raw/SCN"
+			capture noisily unzipfile "scn-congelado-2024.zip", replace
+			if _rc != 0 noisily di as err "  SCNCongelado: no se pudo desempacar raw/SCN/scn-congelado-2024.zip"
+			cd "`cwd0'"
+		}
+	}
 	python: scn_congelado("`copiar'", "$rawwip")
 	if "$SCN_CONGELADO_ERR" != "" {
 		noisily di as err "SCNCongelado: $SCN_CONGELADO_ERR"
