@@ -1209,8 +1209,10 @@ log_info "Fase 4: escribir DEPLOYED_COMMIT."
 # el sitio no pinta versión y usa su fecha de respaldo; nunca rompe.
 # `enigh_vintage` (año de la ENIGH precargada) → línea "EnighVintage:" (la pinta
 # la sección de método: /NTA cita "ENIGH <vintage>" sin un literal en el PHP).
-# Una sola pasada: imprime cuatro líneas (version, data_updated, release_url_prefix, enigh_vintage).
-MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n\n\n'
+# `baseline` (v8.15b-pre; CUAD-0 §4 ter) → línea "Baseline:" (tag desde el que los números publicados son comparables;
+# health.php la vuelca y el sidecar manifest-datos.json lleva el mismo valor).
+# Una sola pasada: imprime cinco líneas (version, data_updated, release_url_prefix, enigh_vintage, baseline).
+MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n\n\n\n'
 import json, sys
 try:
     with open(sys.argv[1], encoding="utf-8") as f:
@@ -1221,12 +1223,14 @@ print(m.get("version", "") or "")
 print(m.get("data_updated", "") or "")
 print(m.get("release_url_prefix", "") or "")
 print(m.get("enigh_vintage", "") or "")
+print(m.get("baseline", "") or "")
 PYEOF
 )
 ENGINE_VERSION=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '1p')
 DATA_UPDATED=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '2p')
 RELEASE_PREFIX=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '3p')
 ENIGH_VINTAGE=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '4p')
+BASELINE_TAG=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '5p')
 
 # URL del GitHub Release de la versión del motor (bitácora v1.32): el número
 # de versión del hero/footer enlaza a su release exacto — señal de código
@@ -1258,6 +1262,7 @@ Version: $ENGINE_VERSION
 DataUpdated: $DATA_UPDATED
 ReleaseUrl: $RELEASE_URL
 EnighVintage: $ENIGH_VINTAGE
+Baseline: $BASELINE_TAG
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
 
@@ -1274,6 +1279,10 @@ fi
 if [[ -z "$ENIGH_VINTAGE" ]]; then
     log_warn "Fase 4: no pude leer 'enigh_vintage' de 05_scripts/manifest.json — la línea
 EnighVintage: queda VACÍA (/NTA citará la ENIGH sin año). El deploy continúa."
+fi
+if [[ -z "$BASELINE_TAG" ]]; then
+    log_warn "Fase 4: no pude leer 'baseline' de 05_scripts/manifest.json — la línea
+Baseline: queda VACÍA (health.php no dirá desde qué tag comparan los números). El deploy continúa."
 fi
 
 if [[ $DRY_RUN -eq 1 ]]; then
