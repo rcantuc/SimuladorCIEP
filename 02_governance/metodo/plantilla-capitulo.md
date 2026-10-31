@@ -61,7 +61,7 @@ Si una salida no tiene check, se declara: *"sin protección automática — gate
 
 ## 7. Identidades verificadas
 
-Lista de las igualdades que el gate del módulo comprueba y con qué tolerancia (p. ej. `nta-identidad.txt`: Σ entradas − Σ salidas = 0 a 1e-6; `gate-numeros.sh`: llaves 46/46). Resultado de la última corrida, con hash.
+Lista de las igualdades que el gate del módulo comprueba y con qué tolerancia (p. ej. `nta-identidad.txt`: Σ entradas − Σ salidas = 0 a 1e-6; `gate-numeros.sh`: `output.txt` byte a byte y sankeys a 1e-9; `test-web-batch.sh`: llaves 46/46). Resultado de la última corrida, con hash.
 
 ## 8. Límites conocidos
 
@@ -101,7 +101,7 @@ Lista de archivos y rangos de línea de donde se generó cada sección (header d
 
 ## Reglas de generación
 
-1. Un script (`05_scripts/metodo.py`, propuesto) lee headers, memos y FLAGs y emite `metodo.json` + 32… no: *N* páginas HTML, una por módulo, más `/metodo/index`.
+1. Un script (`05_scripts/metodo.py`, propuesto) lee headers, memos y FLAGs y emite `metodo.json` + *N* páginas HTML, una por módulo, más `/metodo/index`.
 2. Check de CI: `/metodo` regenerado desde el repo == el publicado (mismo patrón que `/NTA` y `/entidades`).
 3. Si un `.do` cambia y su header no, el check falla: el header es la fuente del capítulo.
 4. Sin literales numéricos a mano en el HTML; todo número es `span` del motor (misma regla que el factor 1.1628 en `/NTA`).
