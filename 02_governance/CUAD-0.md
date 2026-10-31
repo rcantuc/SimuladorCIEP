@@ -138,24 +138,24 @@ Uso: 05_scripts/refrescar-scn.sh --comparar [--series <lista>]
 | ⚠ `ing_subor` total | RemSalSS BIE + D.29 embebido | 10,013.434 + 99.782 | 10,339.577 → 10,113.216 | 0.9781 | se parte en la fila de arriba y la de abajo | 1.0650 (Σ `ing_subor` = D.1 S.14 al peso; sin impuestos) | I | amarillo | `H l.2092`; `C1 §1.2`|
 | ⚠ `ing_jubila`, l. 440 | D.6211 + D.6221 S.14 | 1,390.052 | 768.147 → 751.330 | 0.9781 (ancla de salarios) | **1.8096** | fuera de Yl; PEF en NTA (τ⁺ efectivo × 1.7170 a D.62 + D.759) | I | amarillo | `C1 §1.2` l. 14; (no en repo) CSI f.133, f.136|
 | `ing_PAM`, l. 543–546 | D.623 S.14 (72.268 < ENIGH: no sirve como ancla) | 72.268 | 359.084 → sin Altimir | ninguno (PEF 468.390 en NTA) | conserva PEF, con FLAG | conserva PEF (FLAG) | I | **rojo** | (no en repo) T, CSI f.138; `nta-grupoedad.json`|
-| ⚠ `ing_mixto` agregado, l. 1056 | B.3n S.14 + impuestos embebidos | 6,956.984 + 566.885 | 1,222.541 → 7,523.869 | **6.1543** | deja de ser agregado único | **{{TSELF}}** (B.3n; base cap2 + cap3 + negocios + agropecuario: {{MIXBASE}} crudos; con `rentas_celda=b2n` 3.9144 sobre 1,777.277) | I ⅔ · P ⅓ | **rojo** | `H l.2094`; `C1 §1.2` l. 13|
+| ⚠ `ing_mixto` agregado, l. 1056 | B.3n S.14 + impuestos embebidos | 6,956.984 + 566.885 | 1,222.541 → 7,523.869 | **6.1543** | deja de ser agregado único | **3.6848** (B.3n; base cap2 + cap3 + negocios + agropecuario: 1,888.030 = honorarios 758.146 + rentas 110.753 + negocios 900.869 + agropecuario 118.262 crudos; con `rentas_celda=b2n` 3.9144 sobre 1,777.277) | I ⅔ · P ⅓ | **rojo** | `H l.2094`; `C1 §1.2` l. 13|
 | `ing_t4_cap2pf`, l. 456 | B.3n S.14 | 6,956.984 | 88.744 → 546.157 | 6.1543 | **5.0460** | 3.9144 (`ing_t4_cap2` íntegro: 758.146 crudos) | I ⅔ · P ⅓ | amarillo | (no en repo) T|
-| ⚠ `ing_t4_cap3pf`, l. 466 (share 2.4455 > 1) | B.3n S.14 | 6,956.984 | 270.847 → 1,666.870 | 6.1543 | **5.0460** | **{{TSELF}}** (B.3n, `rentas_celda=b3n`; `ing_t4_cap3` íntegro: 110.753 crudos; con `b2n` 1.9671 a B.2n) | I ⅔ · P ⅓ | **rojo** | (no en repo) T|
+| ⚠ `ing_t4_cap3pf`, l. 466 (share 2.4455 > 1) | B.3n S.14 | 6,956.984 | 270.847 → 1,666.870 | 6.1543 | **5.0460** | **3.6848** (B.3n, `rentas_celda=b3n`; `ing_t4_cap3` íntegro: 110.753 crudos; con `b2n` 1.9671 a B.2n) | I ⅔ · P ⅓ | **rojo** | (no en repo) T|
 | ⚠ `ing_t2_cap1` (P068–70, P075–77), l. 381 | B.3n S.14 | 6,956.984 | 900.869 → 3,284.359 | 3.6458 (ExNOpSoc) | **5.0460** | 3.9144 (B.3n) | I ⅔ · P ⅓ | amarillo | (no en repo) T|
 | ⚠ `ing_t2_cap8` (P071–74, P078–81), l. 393 | B.3n S.14 | 6,956.984 | 118.262 → 431.155 | 3.6458 (ExNOpSoc) | **5.0460** | 3.9144 (B.3n) | I ⅔ · P ⅓ | amarillo | (no en repo) T|
 | ⚠ `ing_t4_cap4`, l. 481 | Sin celda: ganancia de capital, fuera de la cuenta corriente | — | 95.936 → 93.835 como variable; 590.4 dentro de `ing_mixto` | **dos:** 0.9781 (variable, l. 2113) y 6.1543 (agregado) | **1**, fuera de Yl/Yk | **1** (`cap4=fuera`) | — | **rojo** | `H l.1056, l.2113`; (no en repo) T|
 | ⚠ `ing_t4_cap5` donativos, l. 489 | D.75 entre hogares (neto cero en S.14) | — | 260.194 → 1,601.311 | 6.1543 | **1** | **1** | I | **rojo** | `C1 §1.2` l. 15; (no en repo) T|
-| ⚠ `ing_t4_cap6` intereses, l. 494–497 | D.41 recibida S.14 (dentro del grupo D.4) | 544.940 | 19.335 → 118.991 | 6.1543 | **10.5515** en grupo; 28.18 por celda | 1 como variable; relativo de D.4 (D.4 neto − D.442 / Σ relativo = **{{TCAP}}**; cobertura ENIGH cap6 + cap8 = 0.43 %) | P | amarillo | `C1 §1.2` l. 9; (no en repo) T|
+| ⚠ `ing_t4_cap6` intereses, l. 494–497 | D.41 recibida S.14 (dentro del grupo D.4) | 544.940 | 19.335 → 118.991 | 6.1543 | **10.5515** en grupo; 28.18 por celda | 1 como variable; relativo de D.4 (D.4 neto − D.442 / Σ relativo = **3.3233**; cobertura ENIGH cap6 + cap8 = 0.43 %) | P | amarillo | `C1 §1.2` l. 9; (no en repo) T|
 | ⚠ `ing_t4_cap7` lotería, l. 502 | D.75 | — | 1.320 → 8.126 | 6.1543 | **1** | **1** | I | **rojo** | (no en repo) T|
-| ⚠ `ing_t4_cap8` acciones, l. 510 | D.42 recibida S.14 (dentro del grupo D.4) | 4,779.531 | 2.368 → 14.576 | 6.1543 | **10.5515** en grupo; 2,018 por celda | 1 como variable; relativo de D.4 ({{TCAP}}) | P | amarillo | `C1 §1.2` l. 9; (no en repo) T|
+| ⚠ `ing_t4_cap8` acciones, l. 510 | D.42 recibida S.14 (dentro del grupo D.4) | 4,779.531 | 2.368 → 14.576 | 6.1543 | **10.5515** en grupo; 2,018 por celda | 1 como variable; relativo de D.4 (3.3233) | P | amarillo | `C1 §1.2` l. 9; (no en repo) T|
 | ⚠ Remesas crudas en `ing_t4_cap9` e `ing_remesas`, l. 521 | D.752 recibida S.14 | 1,188.474 | 141.526 → 871.0 en cap9; 1,186.091 en `ing_remesas` | **dos:** 6.1543 y 8.3807 (ROWTrans BIE 1,186.091) | **8.3976**, una sola vez | **8.3807** una sola vez (ROWTrans BIE 1,186.091; D.752 S.14 1,188.474 se reporta); cap9 con factor 1 | I | amarillo | `C1 §1.2` l. 15, 20; (no en repo) T|
 | ⚠ `ing_prest` + `ing_otrocap` + `ing_ahorro`, l. 527–533 | Sin celda: cuenta financiera (F.*) | — | 272.497 → 1,677.0 | 6.1543 | **1**, fuera de Yl/Yk | **1** | — | **rojo** | `C1 §2.3`; (no en repo) T|
 | ⚠ `ing_benef` + `ing_heren`, l. 536–539 | Sin celda corriente de ingreso | — | 68.466 → 421.4 | 6.1543 | **1**, fuera de Yl/Yk | **1** | — | **rojo** | (no en repo) T|
 | `ing_autor` + `ing_trabmenor`, l. 518–524 | Inmaterial: sin ancla | — | 1.308 → 8.0 | 6.1543 | **1**, memo | **1** | — | **rojo** | (no en repo) T|
-| ⚠ `ing_capital` agregado, l. 1080 | D.4 neto S.14 | 5,602.969 | 1,880.477 → 6,855.782 | **3.6458** (ExNOpSoc 6,906.856 + impuestos 1,550.750 − OyE 1,601.824) | ver filas siguientes | `Distribucion` de D.4 neto − D.442 = **4,997.037** ∝ `ing_d4_rel` (1,503.626 crudos; {{TCAP}}); **sello rojo** | P | **rojo** | `H l.2098`; `C1 §1.3`; (no en repo) T|
+| ⚠ `ing_capital` agregado, l. 1080 | D.4 neto S.14 | 5,602.969 | 1,880.477 → 6,855.782 | **3.6458** (ExNOpSoc 6,906.856 + impuestos 1,550.750 − OyE 1,601.824) | ver filas siguientes | `Distribucion` de D.4 neto − D.442 = **4,997.037** ∝ `ing_d4_rel` (1,503.626 crudos; 3.3233); **sello rojo** | P | **rojo** | `H l.2098`; `C1 §1.3`; (no en repo) T|
 | `ing_t4_cap2PM`, l. 457 | D.4 neto S.14 | 5,602.969 | 669.401 → 2,440.482 | 3.6458 | **10.5515** | no existe (decisión 3) | P | amarillo | (no en repo) T|
 | ⚠ `ing_t4_cap3PM`, l. 467 (**negativo**) | D.4 neto S.14 | 5,602.969 | −160.094 → −583.664 | 3.6458 | **10.5515**; con `acotada`, sale | no existe (decisión 3) | P | **rojo** | (no en repo) T|
-| ⚠ `ing_estim_alqu`, l. 361 | B.2n S.14 | 910.359 | 352.038 → 1,114.756; **además** 1,283.4 dentro de `ing_capital` | 3.1666 (ExNOpHog + impuestos) y 3.6458 | **2.5860**, una sola vez | **{{THOUSE}}** (B.2n; 352.038 crudos; con `rentas_celda=b2n` 1.9671 junto con cap3); una sola vez | P | amarillo | `H l.2103, l.1080`; `I`; (no en repo) T|
+| ⚠ `ing_estim_alqu`, l. 361 | B.2n S.14 | 910.359 | 352.038 → 1,114.756; **además** 1,283.4 dentro de `ing_capital` | 3.1666 (ExNOpHog + impuestos) y 3.6458 | **2.5860**, una sola vez | **2.5860** (B.2n; 352.038 crudos; con `rentas_celda=b2n` 1.9671 junto con cap3); una sola vez | P | amarillo | `H l.2103, l.1080`; `I`; (no en repo) T|
 | ⚠ `ing_suborROW`, l. 2443 | Ya dentro de D.1 S.14 | 52.721 | ∝ `ing_subor` → 52.721 | macro | **se retira** | se retiró (`suborrow=off`) | I | amarillo | `H l.2443`; (no en repo) CSI_103 f.35, CSI_121 f.71|
 | ⚠ `ing_capitalROW`, l. 2441 | Ya dentro de D.4 neto S.14 | −989.221 | ∝ `ing_capital` → −989.221 | macro | **se retira** | se retiró (`suborrow=off`) | P | amarillo | `H l.2441`; `C1 §3` #1|
 | ⚠ `gasto_anualDepreciacion`, l. 2306 | P.51c S.14 (el resto, en Tabla 2) | 1,721.094 | ∝ `ing_capital` → 6,457.576 | macro total | **macro de S.14** | CCF BIE 6,457.576 ∝ `ing_capital` (D.4); vintage CSI − BIE 0.776 en la fila de vintage | P | amarillo | `C1 §3` #6|
@@ -234,18 +234,18 @@ Mismas reglas y sellos que la Tabla 1. Los valores CSI son de `C1 §1–§3` sal
 |---|---|---|---|
 | `gate-numeros.sh`: `output.txt` = baseline v8.14.0 | byte a byte | **ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR) | `{{COMMIT}}` |
 | `gate-numeros.sh`: 10 sankeys = baseline v8.14.0 | 1e-9 relativo por enlace | **ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas) | `{{COMMIT}}` |
-| Households: Σ `ing_subor` = D.1 S.14 (10,052.962) | 1e-9 relativo | {{G1}} | `{{COMMIT}}` |
-| Households: Σ `ing_mixto` = B.3n S.14 (6,956.984) | 1e-9 relativo | {{G2}} | `{{COMMIT}}` |
-| Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n S.14 (910.359) | 1e-9 relativo | {{G3}} | `{{COMMIT}}` |
-| Households: Σ `ing_capital` = D.4 neto − D.442 (4,997.037) | 1e-9 relativo | {{G4}} | `{{COMMIT}}` |
-| Households: componentes de `ing_mixto` = agregado | 1e-9 relativo | {{G5}} | `{{COMMIT}}` |
-| Households: Σ Yl = D.1 + ⅔ B.3n (14,690.951); Σ Yk − CCF = YAHogS14 − D.442 (8,226.391) | 1e-9 relativo | {{G6}} | `{{COMMIT}}` |
-| Households / `Sankey.do` / `output.txt`: PIB (BIE) = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage | 1e-9 relativo | {{G7}} | `{{COMMIT}}` |
-| NTA: residual por persona (`N` §5) | 1e-9 × C per cápita | {{N1}} | `{{COMMIT}}` |
-| NTA: Σ intra nacional = 0 | 1e-9 relativo | {{N2}} | `{{COMMIT}}` |
-| NTA: Σ S = B.8n con ancla (multiplicativa; Σ S sin ancla {{S_SINANCLA}}, brecha {{BRECHA}} %) | 1e-9 relativo | {{N3}} | `{{COMMIT}}` |
-| NTA: factor YA = 1 (YA_motor = YAHogS14 − D.442 al peso) | 1e-9 relativo | {{N4}} | `{{COMMIT}}` |
-| Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`) | 1e-9 relativo | {{TNTA}} | `{{COMMIT}}` |
+| Households: Σ `ing_subor` = D.1 S.14 (10,052.962) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
+| Households: Σ `ing_mixto` = B.3n S.14 (6,956.984) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
+| Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n S.14 (910.359) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
+| Households: Σ `ing_capital` = D.4 neto − D.442 (4,997.037) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
+| Households: componentes de `ing_mixto` = agregado | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
+| Households: Σ Yl = D.1 + ⅔ B.3n (14,690.951); Σ Yk − CCF = YAHogS14 − D.442 (8,226.391) | 1e-9 relativo | VERDE, reldif 0.0e+00 (ambos) | `{{COMMIT}}` |
+| Households / `Sankey.do` / `output.txt`: PIB (BIE) = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage | 1e-9 relativo | VERDE, reldif 0.0e+00 (`CUADRATURA`: 43.636 + 24.435 + 1.800 + 2.833 + 4.735 + 0.347 + 19.181 + 2.782 + 0.252 = 100.000) | `{{COMMIT}}` |
+| NTA: residual por persona (`N` §5) | 1e-9 × C per cápita | VERDE, máx 2.98e-08 MXN | `{{COMMIT}}` |
+| NTA: Σ intra nacional = 0 | 1e-9 relativo | VERDE, 0.00 MXN | `{{COMMIT}}` |
+| NTA: Σ S = B.8n con ancla (multiplicativa; Σ S sin ancla 2,116.145, brecha +11.3 %) | 1e-9 relativo | VERDE, 0.00 MXN | `{{COMMIT}}` |
+| NTA: factor YA = 1 (YA_motor = YAHogS14 − D.442 al peso) | 1e-9 relativo | VERDE, factor 1.000000 | `{{COMMIT}}` |
+| Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`) | 1e-9 relativo | VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173) | `{{COMMIT}}` |
 | Contrato de las 32 (`contrato-32.sh`: paridad, aditividad Σ32, sellos) | 1e-9 relativo / byte | {{C32}} | `{{COMMIT}}` |
 | Puente INBD → hub (`C1 §1.2`) | **Sin gate**: script de CONC-1 | superado por la identidad de sectores (fila anterior) | — |
 
