@@ -161,33 +161,74 @@ def congelado(s):
         return vals, f'master/SCN.dta:{col} (÷1e6; años sin dato BIE vienen del pastcast)', sha_bytes(open(p2, 'rb').read()), datetime.datetime.fromtimestamp(os.path.getmtime(p2), datetime.timezone.utc).strftime('%Y-%m-%d')
     return None, None, None, None
 
-# ── 3. BIE por API (la misma URL que AccesoBIE.ado try_api) ──
+# ── 3. BIE: API oficial (la misma URL que AccesoBIE.ado try_api) y, si la API no responde (HTTP 400 con el token
+#       configurado, 2026-10-31), la consulta pública de exportación del BIE (.aspx), el mismo respaldo de AccesoBIE.ado.
+#       La vía usada se declara por serie. Los sufijos del periodo («2025 p1», «r1») son la etiqueta INEGI (preliminar/revisada). ──
 BASE = 'https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml'
-def bie(s):
+EXPORT = 'https://www.inegi.org.mx/app/indicadores/exportacion.aspx'
+import html as _html, urllib.parse
+def bie_api(s):
     err = ''
     for banco in ('BIE', 'BISE'):
         url = f'{BASE}/INDICATOR/{s}/es/00/false/{banco}/2.0/{token}?type=json'
-        for intento in range(3):
+        for intento in range(2):
             try:
                 with abrir(url, 60) as r:
                     data = json.loads(r.read().decode('utf-8'))
                 if isinstance(data, dict) and data.get('Series'):
                     se = data['Series'][0]
-                    obs = se.get('OBSERVATIONS') or []
                     vals, notas = {}, {}
-                    for o in obs:
+                    for o in se.get('OBSERVATIONS') or []:
                         per = str(o.get('TIME_PERIOD', '')).strip()
                         v = o.get('OBS_VALUE')
                         vals[per] = (float(v) if v not in (None, '', 'N/E') else None)
                         et = ' '.join(str(o.get(k)) for k in ('OBS_STATUS', 'OBS_EXCEPTION', 'OBS_NOTE', 'OBS_SOURCE') if o.get(k) not in (None, '', 'null'))
                         if et: notas[per] = et
                     meta = {k: se.get(k) for k in ('INDICADOR', 'FREQ', 'UNIT', 'UNIT_MULT', 'LASTUPDATE', 'STATUS', 'NOTE', 'SOURCE') if se.get(k) not in (None, '')}
-                    return vals, notas, meta, banco, None
-                err = f'{banco}: respuesta sin Series'
-                break
+                    return vals, notas, meta, f'API {banco}', None
+                err = f'{banco}: respuesta sin Series'; break
+            except urllib.error.HTTPError as e:
+                err = f'{banco}: HTTP {e.code}'; break          # 4xx es definitivo: no se reintenta
             except Exception as e:
                 err = f'{banco}: {e}'; time.sleep(2)
     return None, None, None, None, err
+def bie_export(s):
+    params = {'cveser': s, 'bie': 'false', 'aamin': '1980', 'aamax': '9999', 'ordena': 'a', 'ordenaPeriodo': 'ap', 'orientacion': 'v',
+              'frecuencia': 'Todo', 'estadistico': 'false', 'FileFormat': 'iqy', 'ag': '0', 'subapp': 'BIE', 'tematica': '3', 'tyExp': '1', 'view': 'filas'}
+    err = ''
+    for intento in range(3):
+        try:
+            with abrir(EXPORT + '?' + urllib.parse.urlencode(params), 90) as r:
+                b = r.read().decode('utf-8', 'replace')
+            i = b.find('tableContainerSinScroll')
+            if i < 0: return None, None, None, None, 'exportación: la página no trae tabla (¿clave inexistente?)'
+            tab = b[i:b.find('</table>', i)]
+            rows = re.findall(r'<tr[^>]*>(.*?)</tr>', tab, flags=re.S)
+            vals, notas, titulo = {}, {}, ''
+            for k, row in enumerate(rows):
+                cells = [_html.unescape(re.sub(r'<[^>]+>', '', c)).strip() for c in re.findall(r'<t[dh][^>]*>(.*?)</t[dh]>', row, flags=re.S)]
+                if k == 0:
+                    titulo = cells[2] if len(cells) >= 3 else ''; continue
+                if len(cells) < 3 or not cells[0]: continue
+                per_raw, val = cells[0], cells[2].replace(',', '').strip()
+                per = re.sub(r'\s*/?\s*[A-Za-z]+\d*\s*$', '', per_raw).strip()     # como AccesoBIE.ado: «2025 p1» → «2025»
+                suf = per_raw[len(per):].strip()
+                vals[per] = (float(val) if val not in ('', 'ND', 'N/E', '-') else None)
+                if suf: notas[per] = suf + ' (etiqueta INEGI en el periodo: p = preliminar, r = revisada)'
+            m = re.search(r'Fecha de consulta:\s*([0-9/]+\s+[0-9:]+)', b)
+            meta = {'INDICADOR': s, 'TITULO': re.sub(r'\s*/[A-Za-z]\d*', '', titulo), 'NOTAS_TITULO': ' '.join(re.findall(r'/[A-Za-z]\d*', titulo)), 'FECHA_CONSULTA_INEGI': m.group(1) if m else ''}
+            return vals, notas, meta, 'exportación pública (.aspx)', None
+        except Exception as e:
+            err = f'exportación: {e}'; time.sleep(3)
+    return None, None, None, None, err
+api_fallas = {}
+def bie(s):
+    vals, notas, meta, via, err = bie_api(s)
+    if vals is not None: return vals, notas, meta, via, None
+    api_fallas[s] = err
+    vals, notas, meta, via, err2 = bie_export(s)
+    if vals is not None: return vals, notas, meta, via + f' [API: {err}]', None
+    return None, None, None, None, f'API: {err}; {err2}'
 
 # ── 4. Comparar ──
 filas, resumen, nocomp = [], [], []
@@ -195,7 +236,7 @@ pib_cong = congelado('724025')[0] or {}
 for s in series:
     if s not in nombre: continue
     cvals, cfuente, csha, cfecha = congelado(s)
-    bvals, bnotas, bmeta, banco, err = bie(s)
+    bvals, bnotas, bmeta, via, err = bie(s)
     if err or bvals is None:
         nocomp.append((s, nombre[s], f'BIE no respondió: {err}')); continue
     canon = 'periodo,valor\n' + ''.join(f'{p},{"" if v is None else str(v)}\n' for p, v in bvals.items())
@@ -218,10 +259,10 @@ for s in series:
     etiqueta_ult = ''
     if bvals:
         ult = max(bvals, key=lambda x: (len(x), x))
-        etiqueta_ult = f'{ult}: {bnotas.get(ult, "sin nota (OBS_STATUS/OBS_NOTE vacíos)")}'
+        etiqueta_ult = f'{ult}: {bnotas.get(ult, "sin sufijo ni nota: cifra definitiva")}'
     resumen.append({'serie': s, 'nombre': nombre[s], 'etiqueta': etiqueta.get(nombre[s], ''), 'uso': INVENTARIO.get(s, '(solo UpdateSCN)'),
                     'congelado': {'fuente': cfuente, 'sha256': csha, 'fecha_archivo': cfecha, 'n': len(cvals)},
-                    'bie': {'banco': banco, 'sha256_canonico': bsha, 'n': len(bvals), 'lastupdate': (bmeta or {}).get('LASTUPDATE'), 'nota_serie': (bmeta or {}).get('NOTE'), 'etiqueta_ultimo': etiqueta_ult, 'consulta': fecha},
+                    'bie': {'via': via, 'sha256_canonico': bsha, 'n': len(bvals), 'lastupdate': (bmeta or {}).get('LASTUPDATE') or (bmeta or {}).get('FECHA_CONSULTA_INEGI'), 'nota_serie': (bmeta or {}).get('NOTE') or (bmeta or {}).get('NOTAS_TITULO'), 'etiqueta_ultimo': etiqueta_ult, 'consulta': fecha},
                     'comparacion': {'anios_comunes': len(comunes), 'diferencias': len(dif), 'solo_bie': solo_bie, 'solo_congelado': solo_cong,
                                     'dmax': max((abs(x[3]) for x in dif if x[3] is not None), default=0.0)}})
 
@@ -269,12 +310,14 @@ if csi:
 # ── 6. Reporte ──
 dif_tot = sum(r['comparacion']['diferencias'] for r in resumen)
 sellos = sum(1 for r in resumen if r['comparacion']['diferencias'] or r['comparacion']['solo_bie'] or r['comparacion']['solo_congelado'])
-md = [f'# refrescar-scn --comparar — {fecha}', '', f'Repo: `{root}` · series pedidas: {len(series)} · comparadas: {len(resumen)} · no comparadas: {len(nocomp)} · con diferencias o años nuevos: {sellos} · celdas distintas: {dif_tot}', '',
+md = [f'# refrescar-scn --comparar — {fecha}', '', f'Repo: `{root}` · series pedidas: {len(series)} · comparadas: {len(resumen)} · no comparadas: {len(nocomp)} · con celdas distintas: {sum(1 for r in resumen if r["comparacion"]["diferencias"])} · con años que lo congelado no tiene: {sum(1 for r in resumen if r["comparacion"]["solo_bie"])} · celdas distintas: {dif_tot}', '',
       'Tolerancia cero sobre el valor publicado. «Congelado» = lo que el motor leyó la última vez (raw/temp/AccesoBIE/<serie>.csv; si falta, master/SCN.dta). Nada se escribe en raw/ ni en el manifest.', '',
-      '## Resumen por serie', '', '| Serie | Variable | Uso en el motor | Congelado (fuente, fecha, sha256) | BIE (LASTUPDATE, sha256 canónico) | Años comunes | Distintos | Solo BIE | Etiqueta INEGI último dato |', '|---|---|---|---|---|---:|---:|---|---|']
+      '## Resumen por serie', '', '| Serie | Variable | Uso en el motor | Congelado (fuente, fecha, sha256) | BIE (vía; LASTUPDATE o fecha de consulta INEGI; sha256 canónico) | Años comunes | Distintos | Solo BIE | Etiqueta INEGI último dato |', '|---|---|---|---|---|---:|---:|---|---|']
 for r in resumen:
     c, b, k = r['congelado'], r['bie'], r['comparacion']
-    md.append(f"| {r['serie']} | `{r['nombre']}` {r['etiqueta']} | {r['uso']} | {c['fuente']}, {c['fecha_archivo']}, `{(c['sha256'] or '')[:12]}` | {b['lastupdate']}, `{b['sha256_canonico'][:12]}` | {k['anios_comunes']} | {k['diferencias']} | {' '.join(k['solo_bie']) or '—'} | {b['etiqueta_ultimo']} |")
+    md.append(f"| {r['serie']} | `{r['nombre']}` {r['etiqueta']} | {r['uso']} | {c['fuente']}, {c['fecha_archivo']}, `{(c['sha256'] or '')[:12]}` | {b['via']}; {b['lastupdate']}; `{b['sha256_canonico'][:12]}` | {k['anios_comunes']} | {k['diferencias']} | {' '.join(k['solo_bie']) or '—'} | {b['etiqueta_ultimo']} |")
+if api_fallas:
+    md += ['', f'**API oficial del BIE:** no respondió en {len(api_fallas)} serie(s) con el token configurado (p. ej. {sorted(api_fallas.items())[0][1]}); se usó la consulta pública de exportación del BIE (.aspx), el mismo respaldo de `AccesoBIE.ado`. Revisar el token (set_token.do) o la API antes de 8.15b.']
 md += ['', '## Celdas distintas (serie, año, congelado, BIE, Δ, Δ % del PIB del año, etiqueta INEGI)', '']
 if filas:
     md += ['| Serie | Variable | Año | Congelado | BIE | Δ | Δ % PIB | Etiqueta | Fuente congelada |', '|---|---|---|---:|---:|---:|---:|---|---|']
@@ -303,5 +346,8 @@ if nocomp or (csi_rep and 'error' in csi_rep):
     print(f'RESULTADO: NO COMPARADO en {len(nocomp)} serie(s)' + (' y CSI con error' if csi_rep and 'error' in csi_rep else '') + ' (exit 3): «no comparado» no es «sin revisión».'); sys.exit(3)
 if dif_tot or csi_dist:
     print('RESULTADO: INEGI REVISÓ (exit 1): hay celdas distintas; el refresco entra solo por PR de datos (--congelar sigue deshabilitado).'); sys.exit(1)
-print('RESULTADO: sin revisión INEGI (exit 0): las celdas congeladas coinciden con el BIE.')
+nuevos = sum(1 for r in resumen if r['comparacion']['solo_bie'])
+anios_nuevos = sorted({a for r in resumen for a in r['comparacion']['solo_bie']})
+extra = f'; {nuevos} serie(s) traen años que lo congelado no tiene ({", ".join(anios_nuevos)}): no es revisión, pero un refresco los incorporaría y movería el pastcast/forecast de SCN.ado (entra solo por PR de datos)' if nuevos else ''
+print('RESULTADO: sin revisión INEGI (exit 0): las celdas congeladas coinciden con el BIE' + extra + '.')
 PYEOF
