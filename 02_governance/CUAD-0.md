@@ -228,25 +228,25 @@ Mismas reglas y sellos que la Tabla 1. Los valores CSI son de `C1 §1–§3` sal
 
 ## §7 Identidades verificadas
 
-Última corrida: `{{COMMIT}}` (sesión v8.15b; evidencia `diag-v8.15b-2026-10-31/r3-firma-completa`). Los gates nuevos de v8.15b viven en el log de `Households.do` §9.1 (`GATE Households (1e-9): …`), en `NTA.do` y en `output.txt` (`CUADRATURA`).
+Última corrida: `02156b2` (sesión v8.15b; evidencia `diag-v8.15b-2026-10-31/r3-firma-completa`). Los gates nuevos de v8.15b viven en el log de `Households.do` §9.1 (`GATE Households (1e-9): …`), en `NTA.do` y en `output.txt` (`CUADRATURA`).
 
 | Identidad | Tolerancia | Resultado | Hash |
 |---|---|---|---|
-| `gate-numeros.sh`: `output.txt` = baseline v8.14.0 | byte a byte | **ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR) | `{{COMMIT}}` |
-| `gate-numeros.sh`: 10 sankeys = baseline v8.14.0 | 1e-9 relativo por enlace | **ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas) | `{{COMMIT}}` |
-| Households: Σ `ing_subor` = D.1 S.14 (10,052.962) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
-| Households: Σ `ing_mixto` = B.3n S.14 (6,956.984) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
-| Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n S.14 (910.359) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
-| Households: Σ `ing_capital` = D.4 neto − D.442 (4,997.037) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
-| Households: componentes de `ing_mixto` = agregado | 1e-9 relativo | VERDE, reldif 0.0e+00 | `{{COMMIT}}` |
-| Households: Σ Yl = D.1 + ⅔ B.3n (14,690.951); Σ Yk − CCF = YAHogS14 − D.442 (8,226.391) | 1e-9 relativo | VERDE, reldif 0.0e+00 (ambos) | `{{COMMIT}}` |
-| Households / `Sankey.do` / `output.txt`: PIB (BIE) = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage | 1e-9 relativo | VERDE, reldif 0.0e+00 (`CUADRATURA`: 43.636 + 24.435 + 1.800 + 2.833 + 4.735 + 0.347 + 19.181 + 2.782 + 0.252 = 100.000) | `{{COMMIT}}` |
-| NTA: residual por persona (`N` §5) | 1e-9 × C per cápita | VERDE, máx 2.98e-08 MXN | `{{COMMIT}}` |
-| NTA: Σ intra nacional = 0 | 1e-9 relativo | VERDE, 0.00 MXN | `{{COMMIT}}` |
-| NTA: Σ S = B.8n con ancla (multiplicativa; Σ S sin ancla 2,116.145, brecha +11.3 %) | 1e-9 relativo | VERDE, 0.00 MXN | `{{COMMIT}}` |
-| NTA: factor YA = 1 (YA_motor = YAHogS14 − D.442 al peso) | 1e-9 relativo | VERDE, factor 1.000000 | `{{COMMIT}}` |
-| Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`) | 1e-9 relativo | VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173) | `{{COMMIT}}` |
-| Contrato de las 32 (`contrato-32.sh`: paridad, aditividad Σ32, sellos) | 1e-9 relativo / byte | {{C32}} | `{{COMMIT}}` |
+| `gate-numeros.sh`: `output.txt` = baseline v8.14.0 | byte a byte | **ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR) | `02156b2` |
+| `gate-numeros.sh`: 10 sankeys = baseline v8.14.0 | 1e-9 relativo por enlace | **ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas) | `02156b2` |
+| Households: Σ `ing_subor` = D.1 S.14 (10,052.962) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
+| Households: Σ `ing_mixto` = B.3n S.14 (6,956.984) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
+| Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n S.14 (910.359) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
+| Households: Σ `ing_capital` = D.4 neto − D.442 (4,997.037) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
+| Households: componentes de `ing_mixto` = agregado | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
+| Households: Σ Yl = D.1 + ⅔ B.3n (14,690.951); Σ Yk − CCF = YAHogS14 − D.442 (8,226.391) | 1e-9 relativo | VERDE, reldif 0.0e+00 (ambos) | `02156b2` |
+| Households / `Sankey.do` / `output.txt`: PIB (BIE) = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage | 1e-9 relativo | VERDE, reldif 0.0e+00 (`CUADRATURA`: 43.636 + 24.435 + 1.800 + 2.833 + 4.735 + 0.347 + 19.181 + 2.782 + 0.252 = 100.000) | `02156b2` |
+| NTA: residual por persona (`N` §5) | 1e-9 × C per cápita | VERDE, máx 2.98e-08 MXN | `02156b2` |
+| NTA: Σ intra nacional = 0 | 1e-9 relativo | VERDE, 0.00 MXN | `02156b2` |
+| NTA: Σ S = B.8n con ancla (multiplicativa; Σ S sin ancla 2,116.145, brecha +11.3 %) | 1e-9 relativo | VERDE, 0.00 MXN | `02156b2` |
+| NTA: factor YA = 1 (YA_motor = YAHogS14 − D.442 al peso) | 1e-9 relativo | VERDE, factor 1.000000 | `02156b2` |
+| Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`) | 1e-9 relativo | VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173) | `02156b2` |
+| Contrato de las 32 (`contrato-32.sh`: paridad, aditividad Σ32, sellos) | 1e-9 relativo / byte | PASÓ paridad + aditividad (Σ32 neto reldif 0.0e+00; APORT* máx 0.000499); el testigo NL falla contra el fixture v8.14 (re-baseline pendiente) | `02156b2` |
 | Puente INBD → hub (`C1 §1.2`) | **Sin gate**: script de CONC-1 | superado por la identidad de sectores (fila anterior) | — |
 
 ## §8 Límites conocidos
