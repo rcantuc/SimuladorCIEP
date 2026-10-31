@@ -303,8 +303,8 @@ Fase 3 deja permisos rotos → 403). El swap preguntará `current: vA.B → vA.B
 de root y el `chown` a `ciepmx` es indispensable (sin él, el rsync no puede
 escribir). Hay dos caminos:
 
-**1a. Automático (I.4, desde 2026-10-01), si el VPS tiene instalado
-`crear-deployment`:** no haces nada; el Gate 4 de `publicar-vps.sh` detecta
+**1a. Automático (I.4, desde 2026-10-01); `crear-deployment` ya está instalado
+en el VPS (Gate 4 lo usó el 2026-10-30 para crear v8.14):** no haces nada; el Gate 4 de `publicar-vps.sh` detecta
 que el deployment no existe y lo crea con `sudo -n crear-deployment vA.B`
 — el único comando que `ciepmx` puede correr con `sudo` sin contraseña.
 Salta al Paso 2.
@@ -890,6 +890,19 @@ de sesión al de publicación: `rsync -a master/PIBDeflactor*.{dta,meta} <worktr
 `master/PIBDeflactor<ABREV>.meta` (`base_generada`) el vintage del PIBE que publica `/entidades/<ABREV>`
 (`--pibe-vintage` se retiró). En `-datos/master/` están los 32 del sello 2026-10-19; un worktree que clona
 `master/` de `-datos` los trae; si faltan, `meta.json` lo declara («not declared in this run») y el PR debe decirlo.
+
+---
+
+## 14. Lecciones del ritual v8.14.0
+
+Lo que mordió el 2026-10-30, en el orden en que importa:
+
+1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo.
+2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano.
+3. **Un comando por mensaje hasta `--check` verde.** Hasta entonces no se encadena nada: cada salida se lee antes del siguiente paso.
+4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere».
+5. **Minor = deployment nuevo (Gate 6) y tarda ~1 h** por la copia de `master/`. Se reserva el tiempo y no se interrumpe (§4b).
+6. **No filtrar la salida de scripts interactivos.** Desde v8.15a la pregunta del cutover y la línea de rollback van a `/dev/tty`, pero la regla sigue: un `| grep` puede esconder cualquier otro aviso.
 
 ---
 
