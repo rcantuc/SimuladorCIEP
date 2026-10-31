@@ -900,7 +900,7 @@ Lo que mordió el 2026-10-30, en el orden en que importa:
 1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo.
 2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano.
 3. **Un comando por mensaje hasta `--check` verde.** Hasta entonces no se encadena nada: cada salida se lee antes del siguiente paso.
-4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere».
+4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere». `gate-numeros.sh` igual: sin archivos da NO EVALUABLE (exit 2), no «los números cambiaron».
 5. **Minor = deployment nuevo (Gate 6) y tarda ~1 h** por la copia de `master/`. Se reserva el tiempo y no se interrumpe (§4b).
 6. **No filtrar la salida de scripts interactivos.** Desde v8.15a la pregunta del cutover y la línea de rollback van a `/dev/tty`, pero la regla sigue: un `| grep` puede esconder cualquier otro aviso.
 
