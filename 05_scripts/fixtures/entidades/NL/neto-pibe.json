@@ -16,7 +16,7 @@
     "log": "",
     "origen": "simulador",
     "dataset_serie": "users/ricardo/NL/ciclo-vida.json + PIBDeflactor Nuevo León",
-    "generado_en": "30-Oct-2026T14:20:24"
+    "generado_en": "31-Oct-2026T14:01:57"
   },
   "unidades": {
     "saldo_nominal": {"unidad": "pesos corrientes de anio_vp (neto del ciclo de vida de la entidad: aporta - recibe)", "formato_sugerido": "%14.1fc", "divisor_sugerido": 1000000},
@@ -54,27 +54,27 @@
   "capas_declaradas": [
   ],
   "escalares": {
-    "NetoCicloNL": {"valor": 354111194496.8468, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
-    "AportaCicloNL": {"valor": 645344440510.41504, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "NetoCicloNL": {"valor": 236076174332.8959, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "AportaCicloNL": {"valor": 527309420346.46411, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
     "RecibeCicloNL": {"valor": 291233246013.56818, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
     "PobCicloNL": {"valor": 6375312, "tipo": "personas", "formato_sugerido": "%15.0fc", "divisor_sugerido": 1},
     "pibYNL": {"valor": 3231482553598.4102, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
-    "NetoCicloPIBENL": {"valor": 10.958165133911278, "tipo": "pctpib", "formato_sugerido": "%7.3fc", "divisor_sugerido": 1}
+    "NetoCicloPIBENL": {"valor": 7.3055066959904771, "tipo": "pctpib", "formato_sugerido": "%7.3fc", "divisor_sugerido": 1}
   },
   "titular": {
     "anio": 2027,
     "procedencia": {"origen": "serie_observada", "dataset": "users/ricardo/NL/ciclo-vida.json + PIBDeflactor Nuevo León", "tipo_dato": "observado"},
-    "saldo_nominal": 354111194496.8468,
+    "saldo_nominal": 236076174332.8959,
     "saldo_real": null,
     "poblacion": 6375312,
     "indice_precios": null,
     "saldo_pc_nominal": null,
     "saldo_pc_real": null,
-    "saldo_pib": 10.958165133911278
+    "saldo_pib": 7.3055066959904771
   },
   "cobertura": {"anio_min": 2027, "anio_max": 2027, "n_anios": 1, "n_esperados": 1, "anios_faltantes": []},
   "series": [
-    {"anio": 2027, "saldo_nominal": 354111194496.8468, "saldo_real": null, "poblacion": 6375312, "indice_precios": null, "saldo_pc_nominal": null, "saldo_pc_real": null, "saldo_pib": 10.958165133911278}
+    {"anio": 2027, "saldo_nominal": 236076174332.8959, "saldo_real": null, "poblacion": 6375312, "indice_precios": null, "saldo_pc_nominal": null, "saldo_pc_real": null, "saldo_pib": 7.3055066959904771}
   ],
   "faltantes": [
     "procedencia.log",
