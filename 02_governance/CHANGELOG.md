@@ -16,6 +16,16 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+Sesión v8.15a: memo e higiene del ritual. **Ningún `.do`/`.ado` ni número publicado cambia** (`gate-numeros.sh` verde; sin bump de manifest).
+
+- **Institucional — CUAD-0.** `02_governance/CUAD-0.md`: capítulo `Households` del método en v8.14.0 y columna «propuesto 8.15» (Tabla 1 principio C, Tabla 2 principio B, parámetros, política de fuente SCN, campo `baseline`, Δ esperado). Es insumo de 8.15b, pendiente de firma.
+- **Institucional — `02_governance/metodo/`.** README de la carpeta. `plantilla-capitulo.md` y `cap0-requerimientos.md` quedan **pendientes**: los adjuntos no llegaron a la sesión.
+- **Comandos — `contrato-32.py --refs`.** Acepta `sankey-*.json` planos o `SankeySF/`. Una referencia que falta es «referencia ausente: <ruta>» y hace FALLÓ, con mensaje distinto de «difiere».
+- **Comandos — `publicar-vps.sh`.** La pregunta del cutover y la línea de rollback van a `/dev/tty` (sin tty, a stdout), para que `| tee | grep` no las esconda. `publicar.sh` no tiene prompts interactivos.
+- **Institucional — Runbook.** §14 «Lecciones del ritual v8.14.0»; §4b anota que `crear-deployment` ya está instalado.
+
 ## [v8.14.0] — 2026-10-30 — Pulido, docs y auditoría DoD: la última antes de v9.0.0
 
 Sesión de cierre sobre `master` con #47 (y #48: comentarios de `SIM.do`). **Nada metodológico nuevo**; la Cuadratura es
