@@ -34,6 +34,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 | `scalarlatex-baseline.txt` | No es documento: es dato. Lista auditada de escalares sin registrar que `scalarlatex.ado` lee en tiempo de ejecución para detectar deriva. Cómo actualizarla legítimamente está en su encabezado. |
 | `scn-celdas.md` | Inventario de las celdas del SCN que lee el motor (series BIE con consumidor, filas de los tabulados CSI que el BIE no tiene, escalares derivados, vintage que registra cada archivo). Es lo que recorre `05_scripts/refrescar-scn.sh --comparar` (política de fuente SCN, CUAD-0 §4 bis). Se regenera cuando cambia `UpdateSCN`. |
 | `deploys/` | Log local del pipeline de publicación al endpoint (`endpoint-stata.log`); no se versiona. |
+| `inventario-8.18a.md` | Inventario de solo lectura (2026-11-01) de `02_governance/`, `05_scripts/fixtures/`, `01_modulos/legacy|nodos/`, `metodo/` del sitio, `05_scripts/*` y el disco de corridas: por archivo, quién lo referencia y disposición propuesta (vigente / fundir / histórico / borrar), más las contradicciones entre documentos vigentes. Nada ejecutado: Ricardo decide fila por fila. |
 
 ## Subcarpetas
 
