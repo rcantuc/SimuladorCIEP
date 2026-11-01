@@ -1,4 +1,4 @@
-*! version 8.5 CIEP 31oct2026 (v8.15b: celdas S.14 D.1/D.442/D.752/D.5/D.7 y filas de sector B.5n S.11-S.15, S.2, S.1 de los tabulados CSI; aditivo)
+*! version 8.6 CIEP 01nov2026 (v8.15.2, PR de datos scn-congelado-2024: UpdateSCN lee SOLO el asset congelado raw/SCN/ (525 series completas tal como las publica INEGI, «2025 p1» etiquetado); anclas en anioenigh, el pastcast de §1.2 parte del ultimo año congelado)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -96,6 +96,8 @@ quietly {
 	** 1.2. Forecast & Pastcast **
 	order indiceY-lambda, last
 
+	* v8.15.2: la proyeccion parte de la ultima observacion del asset congelado (hoy «2025 p1», preliminar, etiquetada en manifest scn_vintage);
+	* las anclas (S.14, PIB del año ENIGH) leen anioenigh. Documentado en 02_governance/scn-celdas.md. *
 	* guarda el {c u'}ltimo año para el que hay un valor de PIB *
 	forvalues k = `=_N'(-1)1 {
 		if RemSalSS[`k'] != . & "`latest'" == "" {
@@ -1251,6 +1253,16 @@ program define UpdateSCN
 	* v8.15b (E4): si existe el asset congelado raw/SCN/ (refrescar-scn.sh --congelar), sus csv y xlsx se copian a raw/temp/ y
 	* AccesoBIE no toca la red para esas series (las no congeladas se descargan y se declaran). *
 	noisily SCNCongelado, copiar
+	global SCN_CALIENTE ""
+	* v8.15.2 (decision de Ricardo, 2026-11-01): UpdateSCN lee SOLO el asset. Sin sello verde (asset ausente o incompleto) aborta con
+	* receta; solo `global rawwip` permite bajar en caliente, y cada serie bajada queda declarada (FLAG al final, sello amarillo). *
+	if "$SCN_CONGELADO_SELLO" != "verde" & "$rawwip" == "" {
+		noisily di as err "UpdateSCN: el asset congelado raw/SCN/ no esta completo (sello $SCN_CONGELADO_SELLO): $SCN_CONGELADO_RES"
+		noisily di as err "  UpdateSCN lee SOLO el asset (CUAD-0 §4 bis). Receta: ensure_asset descarga raw/SCN/scn-congelado-<anio>.zip de la Release;"
+		noisily di as err "  para un asset nuevo: bash 05_scripts/refrescar-scn.sh --congelar --todas (PR de datos). Con global rawwip (modo WIP de raw) se baja en caliente y se declara."
+		exit 198
+	}
+	global SCN_SOLO_ASSET "1"
 
 	args update
 
@@ -2743,6 +2755,16 @@ program define UpdateSCN
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
 		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto, before(IngDisp)
 	}
+	* v8.15.2: la serie NO se corta: el asset trae la serie completa (los periodos posteriores al año de referencia llevan la etiqueta
+	* INEGI, «2025 p1»). Las anclas usan anioenigh (Households, NTA, Expenditure llaman SCN, anio(anioenigh)); el pastcast de SCN §1.2
+	* parte del ultimo año congelado (scn-celdas.md). Series bajadas en caliente (solo con rawwip): FLAG. *
+	global SCN_SOLO_ASSET ""
+	if "$SCN_CALIENTE" != "" {
+		local ncal : word count $SCN_CALIENTE
+		noisily di as err "  FLAG UpdateSCN (rawwip): `ncal' serie(s) sin asset congelado en raw/SCN/bie/, descargadas en caliente (sello amarillo; congelar con refrescar-scn.sh --congelar --todas): $SCN_CALIENTE"
+		global SCN_CONGELADO_SELLO "amarillo"
+		global scn_sello "amarillo"
+	}
 	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
 	drop periodo
@@ -2985,6 +3007,7 @@ def scn_congelado(copiar, rawwip):
         Macro.setGlobal('SCN_CONGELADO_RES', f'sin manifest legible ({e}); el motor lee raw/temp/ (descarga en caliente)')
         return
     sv = man.get('scn_vintage')
+    Macro.setGlobal('SCN_CONGELADO_ANIO', str((sv or {}).get('anio_referencia') or ''))
     if not sv:
         Macro.setGlobal('SCN_CONGELADO_SELLO', 'amarillo')
         Macro.setGlobal('SCN_CONGELADO_RES', 'manifest sin scn_vintage: nada congelado (refrescar-scn.sh --congelar); el motor lee raw/temp/ (descarga en caliente)')
