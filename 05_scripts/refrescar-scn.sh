@@ -31,8 +31,10 @@
 # sin red, el BIE no respondió alguna serie, o falta lo congelado); 2 = uso / modo deshabilitado.
 #
 # Modo --congelar (v8.15b, sesion 2026-10-31; spec pasos 6-7, CUAD-0 §4 bis): hace lo mismo que --comparar (con --csi forzado) y ADEMAS
-# escribe los assets congelados en raw/SCN/: bie/<serie>.csv (periodo,valor; solo los años ≤ año de referencia: los posteriores se listan
-# «fuera del año de referencia» y NO se incorporan) para las series del inventario (--todas: las 525 de UpdateSCN) y los siete cuadros
+# escribe los assets congelados en raw/SCN/: bie/<serie>.csv (periodo,valor; la SERIE COMPLETA tal como la publica el BIE, con la etiqueta
+# INEGI en el periodo, p. ej. «2025 p1» = preliminar: v8.15.2, decision de Ricardo 2026-11-01; los años posteriores al de referencia se
+# comparan aparte y se registran con su etiqueta; las anclas usan el año de referencia y el pastcast la ultima observacion congelada,
+# SIM.do §0.8 scn_pastcast_desde) para las series del inventario (--todas: las 525 de UpdateSCN; SIEMPRE --todas: UpdateSCN lee solo el asset) y los siete cuadros
 # CSI_1xx.xlsx que lee SCN.ado, y los registra en 05_scripts/manifest.json bajo `scn_vintage`: fecha de consulta, año de referencia,
 # canal (API | exportación pública), y por serie variable, uso, sha256, n, etiqueta INEGI del último dato y vía; por cuadro CSI sha256 y
 # las celdas del inventario (cuadro, fila, columna, código, variable, valor del año de referencia). SCN.ado (UpdateSCN, SCNHogaresS14) y
@@ -207,6 +209,7 @@ def bie_api(s):
                     vals, notas = {}, {}
                     for o in se.get('OBSERVATIONS') or []:
                         per = str(o.get('TIME_PERIOD', '')).strip()
+                        RAWPER.setdefault(s, {})[per] = per
                         v = o.get('OBS_VALUE')
                         vals[per] = (float(v) if v not in (None, '', 'N/E') else None)
                         et = ' '.join(str(o.get(k)) for k in ('OBS_STATUS', 'OBS_EXCEPTION', 'OBS_NOTE', 'OBS_SOURCE') if o.get(k) not in (None, '', 'null'))
@@ -240,6 +243,7 @@ def bie_export(s):
                 per_raw, val = cells[0], cells[2].replace(',', '').strip()
                 per = re.sub(r'\s*/?\s*[A-Za-z]+\d*\s*$', '', per_raw).strip()     # como AccesoBIE.ado: «2025 p1» → «2025»
                 suf = per_raw[len(per):].strip()
+                RAWPER.setdefault(s, {})[per] = per_raw.strip()                      # periodo tal cual (con etiqueta) para el asset
                 vals[per] = (float(val) if val not in ('', 'ND', 'N/E', '-') else None)
                 if suf: notas[per] = suf + ' (etiqueta INEGI en el periodo: p = preliminar, r = revisada)'
             m = re.search(r'Fecha de consulta:\s*([0-9/]+\s+[0-9:]+)', b)
@@ -249,6 +253,7 @@ def bie_export(s):
             err = f'exportación: {e}'; time.sleep(3)
     return None, None, None, None, err
 api_fallas = {}
+RAWPER = {}   # serie -> {periodo normalizado: periodo tal como lo publica el BIE («2025 p1»)}
 def bie(s):
     vals, notas, meta, via, err = bie_api(s)
     if vals is not None: return vals, notas, meta, via, None
@@ -405,16 +410,24 @@ if congelar:
     for r in resumen:
         s = r['serie']
         bvals, bnotas, bmeta, via = BVALS[s]
-        pers = [p for p in bvals if anio_de(p) is not None and anio_de(p) <= ANIO_REF]
+        # v8.15.2: la serie COMPLETA (todos los periodos que publica el BIE), con la etiqueta INEGI en el periodo («2025 p1»); los
+        # posteriores al año de referencia quedan registrados aparte (posteriores_a_referencia) y el pastcast del motor parte de ellos
+        pers = [p for p in bvals if anio_de(p) is not None]
         pers.sort(key=lambda x: (len(x), x))
-        canon = 'periodo,valor\n' + ''.join(f'{p},{"" if bvals[p] is None else repr(bvals[p])}\n' for p in pers)
+        raw = RAWPER.get(s, {})
+        canon = 'periodo,valor\n' + ''.join(f'{raw.get(p, p)},{"" if bvals[p] is None else repr(bvals[p])}\n' for p in pers)
         fp = os.path.join(dest, 'bie', f'{s}.csv')
         open(fp, 'w', encoding='utf-8', newline='\n').write(canon)
+        en_ref = [p for p in pers if anio_de(p) <= ANIO_REF]
+        post = [p for p in pers if anio_de(p) > ANIO_REF]
+        ult_ref = max(en_ref, key=lambda x: (len(x), x)) if en_ref else ''
         ult = max(pers, key=lambda x: (len(x), x)) if pers else ''
         reg_bie[s] = {'variable': r['nombre'], 'etiqueta': r['etiqueta'], 'uso': r['uso'], 'archivo': f'raw/SCN/bie/{s}.csv',
-                      'sha256': sha_bytes(canon.encode('utf-8')), 'n': len(pers), 'ultimo': ult,
-                      'etiqueta_inegi_ultimo': bnotas.get(ult, 'sin sufijo ni nota: cifra definitiva'),
-                      'fuera_de_referencia': r['comparacion']['fuera_referencia'], 'via': via, 'lastupdate': r['bie']['lastupdate'], 'consulta': fecha}
+                      'sha256': sha_bytes(canon.encode('utf-8')), 'n': len(pers), 'ultimo_congelado': raw.get(ult, ult),
+                      'etiqueta_inegi_ultimo_congelado': bnotas.get(ult, 'sin sufijo ni nota: cifra definitiva'),
+                      'ultimo_en_referencia': ult_ref, 'etiqueta_inegi_ultimo_en_referencia': bnotas.get(ult_ref, 'sin sufijo ni nota: cifra definitiva'),
+                      'posteriores_a_referencia': [raw.get(p, p) for p in post],
+                      'via': via, 'lastupdate': r['bie']['lastupdate'], 'consulta': fecha}
     reg_csi = {'zip': csi_rep['zip'], 'zip_sha256': csi_rep['zip_sha256'], 'consulta': fecha, 'cuadros': {}, 'celdas': []}
     z = zipfile.ZipFile(csi_rep['zip_local'])
     for c in sorted(csi_rep['cuadros']):
@@ -431,7 +444,7 @@ if congelar:
     for k, v in man.items():
         if k == 'assets':
             man_new['scn_vintage'] = {
-                'regla': 'Assets congelados del SCN (CUAD-0 §4 bis, v8.15b E4): raw/SCN/bie/<serie>.csv (periodo,valor; solo años <= anio_referencia) y raw/SCN/CSI_1xx.xlsx. SCN.ado (UpdateSCN, SCNHogaresS14) y AccesoBIE.ado los leen cuando existen y verifican su sha256 (sello verde); sin asset descargan en caliente y lo declaran (sello amarillo). Se reescriben SOLO con refrescar-scn.sh --congelar en un PR de datos (data_updated y CHANGELOG declaran el delta). raw/SCN/ no se versiona: viaja con la Release.',
+                'regla': 'Assets congelados del SCN (CUAD-0 §4 bis; v8.15b E4, v8.15.2): raw/SCN/bie/<serie>.csv (periodo,valor; la serie COMPLETA que publica el BIE, con la etiqueta INEGI en el periodo: «2025 p1» = preliminar) y raw/SCN/CSI_1xx.xlsx. UpdateSCN lee SOLO el asset (sello verde; sin asset o sha distinto aborta, salvo global rawwip, que descarga y lo declara: amarillo). Las anclas usan anio_referencia (= anioenigh); el pastcast de SCN §1.2 parte de la ultima observacion congelada (SIM.do §0.8 scn_pastcast_desde = ultimo_congelado; alternativa anioenigh = FLAG). Se reescriben SOLO con refrescar-scn.sh --congelar --todas en un PR de datos (CHANGELOG declara el delta). raw/SCN/ no se versiona: viaja con la Release.',
                 'consulta': fecha, 'anio_referencia': ANIO_REF, 'anio_referencia_fuente': anio_fuente,
                 'canal': 'API oficial del BIE con respaldo en la consulta pública de exportación (.aspx); la vía real de cada serie va en bie.<serie>.via',
                 'series_congeladas': len(reg_bie), 'bie': reg_bie, 'csi': reg_csi}
@@ -456,7 +469,7 @@ if congelar:
     json.dump(man_new, open(mp, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
     open(mp, 'a', encoding='utf-8').write('\n')
     print(f'ASSET: {zpath} ({len(zb)} bytes, sha256 {sha_bytes(zb)[:12]}…, desde {desde}) declarado en manifest.assets')
-    print(f'CONGELADO: {len(reg_bie)} series en {dest}/bie/ (años <= {ANIO_REF}), {len(reg_csi["cuadros"])} cuadros CSI en {dest}/, registro scn_vintage en {mp}')
+    print(f'CONGELADO: {len(reg_bie)} series completas en {dest}/bie/ (año de referencia {ANIO_REF}; {sum(1 for v in reg_bie.values() if v["posteriores_a_referencia"])} con periodos posteriores, etiquetados), {len(reg_csi["cuadros"])} cuadros CSI en {dest}/, registro scn_vintage en {mp}')
 csi_dist = bool(csi_rep) and ('error' in csi_rep or any(not v['igual'] for v in csi_rep['cuadros'].values()))
 if nocomp or (csi_rep and 'error' in csi_rep):
     print(f'RESULTADO: NO COMPARADO en {len(nocomp)} serie(s)' + (' y CSI con error' if csi_rep and 'error' in csi_rep else '') + ' (exit 3): «no comparado» no es «sin revisión».'); sys.exit(3)
