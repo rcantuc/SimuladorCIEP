@@ -16,7 +16,7 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
+## [v8.15.0] — 2026-10-31
 
 ### [v8.15.0] — Cuadratura I: `Households` re-anclado al sector hogares S.14 (sesión v8.15b, 2026-10-31; CUAD-0 firmado)
 
