@@ -2743,6 +2743,26 @@ escalar mxn CuadRentaPropGob = `RentaPropGobNeta'
 escalar mxn CuadRemesasS14 = `RemesasHogS14'
 escalar pct CuadRemesasFactor = TaltimirROWTrans*100
 
+* Producto master/<anioenigh>/cuadratura.do (v8.15.1, hotfix fix/cuadratura-web): la identidad de sectores es invariante al
+* usuario y al formulario, pero output.do la imprime (CUADRATURA) tambien en el flujo web, que no corre Households.do. Se
+* escribe aqui, una vez por corrida batch, como producto de master/ (viaja al VPS con master/<anio>/ completo, Gate 5-remoto de
+* publicar-vps.sh) y Web.Stata.do §7.3 lo carga antes de output.do. Los valores van en hexadecimal (%21x): el double exacto,
+* asi que el output.txt web es byte-identico al batch (test-web-batch.sh, 47 llaves). Incidente: publicar-vps.sh v8.15
+* revirtio por «CuadYLPIB not found» r(111) en el «Calcular» de humo. *
+tempname fcuad
+file open `fcuad' using "${SIMROOT}/master/`anioenigh'/cuadratura.do", write text replace
+file write `fcuad' "* cuadratura.do — identidad de sectores del PIB BIE (Households.do §9.1, CUAD-0 firma 13). Producto de master/`anioenigh'/," _n
+file write `fcuad' "* invariante al usuario: lo escribe Households.do en cada corrida batch y lo carga Web.Stata.do §7.3 antes de output.do (CUADRATURA)." _n
+file write `fcuad' "* Valores en hexadecimal (%21x): el double exacto del motor. No editar a mano; se regenera con SIM.do." _n
+file write `fcuad' "* ENIGH `anioenigh'; cuad_params = $cuad_params; generado `c(current_date)'." _n
+foreach k in YL YA D442 S11S12 S13 S15 CCF Row Vintage PIB {
+	file write `fcuad' "scalar Cuad`k' = " %21x (scalar(Cuad`k')) "   // " %18.3fc (scalar(Cuad`k')) " mxn" _n
+	file write `fcuad' "scalar Cuad`k'PIB = " %21x (scalar(Cuad`k'PIB)) "   // " %10.6f (scalar(Cuad`k'PIB)) " % del PIB" _n
+}
+file write `fcuad' "scalar CuadPIBSCN = " %21x (`PIBSCN') "   // PIB BIE `anioenigh', mxn" _n
+file close `fcuad'
+noisily di in g "  Producto:  " in y "master/`anioenigh'/cuadratura.do" in g " (Cuad*/Cuad*PIB en %21x para Web.Stata.do → output.do CUADRATURA)"
+
 * Gates (1e-9 relativo): anclas S.14 por construccion, componentes crudos = agregado, YA, identidad de sectores *
 local gates_ok = 1
 foreach par in `""Σ ing_subor = D.1 S.14" `SumSubor' `D1Hog'"' `""Σ ing_mixto = B.3n S.14" `SumMixto' `MixNHogS14'"' ///

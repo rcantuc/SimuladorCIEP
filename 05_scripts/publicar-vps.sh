@@ -1153,6 +1153,7 @@ MOTOR_LECTURAS_VPS=(
     "master/PEF.dta"                                 # PEF.ado §1 (use in 1) + insumo del sello
     "master/${WEB_PERFIL}"                           # insumo del sello (GastoPC_base)
     "master/${WEB_MASTER_YEAR}/households.dta"       # insumo del sello
+    "master/${WEB_MASTER_YEAR}/cuadratura.do"        # Web.Stata.do §7.3: Cuad*PIB para output.do CUADRATURA (v8.15.1; producto de Households.do §9.1)
     "users/ricardo/cache/sello.txt"                  # Fase 3b-bis: cache de lo invariante
     "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
     "users/ciepmx/output.txt"                        # Fase 3b-ter: escenario default (cargaDefault.php)

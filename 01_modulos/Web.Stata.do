@@ -427,6 +427,22 @@ foreach k in decil grupoedad sexo rural escol {
 
 
 
+**/
+** 7.3 Identidad de sectores del PIB (v8.15.1, hotfix fix/cuadratura-web) **
+* output.do imprime CUADRATURA con los diez Cuad*PIB que calcula Households.do §9.1, que el flujo web no corre.
+* La identidad es invariante al usuario: Households.do la deja como producto en master/<anioenigh>/cuadratura.do
+* (scalars en %21x: el double exacto) y aqui se carga antes de output.do. Sin el producto no se calcula
+* (misma regla que el cache: sin fallback silencioso); viaja al VPS con master/<anio>/ completo (Gate 5-remoto).
+* Incidente: publicar-vps.sh v8.15 revirtio por «CuadYLPIB not found» r(111) en el «Calcular» de humo.
+capture confirm file "${SIMROOT}/master/`=anioenigh'/cuadratura.do"
+if _rc {
+	di as err "Web.Stata.do: no existe ${SIMROOT}/master/`=anioenigh'/cuadratura.do (producto de Households.do §9.1, v8.15.1): corre SIM.do hasta §3 para regenerarlo."
+	exit 601
+}
+run "${SIMROOT}/master/`=anioenigh'/cuadratura.do"
+
+
+
 ***/
 **** Touchdown!!!
 ****
