@@ -8,7 +8,9 @@ quietly log on output
 * de 1.4127 y con la tasa efectiva redondeada, y 5 de 46 llaves de output.txt diferian
 * del batch. %12.0g conserva los globals tal como se escriben en SIM.do §2 (hasta 12
 * cifras significativas) y %20.0g devuelve la tasa efectiva (double) sin perder un bit.
-* Gate: 05_scripts/test-web-batch.sh (46/46 llaves identicas).
+* Gate: 05_scripts/test-web-batch.sh (47/47 llaves identicas desde v8.15.0). Todo cambio en este archivo exige correrlo antes
+* de cerrar la rama (runbook §14, leccion 7): v8.15.0 anadio CUADRATURA sin correrlo y publicar-vps.sh v8.15 revirtio
+* (r(111) en el web: los Cuad*PIB los calcula Households.do; desde v8.15.1 Web.Stata.do §7.3 los carga de master/<anio>/cuadratura.do).
 noisily di in w "CRECPIB: ["  ///
 	%12.0g $pib2026 ", " ///
 	%12.0g $pib2027 ", " ///

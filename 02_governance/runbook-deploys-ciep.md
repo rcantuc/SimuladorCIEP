@@ -736,7 +736,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 |---|---|---|
 | `gate-numeros.sh` | `output.txt` byte-idéntico al baseline y los 10 sankeys ≤ 1e-9 | sobre `users/ricardo` de una corrida completa (`correr-sim.sh` de la carpeta diag) |
 | Dos caminos | `output.txt` y los 11 JSON byte-idénticos entre una corrida con `master/SCN.dta` enriquecido y otra con las 18 series S.14 borradas (`strip-s14.do`) | dos worktrees desechables, `comparar.py` |
-| `test-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **46/46 llaves** de `output.txt` como cadena | `bash 05_scripts/test-web-batch.sh --root <worktree con la corrida>` (~2 min) |
+| `test-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **47/47 llaves** (46 + `CUADRATURA`, v8.15.0; v8.15.1: `Web.Stata.do` §7.3 carga `master/<anioenigh>/cuadratura.do`) de `output.txt` como cadena | `bash 05_scripts/test-web-batch.sh --root <worktree con la corrida>` (~2 min) |
 | `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
 | `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14), sellos, banda en las 32 (con `users/ricardo-v<t>/`) | §13 |
 | `test-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
@@ -805,6 +805,7 @@ en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y q
 | Ruta bajo `${SIMROOT}/` | Quién la lee | Flujo | Decisión |
 |---|---|---|---|
 | `05_scripts/manifest.json` | `_precache_manifest.ado` | **web** y batch | **embarcar** (Fase 3a, v8.12.1) |
+| `master/<anioenigh>/cuadratura.do` (producto de `Households.do` §9.1: los diez `Cuad*`/`Cuad*PIB` en `%21x`) | `Web.Stata.do` §7.3 → `output.do` (`CUADRATURA`) | **web** (batch los calcula) | **embarcar**: viaja con `master/<anio>/` completo (Fase 3b) y está en `MOTOR_LECTURAS_VPS` (v8.15.1; incidente: `publicar-vps.sh` v8.15 revirtió por `r(111)` en el humo) |
 | `01_modulos/{ISR_Mod,IVA_Mod,output}.do`, `01_modulos/visualizations/SankeySF.do` | `Web.Stata.do` | **web** | ya embarcado (Fase 3a `01_modulos/***`) |
 | `*.ado`, `*.scheme` del root | `Web.Stata.do` vía SITE | **web** | ya embarcado (Fase 3a) |
 | `01_modulos/PerfilesSim.do` | `GastoPC.ado`, `TasasEfectivas.ado` | solo si falta `master/perfiles<año>.dta` (en el VPS existe: Fase 3b) | ya embarcado; no debe correr en el VPS |
@@ -903,6 +904,10 @@ Lo que mordió el 2026-10-30, en el orden en que importa:
 4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere». `gate-numeros.sh` igual: sin archivos da NO EVALUABLE (exit 2), no «los números cambiaron».
 5. **Minor = deployment nuevo (Gate 6) y tarda ~1 h** por la copia de `master/`. Se reserva el tiempo y no se interrumpe (§4b).
 6. **No filtrar la salida de scripts interactivos.** Desde v8.15a la pregunta del cutover y la línea de rollback van a `/dev/tty`, pero la regla sigue: un `| grep` puede esconder cualquier otro aviso.
+7. **Todo cambio en `output.do` exige `test-web-batch.sh` verde antes de cerrar la rama** (v8.15.1). v8.15.0 añadió la llave `CUADRATURA` con diez escalares que solo calcula `Households.do`; `gate-numeros.sh` (batch) quedó verde y nadie corrió el web: `publicar-vps.sh` v8.15 revirtió en la Fase 6 por `CuadYLPIB not found` r(111). Lo que `output.do` imprime lo tienen que producir los dos flujos; lo que es invariante al usuario se escribe como producto de `master/` (hoy `master/<anioenigh>/cuadratura.do`) y se entra a `MOTOR_LECTURAS_VPS` (§12).
+8. **Release commit antes del tag, en el mismo PR del fix** (v8.15.1). El PR del hotfix lleva ya `CHANGELOG [vX.Y.Z]`, `manifest.json` (`version`, `release_tag`, `release_url_prefix`) y `CITATION.cff` (`publicar.sh --citation`); así el hash que se mergea es el que se tagea y `--check` no encuentra un manifest a medias. `baseline` no se toca en un patch que no mueve números.
+
+**El ritual, en orden (v8.15.1; un paso a la vez, cada paso es gate del siguiente):** merge del PR → `-datos` al hash del merge (`git fetch && git checkout --detach <hash>`) → `correr-sim.sh` completo a `diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0) → **`test-web-batch.sh --root -datos`** (47/47 llaves, web = batch byte a byte; desde v8.15.1 va aquí, antes del contrato) → `Precache` suelto solo si el sello difiere del manifest → `contrato-32.sh --refs <01-ritual>` → PASÓ → `publicar.sh vX.Y.Z --empaquetar-datos` → `git tag -a vX.Y.Z <hash literal>` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
 
 ---
 

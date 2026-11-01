@@ -4,7 +4,7 @@
 # =============================================================================
 # El sitio arma el escenario default con users/ricardo/output.txt (lo que escribió SIM.do con
 # nographs + output) y Web.Stata.do lo devuelve al motor como {{llaves}}. La promesa es que ese
-# «Calcular» default reproduce EXACTAMENTE el output.txt del batch: las 46 llaves que publica
+# «Calcular» default reproduce EXACTAMENTE el output.txt del batch: las 47 llaves que publica
 # output.do, idénticas como cadena. En v8.12.4 diferían 5 (CRECPIB/CRECDEF redondeados a un decimal,
 # la tasa efectiva a tres, y el `if k != 0` de SIM.do §7 que el web no tenía). SIM.do es canónico;
 # el web se alinea; este gate lo mide.
@@ -26,7 +26,7 @@
 #                y master/ (una corrida completa de SIM.do, como la del ritual).
 #   --id         usuario de la corrida web (default webbatch); se borra al final salvo --conservar.
 #   --evidencia  default <root>/users/_perf/test-web-batch-<fecha>/.
-# Exit 0 = 46/46 llaves idénticas; 1 = alguna difiere o la corrida no llegó al TOUCH-DOWN; 2 = faltan insumos.
+# Exit 0 = 47/47 llaves idénticas (46 + CUADRATURA desde v8.15.0; v8.15.1: Web.Stata.do §7.3 carga master/<anioenigh>/cuadratura.do); 1 = alguna difiere o la corrida no llegó al TOUCH-DOWN; 2 = faltan insumos.
 # Gate de sesión (runbook §11): necesita Stata; no corre en CI.
 # =============================================================================
 set -uo pipefail

@@ -1,13 +1,13 @@
 {
-  "version": "v8.15.0",
+  "version": "v8.15.1",
   "data_updated": "2026-10-31",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
   "enigh_vintage": "2024",
   "enigh_vintage_regla": "Año de la ENIGH con la que corrió el motor (scalar anioenigh de SIM.do y Web.Stata.do). La Fase 4 de publicar-vps.sh la escribe como 'EnighVintage:' en DEPLOYED_COMMIT y la sección de método del sitio (/NTA) la cita en su línea de fuente. Se bumpea al cambiar de ENIGH.",
   "baseline": "v8.15.0",
   "baseline_regla": "Tag desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión: la última corrección de datos declarada en el CHANGELOG (CUAD-0 §4 ter, decisión 14, 2026-10-31). Para v8.14.0 y anteriores es v8.12.4; desde v8.15.0 es v8.15.0 (Cuadratura I, sesión v8.15b: Households.do re-anclado al sector hogares S.14 con CUAD-0 firmado; output.txt, los 10 sankeys y las 32 entidades NO comparan con <= v8.14.0, CHANGELOG [v8.15.0]). Se mueve SOLO en una corrección de datos o un cambio metodológico que re-ancle el baseline de gate-numeros.sh (commit 'baseline: vX.Y.Z'); el Gate 11 de publicar.sh exige que exista y que sea un tag desde v8.15.0. La Fase 4 de publicar-vps.sh lo escribe como 'Baseline:' en DEPLOYED_COMMIT (health.php) y el sidecar lo copia a manifest-datos.json.",
-  "release_tag": "v8.15.0",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.15.0/",
+  "release_tag": "v8.15.1",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.15.1/",
   "generated_at": "2026-10-06T23:20:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "scn_vintage": {
