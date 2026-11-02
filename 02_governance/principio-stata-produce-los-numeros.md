@@ -132,6 +132,8 @@ Conviene decirlo explícito para que nadie lo negocie caso por caso.
 
 **Fuera de Stata:** servir páginas, renderizar gráficas interactivas, atender usuarios concurrentes, generar HTML, manejar la calculadora del deflactor en el navegador.
 
+**PyStata dentro de un `.ado` no cruza el límite** (decisión de Ricardo, 2026-11-01, PR de datos `scn-congelado-2024`). Un bloque `python:` embebido en un `.ado` del motor (`AccesoBIE.ado` descarga la serie y escribe el csv; `SCN.ado` → `SCNCongelado` verifica el sha256 de los assets congelados y los copia; `_precache_manifest` lee el manifest) corre dentro de la sesión de Stata, queda en el log de la corrida y se audita con el `.ado` que lo contiene: la cifra sigue naciendo en Stata, que es quien importa el csv y calcula. Lo que sigue prohibido es que un script fuera de Stata (`05_scripts/*.py`, PHP, el navegador) produzca o corrija una cifra publicada.
+
 Esto no es una concesión ni una etapa de transición. **Es el límite correcto**, y coincide con lo que cada herramienta hace bien. Stata es excelente en microdatos con ponderadores y tiene quince años de lógica probada encima; no es un servidor web y no tiene por qué serlo.
 
 ---
