@@ -1,4 +1,4 @@
-*! version 8.4 CIEP 31oct2026 (v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
+*! version 8.5 CIEP 01nov2026 (v8.15.2: dentro de UpdateSCN ($SCN_SOLO_ASSET) una serie sin asset aborta, salvo rawwip, que la baja y la declara en $SCN_CALIENTE; antes v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
@@ -120,7 +120,16 @@ program define AccesoBIE
 					noisily display as text "  Serie `serie': asset congelado raw/SCN/bie/`serie'.csv (sin descarga)"
 				}
 				else {
-					if "$SCN_CONGELADO_SELLO" != "" noisily display as text "  Serie `serie': sin asset congelado; descarga en caliente (sello amarillo)"
+					// v8.15.2: dentro de UpdateSCN ($SCN_SOLO_ASSET) una serie sin asset NO se descarga: aborta con receta, salvo rawwip (declara)
+					if "$SCN_SOLO_ASSET" != "" {
+						if "$rawwip" == "" {
+							noisily display as error "AccesoBIE: la serie `serie' no esta en el asset congelado raw/SCN/bie/ y UpdateSCN lee SOLO el asset (CUAD-0 §4 bis)."
+							noisily display as error "  Receta: bash 05_scripts/refrescar-scn.sh --congelar --todas (PR de datos); con global rawwip (modo WIP de raw) se baja en caliente y se declara."
+							exit 198
+						}
+						noisily display as text "  Serie `serie': sin asset congelado; descarga en caliente (rawwip, sello amarillo)"
+						global SCN_CALIENTE "$SCN_CALIENTE `serie'"
+					}
 					// Llamar a Python para obtener datos via API oficial
 					python: inegi_api("`serie'", "`token'")
 				}

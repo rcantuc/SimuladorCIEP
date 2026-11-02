@@ -150,6 +150,30 @@ Reglas del modo:
   de declararlo" (lo pone el operador del manifest). Un compañero con `update`
   y sin `rawwip` sigue siendo detenido por el candado.
 
+## 2d. El asset del SCN (`raw/SCN/scn-congelado-<anio>.zip`) no se edita a mano
+
+El SCN no se vacía en un `.xlsx`: lo escribe `05_scripts/refrescar-scn.sh` (política CUAD-0 §4 bis).
+Es el único asset que se **regenera** en vez de editarse, y el único cuyo manifest (`scn_vintage`)
+registra por serie el sha256, la fecha de consulta, la etiqueta INEGI del último dato y la vía.
+
+```bash
+bash 05_scripts/refrescar-scn.sh --comparar --todas --csi                 # 1. ¿INEGI revisó algo ≤ anioenigh? exit 0 = no
+bash 05_scripts/refrescar-scn.sh --congelar --todas --desde vX.Y.Z        # 2. reescribe raw/SCN/, el zip y scn_vintage + assets
+#    --desde = la versión en que el zip nuevo entra a la Release (Gate 8 no lo exige en Releases anteriores)
+#    Siempre --todas: UpdateSCN lee SOLO el asset y fusiona las 525 series (sin asset aborta). El asset trae la
+#    serie completa con la etiqueta INEGI («2025 p1»); las anclas usan anioenigh y el marco 2027 parte del
+#    último año congelado (scn-celdas.md). Lección del PR de datos 2026-11-01 (v8.15.2).
+# 3. reconstruir la base del motor y verificar que nada cambió salvo lo que INEGI revisó:
+#    Stata: SCN, anio(`=anioenigh') update nographs   (sello verde)
+#    python3 -I diag-scn-2026-11-01/cmp-scn.py master/SCN-antes.dta master/SCN.dta 2070   # todos los años
+# 4. corrida completa + gate-numeros.sh + test-web-batch.sh; CHANGELOG con el Δ (si INEGI revisó); PR de datos.
+# 5. al fusionar: copiar raw/SCN/ y master/SCN.dta a -datos y al clon Dropbox (Gate 5 del ritual).
+```
+
+Un `exit 1` en el paso 1 («INEGI REVISÓ») es una revisión de INEGI: entra solo por PR de datos con el Δ declarado.
+Un `exit 3` («NO COMPARADO») no autoriza a congelar. Los periodos posteriores a `anioenigh` no se comparan
+(son preliminares): se registran con su etiqueta en `scn_vintage.bie.<serie>.posteriores_a_referencia`.
+
 ## 3. Qué NUNCA hacer
 
 - **Borrar el archivo y volver a correr después de actualizarlo.** Es el consejo

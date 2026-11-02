@@ -101,11 +101,12 @@ Estado en v8.14.0.
 
 ### §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)
 
-- **Canal:** BIE por API.
-- **Congelamiento:** cada descarga queda en `raw/` como asset del manifest, con sha256 y vintage (fecha de consulta + etiqueta INEGI preliminar/revisada) en el header del módulo y en `manifest.json`.
-- **Refresco deliberado:** nunca hay lectura en caliente. Un cambio de INEGI entra solo por PR de datos.
+- **Canal:** BIE por API, con respaldo en la consulta pública de exportación del BIE (`.aspx`) cuando la API no responde (HTTP 400 con el token desde 2026-10-31); la vía real queda declarada por serie en `manifest.json: scn_vintage.bie.<serie>.via`.
+- **Congelamiento:** cada descarga queda en `raw/` como asset del manifest, con sha256 y vintage (fecha de consulta + etiqueta INEGI preliminar/revisada) en el header del módulo y en `manifest.json`. El asset trae **la serie completa** que publica el BIE (las 525 series que `UpdateSCN` fusiona, no solo las 93 con consumidor: el pastcast proyecta todas), con la etiqueta INEGI en el periodo («2025 p1» = preliminar). `UpdateSCN` lee **solo** el asset (sin asset aborta; `rawwip` baja en caliente y lo declara).
+- **Anclas en `anioenigh`:** las celdas S.14, el PIB y LIF/PEF del año ENIGH se leen en `anioenigh`; el marco 2025–2027 del pastcast de `SCN` §1.2 parte del último año congelado del asset (`scn-celdas.md`).
+- **Refresco deliberado:** nunca hay lectura en caliente. Un cambio de INEGI entra solo por PR de datos (`refrescar-scn.sh --congelar --todas`, `runbook-actualizar-assets.md` §2d).
 
-**Spec de `05_scripts/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde, y descargan solo si falta, sello amarillo):**
+**Spec de `05_scripts/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; v8.15.2: `--todas` y serie completa; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde; sin asset `UpdateSCN` aborta, salvo `rawwip`, que descarga y lo declara, sello amarillo):**
 
 ```text
 Uso: 05_scripts/refrescar-scn.sh --comparar [--series <lista>]
