@@ -11,7 +11,7 @@
   "generated_at": "2026-10-06T23:20:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "scn_vintage": {
-    "regla": "Assets congelados del SCN (CUAD-0 §4 bis; v8.15b E4, v8.15.2): raw/SCN/bie/<serie>.csv (periodo,valor; la serie COMPLETA que publica el BIE, con la etiqueta INEGI en el periodo: «2025 p1» = preliminar) y raw/SCN/CSI_1xx.xlsx. UpdateSCN lee SOLO el asset (sello verde; sin asset o sha distinto aborta, salvo global rawwip, que descarga y lo declara: amarillo). Las anclas usan anio_referencia (= anioenigh); el pastcast de SCN §1.2 parte de la ultima observacion congelada (SIM.do §0.8 scn_pastcast_desde = ultimo_congelado; alternativa anioenigh = FLAG). Se reescriben SOLO con refrescar-scn.sh --congelar --todas en un PR de datos (CHANGELOG declara el delta). raw/SCN/ no se versiona: viaja con la Release.",
+    "regla": "Assets congelados del SCN (CUAD-0 §4 bis; v8.15b E4, v8.15.2): raw/SCN/bie/<serie>.csv (periodo,valor; la serie COMPLETA que publica el BIE, con la etiqueta INEGI en el periodo: «2025 p1» = preliminar) y raw/SCN/CSI_1xx.xlsx. UpdateSCN lee SOLO el asset (sello verde; sin asset o sha distinto aborta, salvo global rawwip, que descarga y lo declara: amarillo). Las anclas usan anio_referencia (= anioenigh); el marco 2027 (pastcast de SCN §1.2) parte del ultimo año congelado del asset (scn-celdas.md). Se reescriben SOLO con refrescar-scn.sh --congelar --todas en un PR de datos (CHANGELOG declara el delta). raw/SCN/ no se versiona: viaja con la Release.",
     "consulta": "2026-11-01T18:11:01Z",
     "anio_referencia": 2024,
     "anio_referencia_fuente": "scalar anioenigh de SIM.do",

@@ -33,8 +33,8 @@
 # Modo --congelar (v8.15b, sesion 2026-10-31; spec pasos 6-7, CUAD-0 §4 bis): hace lo mismo que --comparar (con --csi forzado) y ADEMAS
 # escribe los assets congelados en raw/SCN/: bie/<serie>.csv (periodo,valor; la SERIE COMPLETA tal como la publica el BIE, con la etiqueta
 # INEGI en el periodo, p. ej. «2025 p1» = preliminar: v8.15.2, decision de Ricardo 2026-11-01; los años posteriores al de referencia se
-# comparan aparte y se registran con su etiqueta; las anclas usan el año de referencia y el pastcast la ultima observacion congelada,
-# SIM.do §0.8 scn_pastcast_desde) para las series del inventario (--todas: las 525 de UpdateSCN; SIEMPRE --todas: UpdateSCN lee solo el asset) y los siete cuadros
+# comparan aparte y se registran con su etiqueta; las anclas usan el año de referencia y el marco 2027 parte del ultimo
+# año congelado del asset, scn-celdas.md) para las series del inventario (--todas: las 525 de UpdateSCN; SIEMPRE --todas: UpdateSCN lee solo el asset) y los siete cuadros
 # CSI_1xx.xlsx que lee SCN.ado, y los registra en 05_scripts/manifest.json bajo `scn_vintage`: fecha de consulta, año de referencia,
 # canal (API | exportación pública), y por serie variable, uso, sha256, n, etiqueta INEGI del último dato y vía; por cuadro CSI sha256 y
 # las celdas del inventario (cuadro, fila, columna, código, variable, valor del año de referencia). SCN.ado (UpdateSCN, SCNHogaresS14) y
@@ -444,7 +444,7 @@ if congelar:
     for k, v in man.items():
         if k == 'assets':
             man_new['scn_vintage'] = {
-                'regla': 'Assets congelados del SCN (CUAD-0 §4 bis; v8.15b E4, v8.15.2): raw/SCN/bie/<serie>.csv (periodo,valor; la serie COMPLETA que publica el BIE, con la etiqueta INEGI en el periodo: «2025 p1» = preliminar) y raw/SCN/CSI_1xx.xlsx. UpdateSCN lee SOLO el asset (sello verde; sin asset o sha distinto aborta, salvo global rawwip, que descarga y lo declara: amarillo). Las anclas usan anio_referencia (= anioenigh); el pastcast de SCN §1.2 parte de la ultima observacion congelada (SIM.do §0.8 scn_pastcast_desde = ultimo_congelado; alternativa anioenigh = FLAG). Se reescriben SOLO con refrescar-scn.sh --congelar --todas en un PR de datos (CHANGELOG declara el delta). raw/SCN/ no se versiona: viaja con la Release.',
+                'regla': 'Assets congelados del SCN (CUAD-0 §4 bis; v8.15b E4, v8.15.2): raw/SCN/bie/<serie>.csv (periodo,valor; la serie COMPLETA que publica el BIE, con la etiqueta INEGI en el periodo: «2025 p1» = preliminar) y raw/SCN/CSI_1xx.xlsx. UpdateSCN lee SOLO el asset (sello verde; sin asset o sha distinto aborta, salvo global rawwip, que descarga y lo declara: amarillo). Las anclas usan anio_referencia (= anioenigh); el marco 2027 (pastcast de SCN §1.2) parte del ultimo año congelado del asset (scn-celdas.md). Se reescriben SOLO con refrescar-scn.sh --congelar --todas en un PR de datos (CHANGELOG declara el delta). raw/SCN/ no se versiona: viaja con la Release.',
                 'consulta': fecha, 'anio_referencia': ANIO_REF, 'anio_referencia_fuente': anio_fuente,
                 'canal': 'API oficial del BIE con respaldo en la consulta pública de exportación (.aspx); la vía real de cada serie va en bie.<serie>.via',
                 'series_congeladas': len(reg_bie), 'bie': reg_bie, 'csi': reg_csi}
