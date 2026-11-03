@@ -16,6 +16,12 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+### Institucional — sesión 8.18a-1 (ritual, plantillas de prompt, política de borrado)
+
+- **`05_scripts/ritual.sh`.** El ritual del runbook §14 como script con paradas: merge (solo verifica), baile, sim, web, c32, precache, sidecar, release-commit, tag, check, listo. Cada paso es gate del siguiente y deja su salida en `diag-<v>-<fecha>/ritual-<n>-<paso>.out` y una línea en `ritual.log`; `--desde` reanuda. Nunca publica ni despliega. `05_scripts/correr-sim.sh` se versiona (antes, una copia por carpeta diag). Runbook §14 reescrito; la lista manual queda como anexo 14.A. Prueba: `ritual.sh v8.15.2 --desde check` → 11/11 sin escribir en `-datos`.
+
 ## [v8.15.2] — 2026-11-01
 
 ### Datos — `master/SCN.dta` nace del asset congelado completo (PR de datos `datos/scn-congelado-2024`; decisión 6 de v8.15b; baseline sigue v8.15.0)
