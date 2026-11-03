@@ -8,7 +8,8 @@ Esta carpeta contiene las normas vivas del Simulador Fiscal CIEP (arquitectura, 
 |---|---|
 | **Alumno o colega que va a construir su propio simulador** | `guia-simulador-bien-gobernado.md` — doce principios, cada uno con el incidente que lo originó y la ruta donde se ve funcionando aquí. |
 | **Investigador CIEP que va a usar el Simulador** | `03_help/manual-investigador-ciep.md` (fuera de esta carpeta) y después `arquitectura.md` §2. |
-| **Quien va a publicar una versión** | `CHANGELOG.md` (escribe la entrada primero), `runbook-deploys-ciep.md` (comandos), `versionado-y-git.md` §3 (qué número). |
+| **Quien va a publicar una versión** | `CHANGELOG.md` (escribe la entrada primero), `runbook-deploys-ciep.md` (comandos; el ritual hasta `--check` es `05_scripts/ritual.sh`, §14), `versionado-y-git.md` §3 (qué número). |
+| **Quien va a escribir el prompt de una sesión** | `prompts/README.md` y la plantilla que toque (`memo.md`, `implementacion.md`, `ritual.md`). |
 | **Quien tocó un archivo de `raw/` y el candado lo detuvo** | `runbook-actualizar-assets.md`. |
 | **Quien maneja credenciales del CIEP** | `politicas-institucionales.md` Parte I. |
 
@@ -43,6 +44,8 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 **`perf/`** — Perfiles de rendimiento fechados del flujo web «Calcular» (dónde se va el tiempo, qué es invariante al escenario, metas propuestas). Son medición, no norma ni decisión; el instrumento es `05_scripts/perfilar-web.sh`. Tiene su propio README.
 
 **`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` en esta carpeta, memo de Cuadratura firmado por Ricardo el 2026-10-31 en `CUAD-0-firma.md` (v3; manda donde difiera) e implementado en v8.15b; `metodo/fuentes/` guarda los PDF citados con sha256.
+
+**`prompts/`** — Plantillas de prompt de sesión (`memo.md`, `implementacion.md`, `ritual.md`) con los bloques fijos de las sesiones de octubre y noviembre de 2026 y un bloque `<<CONTENIDO>>` para lo específico. Todo prompt de sesión nace de una de ellas. Tiene su propio README.
 
 **`historico/`** — Documentos congelados: reportes fechados ya ejecutados, auditorías, la bitácora v1.0–v1.57 del documento de arquitectura. No se editan. Cada uno abre con una nota de cuándo se retiró, por qué y qué documento vigente lo reemplaza.
 
