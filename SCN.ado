@@ -419,7 +419,8 @@ quietly {
 	** C.9. Ahorro Nacional **
 	/* NOTA: AhorroN se calcula como residuo para garantizar consistencia aritmética
 	   con el Ingreso nacional disponible = PIN + ROW. 
-	   La discrepancia con IngDisp del BIE (~190 mil millones) se absorbe aquí. */
+	   Con el SCN 2024 congelado coincide al peso con IngDisp del BIE (serie 724037, CONC-1 §6.7);
+	   en vintages anteriores la discrepancia (~190 mil millones) se absorbía aquí. */
 	g double IngDispCalc = PIN + ROWRem + ROWProp + ROWTrans + CapFij
 	format IngDispCalc %20.0fc
 	label var IngDispCalc "Ingreso nacional disponible bruto (calculado)"
@@ -528,7 +529,8 @@ quietly {
 		_col(44) in y %20.0fc ROWTrans[`obs'] ///
 		_col(66) in y %7.3fc ROWTrans[`obs']/PIB[`obs']*100
 	/* NOTA: Se muestra PIN + ROW como Ingreso nacional disponible para garantizar consistencia aritmética.
-	   La diferencia con IngDisp del BIE (~190 mil millones) es discrepancia en datos del INEGI. */
+	   Con el SCN 2024 congelado la diferencia con IngDisp del BIE es 0 (serie 724037, CONC-1 §6.7);
+	   en vintages anteriores era ~190 mil millones, discrepancia en datos del INEGI. */
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Ingreso nacional disponible" ///
 		_col(44) in y %20.0fc PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs'] ///

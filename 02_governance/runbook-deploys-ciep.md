@@ -171,7 +171,7 @@ El sitio enlaza al Release tag, que debe existir primero.
 bash 05_scripts/publicar.sh vX.Y.Z
 ```
 
-Hace: gates 1-9 → Release en GitHub + **los 27 assets del data sidecar**
+Hace: gates 1-11 → Release en GitHub + **los 27 assets del data sidecar**
 (todos, en cada versión: el Release es inmutable y autocontenido, código +
 datos) → verificación SHA-256 post-Release → rsync al endpoint con pin de
 versión inyectado. **Es idempotente**: si falla a medias (p. ej. SSH),
@@ -186,7 +186,7 @@ mano o interrumpida:
 bash 05_scripts/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
 ```
 Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z --check`
-debe decir "los 8 gates pasaron" (el 8 consulta GitHub).
+debe decir "los 11 gates pasaron" (el 8 consulta GitHub; el 9 exige el sidecar de datos).
 
 **Modo fuente remota (desde v8.8.0).** `publicar.sh` ya no exige `raw/` local
 completo: la máquina de producción puede no tenerlo (los Releases son la fuente de
@@ -498,20 +498,28 @@ re-desplegar), no rollback.
 
 ---
 
-## 9. Fuentes vivas y reproducibilidad — decisión 2026-10-15
+## 9. Fuentes y reproducibilidad — SCN congelado desde v8.15b; el resto, en vivo
 
-`AccesoBIE`, `SCN` y `DatosAbiertos` bajan **en vivo** del BIE de INEGI, de los
-tabulados CSI y de la SHCP cada vez que corre `SIM.do`. INEGI y la SHCP revisan sus
-series (el PIB 2024 cambió entre el 22-sep y el 6-oct de 2026; la SHCP agrega meses),
-así que dos corridas en fechas distintas pueden dar `output.txt` distintos sin que el
-código cambie. **Se asume esa consecuencia:** el `output.txt` que se publica es el del
-INEGI/SHCP del día en que se corrió, y no se garantiza regenerarlo al byte después.
+**El SCN no se lee en caliente** (política de fuente SCN, firmada el 2026-10-30:
+`CUAD-0.md` §4 bis). `UpdateSCN` lee solo el asset congelado
+`raw/SCN/scn-congelado-<anio>.zip` (las 525 series BIE completas y los 7 cuadros CSI,
+con sha256, fecha de consulta y etiqueta INEGI en `manifest.json: scn_vintage`); sin
+asset aborta (salvo `rawwip`, que descarga y lo declara). Un cambio de INEGI entra solo
+por PR de datos (`refrescar-scn.sh`, `runbook-actualizar-assets.md` §2d).
+
+**Lo demás sigue en vivo** (decisión 2026-10-15): `DatosAbiertos` baja de la SHCP y
+`pibe-32.sh` baja las bases de PIBE/deflactor de las 32 (§13.1) cada vez que corren. La
+SHCP agrega meses e INEGI revisa sus series, así que dos corridas en fechas distintas
+pueden dar `output.txt` distintos sin que el código cambie. **Se asume esa
+consecuencia** para esas fuentes: el `output.txt` que se publica es el del día en que
+se corrió, y no se garantiza regenerarlo al byte después.
 
 Entre v8.2 y v8.9 existió un mecanismo de "fuentes congeladas" (`global fuentes`,
 asset `fuentes-AAAA-MM-DD.zip`, `05_scripts/ancla-reproducibilidad.json`, modo
 `test-maquina-virgen.sh --reproducibilidad`, Gate 9 de `publicar.sh`) que fijaba esas
 descargas a una fecha para reproducir el ancla publicada. Se retiró por decisión de
-Ricardo (minimalismo): el motor siempre descarga en vivo; el asset
+Ricardo (minimalismo); el SCN volvió a congelarse en v8.15b por otro camino (asset del
+manifest, no `global fuentes`). El asset
 `fuentes-2026-10-06.zip` sigue en la Release v8.9.0 solo como histórico. Lo que sí se
 conserva de aquella etapa, porque mueve números con independencia de las fuentes:
 
@@ -723,6 +731,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `publicar.sh` Gate 8 (Release remota completa) | **sí** (solo lectura con `gh` y el token del workflow) | — | red, sin descarga; si la Release aún no existe, pasa |
 | `publicar.sh` Gate 9 (corte de datos citable existe y cuadra, §4c) | **no** | `--empaquetar-datos` + `--check` en el worktree de publicación, tras `SIM.do` + `contrato-32.sh` | exige `users/ricardo/` |
 | `publicar.sh` Gate 10 (`CITATION.cff` = manifest) | **sí** | — | estático (`--citation` lo regenera) |
+| `publicar.sh` Gate 11 (`baseline` declarado y existe como tag; desde v8.15.0, `CUAD-0.md` §4 ter) | **sí** | — | estático |
 | Corridas: `SIM.do`, `Web.Stata.do`, `perfilar-web.sh`, `compuertas-entidad.sh` | **no** | worktree de publicación | Stata |
 | Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
 | Identidad NTA por individuo (`test-nta-identidad.sh`, NTA-1/1b/1c): sobre `users/<id>/NTA/nta-persona.dta`, identidad **sin ancla** `C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0` por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, residual = `S_ajuste` declarado), Σ intra-hogar = 0 nacional y por hogar, Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla multiplicativa Σ S = B.8n), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31, Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759, Σ `YA_base` = B.2n + ⅓B.3n + D.4 neto; escalares de `SCN.ado`), JSON por grupo = base; y, sin Stata, conservación de flujo en todo nodo del Sankey v2.1 (`SankeyNTA/sankey-v2-grupoedad.json`, nodos del contrato, conteo nodos/enlaces) | **no** (la mitad Stata exige `master/SCN.dta` y la base por persona, que no están en git; la mitad Python se puede correr con `--sin-stata` sobre una corrida local) | después de `SIM.do` hasta §3 (o de `NTA.do` suelto), antes de abrir el PR: `bash 05_scripts/test-nta-identidad.sh` | Stata + `users/` |
@@ -884,7 +893,8 @@ Sale con 0 solo si hay 32/32 bases frescas con sello.
 tarda ≈ 7 s (baja las tablas BIE por área, una vez por sesión); las demás 1–3 s (BISE ×2 + INPC);
 la pausa de 5 s entre entidades es el 70 % del tiempo.
 
-**Fuentes vivas (D3a):** cada corrida consulta a INEGI; no se congela nada. Lo que se declara es la fecha de
+**Fuentes vivas (D3a), solo para las bases de PIBE/deflactor de las 32** (el SCN nacional está congelado desde
+v8.15b, §9): cada corrida de `pibe-32.sh` consulta a INEGI y no se congela. Lo que se declara es la fecha de
 consulta de cada fuente (en el sello y en la tabla): es lo que distingue un vintage de otro. Las 32 se
 regeneran juntas para que el vintage sea uniforme; si INEGI revisó algo, aparece en el diff de las bases previas.
 

@@ -49,12 +49,12 @@ Construye el ingreso y las variables fiscales por persona y fuente a partir de l
 | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello | Fuente de la fila |
 |---|---|---|---|---|---|---|
 | ENIGH 2024, `ingresos.dta` y resto | INEGI | 2024 (`enigh_vintage` del manifest; asset `2024.zip`, sha256 `407dd6df…`) | `clave`, `ing_anual`, `factor` (Σ = 130,325,969 personas; 308,598 registros) | `folioviv foliohog numren id_trabajo clave`; colapsa a `folioviv foliohog numren id_trabajo` | verde | `manifest.json`; `H l.557–562`; `I` |
-| CSI `CSI_103/106/109/112/115/118/121` = S.1, S.11, S.12, S.13, S.14, S.15, S.2 | INEGI, base 2018, serie 2003–2024, «2024 revisada» | **El motor no lo registra.** Archivos del 16-oct-2026 en `-datos`; `CSI_115` sha256 `3b981612…`, `CSI_103` `c28d5607…`. No es asset: vive en `raw/temp/SCN/` | Filas de `C1 §1.2` | cuadro + fila + columna (AR U/A, AS R/P) | **amarillo** | `S l.2128–2133`; `C1` encabezado; (no en repo) sha |
-| BIE, series SCN (`master/SCN.dta`) | INEGI, vía `AccesoBIE` | **El motor no lo registra.** Archivo del 28-oct-2026, sha256 `3bdc3a02…`; sin etiqueta preliminar/revisada. PIB 33,667.023 vs B.1b CSI 33,582.899 (84.901 en NNI) | `PIB`, `RemSalSS`, `ExNOp*`, `ROW*`, `CapFij` | `anio` | **amarillo** | `C1 §1.2`; (no en repo) sha |
+| CSI `CSI_103/106/109/112/115/118/121` = S.1, S.11, S.12, S.13, S.14, S.15, S.2 | INEGI, base 2018, serie 2003–2024, «2024 revisada» | Hoy lo registra el manifest y manda su sha256 (`scn_vintage.csi`, asset `raw/SCN/scn-congelado-2024.zip`; v8.15b E4 y v8.15.2): `CSI_115` `f0e9fecf…`, `CSI_112` `3b981612…`, `CSI_103` `c28d5607…`. En v8.14.0 no lo registraba: archivos del 16-oct-2026 en `raw/temp/SCN/` | Filas de `C1 §1.2` | cuadro + fila + columna (AR U/A, AS R/P) | **amarillo** | `S l.2128–2133`; `C1` encabezado; (no en repo) sha |
+| BIE, series SCN (`master/SCN.dta`) | INEGI, vía `AccesoBIE` | Hoy lo registra el manifest por serie (`scn_vintage.bie.<serie>`: sha256, fecha de consulta, etiqueta INEGI, vía). En v8.14.0 no: archivo del 28-oct-2026, sha256 `3bdc3a02…`, sin etiqueta preliminar/revisada. PIB 33,667.023 vs B.1b CSI 33,582.899 (84.901 en NNI) | `PIB`, `RemSalSS`, `ExNOp*`, `ROW*`, `CapFij` | `anio` | **amarillo** | `C1 §1.2`; (no en repo) sha |
 | Población a mitad de año | CONAPO, conciliación 1970–2019 y proyecciones 2020–2070 (pry23, 11-sep-2023), redistribuida por DGIS | pry23; asset `Poblacion_Estimada_Mitad_Anio.zip`, sha256 `e77873cd…` | `poblacion` | `anio edad sexo entidad` | verde | `manifest.json`; `Poblacion.ado` l. 650–678 |
 | LIF / PEF | SHCP, Paquete Económico | Vintage del motor | OyE 1,601.824 (LIF 2024); τ⁺ (PEF) | `anio` + división | verde | `C1 §1.2` línea 17, `§6.9` |
 
-**Brecha frente a §4 bis y a la plantilla:** CSI y BIE no están congeladas ni registran vintage, y `manifest-datos.json` registra solo `enigh_vintage` y `data_updated`. Es lo primero que cierra 8.15b.
+**Brecha frente a §4 bis y a la plantilla (estado v8.14.0):** CSI y BIE no estaban congeladas ni registraban vintage, y `manifest-datos.json` registraba solo `enigh_vintage` y `data_updated`. **Cerrada** en v8.15b (E4) y completada en v8.15.2 (las 525 series): `manifest.json: scn_vintage`.
 
 ## §3 Procedimiento
 
@@ -335,7 +335,7 @@ Regla de la firma §D: ninguna frase del método nace fuera del repo; lo citado 
 
 ## Δ esperado de 8.15b
 
-Con los defaults de §4 y `oye_en_hub=on`. Nada se corrió: es aritmética de las tablas.
+Con los defaults de §4 y `oye_en_hub=on`. Nada se corrió: es aritmética de las tablas, previa a la firma (que cambió `oye_en_hub` y sacó D.442 de YA). **Superada:** los Δ reales de v8.15.0 (hub 85.733 → 82.405 % del PIB) están en el CHANGELOG `[v8.15.0]` y en `NTA/index.php`.
 
 | Agregado publicado | v8.14.0 | 8.15b | Dirección |
 |---|---:|---:|---|

@@ -95,13 +95,11 @@ Un cuerpo bien escrito responde tres cosas:
 
 *Qué aprendes en esta sección:* cómo trabaja hoy el Simulador Fiscal CIEP con un solo desarrollador, y cómo cambia ese flujo cuando entre el primer investigador colaborador.
 
-### 2.1 Realidad actual: un solo desarrollador trabaja directo sobre `master`
+### 2.1 Realidad actual: todo entra a `master` por pull request
 
-Hoy el Simulador Fiscal CIEP tiene un único desarrollador activo: el investigador principal. Bus factor = 1. En este escenario la práctica del proyecto es trabajar directamente sobre la rama principal, llamada `master` (una rama de Git es una línea de desarrollo independiente; `master` es la rama oficial del proyecto, la que está sincronizada con GitHub y la que produce versiones publicadas).
+Hoy el Simulador Fiscal CIEP tiene un único desarrollador activo: el investigador principal (bus factor = 1). Aun así, **nada entra directo a `master`** (la rama oficial del proyecto, la que está sincronizada con GitHub y la que produce versiones publicadas): desde octubre de 2026 tiene branch protection, no hay push directo, y todo cambio entra por pull request con los nueve checks de `gates-sin-stata` en verde (`runbook-deploys-ciep.md` §10.1 y §11). Con una sola persona el pull request no es para pedir revisión: es el registro (qué cambió, por qué, evidencia de la corrida) y el punto donde corren los gates.
 
-Para un proyecto con un solo desarrollador, esto es lo apropiado. Los modelos de ramificación complejos que usan equipos grandes — donde varias personas trabajan en paralelo en partes distintas y necesitan reservar espacios separados antes de integrar — añaden costo de coordinación sin beneficio cuando solo hay una persona que coordina consigo misma. La disciplina aquí no está en la estructura de ramas; está en la calidad de los commits, en `git diff` antes de `git add`, y en la verificación pre-publicación.
-
-**Excepción dentro de la realidad actual.** Una rama de trabajo (rama temporal donde elaboras un cambio antes de integrarlo a `master`) tiene sentido cuando el cambio es grande, no compila o no corre durante varios commits intermedios, o tiene riesgo. La regla operativa es simple: la rama de trabajo se crea, se trabaja en ella, se integra a `master` con commits limpios, y se borra. No se acumulan ramas zombi en el remoto.
+**Ramas de trabajo.** Todo cambio nace en una rama (`sesion/<punto>`, `fix/…`, `datos/…`), en un worktree de sesión (`runbook-deploys-ciep.md` §10.2); la rama se borra al fusionar el pull request. No se acumulan ramas zombi en el remoto. La disciplina sigue en la calidad de los commits, en `git diff` antes de `git add` y en la verificación pre-publicación.
 
 ### 2.2 Qué es un pull request
 
@@ -111,7 +109,7 @@ El valor del pull request no es técnico — `git merge` puede hacer el mismo tr
 
 ### 2.3 Cuándo se activa el flujo de pull request
 
-El flujo de pull request se activa el día en que el Simulador Fiscal CIEP tiene **más de una persona** tocando el Código del Simulador: el investigador principal más al menos un investigador colaborador. A partir de ese momento, ningún cambio entra directamente a `master`; el flujo es:
+El flujo de pull request ya está activo (§2.1). Lo que cambia el día en que el Simulador Fiscal CIEP tenga **más de una persona** tocando el Código del Simulador es la revisión: a partir de entonces, otro investigador revisa el diff antes de integrar. El flujo:
 
 1. **Rama de trabajo.** El autor del cambio crea una rama de trabajo a partir de `master`, con un nombre descriptivo (`actualizacion-pef-2027`, `arregla-iva-decil-x`, etc.).
 2. **Trabajo y commits.** Trabaja en esa rama, commitea siguiendo las convenciones de §1.
@@ -140,8 +138,8 @@ El Simulador Fiscal CIEP usa un esquema de tres números: `mayor.menor.parche` (
 
 | Número | Qué representa | Ejemplo del propio repo |
 |---|---|---|
-| **Mayor** | Cambio institucional o metodológico de fondo. Rompe comparabilidad de resultados con la versión anterior. | `v7 → v8`. v7 fue la etapa pre-governance del Simulador como proyecto del investigador principal, con conocimiento metodológico tácito y unipersonal. v8 es la primera versión institucional citable, con governance documentada, Catálogo de datos asociados, y arquitectura de cuatro capas. |
-| **Menor** | Cambios aditivos: datos anuales nuevos, módulo nuevo, refactorización compatible. Los resultados siguen siendo comparables con la versión anterior dentro del mismo mayor. | `arquitectura-y-bitacoras.md v1.0 → v1.1`. La v1.1 agregó el sub-canal Stata público sin modificar el resto del documento. |
+| **Mayor** | Cambio de tema de la versión (institucional o metodológico de fondo). No dice si los números comparan: eso lo declara `baseline` (§3.2). | `v7 → v8`. v7 fue la etapa pre-governance del Simulador como proyecto del investigador principal, con conocimiento metodológico tácito y unipersonal. v8 es la primera versión institucional citable, con governance documentada, Catálogo de datos asociados, y arquitectura de cuatro capas. |
+| **Menor** | Cambios aditivos: datos anuales nuevos, módulo nuevo, refactorización compatible. La comparabilidad de los resultados la declara `baseline` (§3.2), no este número. | `arquitectura-y-bitacoras.md v1.0 → v1.1`. La v1.1 agregó el sub-canal Stata público sin modificar el resto del documento. |
 | **Parche** | Corrección puntual sobre versión publicada y citada. Una errata, un dato mal capturado, un correo con typo. El contenido sustantivo no cambia. | Si en `politicas-institucionales.md v1.1` se detecta que un correo institucional está mal escrito, la corrección sale como `v1.1.1`: solo arregla el dato erróneo, sin cambiar el resto de la política. |
 
 **Por qué tres números y no dos o cuatro.** Tres separan los tres tipos de cambio relevantes para el Simulador (de fondo, aditivo, errata) sin sobrediscriminar. Cuatro (estilo `v8.1.0.3`) es ruido sin ganancia para un proyecto a esta escala. Dos (estilo `v8.1`) no permite distinguir entre "agregamos una funcionalidad" y "corregimos una errata sobre versión publicada", que es justamente la distinción que el lector que cita al Simulador necesita ver.
@@ -150,9 +148,10 @@ El Simulador Fiscal CIEP usa un esquema de tres números: `mayor.menor.parche` (
 
 Reglas concretas, con casos reales del proyecto.
 
+**La numeración es temática; la comparabilidad la declaran `baseline` y `data_updated`** *(redacción de 8.18a-2 con lo decidido por Ricardo; para su revisión)*. El dígito mayor cambia con el tema de la versión, no con la comparabilidad de los números. Si los números publicados dejan de comparar con versiones anteriores, lo dice el campo `baseline` del manifest (el tag desde el que comparan; Gate 11 de `publicar.sh`, `CUAD-0.md` §4 ter) con su línea en el CHANGELOG; si cambian los datos, lo dice `data_updated`. Caso real: v8.15.0 re-ancló `Households` al sector S.14 —el cambio de armonización ENIGH↔Cuentas Nacionales que antes se ponía como ejemplo de `v8 → v9`— y fue *menor*: lo que avisa al lector es `baseline = v8.15.0` y la línea «a partir de v8.15.0 los números no comparan con ≤ v8.14.0».
+
 **El número mayor sube cuando:**
 
-- Cambia la metodología de fondo del Simulador y los resultados ya no son comparables con la versión anterior. Ejemplo prospectivo: si en algún momento se cambia el procedimiento de armonización ENIGH↔Cuentas Nacionales y los deciles cambian, eso es `v8 → v9`.
 - Cambia el marco institucional del producto. Ejemplo real: `v7 → v8`. v7 fue cuerpo de archivos en la computadora del investigador principal con conocimiento metodológico tácito y unipersonal; v8 es producto con governance, Catálogo de datos asociados, y reproducibilidad documentada. La metodología no cambió de fondo; el producto institucional sí.
 
 **El número menor sube cuando:**
@@ -167,7 +166,7 @@ Reglas concretas, con casos reales del proyecto.
 - Se corrige un error puntual en una versión publicada y citada. Sin cambio de alcance, sin contenido nuevo, sin reformulación.
 - Ejemplo: si `politicas-institucionales.md v1.1` (publicada el 2026-05-14) contiene un correo institucional con un typo, la corrección sale como `v1.1.1`. Si en cambio el cambio agrega una sección nueva sobre un rol que aún no se había considerado, ese ya no es parche; es menor (`v1.2`).
 
-**Cómo decides cuál es cuál cuando estás dudando.** Pregunta primero: *¿alguien que cite la versión anterior tiene que cambiar la cita?* Si la respuesta es sí (porque los números de los resultados cambiaron, la metodología cambió, el alcance cambió), es mayor. Si la respuesta es no, pero hay contenido nuevo que querrías documentar, es menor. Si la respuesta es no y solo arreglas algo mal escrito, es parche.
+**Cómo decides cuál es cuál cuando estás dudando.** Primero, aparte del número: *¿los números publicados dejan de comparar con la versión anterior?* Si sí, se mueve `baseline` (y, si cambiaron los datos, `data_updated`), con su línea en el CHANGELOG. Después, el número: si cambia el tema de la versión, es mayor; si hay contenido nuevo que querrías documentar, es menor; si solo arreglas algo mal escrito, es parche.
 
 ### 3.3 Crear la etiqueta de versión y la publicación en GitHub
 
@@ -203,9 +202,9 @@ Una **publicación** (en inglés *release*) de GitHub es el empaque oficial de u
 
 2. **Crea la publicación en GitHub apuntando a la etiqueta** y sube los assets de datos correspondientes.
 
-   En la interfaz web del Código del Simulador en GitHub: *Releases → Draft a new release → Choose a tag: v8.1*. En el cuerpo de la publicación va el changelog de la versión: qué cambió respecto a la versión anterior, agrupado por categoría — cambios metodológicos que afectan resultados, cambios aditivos, correcciones, cambios técnicos. El changelog del cuerpo de la publicación replica el del `CHANGELOG.md` del repo; no son fuentes independientes.
+   La crea `bash 05_scripts/publicar.sh v8.1`, apuntando a la etiqueta, con el cuerpo tomado del `CHANGELOG.md` (no son fuentes independientes) y **todos** los assets del Catálogo de datos asociados, verificando su SHA-256 (`runbook-deploys-ciep.md` §2–§3). **Nunca se crea a mano** (`gh release create`, botón *Draft a new release*): eso deja una publicación sin assets (incidente 2026-10-05: v8.6.1, v8.7.0 y v8.7.1); si pasó, `publicar.sh v8.1 --solo-assets` la repara.
 
-   Si la versión incluye archivos pesados de datos (los `.xlsx` de `raw/PEFs/` y demás insumos que viven separados del Código del Simulador), se suben aquí como assets de la publicación. El `05_scripts/manifest.json` del Catálogo de datos asociados se actualiza, en el commit que cierra la versión, con las huellas digitales SHA-256 de los assets subidos. Una publicación con assets es lo que hace al Simulador Fiscal CIEP reproducible por terceros: el Catálogo lleva las huellas digitales, los assets viven en la URL inmutable de la publicación, cualquiera puede reconstruir bit por bit el estado de los datos en esa versión.
+   Si la versión incluye archivos pesados de datos (los `.xlsx` de `raw/PEFs/` y demás insumos que viven separados del Código del Simulador), `publicar.sh` los sube como assets de la publicación. El `05_scripts/manifest.json` del Catálogo de datos asociados se actualiza, en el commit que cierra la versión, con las huellas digitales SHA-256 de los assets subidos. Una publicación con assets es lo que hace al Simulador Fiscal CIEP reproducible por terceros: el Catálogo lleva las huellas digitales, los assets viven en la URL inmutable de la publicación, cualquiera puede reconstruir bit por bit el estado de los datos en esa versión.
 
    Una vez publicada, **la publicación es inmutable**. No se borra, no se edita el changelog, no se reemplazan los assets. Si descubres un error después, publicas `v8.1.1` con la corrección y una nota explícita en su changelog; no editas `v8.1`.
 
@@ -223,7 +222,7 @@ Una **publicación** (en inglés *release*) de GitHub es el empaque oficial de u
 
 Reescribir historia (en inglés *history rewrite*) significa modificar commits que ya existen en el repositorio. Las herramientas estándar son `git filter-repo`, `git rebase --interactive`, y `git lfs migrate import`. El resultado típico: los commits afectados (y todos sus descendientes) cambian de `SHA`. Lo que era el commit `2f46d92` puede convertirse en `a8e8be5` con el mismo contenido sustantivo pero historia limpia.
 
-**Ejemplo concreto previsto para este proyecto:** purgar de la historia Git los binarios pesados de `raw/PEFs/*.xlsx` (más manuales borrados, carpetas obsoletas, y otros objetos muertos que abultan el `.git` a 5.1 GB). El plan es ejecutar `git filter-repo --invert-paths` con un patrón de purga, lo que reduce el `.git` a alrededor de 250 MB y republica los binarios como assets de la publicación `v7.0` en GitHub. Resultado: `git clone` fresco pasa de tardar 10–15 minutos a tardar 1 minuto.
+**Ejemplo concreto de este proyecto (ejecutado en mayo de 2026, §4.2):** purgar de la historia Git los binarios pesados de `raw/PEFs/*.xlsx` (más manuales borrados, carpetas obsoletas, y otros objetos muertos que abultan el `.git` a 5.1 GB). El plan es ejecutar `git filter-repo --invert-paths` con un patrón de purga, lo que reduce el `.git` a alrededor de 250 MB y republica los binarios como assets de la publicación `v7.0` en GitHub. Resultado: `git clone` fresco pasa de tardar 10–15 minutos a tardar 1 minuto.
 
 ### 4.2 Cuándo es seguro
 
@@ -231,7 +230,7 @@ La reescritura de historia es **segura mientras bus factor = 1**: hay un único 
 
 En esa ventana, reescribir historia no rompe nada porque nadie tiene una copia paralela que se desincronice. El día que entra el primer investigador colaborador (cuando alguien más empieza a clonar y trabajar en serio sobre el Código del Simulador), **la ventana se cierra**. Reescribir historia compartida después de eso requeriría coordinar con todos los que tienen clones para que reseteen su rama local, lo cual es operativamente costoso y propenso a errores que pierden trabajo de gente.
 
-**Por eso el rewrite del Simulador Fiscal CIEP se planea para antes** de incorporar al primer investigador colaborador. Está en la cola operativa, esperando a que se rote el token del Banco de Indicadores Económicos (BIE) de INEGI; una vez rotado, el rewrite se ejecuta en una sesión dedicada con backup integral previo (un `git clone --mirror` en disco externo).
+**El rewrite del Simulador Fiscal CIEP ya se hizo**, en mayo de 2026 y dentro de esa ventana, tras rotar el token del Banco de Indicadores Económicos (BIE) de INEGI: purgó las credenciales expuestas y los binarios pesados de la historia y reescribió todos los SHAs (por eso `2f46d92` y los SHAs citados en documentos de esa época ya no existen; Parte II). No hay otro en la cola; si alguna vez hiciera falta, va en una sesión dedicada con backup integral previo (un `git clone --mirror` en disco externo).
 
 ### 4.3 Por qué es operación dedicada y no rutina
 
@@ -332,7 +331,7 @@ Sin caso negativo asociado, una regla nueva puede romper algo y el script no lo 
 
 ### 6.5 Nota de alcance: vocabulario interno del script
 
-El script en su forma actual (`05_scripts/verify_gitignore.sh`) usa internamente la palabra "canónico" en algunos comentarios (define un *"set canónico de paths que DEBEN y NO deben estar ignorados"*). El Glosario CIEP eliminó "canónico" del vocabulario de prosa institucional. La descripción correcta en este documento es **conjunto de referencia**. La limpieza del vocabulario interno del script es pendiente menor separado y no afecta su funcionalidad: en el momento del primer commit del script, las 55 aserciones pasan en verde.
+El script (`05_scripts/verify_gitignore.sh`) define un *"set canónico de paths que DEBEN y NO deben estar ignorados"*. El glosario de mayo de 2026 prohibía «canónico»; el uso vigente (runbook §10.1: «datos canónicos» de `-datos`) lo ignoró, y al fundir el glosario en `README.md` §Vocabulario (8.18a-2) la prohibición se retiró. No hay limpieza pendiente.
 
 ---
 
