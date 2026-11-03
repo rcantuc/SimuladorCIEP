@@ -734,7 +734,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 
 | Gate de sesión | Qué exige | Cómo se corre |
 |---|---|---|
-| `gate-numeros.sh` | `output.txt` byte-idéntico al baseline y los 10 sankeys ≤ 1e-9 | sobre `users/ricardo` de una corrida completa (`correr-sim.sh` de la carpeta diag) |
+| `gate-numeros.sh` | `output.txt` byte-idéntico al baseline y los 10 sankeys ≤ 1e-9 | sobre `users/ricardo` de una corrida completa (`05_scripts/correr-sim.sh`; en el ritual, el paso `sim` de `ritual.sh`) |
 | Dos caminos | `output.txt` y los 11 JSON byte-idénticos entre una corrida con `master/SCN.dta` enriquecido y otra con las 18 series S.14 borradas (`strip-s14.do`) | dos worktrees desechables, `comparar.py` |
 | `test-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **47/47 llaves** (46 + `CUADRATURA`, v8.15.0; v8.15.1: `Web.Stata.do` §7.3 carga `master/<anioenigh>/cuadratura.do`) de `output.txt` como cadena | `bash 05_scripts/test-web-batch.sh --root <worktree con la corrida>` (~2 min) |
 | `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
@@ -894,20 +894,58 @@ de sesión al de publicación: `rsync -a master/PIBDeflactor*.{dta,meta} <worktr
 
 ---
 
-## 14. Lecciones del ritual v8.14.0
+## 14. El ritual de publicación: `05_scripts/ritual.sh` (desde 8.18a-1)
 
-Lo que mordió el 2026-10-30, en el orden en que importa:
+El ritual que v8.14.0–v8.15.2 corrieron a mano, un comando por mensaje, es un script con paradas: cada paso es gate del siguiente y, si falla, el script se detiene con la razón, la salida completa y el comando para reanudar. Corre en el **worktree de publicación** (`~/CIEP_Simuladores/SimuladorCIEP-datos`) y escribe la evidencia en `~/CIEP_Simuladores/diag-<v>-<fecha>/`. **No publica**: nunca llama a `publicar.sh <v>` sin `--check` o `--empaquetar-datos`, ni a `publicar-vps.sh`. Eso lo corre Ricardo cuando el script imprime «listo para publicar».
 
-1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo.
-2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano.
-3. **Un comando por mensaje hasta `--check` verde.** Hasta entonces no se encadena nada: cada salida se lee antes del siguiente paso.
+```bash
+# tras el merge del PR (el hash COMPLETO, copiado literal: lección 2)
+bash 05_scripts/ritual.sh v8.15.3 --hash <40 hex>
+# reanudar donde paró (la evidencia es la diag-v8.15.3-* más reciente, aunque haya cambiado el día)
+bash 05_scripts/ritual.sh v8.15.3 --desde web
+# solo los gates finales sobre lo que ya está hecho (no recalcula nada; 10 s)
+bash 05_scripts/ritual.sh v8.15.3 --desde check
+```
+
+| # | Paso | Qué hace | Gate | Evidencia |
+|---|---|---|---|---|
+| 1 | `merge` | **no fusiona**: `git fetch` y compara | `origin/master` = `--hash`; árbol limpio | `ritual.hash` |
+| 2 | `baile` | Dropbox `git switch --detach <hash>`; `-datos` `checkout master` + `pull --ff-only` | HEAD = hash; árboles limpios | — |
+| 3 | `sim` | `05_scripts/correr-sim.sh` (~33 min) | «end of do-file»; 0 `r(#);`; `commit.txt` = hash sin cambios locales; `gate-numeros` VERDE (ROJO solo con `--baseline-nuevo`, que exige `manifest.baseline` = `<v>` y que `[<v>]` del CHANGELOG lo declare) | `01-ritual/` |
+| 4 | `web` | `test-web-batch.sh --root <clon>` | N/N llaves, con N = las llaves de `output.txt` (no se fija en 47) | `02-test-web-batch/` |
+| 5 | `c32` | `contrato-32.sh --evidencia c32 --refs 01-ritual` (~42 min) | PASÓ y 32 `meta.json` | `c32/` |
+| 6 | `precache` | `Precache` suelto, solo si `users/<id>/cache/sello.txt` ≠ manifest (`data_updated`, `baseline`) | sello = manifest | `04-precache/` |
+| 7 | `sidecar` | `publicar.sh <v> --empaquetar-datos` | `manifest-datos.json` con el commit del hash | `users/_sidecar/<v>/` |
+| 8 | `release-commit` | verifica, no edita | `## [<v>]` sin `[Unreleased]` huérfano; manifest `version`/`release_tag`/`release_url_prefix`; `CITATION.cff` con `<v>` y `data_updated`. Si falta algo, aborta con la receta del PR corto | — |
+| 9 | `tag` | `git tag -a <v> <hash> -m "<v> — <título del CHANGELOG>"` y push; pregunta en `/dev/tty` salvo `--si` | el tag local y el de `origin` apuntan al hash; si ya existía en otro commit, **no lo mueve** | — |
+| 10 | `check` | `publicar.sh <v> --check` | exit 0 y «los N gates pasaron» (hoy 11/11; el Gate 8 avisa que la Release aún no existe) | — |
+| 11 | `listo` | imprime «listo para publicar: `publicar.sh <v>` y `publicar-vps.sh <vN.M>`» (`vN.M` sale de la versión) | — | — |
+
+- **Registro.** Cada paso anota inicio, fin, duración y resultado en `<evidencia>/ritual.log` y guarda su salida completa (sin filtrar, también en la terminal) en `ritual-<n>-<paso>.out`. Los resúmenes y la única pregunta, antes de empujar el tag, van a `/dev/tty` (a stderr si no hay terminal).
+- **Opciones.** `--desde`/`--hasta` aceptan nombre o número de paso. `--root` y `--dropbox` (o `SIM_DROPBOX`) apuntan a otros clones. `--evidencia` fija la carpeta. `--mensaje` sustituye el mensaje del tag. `--si` no pregunta antes del tag: lo usan las sesiones nocturnas sin terminal; sin `--si` y sin tty, el paso falla sin crear nada.
+- **Hash.** `merge`, `baile` y `tag` exigen `--hash` de 40 hex o el `ritual.hash` que dejó `merge`. Los demás pasos, sin ninguno de los dos, usan el HEAD del clon y lo dicen en la primera línea.
+- **Candado.** `sim`, `web`, `c32` y `precache` no arrancan con otra corrida viva (mismo `pgrep` que el candado de `publicar.sh`). `sim` conserva una `01-ritual` previa como `01-ritual.previa-<hora>`.
+- **Lo que no hace.** Fusionar, editar `master`, publicar, desplegar, decidir un baseline nuevo.
+- **Probado (8.18a-1, sin Stata).** `--desde check` sobre la evidencia de v8.15.2 da 11/11 sin escribir nada en `-datos`. `merge`, `precache` (sello = manifest), `release-commit` y `tag` (idempotente: el tag ya existía) pasaron contra el estado real. `release-commit` y `tag` fallan como se espera para una versión sin release commit y sin tty. Los pasos `baile`, `sim`, `web`, `c32`, `sidecar` y la rama de `Precache` suelto no se ejercieron: la primera corrida real es la del siguiente release.
+
+### 14.1 Lecciones del ritual (v8.14.0–v8.15.2)
+
+Lo que mordió, en el orden en que importa. El script cubre 1–4 y 8; las demás siguen siendo criterio:
+
+1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo. (`baile`, `sim`)
+2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano. (`ritual.sh` exige 40 hex y verifica el tag en `origin`)
+3. **Un paso a la vez hasta `--check` verde.** Cada salida se lee antes del siguiente paso; el script se detiene en el primer rojo y no encadena nada después.
 4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere». `gate-numeros.sh` igual: sin archivos da NO EVALUABLE (exit 2), no «los números cambiaron».
 5. **Minor = deployment nuevo (Gate 6) y tarda ~1 h** por la copia de `master/`. Se reserva el tiempo y no se interrumpe (§4b).
 6. **No filtrar la salida de scripts interactivos.** Desde v8.15a la pregunta del cutover y la línea de rollback van a `/dev/tty`, pero la regla sigue: un `| grep` puede esconder cualquier otro aviso.
 7. **Todo cambio en `output.do` exige `test-web-batch.sh` verde antes de cerrar la rama** (v8.15.1). v8.15.0 añadió la llave `CUADRATURA` con diez escalares que solo calcula `Households.do`; `gate-numeros.sh` (batch) quedó verde y nadie corrió el web: `publicar-vps.sh` v8.15 revirtió en la Fase 6 por `CuadYLPIB not found` r(111). Lo que `output.do` imprime lo tienen que producir los dos flujos; lo que es invariante al usuario se escribe como producto de `master/` (hoy `master/<anioenigh>/cuadratura.do`) y se entra a `MOTOR_LECTURAS_VPS` (§12).
-8. **Release commit antes del tag, en el mismo PR del fix** (v8.15.1). El PR del hotfix lleva ya `CHANGELOG [vX.Y.Z]`, `manifest.json` (`version`, `release_tag`, `release_url_prefix`) y `CITATION.cff` (`publicar.sh --citation`); así el hash que se mergea es el que se tagea y `--check` no encuentra un manifest a medias. `baseline` no se toca en un patch que no mueve números.
+8. **Release commit antes del tag, en el mismo PR del fix** (v8.15.1). El PR del hotfix lleva ya `CHANGELOG [vX.Y.Z]`, `manifest.json` (`version`, `release_tag`, `release_url_prefix`) y `CITATION.cff` (`publicar.sh --citation`); así el hash que se mergea es el que se tagea y `--check` no encuentra un manifest a medias. `baseline` no se toca en un patch que no mueve números. (`release-commit`)
+9. **`gh pr merge --delete-branch` borra también el worktree local de la rama** (v8.15.2), carpeta incluida, con sus `raw/` y `master/` gitignored. Lo que haya que conservar de un worktree (un asset congelado, un `.dta` reconstruido) se copia a la carpeta diag **antes** del merge.
+10. **Dos PR seguidos: el segundo queda `BEHIND`** (rama protegida estricta). `gh pr update-branch <n>`, esperar los checks y fusionar; nunca `--admin`. El hash del ritual es el del último merge.
 
-**El ritual, en orden (v8.15.1; un paso a la vez, cada paso es gate del siguiente):** merge del PR → `-datos` al hash del merge (`git fetch && git checkout --detach <hash>`) → `correr-sim.sh` completo a `diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0) → **`test-web-batch.sh --root -datos`** (47/47 llaves, web = batch byte a byte; desde v8.15.1 va aquí, antes del contrato) → `Precache` suelto solo si el sello difiere del manifest → `contrato-32.sh --refs <01-ritual>` → PASÓ → `publicar.sh vX.Y.Z --empaquetar-datos` → `git tag -a vX.Y.Z <hash literal>` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
+### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
+
+Para depurar un paso o si el script no está disponible en el clon (versiones anteriores a 8.18a-1): merge del PR → `-datos` al hash del merge (Dropbox `git switch --detach <hash>`; `-datos` `git checkout master && git pull --ff-only`) → `bash 05_scripts/correr-sim.sh <-datos> diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0; `commit.txt` = hash) → **`test-web-batch.sh --root -datos`** (N/N llaves, web = batch byte a byte) → `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/01-ritual` → PASÓ → `Precache` suelto solo si el sello difiere del manifest → `publicar.sh vX.Y.Z --empaquetar-datos` → release commit verificado (CHANGELOG, manifest, CITATION) → `git tag -a vX.Y.Z <hash literal>` + `git push origin vX.Y.Z` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
 
 ---
 
