@@ -52,8 +52,8 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 ## Política de higiene de esta carpeta
 
 - **Los documentos vivos se reescriben en su lugar.** No hay archivos `_v1`, `_v2` en el directorio actual; las versiones viejas viven en la historia de Git (`git log --follow <archivo>`).
-- **Los documentos que dejan de aplicar se archivan en `historico/`**, con una nota corta al inicio que diga por qué se retiraron y qué documento vigente los reemplaza.
-- **No se borra nada permanentemente.** Lo obsoleto queda en `historico/` para que el contexto de las decisiones siga consultable.
+- **Los documentos que dejan de aplicar y que un documento vigente cita se archivan en `historico/`**, con una nota corta al inicio que diga por qué se retiraron y qué documento vigente los reemplaza; los que nadie cita se borran (regla siguiente).
+- **Git conserva la historia; el árbol vivo solo contiene lo que algo referencia; `historico/` guarda solo lo que un documento vigente cita, con nota de retiro e índice.** Lo que nada referencia se borra: `git log --follow <archivo>` lo recupera. (Decisión de Ricardo, 2026-11-01; sustituye a «No se borra nada permanentemente».)
 - **Ningún documento de norma registra cambios del Simulador.** Eso es exclusivo de `CHANGELOG.md`. Una bitácora interna, si existe, anota solo ediciones del propio documento; no se abren bitácoras nuevas. (Regla desde 2026-10-03, cuando la bitácora del documento de arquitectura —que había crecido a 57 filas duplicando al CHANGELOG— se congeló en `historico/bitacora-arquitectura.md`.)
 - **Los documentos de diseño de otros productos** van en subcarpeta propia con README, no en la raíz.
 - **Este índice se actualiza en el mismo commit** que agrega, mueve o archiva un documento.
