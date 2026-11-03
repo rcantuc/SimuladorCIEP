@@ -941,9 +941,9 @@ bash 05_scripts/ritual.sh v8.15.3 --desde check
 - **Lo que no hace.** Fusionar, editar `master`, publicar, desplegar, decidir un baseline nuevo.
 - **Probado (8.18a-1, sin Stata).** `--desde check` sobre la evidencia de v8.15.2 da 11/11 sin escribir nada en `-datos`. `merge`, `precache` (sello = manifest), `release-commit` y `tag` (idempotente: el tag ya existía) pasaron contra el estado real. `release-commit` y `tag` fallan como se espera para una versión sin release commit y sin tty. Los pasos `baile`, `sim`, `web`, `c32`, `sidecar` y la rama de `Precache` suelto no se ejercieron: la primera corrida real es la del siguiente release.
 
-### 14.1 Lecciones del ritual (v8.14.0–v8.15.2)
+### 14.1 Lecciones del ritual (v8.14.0–8.18a)
 
-Lo que mordió, en el orden en que importa. El script cubre 1–4 y 8; las demás siguen siendo criterio:
+Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las demás siguen siendo criterio:
 
 1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo. (`baile`, `sim`)
 2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano. (`ritual.sh` exige 40 hex y verifica el tag en `origin`)
@@ -955,6 +955,11 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4 y 8; las demá
 8. **Release commit antes del tag, en el mismo PR del fix** (v8.15.1). El PR del hotfix lleva ya `CHANGELOG [vX.Y.Z]`, `manifest.json` (`version`, `release_tag`, `release_url_prefix`) y `CITATION.cff` (`publicar.sh --citation`); así el hash que se mergea es el que se tagea y `--check` no encuentra un manifest a medias. `baseline` no se toca en un patch que no mueve números. (`release-commit`)
 9. **`gh pr merge --delete-branch` borra también el worktree local de la rama** (v8.15.2), carpeta incluida, con sus `raw/` y `master/` gitignored. Lo que haya que conservar de un worktree (un asset congelado, un `.dta` reconstruido) se copia a la carpeta diag **antes** del merge.
 10. **Dos PR seguidos: el segundo queda `BEHIND`** (rama protegida estricta). `gh pr update-branch <n>`, esperar los checks y fusionar; nunca `--admin`. El hash del ritual es el del último merge.
+11. **`publicar.sh vX.Y.Z` y `publicar-vps.sh vN.M` van en mensajes distintos**, nunca encadenados en un mismo comando ni en un mismo encargo nocturno. El ritual termina en «listo para publicar»; la Release y el endpoint salen de `publicar.sh`, y el deploy al VPS se lanza aparte, cuando lo anterior quedó verde.
+12. **Entre los dos, el gate humano es `gh release view vX.Y.Z`**: la Release existe, apunta al tag, trae los assets del manifest y el cuerpo es el del CHANGELOG. Sin eso no se lanza `publicar-vps.sh` (que además corre su propio humo y su gate de navegador, §5–§6).
+13. **Una corrida de `correr-sim.sh` por sesión, anunciada.** El motor completo corre una sola vez, al final, y se avisa antes de lanzarlo (~30 min de máquina; máximo tres en paralelo). La de `contrato-32.sh` (45 min) es propia del ritual de las 32 y no cuenta. Si hace falta una segunda corrida, se pregunta; no se improvisa.
+14. **«Nada en caliente» es sobre la fuente, no sobre el año.** La política SCN (`CUAD-0.md` §4 bis) prohíbe leer INEGI durante la corrida; no prohíbe que el asset traiga años posteriores a `anioenigh` (2025 p1, etiquetado preliminar). El motor usa la serie congelada completa y las anclas se leen en `anioenigh`: cortar la serie en `anioenigh` movía el PIB 2027 −1.48 % (v8.15.2, CHANGELOG).
+15. **Errores de Stata: `grep -c 'r([0-9][0-9]*);' wrap.log` = 0**, además de «end of do-file» al final. Ese patrón es la firma exacta de un error (`r(111);`); buscar «error» o «r(» da falsos positivos (`r(N)`, `r(mean)`, etiquetas). (`sim`)
 
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 

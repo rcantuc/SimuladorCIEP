@@ -29,7 +29,7 @@
 
 ## Corrida (una sola, completa, al final, anunciada)
 
-Avisa antes de lanzarla. `bash 05_scripts/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `test-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
+**Una corrida de `correr-sim.sh` por sesión** (runbook §14.1, lección 13); la de `contrato-32.sh` es propia y no cuenta. Avisa antes de lanzarla. `bash 05_scripts/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `test-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
 
 ## Evidencia
 
