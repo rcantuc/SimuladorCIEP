@@ -1,6 +1,6 @@
 # Arquitectura de distribución de los Simuladores CIEP
 
-**Ubicación en el Ecosistema CIEP.** Este documento describe la arquitectura técnica de los Simuladores CIEP — uno de los componentes del **Ecosistema CIEP** (el conjunto completo de productos digitales, infraestructura y dominios del CIEP; definición formal en el Glosario CIEP institucional, `glosario-ciep.md`). Otros componentes del Ecosistema (Micrositios, sitio principal `ciep.mx`, infraestructura general) se describen en otros documentos de governance o están pendientes de documentar formalmente.
+**Ubicación en el Ecosistema CIEP.** Este documento describe la arquitectura técnica de los Simuladores CIEP — uno de los componentes del **Ecosistema CIEP** (el conjunto completo de productos digitales, infraestructura y dominios del CIEP; definición formal en el vocabulario de `README.md`). Otros componentes del Ecosistema (Micrositios, sitio principal `ciep.mx`, infraestructura general) se describen en otros documentos de governance o están pendientes de documentar formalmente.
 
 **Alcance.** Los **Simuladores CIEP** son el ecosistema de tres herramientas interactivas web del CIEP, todas alojadas como subdominios de `ciep.mx`: el Simulador Fiscal CIEP (`simuladorfiscal.ciep.mx`), el Simulador IEPS al tabaco (`iepsaltabaco.ciep.mx`) y el Simulador de tenencia vehicular (`tenencia.ciep.mx`). "Simuladores CIEP" es sustantivo colectivo: las políticas y procedimientos de governance del CIEP aplican a los tres por defecto, no por excepción. Este documento describe la arquitectura común al ecosistema. El Simulador Fiscal CIEP es el caso operativo más maduro y mejor documentado, y es el ejemplo concreto al que se anclan las descripciones detalladas de las secciones 2 a 5; los simuladores de IEPS al tabaco y de tenencia vehicular son sustantivamente más pequeños en código y complejidad, y aún no tienen governance formal aplicada, pero la arquitectura, las políticas y los procedimientos aquí descritos se diseñan para extenderse a ellos.
 
@@ -55,7 +55,7 @@ El esquema es éste:
    │   Audiencia: investigador principal + investigadores             │
    │              colaboradores                                       │
    │   Herramienta: Git (github.com/rcantuc/SimuladorCIEP)            │
-   │   Carpeta local: ~/Documents/SimuladorCIEP/  (FUERA de Dropbox)  │
+   │   Árboles locales: runbook-deploys-ciep.md §10.1 (tres tipos)    │
    │                                                                  │
    │   ──── Motor de cálculo único compartido por las cuatro capas ───│
    └─────┬──────────────────┬─────────────────────┬───────────────────┘
@@ -244,7 +244,7 @@ Si abres la carpeta del Simulador, ves dos tipos de directorios. La diferencia e
 
 **Qué vive en cada directorio permanente:**
 
-- **`01_modulos/`** — los `.do` del pipeline del Simulador (módulos de análisis, visualizaciones) y `01_modulos/legacy/` con código histórico congelado que se conserva como testimonio pero no se mantiene.
+- **`01_modulos/`** — los `.do` del pipeline del Simulador (módulos de análisis, visualizaciones) y `01_modulos/nodos/` (drivers de los nodos del Paquete Económico y de ciep.mx). El código histórico sin llamador (`01_modulos/legacy/`) se borró en 8.18a-2; `git log -- 01_modulos/legacy` lo recupera.
 - **`02_governance/`** — la documentación de cómo se administra el proyecto, incluido `CHANGELOG.md` (el registro de cambios por versión). El changelog vive aquí y no en `03_help/` porque es un registro institucional del proyecto, no ayuda de uso de comandos.
 - **`03_help/`** — la ayuda: los `.sthlp` de cada comando (en `03_help/Stata/`), el manual del investigador y las imágenes de documentación.
 - **`04_1_simuladorfiscal.ciep.mx/`** — los archivos del sitio web público del Simulador. Ignorado por Git salvo `health.php` (es copia operativa del servidor), pero el directorio en sí es permanente. Renombrado desde `04_simuladorfiscal.ciep.mx/` el 2026-09-08 (commit `360ebae`) al liberarse el slot `04_1`: la semilla `04_1_paqueteeconomico.ciep.mx/` se retiró del repo hacia `../CIEP_Micrositios/Paquete Económico/`. Mapa `04_*` vigente: `04_1_simuladorfiscal.ciep.mx/` (sitio del Simulador), `04_2_documentos_latex/` (archivo LaTeX 2013-2027), `04_4_libro.ciep.mx/` y `04_5_ciep.mx/` (semillas WordPress); `04_3_nodos/` cerrado el 2026-08-02. Las bitácoras anteriores a esa fecha citan la ruta vieja tal cual.
@@ -288,7 +288,7 @@ Esta sección asume que ya conoces las convenciones de Git que usa este reposito
 
 5. **Sube la etiqueta al remoto** (en inglés *push*): `git push origin v7.2`.
 
-6. **Crea la Publicación en GitHub** (en inglés *Release*) apuntando a la etiqueta, con el changelog y los archivos de datos pesados que correspondan a la versión. El Catálogo de datos asociados (`05_scripts/manifest.json`) se actualiza con las huellas digitales de los archivos subidos. Detalle: `versionado-y-git.md` §3.3 paso 2.
+6. **No crees la Publicación en GitHub a mano** (en inglés *Release*). La crea `publicar.sh` en el paso siguiente, con el changelog y **todos** los assets del Catálogo de datos asociados (`05_scripts/manifest.json`), verificando sus huellas digitales; una Release creada a mano queda sin assets (incidente 2026-10-05, `runbook-deploys-ciep.md` §2). Detalle: `versionado-y-git.md` §3.3 paso 2.
 
 7. **Ejecuta `./05_scripts/publicar.sh v7.2`.** El script corre los gates (entrada en el CHANGELOG, tag anotado, working tree limpio, alineación con `origin`), crea el Release en GitHub con los assets del manifest y publica al endpoint Stata. Contrato en §3.2; comandos paso a paso en `runbook-deploys-ciep.md`.
 
@@ -455,6 +455,26 @@ Cuando un periodista mueve un control en la web para ver el impacto de cambiar l
 
 Esto importa por una razón: garantiza que los números que ve un usuario externo en el sitio HTML son los **mismos** que los que un investigador CIEP obtiene en Stata, y los **mismos** que los que un académico externo obtiene en su Stata local instalada vía `net from`, para la misma versión publicada. No hay implementaciones paralelas que puedan divergir.
 
+#### 6.3.1 El principio: Stata produce los números
+
+**Stata produce todos los números. Nada más los produce.** La página no calcula, la infografía no calcula, la hoja de cálculo de nadie calcula: todos **renderizan** lo que el motor ya produjo, con su tipo, su unidad, su fuente y su log. Es la regla del libro (*todo lo que lo alimenta pasa por `escalar`*) extendida a la web. La consecuencia de no sostenerlo ya se vivió: una segunda fuente de verdad funciona un tiempo, diverge en silencio, y cuando alguien nota la diferencia nadie recuerda de dónde salió el número. (Este apartado era `principio-stata-produce-los-numeros.md`, documento de trabajo de agosto de 2026, fundido aquí en 8.18a-2; su diseño del exportador `exportar web`/`statajson_<nodo>` y de las vistas de nodo es del proyecto hermano `paquete-economico/` y no existe en el Simulador: `git log --follow` lo recupera.)
+
+**Alcance: los números publicados** *(redacción de 8.18a-2 con lo decidido por Ricardo; para su revisión)*. El principio aplica a lo que se publica: la web, los JSON del sitio y de las 32 entidades, el sidecar de datos de la Release y el libro. Un memo puede citar cifras, pero solo salida de Stata con procedencia (corrida, commit y archivo de evidencia, como `diag-*/`); una cuenta exploratoria hecha fuera de Stata no se publica ni se vuelve parámetro hasta que una corrida de Stata la reproduce con `escalar`. PyStata dentro de un `.ado` cuenta como Stata (abajo; aprobado el 2026-11-01).
+
+**El límite, explícito para que nadie lo negocie caso por caso.** *En Stata:* toda producción de cifras (microdatos, ponderadores, incidencia, tasas efectivas, proyecciones, series, simulaciones). *Fuera de Stata:* servir páginas, renderizar gráficas, atender usuarios concurrentes, generar HTML. No es una etapa de transición: es el límite correcto, y coincide con lo que cada herramienta hace bien.
+
+**PyStata dentro de un `.ado` no cruza el límite** (decisión de Ricardo, 2026-11-01, PR de datos `scn-congelado-2024`). Un bloque `python:` embebido en un `.ado` del motor (`AccesoBIE.ado` descarga la serie y escribe el csv; `SCN.ado` → `SCNCongelado` verifica el sha256 de los assets congelados y los copia; `_precache_manifest` lee el manifest) corre dentro de la sesión de Stata, queda en el log de la corrida y se audita con el `.ado` que lo contiene: la cifra sigue naciendo en Stata, que es quien importa el csv y calcula. Lo que sigue prohibido es que un script fuera de Stata (`05_scripts/*.py`, PHP, el navegador) produzca o corrija una cifra publicada.
+
+**Puntos de control.** Cada eslabón tiene una verificación que detiene la cadena si falla:
+
+| Eslabón | Verificación (dónde vive hoy) | Si falla |
+|---|---|---|
+| Importación | catálogo de datos con sha256 (`05_scripts/manifest.json`, candado `ensure_asset.ado`) | error, no se procesa |
+| Cálculo | números contra el baseline (`05_scripts/gate-numeros.sh` y sus fixtures) | rojo, no se publica |
+| Registro | línea base de nombres auditados (`02_governance/scalarlatex-baseline.txt`) | alerta de deriva |
+| Exportación | procedencia en cada JSON (`scalarjson.ado`, `.meta` de las entidades) | no se genera el archivo |
+| Publicación web | todo valor en pantalla tiene origen en un archivo exportado (`test-sitio-*.sh`: la página no trae números) | no se publica |
+
 ### 6.4 Versionado alineado
 
 El sitio web se versiona en sincronía con el Código del Simulador. Cuando se publica `v7.2` (paso 8 del procedimiento de §3), el sitio web se actualiza a `v7.2`. El pie del sitio muestra explícitamente qué versión está sirviendo, igual que la firma en los outputs de Stata (§2.4). De este modo, si alguien hace una captura de pantalla de un cálculo web y la pone en un artículo periodístico, queda registro de qué versión la produjo.
@@ -480,15 +500,15 @@ Para que esto funcione, el servidor necesita un **certificado SSL** (archivos di
 
 - **Nunca viven dentro del Código del Simulador.** Esto ya está protegido por el `.gitignore` (`*.key`, `*.pem`, `*.crt` y similares ignorados), pero la política se documenta aquí explícitamente: aunque alguien las copie por error a la carpeta de desarrollo, Git las ignora.
 - **Viven solo en el servidor de producción** donde el sitio web corre, con permisos de lectura restringidos al usuario que ejecuta el servidor web.
-- **El respaldo de las llaves** se guarda en el gestor de contraseñas/secretos institucional del CIEP, no en repositorios compartidos. Si el servidor se pierde, la llave se recupera de ahí.
+- **El respaldo de las llaves** se guarda en el gestor de contraseñas personal del investigador principal (el CIEP no ha adoptado un gestor de secretos institucional: `politicas-institucionales.md` A.3), no en repositorios compartidos. Si el servidor se pierde, la llave se recupera de ahí.
 
 **Renovación del certificado.** ⚠️ Los certificados SSL del sitio **expiran cada 180 días** (dos días menos que seis meses) — si no se renuevan a tiempo, el sitio deja de ser accesible y el navegador muestra una advertencia de seguridad. No es automático: hay que hacerlo activamente.
 
 La renovación se hace a través del **VPS** (*Virtual Private Server* — un servidor remoto contratado en IONOS que es donde físicamente corre el sitio web). Para realizarla necesitas dos credenciales:
 
-1. **Acceso al correo `hostmaster.ciep.mx`** — la autoridad de certificación verifica el dominio enviando un desafío a esta dirección. La credencial vive en el **gestor de secretos institucional del CIEP**, carpeta "Infraestructura web".
+1. **Acceso al correo `hostmaster.ciep.mx`** — la autoridad de certificación verifica el dominio enviando un desafío a esta dirección. La credencial vive en el gestor de contraseñas personal del investigador principal (`politicas-institucionales.md` A.3 y A.6; no hay gestor institucional).
 
-2. **Acceso root al VPS de IONOS** — para instalar el certificado renovado en el servidor. La credencial (usuario root + llave SSH) vive en el gestor de secretos institucional, carpeta "Infraestructura web".
+2. **Acceso root al VPS de IONOS** — para instalar el certificado renovado en el servidor. La credencial (usuario root + llave SSH) vive en el mismo gestor personal.
 
 **Protocolo de acceso a estas credenciales:**
 
@@ -499,7 +519,7 @@ La renovación se hace a través del **VPS** (*Virtual Private Server* — un se
 | Investigador colaborador sin ese rol | Acceso temporal con caducidad de 7 días, otorgado por el investigador principal en el gestor de secretos. Suficiente para una sesión de renovación. |
 | Cualquier otra persona | Sin acceso |
 
-**Lo que no se hace, nunca:** compartir estas credenciales por correo, Slack, mensaje, captura de pantalla, ni dictado verbal. El gestor de secretos institucional es el único canal autorizado.
+**Lo que no se hace, nunca:** compartir estas credenciales por correo, Slack, mensaje, captura de pantalla, ni dictado verbal. El único canal autorizado es el gestor de contraseñas: hoy el personal del investigador principal; uno institucional cuando se adopte (`politicas-institucionales.md` §7.2).
 
 Si la fecha de expiración del certificado se acerca y nadie con acceso está disponible (vacaciones, enfermedad), el investigador principal define un suplente formal en el gestor de secretos con anticipación. **El plan de contingencia no es "alguien le pide la contraseña a Ricardo": es "alguien tiene acceso preconfigurado al gestor de secretos".**
 
@@ -575,11 +595,10 @@ Esta operación es trivial (3 comandos), de baja frecuencia (por publicación o 
 | `reproducir.sh` | No implementado. Contrato funcional en §5.4. Hoy la reproducción se hace a mano: `git clone` + `git checkout vX.Y` + `ensure_asset` descarga los datos del Release de esa versión (el candado garantiza que son los originales). | Demanda real de reproducción por terceros; hasta entonces la receta manual de §5 basta. |
 | Firma de versión en gráficas y outputs | Parcial. `profile.do` publica las globales `sim_version` / `sim_previous_version` y el state file por usuario (`users/<id>/.simulador_state`); el pie *"Simulador vX.Y · fecha · SHA"* en gráficas y archivos de salida no está generalizado. | Decidir el formato del pie y tocar los módulos que exportan gráficas. |
 | Alta de un investigador CIEP nuevo | Manual uno-a-uno: el investigador principal instala `sysprofile.do` (plantilla `sysprofile-template.do`) y configura Python en cada máquina. El procedimiento está descrito para el investigador en `03_help/manual-investigador-ciep.md` §2, no automatizado. | Un `setup_user.sh` o equivalente; sin calendario mientras el equipo sea pequeño. |
-| Clon de desarrollo fuera de Dropbox | Sigue dentro de Dropbox (`~/Library/CloudStorage/Dropbox-CIEP/.../SimuladorCIEP/`). Riesgo de corrupción de `.git/` documentado en `historico/fase-0-5-git-hygiene-audit.md`; mitigado por `publicar.sh` (guard de identidad de clon) y por la regla de no hacer `git add .`. | Operación manual cuando se justifique. |
-| Estrategia de versionado de `simulador.stpr` | El proyecto de Stata Project Manager está gitignored porque guarda rutas absolutas. Alternativas: rutas relativas si Stata lo permite, o `simulador-template.stpr` versionado + `.stpr` personal ignorado. | Demanda de investigadores por navegación estructurada del repo. |
+| Clon de desarrollo fuera de Dropbox | **Resuelto en v8.14** con tres tipos de árbol (`runbook-deploys-ciep.md` §10.1): el clon de Dropbox es la casa de `master` y solo lee (sin operaciones pesadas ni credenciales); `~/CIEP_Simuladores/SimuladorCIEP-datos`, fuera de Dropbox, corre los rituales con los datos canónicos; cada sesión trabaja en un worktree desechable. El riesgo de corrupción de `.git/` que lo motivó está en `historico/fase-0-5-git-hygiene-audit.md`. | — |
+| Estrategia de versionado de `simulador.stpr` | **Resuelto el 2026-07-04:** se versiona, con rutas relativas al repo (§2.8; `.gitignore` l. 32–33). Desde 8.18a-2 lista cuatro archivos de `01_modulos/legacy/` que ya no existen. | Regenerarlo desde el Project Manager la próxima vez que se abra. |
 | Gestor de secretos institucional | La política existe (`politicas-institucionales.md` Parte I); las credenciales del investigador principal siguen en su gestor personal. | Decisión administrativa/presupuestal (1Password Business, Bitwarden, etc.). Requisito antes de incorporar al primer investigador colaborador con acceso a infraestructura. |
 | Documentación operativa del certificado SSL | Emisor, procedimiento de renovación y calendario no están escritos como runbook; las llaves se respaldan con `backup-vps.sh --llaves` (§7.2) y el incidente de 2026 está en `politicas-institucionales.md`. | Redactar el runbook en la próxima renovación. |
-| Convención `legacy/<categoría>/` | Aplicada de facto (`01_modulos/legacy/`); falta escribir qué califica como legacy, cómo se nombran las subcarpetas y quién decide el movimiento. | Trabajo de governance en `versionado-y-git.md`; sin calendario. |
 | Consolidación de infraestructura Cloudways / IONOS | Dualidad histórica descrita en §6.2 (endpoint Stata en Cloudways; sitios HTML en IONOS). | Decisión institucional del Ecosistema CIEP. |
 
 ### 7.1 Deployment automatizado al VPS de simuladorfiscal.ciep.mx

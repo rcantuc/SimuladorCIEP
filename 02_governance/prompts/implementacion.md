@@ -18,7 +18,7 @@
 
 ## Reglas de código
 
-- Todo número nace en Stata (`principio-stata-produce-los-numeros.md`): ni Python ni PHP calculan lo que se publica.
+- Todo número nace en Stata (`arquitectura.md` §6.3.1): ni Python ni PHP calculan lo que se publica.
 - Tocar `output.do` exige `test-web-batch.sh` N/N antes de cerrar la rama (runbook §14.1, lección 7). Tocar un texto de `manifest.json` o un lector `.ado` de archivos externos exige `Precache` o `test-precache-manifest.sh` con Stata.
 - Un commit por punto, con mensajes `tipo(<id>/<punto>): …`.
 - Si es un hotfix o un PR de datos que se publica, el **release commit va en el PR** (CHANGELOG `[vX.Y.Z]`, manifest `version`/`release_tag`/`release_url_prefix`, `publicar.sh --citation`): el hash que se fusiona es el que se tagea (runbook §14.1, lección 8).
@@ -29,7 +29,7 @@
 
 ## Corrida (una sola, completa, al final, anunciada)
 
-Avisa antes de lanzarla. `bash 05_scripts/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `test-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
+**Una corrida de `correr-sim.sh` por sesión** (runbook §14.1, lección 13); la de `contrato-32.sh` es propia y no cuenta. Avisa antes de lanzarla. `bash 05_scripts/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `test-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
 
 ## Evidencia
 

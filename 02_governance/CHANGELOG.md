@@ -16,7 +16,18 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
+## [v8.15.3] — 2026-11-03
+
+Patch institucional: limpieza 8.18a, `ritual.sh`, plantillas de prompt y política de borrado. **Ningún número se mueve**: `baseline` v8.15.0 y `data_updated` 2026-10-31 sin cambio; los `.do`/`.ado` tocados (`SIM.do`, `Households.do`, `NTA.do`, `SCN.ado`, `nodos/indicadores.do`) solo cambian comentarios.
+
+### Institucional — sesión 8.18a-2 (inventario 8.18a ejecutado; decisión de Ricardo, 2026-11-03)
+
+- **Disposiciones del inventario (PR #59), íntegras.** 33 borrados: `contrato-32-2026-10-19.md`, `deploys/.gitkeep`, seis de `historico/` sin cita viva, dos de `perf/`, `01_modulos/legacy/` completo (19, sin llamador), `nodos/indicadores-muplugin.php` (transcrito en el header de `indicadores-decorador.js`) y `nodos/micrositio-pe.do`, `test-perfilpc-dorado.do` y `test-simulador-dorado.do`. 8 fundidos: `CUAD-0-firma.md` → `CUAD-0.md` §4.0; `glosario-ciep.md` → `02_governance/README.md` §Vocabulario; `principio-stata-produce-los-numeros.md` → `arquitectura.md` §6.3.1 (+ regla de pantalla en `metodo/plantilla-capitulo.md` §6); `paquete-economico/nodo-deuda-ficha-y-disyuntiva.md` → README de `paquete-economico/`; `publicar-anteriores.sh` + `verify_anteriores.py`, `test-precache-manifest.sh` y `verify_nodo.sh` ganan su fila en el runbook (§8 y gates de sesión de §11). 8 a `historico/`: CONC-1, NTA-0 y REPRO-1 se mueven ahí; los cinco que ya estaban llevan nota de retiro; índice nuevo `historico/README.md`. El inventario se borra al ejecutarse (git lo conserva en `9028854`). Los 44 fixtures no se tocan.
+- **Las 20 contradicciones (§8 del inventario).** Cada documento perdedor dice ahora lo que dice el vigente: SCN congelado desde v8.15b (runbook §9, §13.1); once gates (guía §9, runbook §3 y §11); PR obligatorio y Release solo por `publicar.sh` (`versionado-y-git.md` §2–§3, `arquitectura.md` §3.1); rewrite de mayo de 2026 hecho; tres tipos de árbol; `simulador.stpr` versionado; IngDisp = BIE al peso hoy (guía §11, comentarios de `SCN.ado`); token en `set_token.do`; sin gestor de secretos institucional (`arquitectura.md` §6.5); vintages y sha del SCN en `scn_vintage` (CUAD-0 §2); anclas en `anioenigh` (plantilla §2). Dos redactadas con lo decidido por Ricardo: el principio «Stata produce los números» aplica a los **números publicados** (memos con procedencia; PyStata en `.ado` cuenta como Stata), y la **numeración es temática**: la comparabilidad la declaran `baseline` (Gate 11) y `data_updated`, no el número de versión.
+- **Runbook §14.1:** lecciones 1–15 (nuevas: `publicar.sh`/`publicar-vps.sh` en mensajes distintos; `gh release view` como gate humano entre los dos; una corrida de `correr-sim.sh` por sesión, anunciada; «nada en caliente» es sobre la fuente, no sobre el año; `grep -c 'r([0-9][0-9]*);'`). Plantillas: `--si` obligatorio en el ritual nocturno; una corrida de `correr-sim.sh` por sesión.
+- **Fuera del repo:** `.dta` de `diag-*` y `_archivo/` borrados (reproducibles desde `commit.txt` con `correr-sim.sh`), reportes y tablas conservados; worktree `-NL` retirado con su rama en el tag `archivo/entidad-nl-2026-10` (sus cambios sin commit, en la evidencia de esta versión); ocho ramas remotas sin PR abierto borradas, y la única con commits fuera de `master` y del tag NL queda en `archivo/sprint-quintiles-2026-10`.
+- **Estreno de `ritual.sh`:** esta versión es la primera que recorre los 11 pasos con el script (`diag-v8.15.3-2026-11-03/ritual.log`).
+- **Release:** `manifest.json` `version`/`release_tag`/`release_url_prefix` = v8.15.3; `CITATION.cff` regenerada (`publicar.sh --citation`).
 
 ### Institucional — sesión 8.18a-1 (ritual, plantillas de prompt, política de borrado)
 

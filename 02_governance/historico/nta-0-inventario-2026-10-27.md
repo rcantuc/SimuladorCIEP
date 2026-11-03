@@ -1,5 +1,7 @@
 # NTA-0 — Inventario para `NTA.do`: qué ya existe por individuo y cómo (no) cierra la identidad NTA
 
+> **Archivado el 2026-11-03 (8.18a-2).** Inventario de solo lectura sobre `07b9d5c`, anterior a `NTA.do`. Las decisiones NTA-1 que salieron de él viven en el header de `01_modulos/NTA.do` y en el CHANGELOG; CONC-1 y `../CUAD-0.md` lo superaron. Se conserva porque lo citan `NTA.do` (l. 7), `Distribucion.ado` y el README raíz.
+
 **Fecha:** 2026-10-27 · **Sesión:** NTA-0 (solo lectura; ningún `.do`/`.ado` cambia) · **Base:** `master` `07b9d5c`
 **Insumos leídos:** `master/2024/households.dta` (19-oct-2026, 308,598 personas, 304 variables), `users/ricardo/SankeyNTA/*.json` (19-oct), `users/ricardo/aportaciones.dta` (16-oct), `master/LIF.dta`, `master/perfiles2027.dta` (solo `describe`). Las corridas de esta sesión son `tabstat`/`collapse` sobre esos archivos; no se corrió `SIM.do`.
 **Convención:** cifras en miles de millones de MXN corrientes 2024 ("bn"), sumas ponderadas con `factor` (`[fw=factor]`). Las líneas citadas son de `master` `07b9d5c`.

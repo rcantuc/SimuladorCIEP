@@ -8,7 +8,7 @@
 **** Las imputaciones macro-micro de este archivo usan Distribucion.ado (y_i = x_i * MACRO / sum_w x): son per capita
 **** solo cuando el relativo es pob; con relativo(factor) reparten en proporcion al factor de expansion de cada persona.
 ****
-**** Parametros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 y 02_governance/CUAD-0-firma.md §B). Globals que SIM.do §0.8 declara y este
+**** Parametros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 y §4.0, la firma). Globals que SIM.do §0.8 declara y este
 **** archivo lee en §0.0; sueltos, el default es el valor FIRMADO. Cada valor es un FLAG declarado (tambien en users/$id/NTA/nta-identidad.txt):
 ****   pensiones_en_yl = off          «pensiones fuera de Yl: D.62» — ing_jubila (P032 de jubilados) sale de ing_t4_cap1 (§2.2) y de exen_t4_cap1 (§3);
 ****                                  no llega a ing_subor ni a Yl. Alternativa on (v8.14.0).
@@ -137,7 +137,7 @@ if `1' >= 2014 & `1' < 2016 {
 }
 
 
-** 0.0 Parametros de Cuadratura (v8.15b; CUAD-0 §4 + 02_governance/CUAD-0-firma.md §B). Default = valor FIRMADO; ver FLAGs del header.
+** 0.0 Parametros de Cuadratura (v8.15b; CUAD-0 §4 + §4.0, la firma). Default = valor FIRMADO; ver FLAGs del header.
 *    Cada entrada: nombre, valor firmado (default) y alternativas aceptadas. SIM.do §0.8 los declara; sueltos (sin SIM.do) rige el firmado. *
 local cuad_params `""pensiones_en_yl off on" "ing_mixto_depurado transf_negocios off" "rentas_celda b3n b2n" "alq_en_capital off" "d4_relativo proxy_propiedad enigh""'
 local cuad_params `"`cuad_params' "yk_ancla b2n_b3n_d4 actual" "cap4 fuera dentro" "suborrow off on" "cuotas_d614 neto actual" "oye_en_hub off on""'

@@ -339,7 +339,7 @@ Los directorios de la carpeta del Simulador siguen una convención de nombres qu
 
 | Directorio | ¿Qué contiene? | ¿Puedes borrarlo? |
 |---|---|---|
-| `01_modulos/` | Los `.do` del pipeline (módulos de análisis y visualizaciones) y código histórico en `01_modulos/legacy/` | **No** |
+| `01_modulos/` | Los `.do` del pipeline (módulos de análisis y visualizaciones) y los drivers de nodos en `01_modulos/nodos/` | **No** |
 | `02_governance/` | Documentación de administración del proyecto y el `CHANGELOG.md` (registro de cambios por versión) | **No** |
 | `03_help/` | La ayuda: los `.sthlp` de cada comando, este manual y las imágenes de documentación | **No** |
 | `04_1_simuladorfiscal.ciep.mx/` | Archivos del sitio web público del Simulador (antes `04_simuladorfiscal.ciep.mx/`, renombrada 2026-09-08) | **No** |

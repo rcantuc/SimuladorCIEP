@@ -25,6 +25,7 @@ Una oración. Qué pregunta responde el módulo y qué le entrega al siguiente. 
 |---|---|---|---|---|---|
 
 - Vintage = el que registra el motor (`manifest-datos.json`), no el que dice la documentación.
+- Año: las anclas al SCN se leen en `anioenigh` (`scalar anioenigh` de `SIM.do`, el año de la ENIGH; hoy 2024); el año del Paquete (`anioPE`, hoy 2027) es el de la proyección. El capítulo dice en qué año está cada cifra.
 - Llave única = la que garantiza reproducibilidad del `sort` (regla de los seis `gsort`).
 - Sello de cada entrada: verde (oficial, estable), amarillo (oficial con vintage ambiguo, p. ej. BIE vs CSI), rojo (reconstruida o imputada).
 
@@ -58,6 +59,8 @@ Es la tabla C de los principios A–C, por módulo. El memo CUAD-0 se escribe di
 |---|---|---|---|
 
 Si una salida no tiene check, se declara: *"sin protección automática — gate humano"*.
+
+Regla (`arquitectura.md` §6.3.1): **todo valor en pantalla tiene origen en un archivo exportado** por el motor; si un número no está en un archivo exportado, no aparece en la página.
 
 ## 7. Identidades verificadas
 

@@ -50,12 +50,14 @@ manifest (`LIFs.xlsx`) y `<tag>` por el `release_tag` que trae el manifest hoy.
 Cuando `ensure_asset` te detiene, su mensaje ya trae estos valores calculados
 (SHA, tamaño, tag, fecha): cópialos de ahí.
 
-**Dónde se ejecuta — la trampa del 2026-09-08.** Hay DOS clones del repo en tu
-Mac que se ven idénticos: el **clon de desarrollo** (donde se edita, commitea y
-publica) y la **Carpeta del Simulador para investigadores**
-(`…/Dropbox-CIEP/SimuladorCIEP`, clon que Dropbox replica al equipo y donde
-git lo opera solo Ricardo con `git pull`). Todo lo que sigue va en el clon de
-desarrollo. `publicar.sh` lo verifica: aborta si la raíz no tiene el marker
+**Dónde se ejecuta — la trampa del 2026-09-08.** Hay varios árboles del repo en
+tu Mac que se ven idénticos (`runbook-deploys-ciep.md` §10.1): el **clon de
+publicación** `~/CIEP_Simuladores/SimuladorCIEP-datos` (fuera de Dropbox; ahí viven
+`raw/`, `master/` y los rituales), los **worktrees de sesión** (donde se edita y
+commitea, y de donde sale el PR) y la **Carpeta del Simulador para investigadores**
+(`…/Dropbox-CIEP/SimuladorCIEP`, clon que Dropbox replica al equipo y donde git lo
+opera solo Ricardo). Todo lo que sigue va en `-datos` o en el worktree de la rama
+de datos. `publicar.sh` lo verifica: aborta si la raíz no tiene el marker
 `.clon-desarrollo` (gitignored; se crea una vez con `touch .clon-desarrollo` en
 el clon correcto). Confirma dónde estás con `git rev-parse --show-toplevel`.
 

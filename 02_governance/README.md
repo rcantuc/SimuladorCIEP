@@ -15,17 +15,15 @@ Esta carpeta contiene las normas vivas del Simulador Fiscal CIEP (arquitectura, 
 
 ## Documentos de norma (vivos)
 
-Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno está en `git log --follow <archivo>`; los cambios al Simulador se registran solo en `CHANGELOG.md` (la bitácora interna que conservan `versionado-y-git.md`, `politicas-institucionales.md` y `glosario-ciep.md` registra cambios al propio documento, nunca al Simulador).
+Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno está en `git log --follow <archivo>`; los cambios al Simulador se registran solo en `CHANGELOG.md` (la bitácora interna que conservan `versionado-y-git.md` y `politicas-institucionales.md` registra cambios al propio documento, nunca al Simulador).
 
 | Documento | Qué responde |
 |---|---|
-| `arquitectura.md` | Cómo está organizado el Simulador como sistema de cuatro capas (desarrollo, distribución a investigadores, reproducción histórica, web pública); qué es una versión publicada; cómo se reproduce un análisis; infraestructura (Cloudways / IONOS); lo que sigue pendiente (§7); apéndice de comportamientos no obvios del entorno. |
-| `principio-stata-produce-los-numeros.md` | El principio transversal al ecosistema: Stata produce todos los números y los demás destinos (web, PDF, infografía) solo renderizan. Cadena completa con sus puntos de control. |
+| `arquitectura.md` | Cómo está organizado el Simulador como sistema de cuatro capas (desarrollo, distribución a investigadores, reproducción histórica, web pública); qué es una versión publicada; cómo se reproduce un análisis; el principio «Stata produce los números» con su límite y sus puntos de control (§6.3.1); infraestructura (Cloudways / IONOS); lo que sigue pendiente (§7); apéndice de comportamientos no obvios del entorno. |
 | `versionado-y-git.md` | Parte I: convenciones de commits, ramas, etiquetas, reescritura de historia, `.gitignore`. Parte II: historia de versiones (era v7.x vs. v8.0+) y contexto de los releases. |
 | `politicas-institucionales.md` | Parte I: gestión de secretos y credenciales (qué es secreto, dónde vive, qué hacer si se compromete). Parte II: ciclo de vida de productos del Ecosistema CIEP. |
 | `runbook-deploys-ciep.md` | Comandos para publicar un release a las tres caras (Git → endpoint Stata → VPS web), por tipo de release, con rollback. |
 | `runbook-actualizar-assets.md` | Qué es el manifiesto, por qué existe el candado `ensure_asset` y los pasos exactos para actualizar un archivo de datos sin romperlo. |
-| `glosario-ciep.md` | Vocabulario formal del CIEP, equivalencias formal/coloquial y términos en inglés que se conservan. |
 
 ## Registro y datos operativos
 
@@ -34,8 +32,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 | `CHANGELOG.md` | Registro de cambios por versión publicada. **Único** registro: ningún otro documento de esta carpeta lleva bitácora. El gate 1 de `publicar.sh` exige una entrada por versión. |
 | `scalarlatex-baseline.txt` | No es documento: es dato. Lista auditada de escalares sin registrar que `scalarlatex.ado` lee en tiempo de ejecución para detectar deriva. Cómo actualizarla legítimamente está en su encabezado. |
 | `scn-celdas.md` | Inventario de las celdas del SCN que lee el motor (series BIE con consumidor, filas de los tabulados CSI que el BIE no tiene, escalares derivados, vintage que registra cada archivo). Es lo que recorre `05_scripts/refrescar-scn.sh --comparar` (política de fuente SCN, CUAD-0 §4 bis). Se regenera cuando cambia `UpdateSCN`. |
-| `deploys/` | Log local del pipeline de publicación al endpoint (`endpoint-stata.log`); no se versiona. |
-| `inventario-8.18a.md` | Inventario de solo lectura (2026-11-01) de `02_governance/`, `05_scripts/fixtures/`, `01_modulos/legacy|nodos/`, `metodo/` del sitio, `05_scripts/*` y el disco de corridas: por archivo, quién lo referencia y disposición propuesta (vigente / fundir / histórico / borrar), más las contradicciones entre documentos vigentes. Nada ejecutado: Ricardo decide fila por fila. |
+| `deploys/` | Log local del pipeline de publicación al endpoint (`endpoint-stata.log`); no se versiona y no existe en git: `publicar.sh` y `publicar-endpoint.sh` crean la carpeta al escribir. |
 
 ## Subcarpetas
 
@@ -43,11 +40,34 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 
 **`perf/`** — Perfiles de rendimiento fechados del flujo web «Calcular» (dónde se va el tiempo, qué es invariante al escenario, metas propuestas). Son medición, no norma ni decisión; el instrumento es `05_scripts/perfilar-web.sh`. Tiene su propio README.
 
-**`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` en esta carpeta, memo de Cuadratura firmado por Ricardo el 2026-10-31 en `CUAD-0-firma.md` (v3; manda donde difiera) e implementado en v8.15b; `metodo/fuentes/` guarda los PDF citados con sha256.
+**`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` (en la raíz de esta carpeta), memo de Cuadratura firmado por Ricardo el 2026-10-31 (la firma está en su §4.0, §4 y §10 bis) e implementado en v8.15b; `metodo/fuentes/` guarda los PDF citados con sha256.
 
 **`prompts/`** — Plantillas de prompt de sesión (`memo.md`, `implementacion.md`, `ritual.md`) con los bloques fijos de las sesiones de octubre y noviembre de 2026 y un bloque `<<CONTENIDO>>` para lo específico. Todo prompt de sesión nace de una de ellas. Tiene su propio README.
 
-**`historico/`** — Documentos congelados: reportes fechados ya ejecutados, auditorías, la bitácora v1.0–v1.57 del documento de arquitectura. No se editan. Cada uno abre con una nota de cuándo se retiró, por qué y qué documento vigente lo reemplaza.
+**`historico/`** — Documentos congelados que un documento vigente o el código todavía cita: reportes fechados ya ejecutados, auditorías, la bitácora v1.0–v1.57 del documento de arquitectura. No se editan. Cada uno abre con una nota de cuándo se retiró, por qué y qué documento vigente lo reemplaza, y tiene una línea en `historico/README.md` (índice).
+
+## Vocabulario
+
+Los términos de los documentos de esta carpeta (antes `glosario-ciep.md`, de mayo de 2026, fundido aquí en 8.18a-2). Registro formal en la documentación; en conversación y presentaciones se aceptan las formas coloquiales.
+
+| Concepto | Término formal | Coloquial aceptable |
+|---|---|---|
+| Quien desarrolla y mantiene el Simulador | **Investigador principal** | |
+| Co-desarrolladores futuros | **Investigadores colaboradores** | |
+| Equipo CIEP que usa el Simulador como herramienta | **Investigadores** | |
+| Personas que usan la herramienta web pública | **Usuarios externos** | |
+| Release | **Publicación** (verbo: «publicar una versión») | release |
+| Tag | **Etiqueta de versión** | tag |
+| Repositorio Git en GitHub | **Código del Simulador** | repo |
+| Carpeta Dropbox que recibe la versión publicada | **Carpeta del Simulador para investigadores** | |
+| Rama Git de desarrollo | **Rama de trabajo** | |
+| Archivo manifest con SHA-256 de datos | **Catálogo de datos asociados** | manifest |
+| Los tres simuladores web del CIEP (Fiscal, IEPS al tabaco, tenencia vehicular) | **Simuladores CIEP** (cuando se dice así, una política aplica a los tres; «el Simulador Fiscal CIEP» aplica solo a ese) | Simuladores fiscales CIEP |
+| Productos digitales + infraestructura (hosting, VPS) + dominios `*.ciep.mx` | **Ecosistema CIEP** | Ecosistema digital del CIEP |
+| Productos narrativos vinculados a proyectos bandera, sin código de cálculo | **Micrositios** | Micrositios narrativos |
+| Herramienta donde viven los valores reales de las credenciales | **Gestor de secretos institucional** (adopción formal pendiente: `politicas-institucionales.md` A.3) | |
+
+Se conservan en inglés, con explicación la primera vez: `Git`, `GitHub`, `commit`, `push`, `pull`, `branch` (junto a «rama»), `merge`, `rewrite`, `SHA`. No se usan: «mantenedor» (→ investigador principal / colaborador) ni «audit trail», «single source of truth», «build artifact» (se describen en español llano). «Canónico» y «sidecar» sí se usan desde v8.14 (datos canónicos de `-datos`, sidecar de datos de la Release): la prohibición del glosario de mayo se retiró al fundirlo.
 
 ## Política de higiene de esta carpeta
 

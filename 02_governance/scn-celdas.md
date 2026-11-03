@@ -48,7 +48,7 @@ Serie = clave del indicador en el BIE (`AccesoBIE <serie>`); variable = nombre e
 | 724607 | `VestCalT` | Prendas de vestir y calzado | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 452.177 | SCN.ado (escalar mxn/pctpib; sin consumidor fuera de SCN) | 2026-10-16 00:36 |
 | 724608 | `Vest` | Prendas de vestir | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 328.684 | Expenditure.do (ancla TTVest); SCN R.6 | 2026-10-16 00:36 |
 | 724609 | `Calz` | Calzado | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 123.494 | Expenditure.do (ancla TTCalz); SCN R.6 | 2026-10-16 00:36 |
-| 724610 | `AlojT` | Alquiler efectivo y conservación de la vivienda | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 3,763.882 | Households §1.2 (SNAAlojamiento: share pf/PM de rentas); Expenditure (TT) | 2026-10-16 00:36 |
+| 724610 | `AlojT` | Alquiler efectivo y conservación de la vivienda | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 3,763.882 | Expenditure (TT); Households §1.2 l. 255 lo lee en un local sin uso desde v8.15b (la partición pf/PM murió con la firma B.7) | 2026-10-16 00:36 |
 | 724611 | `Alqu` | Alquiler efectivo | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 2,763.650 | Expenditure.do (ancla TTAlqu); SCN R.6 | 2026-10-16 00:36 |
 | 724612 | `CRep` | Conservación y reparación de la vivienda | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 190.536 | Expenditure.do (ancla TTCRep); SCN R.6 | 2026-10-16 00:36 |
 | 724613 | `Agua` | Agua | §4.1 Consumo de hogares e ISFLSH / ConHog.dta | 64.995 | Expenditure.do (ancla TTAgua); SCN R.6 | 2026-10-16 00:36 |
@@ -99,9 +99,9 @@ Serie = clave del indicador en el BIE (`AccesoBIE <serie>`); variable = nombre e
 | 724777 | `ComprasN` | Compras netas de residentes y no residentes | §5.1 Consumo privado / GastPriv.dta | -372.715 | Households (gasto_anualComprasN), NTA (Cpriv), Sankey.do, SCN D | 2026-10-16 00:37 |
 | 724959 | `ConGob` | Gastos de consumo de gobierno general - Total | §6.1 Consumo de gobierno / GovCons.dta | 3,916.328 | Households (gasto_anualGobierno), NTA (colectivo), Sankey.do, SCN D | 2026-10-16 00:37 |
 | 725116 | `ConsPriv_21` | 21 Minería | §8.1 Consumo privado por actividad / SecExt.dta | 678.177 | TasasEfectivas (ConsPriv21PIB: IEPS petrolero) | 2026-10-16 00:48 |
-| 725126 | `ConsPriv_54` | 54 Servicios profesionales, científicos y técnicos | §8.1 Consumo privado por actividad / SecExt.dta | 121.918 | Households §1.2 (ConsPriv54: honorarios pf/PM) | 2026-10-16 00:48 |
-| 725130 | `ConsPriv_62` | 62 Servicios de salud y de asistencia social | §8.1 Consumo privado por actividad / SecExt.dta | 1.007 | Households §1.2 (ConsPriv62: salud pf/PM) | 2026-10-16 00:48 |
-| 780054 | `Inmob5311` | 5311 Alquiler sin intermediación de bienes raíces | §7 PIB por actividad / PIBAE1-5.dta | 2,708.952 | Households §1.2 (SNAAlquiler: share pf/PM de rentas, l. 466-467) | 2026-10-16 00:45 |
+| 725126 | `ConsPriv_54` | 54 Servicios profesionales, científicos y técnicos | §8.1 Consumo privado por actividad / SecExt.dta | 121.918 | Households §1.2 l. 249 (local sin uso desde v8.15b: sin partición pf/PM, firma B.7) | 2026-10-16 00:48 |
+| 725130 | `ConsPriv_62` | 62 Servicios de salud y de asistencia social | §8.1 Consumo privado por actividad / SecExt.dta | 1.007 | Households §1.2 l. 250 (local sin uso desde v8.15b: sin partición pf/PM, firma B.7) | 2026-10-16 00:48 |
+| 780054 | `Inmob5311` | 5311 Alquiler sin intermediación de bienes raíces | §7 PIB por actividad / PIBAE1-5.dta | 2,708.952 | Households §1.2 l. 252 (local sin uso desde v8.15b: sin partición pf/PM, firma B.7) | 2026-10-16 00:45 |
 | 780055 | `Inmob5312` | 5312 Inmob5312 y corredores | §7 PIB por actividad / PIBAE1-5.dta | 75.908 | Households §1.2 (SNAInmobiliarias) | 2026-10-16 00:45 |
 | 780065 | `Prof541_T` | Total subsector 541: Servicios profesionales, científicos y técnicos | §7 PIB por actividad / PIBAE1-5.dta | 728.248 | Households §1.2 (ServProf) | 2026-10-16 00:45 |
 | 780103 | `Salud6211` | 6211 Consultorios médicos | §7 PIB por actividad / PIBAE1-5.dta | 253.442 | Households §1.2 (ConsMedi) | 2026-10-16 00:46 |
@@ -126,7 +126,7 @@ Serie = clave del indicador en el BIE (`AccesoBIE <serie>`); variable = nombre e
 | CSI_106 (S.11) | 59 | U/A | `ExBOpNoFin` | B.2b excedente bruto, sociedades no financieras | 10,157.033 | SCN.dta (informativo; ExNOpSoc se calcula como residuo) |
 | CSI_109 (S.12) | 59 | U/A | `ExBOpFin` | B.2b sociedades financieras | 1,263.329 | ídem |
 | CSI_118 (S.15) | 59 | U/A | `ExBOpISFLSH` | B.2b ISFLSH | 133.845 | ídem |
-| CSI_115 (S.14) | 59 | U/A | `ExBOpHog` | B.2b excedente bruto, hogares | 2,107.569 | Households §1.2 (SNAExBOpHog: share pf/PM de rentas, l. 466-467) |
+| CSI_115 (S.14) | 59 | U/A | `ExBOpHog` | B.2b excedente bruto, hogares | 2,107.569 | Households §1.2 l. 254 (local sin uso desde v8.15b); es la cifra del paso 0 de v8.15b (FLAG 18, CUAD-0 §10 bis 7) |
 | CSI_112 (S.13) | 59 | U/A | `ExBOpGob` | B.2b gobierno | 8.993 | SCN.dta (informativo) |
 | CSI_106 | 63 | U/A | `ExNOpNoFin` | B.2n | 5,522.905 | SCN.dta (informativo) |
 | CSI_109 | 63 | U/A | `ExNOpFin` | B.2n | 1,200.594 | ídem |

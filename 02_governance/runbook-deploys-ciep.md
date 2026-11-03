@@ -171,7 +171,7 @@ El sitio enlaza al Release tag, que debe existir primero.
 bash 05_scripts/publicar.sh vX.Y.Z
 ```
 
-Hace: gates 1-9 → Release en GitHub + **los 27 assets del data sidecar**
+Hace: gates 1-11 → Release en GitHub + **los 27 assets del data sidecar**
 (todos, en cada versión: el Release es inmutable y autocontenido, código +
 datos) → verificación SHA-256 post-Release → rsync al endpoint con pin de
 versión inyectado. **Es idempotente**: si falla a medias (p. ej. SSH),
@@ -186,7 +186,7 @@ mano o interrumpida:
 bash 05_scripts/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
 ```
 Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z --check`
-debe decir "los 8 gates pasaron" (el 8 consulta GitHub).
+debe decir "los 11 gates pasaron" (el 8 consulta GitHub; el 9 exige el sidecar de datos).
 
 **Modo fuente remota (desde v8.8.0).** `publicar.sh` ya no exige `raw/` local
 completo: la máquina de producción puede no tenerlo (los Releases son la fuente de
@@ -493,24 +493,33 @@ re-desplegar), no rollback.
 - Regenerar `.tex` (`$export`) + **compilar el libro** si los números del
   libro cambiaron; pasada de prosa donde las cifras se movieron.
 - Comunicado/nota de corrección si aplica (decisión institucional).
-- Bitácora del deploy queda en `02_governance/deploys/`.
+- Bitácora del endpoint: `02_governance/deploys/endpoint-stata.log`, **local** (`*.log` no se versiona; `publicar.sh` y `publicar-endpoint.sh` crean la carpeta al escribir).
+- Museo `/anteriores/` (cuarto canal, ciclo de vida propio, fuera de `current`; decisión 2026-10-01): solo si cambió `04_3_anteriores/`, `bash 05_scripts/publicar-anteriores.sh [--dry-run]` (credenciales del VPS; su Gate 2 es `05_scripts/verify_anteriores.py`: 0 recursos rotos y 0 hosts de desarrollo). Un release del motor no lo toca.
 
 ---
 
-## 9. Fuentes vivas y reproducibilidad — decisión 2026-10-15
+## 9. Fuentes y reproducibilidad — SCN congelado desde v8.15b; el resto, en vivo
 
-`AccesoBIE`, `SCN` y `DatosAbiertos` bajan **en vivo** del BIE de INEGI, de los
-tabulados CSI y de la SHCP cada vez que corre `SIM.do`. INEGI y la SHCP revisan sus
-series (el PIB 2024 cambió entre el 22-sep y el 6-oct de 2026; la SHCP agrega meses),
-así que dos corridas en fechas distintas pueden dar `output.txt` distintos sin que el
-código cambie. **Se asume esa consecuencia:** el `output.txt` que se publica es el del
-INEGI/SHCP del día en que se corrió, y no se garantiza regenerarlo al byte después.
+**El SCN no se lee en caliente** (política de fuente SCN, firmada el 2026-10-30:
+`CUAD-0.md` §4 bis). `UpdateSCN` lee solo el asset congelado
+`raw/SCN/scn-congelado-<anio>.zip` (las 525 series BIE completas y los 7 cuadros CSI,
+con sha256, fecha de consulta y etiqueta INEGI en `manifest.json: scn_vintage`); sin
+asset aborta (salvo `rawwip`, que descarga y lo declara). Un cambio de INEGI entra solo
+por PR de datos (`refrescar-scn.sh`, `runbook-actualizar-assets.md` §2d).
+
+**Lo demás sigue en vivo** (decisión 2026-10-15): `DatosAbiertos` baja de la SHCP y
+`pibe-32.sh` baja las bases de PIBE/deflactor de las 32 (§13.1) cada vez que corren. La
+SHCP agrega meses e INEGI revisa sus series, así que dos corridas en fechas distintas
+pueden dar `output.txt` distintos sin que el código cambie. **Se asume esa
+consecuencia** para esas fuentes: el `output.txt` que se publica es el del día en que
+se corrió, y no se garantiza regenerarlo al byte después.
 
 Entre v8.2 y v8.9 existió un mecanismo de "fuentes congeladas" (`global fuentes`,
 asset `fuentes-AAAA-MM-DD.zip`, `05_scripts/ancla-reproducibilidad.json`, modo
 `test-maquina-virgen.sh --reproducibilidad`, Gate 9 de `publicar.sh`) que fijaba esas
 descargas a una fecha para reproducir el ancla publicada. Se retiró por decisión de
-Ricardo (minimalismo): el motor siempre descarga en vivo; el asset
+Ricardo (minimalismo); el SCN volvió a congelarse en v8.15b por otro camino (asset del
+manifest, no `global fuentes`). El asset
 `fuentes-2026-10-06.zip` sigue en la Release v8.9.0 solo como histórico. Lo que sí se
 conserva de aquella etapa, porque mueve números con independencia de las fuentes:
 
@@ -722,6 +731,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `publicar.sh` Gate 8 (Release remota completa) | **sí** (solo lectura con `gh` y el token del workflow) | — | red, sin descarga; si la Release aún no existe, pasa |
 | `publicar.sh` Gate 9 (corte de datos citable existe y cuadra, §4c) | **no** | `--empaquetar-datos` + `--check` en el worktree de publicación, tras `SIM.do` + `contrato-32.sh` | exige `users/ricardo/` |
 | `publicar.sh` Gate 10 (`CITATION.cff` = manifest) | **sí** | — | estático (`--citation` lo regenera) |
+| `publicar.sh` Gate 11 (`baseline` declarado y existe como tag; desde v8.15.0, `CUAD-0.md` §4 ter) | **sí** | — | estático |
 | Corridas: `SIM.do`, `Web.Stata.do`, `perfilar-web.sh`, `compuertas-entidad.sh` | **no** | worktree de publicación | Stata |
 | Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
 | Identidad NTA por individuo (`test-nta-identidad.sh`, NTA-1/1b/1c): sobre `users/<id>/NTA/nta-persona.dta`, identidad **sin ancla** `C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0` por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, residual = `S_ajuste` declarado), Σ intra-hogar = 0 nacional y por hogar, Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla multiplicativa Σ S = B.8n), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31, Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759, Σ `YA_base` = B.2n + ⅓B.3n + D.4 neto; escalares de `SCN.ado`), JSON por grupo = base; y, sin Stata, conservación de flujo en todo nodo del Sankey v2.1 (`SankeyNTA/sankey-v2-grupoedad.json`, nodos del contrato, conteo nodos/enlaces) | **no** (la mitad Stata exige `master/SCN.dta` y la base por persona, que no están en git; la mitad Python se puede correr con `--sin-stata` sobre una corrida local) | después de `SIM.do` hasta §3 (o de `NTA.do` suelto), antes de abrir el PR: `bash 05_scripts/test-nta-identidad.sh` | Stata + `users/` |
@@ -740,6 +750,8 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
 | `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14), sellos, banda en las 32 (con `users/ricardo-v<t>/`) | §13 |
 | `test-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
+| `test-precache-manifest.sh` (regresión del hotfix v8.15.0) | `_precache_manifest.ado` lee `version`/`data_updated`/`baseline` del manifest real y de uno con texto hostil (acentos graves, comillas) sin r(132) | `bash 05_scripts/test-precache-manifest.sh`, obligatorio si el PR toca texto libre de `05_scripts/manifest.json` o `_precache_manifest.ado` |
+| `verify_nodo.sh` (nodos de `01_modulos/nodos/`, Paquete Económico y ciep.mx) | las seis reglas del nodo (página sin números, contrato con procedencia, determinismo con dos corridas de Stata, raíz sin `.md`) | `bash 05_scripts/verify_nodo.sh [deuda-publica\|portada\|indicadores]` antes de publicar un nodo; no es del ritual del Simulador |
 | `test-sitio-nta.sh --png`, `test-sitio-entidades.sh --png` | lo mismo que CI pero sobre los JSON de la corrida (no los fixtures) y con la captura que se adjunta al PR | `--json/--cuenta/--panel`, `--users` |
 
 **`test-sitio-transitorios.sh` local vs CI.** Desde 2026-10-29 el gate falla a veces en local («ReferenceError:
@@ -881,7 +893,8 @@ Sale con 0 solo si hay 32/32 bases frescas con sello.
 tarda ≈ 7 s (baja las tablas BIE por área, una vez por sesión); las demás 1–3 s (BISE ×2 + INPC);
 la pausa de 5 s entre entidades es el 70 % del tiempo.
 
-**Fuentes vivas (D3a):** cada corrida consulta a INEGI; no se congela nada. Lo que se declara es la fecha de
+**Fuentes vivas (D3a), solo para las bases de PIBE/deflactor de las 32** (el SCN nacional está congelado desde
+v8.15b, §9): cada corrida de `pibe-32.sh` consulta a INEGI y no se congela. Lo que se declara es la fecha de
 consulta de cada fuente (en el sello y en la tabla): es lo que distingue un vintage de otro. Las 32 se
 regeneran juntas para que el vintage sea uniforme; si INEGI revisó algo, aparece en el diff de las bases previas.
 
@@ -928,9 +941,9 @@ bash 05_scripts/ritual.sh v8.15.3 --desde check
 - **Lo que no hace.** Fusionar, editar `master`, publicar, desplegar, decidir un baseline nuevo.
 - **Probado (8.18a-1, sin Stata).** `--desde check` sobre la evidencia de v8.15.2 da 11/11 sin escribir nada en `-datos`. `merge`, `precache` (sello = manifest), `release-commit` y `tag` (idempotente: el tag ya existía) pasaron contra el estado real. `release-commit` y `tag` fallan como se espera para una versión sin release commit y sin tty. Los pasos `baile`, `sim`, `web`, `c32`, `sidecar` y la rama de `Precache` suelto no se ejercieron: la primera corrida real es la del siguiente release.
 
-### 14.1 Lecciones del ritual (v8.14.0–v8.15.2)
+### 14.1 Lecciones del ritual (v8.14.0–8.18a)
 
-Lo que mordió, en el orden en que importa. El script cubre 1–4 y 8; las demás siguen siendo criterio:
+Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las demás siguen siendo criterio:
 
 1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo. (`baile`, `sim`)
 2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano. (`ritual.sh` exige 40 hex y verifica el tag en `origin`)
@@ -942,6 +955,11 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4 y 8; las demá
 8. **Release commit antes del tag, en el mismo PR del fix** (v8.15.1). El PR del hotfix lleva ya `CHANGELOG [vX.Y.Z]`, `manifest.json` (`version`, `release_tag`, `release_url_prefix`) y `CITATION.cff` (`publicar.sh --citation`); así el hash que se mergea es el que se tagea y `--check` no encuentra un manifest a medias. `baseline` no se toca en un patch que no mueve números. (`release-commit`)
 9. **`gh pr merge --delete-branch` borra también el worktree local de la rama** (v8.15.2), carpeta incluida, con sus `raw/` y `master/` gitignored. Lo que haya que conservar de un worktree (un asset congelado, un `.dta` reconstruido) se copia a la carpeta diag **antes** del merge.
 10. **Dos PR seguidos: el segundo queda `BEHIND`** (rama protegida estricta). `gh pr update-branch <n>`, esperar los checks y fusionar; nunca `--admin`. El hash del ritual es el del último merge.
+11. **`publicar.sh vX.Y.Z` y `publicar-vps.sh vN.M` van en mensajes distintos**, nunca encadenados en un mismo comando ni en un mismo encargo nocturno. El ritual termina en «listo para publicar»; la Release y el endpoint salen de `publicar.sh`, y el deploy al VPS se lanza aparte, cuando lo anterior quedó verde.
+12. **Entre los dos, el gate humano es `gh release view vX.Y.Z`**: la Release existe, apunta al tag, trae los assets del manifest y el cuerpo es el del CHANGELOG. Sin eso no se lanza `publicar-vps.sh` (que además corre su propio humo y su gate de navegador, §5–§6).
+13. **Una corrida de `correr-sim.sh` por sesión, anunciada.** El motor completo corre una sola vez, al final, y se avisa antes de lanzarlo (~30 min de máquina; máximo tres en paralelo). La de `contrato-32.sh` (45 min) es propia del ritual de las 32 y no cuenta. Si hace falta una segunda corrida, se pregunta; no se improvisa.
+14. **«Nada en caliente» es sobre la fuente, no sobre el año.** La política SCN (`CUAD-0.md` §4 bis) prohíbe leer INEGI durante la corrida; no prohíbe que el asset traiga años posteriores a `anioenigh` (2025 p1, etiquetado preliminar). El motor usa la serie congelada completa y las anclas se leen en `anioenigh`: cortar la serie en `anioenigh` movía el PIB 2027 −1.48 % (v8.15.2, CHANGELOG).
+15. **Errores de Stata: `grep -c 'r([0-9][0-9]*);' wrap.log` = 0**, además de «end of do-file» al final. Ese patrón es la firma exacta de un error (`r(111);`); buscar «error» o «r(» da falsos positivos (`r(N)`, `r(mean)`, etiquetas). (`sim`)
 
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 

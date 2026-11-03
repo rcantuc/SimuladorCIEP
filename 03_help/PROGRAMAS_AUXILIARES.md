@@ -224,7 +224,8 @@ Simulador varname [if] [fw=factor], [bootstrap(1) cluster(upm|hogar|persona) see
 **Compatibilidad:** con `bootstrap(1)` no hay remuestreo y los cinco archivos
 coinciden con los de v1.x a precisión de máquina (diferencias relativas
 ≤ 4e-14, mismas filas, mismos missing); `legacy` corre el bloque v1.x
-completo. Verificación: `05_scripts/test-simulador-dorado.do`.
+completo. Verificación: el test dorado de v8.4.x (`05_scripts/test-simulador-dorado.do`,
+retirado en 8.18a-2; resultado en el CHANGELOG; `git log --all -- 05_scripts/test-simulador-dorado.do`).
 
 **Pendientes conocidos:** `Perfiles.ado` y `CuentasGeneracionales.ado`
 siguen usando `ci means` sobre las réplicas (mismo defecto √B); `ProyGraph`
@@ -396,7 +397,8 @@ propio `if`), no un plot; por eso cada serie va en su propia variable sobre la
 misma muestra y los plots no llevan `if`: 1 serset por gráfica (5 en la de
 barras), ~250 por ENIGH.
 
-**Verificación:** `05_scripts/test-perfilpc-dorado.do` corre el bloque
+**Verificación (única, v8.4.x; el script se retiró en 8.18a-2 y su resultado
+está en el CHANGELOG):** `05_scripts/test-perfilpc-dorado.do` corría el bloque
 original verbatim, lo compara con `perfilpc, legacy` (debe coincidir a
 precisión de máquina) y reporta cuánto difiere el método vigente (magnitud del
 cambio metodológico). Tarda horas: es el bloque viejo.

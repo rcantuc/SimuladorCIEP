@@ -1,6 +1,6 @@
 # CUAD-0 — Capítulo `Households` del método: estado en v8.14.0 y propuesta de Cuadratura 8.15
 
-**Fecha:** 2026-10-30 · **Sesión:** v8.15a (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `ee410a3` (v8.14.0) · **Estado:** **firmado** por Ricardo el 2026-10-31 (`02_governance/CUAD-0-firma.md`, que manda donde difiera) e **implementado en la sesión v8.15b** (rama `sesion/v8.15b`; §4 lleva los valores firmados, §5 la columna «factor obtenido 8.15b», §7 los gates nuevos, §8 los FLAGs cerrados y §10 la verificación contra el manual). El paso 0 de v8.15b (firma v3 §D: «verifica al peso, no decide la celda») encontró B.2b S.14 = 2,107.569 > alquiler imputado CSVM 2024 = 1,886.385 (+221.184): FLAG 18 **de contenido** (§8, §10 bis), no de vintage ni de lectura; la celda de las rentas efectivas sigue en **B.3n** (`rentas_celda = b3n`; `b2n` es el otro escenario, medido y declarado).
+**Fecha:** 2026-10-30 · **Sesión:** v8.15a (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `ee410a3` (v8.14.0) · **Estado:** **firmado** por Ricardo el 2026-10-31 (la firma está fundida en §4.0 desde 8.18a-2) e **implementado en la sesión v8.15b** (rama `sesion/v8.15b`; §4 lleva los valores firmados, §5 la columna «factor obtenido 8.15b», §7 los gates nuevos, §8 los FLAGs cerrados y §10 la verificación contra el manual). El paso 0 de v8.15b (firma v3 §D: «verifica al peso, no decide la celda») encontró B.2b S.14 = 2,107.569 > alquiler imputado CSVM 2024 = 1,886.385 (+221.184): FLAG 18 **de contenido** (§8, §10 bis), no de vintage ni de lectura; la celda de las rentas efectivas sigue en **B.3n** (`rentas_celda = b3n`; `b2n` es el otro escenario, medido y declarado).
 
 ## Encabezado
 
@@ -25,7 +25,7 @@ Escrito en `metodo/plantilla-capitulo.md`. Añade tres cosas que pide el encargo
 |---|---|
 | `H l.N` / `N l.N` / `S l.N` | `01_modulos/Households.do`, `01_modulos/NTA.do`, `SCN.ado` |
 | `I` | `05_scripts/fixtures/nta-identidad.txt` |
-| `C1 §x` | `02_governance/conc-1-scn-sankey-2026-10-30.md` (#47) |
+| `C1 §x` | `02_governance/historico/conc-1-scn-sankey-2026-10-30.md` (#47; archivado en 8.18a-2) |
 | `(no en repo)` | La cifra no está versionada. Se lee de la corrida canónica; el origen sigue a la marca: `T` = `diag-v8.15a-2026-10-30/tabla1.out`, `CSI f.N` = tabulado INEGI en `-datos/raw/temp/SCN/`, `L` = `diag-v8.14.0-2026-10-30/02-ritual/wrap.log` |
 
 Ninguna cifra es estimada. Los factores propuestos son cocientes de las cifras de la misma fila.
@@ -49,12 +49,12 @@ Construye el ingreso y las variables fiscales por persona y fuente a partir de l
 | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello | Fuente de la fila |
 |---|---|---|---|---|---|---|
 | ENIGH 2024, `ingresos.dta` y resto | INEGI | 2024 (`enigh_vintage` del manifest; asset `2024.zip`, sha256 `407dd6df…`) | `clave`, `ing_anual`, `factor` (Σ = 130,325,969 personas; 308,598 registros) | `folioviv foliohog numren id_trabajo clave`; colapsa a `folioviv foliohog numren id_trabajo` | verde | `manifest.json`; `H l.557–562`; `I` |
-| CSI `CSI_103/106/109/112/115/118/121` = S.1, S.11, S.12, S.13, S.14, S.15, S.2 | INEGI, base 2018, serie 2003–2024, «2024 revisada» | **El motor no lo registra.** Archivos del 16-oct-2026 en `-datos`; `CSI_115` sha256 `3b981612…`, `CSI_103` `c28d5607…`. No es asset: vive en `raw/temp/SCN/` | Filas de `C1 §1.2` | cuadro + fila + columna (AR U/A, AS R/P) | **amarillo** | `S l.2128–2133`; `C1` encabezado; (no en repo) sha |
-| BIE, series SCN (`master/SCN.dta`) | INEGI, vía `AccesoBIE` | **El motor no lo registra.** Archivo del 28-oct-2026, sha256 `3bdc3a02…`; sin etiqueta preliminar/revisada. PIB 33,667.023 vs B.1b CSI 33,582.899 (84.901 en NNI) | `PIB`, `RemSalSS`, `ExNOp*`, `ROW*`, `CapFij` | `anio` | **amarillo** | `C1 §1.2`; (no en repo) sha |
+| CSI `CSI_103/106/109/112/115/118/121` = S.1, S.11, S.12, S.13, S.14, S.15, S.2 | INEGI, base 2018, serie 2003–2024, «2024 revisada» | Hoy lo registra el manifest y manda su sha256 (`scn_vintage.csi`, asset `raw/SCN/scn-congelado-2024.zip`; v8.15b E4 y v8.15.2): `CSI_115` `f0e9fecf…`, `CSI_112` `3b981612…`, `CSI_103` `c28d5607…`. En v8.14.0 no lo registraba: archivos del 16-oct-2026 en `raw/temp/SCN/` | Filas de `C1 §1.2` | cuadro + fila + columna (AR U/A, AS R/P) | **amarillo** | `S l.2128–2133`; `C1` encabezado; (no en repo) sha |
+| BIE, series SCN (`master/SCN.dta`) | INEGI, vía `AccesoBIE` | Hoy lo registra el manifest por serie (`scn_vintage.bie.<serie>`: sha256, fecha de consulta, etiqueta INEGI, vía). En v8.14.0 no: archivo del 28-oct-2026, sha256 `3bdc3a02…`, sin etiqueta preliminar/revisada. PIB 33,667.023 vs B.1b CSI 33,582.899 (84.901 en NNI) | `PIB`, `RemSalSS`, `ExNOp*`, `ROW*`, `CapFij` | `anio` | **amarillo** | `C1 §1.2`; (no en repo) sha |
 | Población a mitad de año | CONAPO, conciliación 1970–2019 y proyecciones 2020–2070 (pry23, 11-sep-2023), redistribuida por DGIS | pry23; asset `Poblacion_Estimada_Mitad_Anio.zip`, sha256 `e77873cd…` | `poblacion` | `anio edad sexo entidad` | verde | `manifest.json`; `Poblacion.ado` l. 650–678 |
 | LIF / PEF | SHCP, Paquete Económico | Vintage del motor | OyE 1,601.824 (LIF 2024); τ⁺ (PEF) | `anio` + división | verde | `C1 §1.2` línea 17, `§6.9` |
 
-**Brecha frente a §4 bis y a la plantilla:** CSI y BIE no están congeladas ni registran vintage, y `manifest-datos.json` registra solo `enigh_vintage` y `data_updated`. Es lo primero que cierra 8.15b.
+**Brecha frente a §4 bis y a la plantilla (estado v8.14.0):** CSI y BIE no estaban congeladas ni registraban vintage, y `manifest-datos.json` registraba solo `enigh_vintage` y `data_updated`. **Cerrada** en v8.15b (E4) y completada en v8.15.2 (las 525 series): `manifest.json: scn_vintage`.
 
 ## §3 Procedimiento
 
@@ -72,7 +72,7 @@ Estado en v8.14.0.
 
 ## §4 Decisiones: cada cambio de 8.15 como parámetro
 
-**Firmado** (Ricardo, 2026-10-31, `CUAD-0-firma.md` §B) e **implementado en v8.15b**: «Firmado» es el default del código (`SIM.do` §0.8 lo declara; `Households.do` §0.0 lo valida y, suelto, lo impone); todo valor distinto imprime FLAG en el log de `Households.do` y en `nta-identidad.txt` y deja los números fuera del baseline (`manifest.json: baseline = v8.15.0`). «Añadido»: no estaba en el encargo; sale de la Tabla 1. Los Δ de nivel que esta tabla anotaba en v8.15a («saca 751.330 de Yl») eran ciertos solo si el ancla cambiaba a la vez (v8.15b-pre lo midió): en v8.15b cambian base y ancla juntas, así que los Δ reales están en el CHANGELOG `[v8.15.0]`.
+**Firmado** (Ricardo, 2026-10-31, firma §B; §4.0) e **implementado en v8.15b**: «Firmado» es el default del código (`SIM.do` §0.8 lo declara; `Households.do` §0.0 lo valida y, suelto, lo impone); todo valor distinto imprime FLAG en el log de `Households.do` y en `nta-identidad.txt` y deja los números fuera del baseline (`manifest.json: baseline = v8.15.0`). «Añadido»: no estaba en el encargo; sale de la Tabla 1. Los Δ de nivel que esta tabla anotaba en v8.15a («saca 751.330 de Yl») eran ciertos solo si el ancla cambiaba a la vez (v8.15b-pre lo midió): en v8.15b cambian base y ancla juntas, así que los Δ reales están en el CHANGELOG `[v8.15.0]`.
 
 | Parámetro | Firmado (default v8.15b) | Alternativas | FLAG | Memo | Qué hace |
 |---|---|---|---|---|---|
@@ -98,6 +98,19 @@ Estado en v8.14.0.
 | `perfilpc` | perfil edad-sexo | per cápita | Sin parámetro en `Households.do` | Header de `Households.do` l. 5–7 | Reparte gasto, alquiler y depreciación del hogar entre sus miembros de otro modo. |
 | `ImpNetProductos_mixK` | **desapareció en v8.15b** (no hay impuestos embebidos; `NTA.do` conserva la resta cableada, que vale 0 con la firma) | ⅓ en YA, ⅔ en YL (v8.14.0) | Sin parámetro | `C1 §6.1` | Con v8.13 YL llevaba 331.707 de impuestos a productos; con v8.14, 0 en YA y YL llevaba ⅔. |
 | `altimir` | `yes` | no | `H l.16`, `l.2108` | CUAD-0 | Sin factores: los ingresos quedan crudos y los impuestos se suman explícitos (`H l.2448–2457`). |
+
+### §4.0 — La firma (Ricardo, 2026-10-31)
+
+Ricardo firmó este memo (@ `14e6ba2`) el 2026-10-31 con un addendum de cuatro partes que fue el insumo de la sesión v8.15b. Vivió como `02_governance/CUAD-0-firma.md` hasta 8.18a-2, cuando se fundió aquí (`git log --follow` lo recupera). §B de la firma es la tabla de arriba (columna «Firmado»; la columna «Memo» dice «firma B.n»); §D es §10 bis. §A y §C, que no estaban en el memo, son estas:
+
+**A. Dos correcciones al memo.**
+1. **Pensiones (`pensiones_en_yl`, Δ esperado).** v8.14.0 no duplica pensiones: las subcuenta. `ing_jubila` entra a `ing_subor`, absorbe parte del ancla RemSalSS, y `NTA.do` las resta después, dejando YL 751.330 bn por debajo de D.1 + ⅔ B.3n. Con `off`, el ancla D.1 se reparte solo sobre salarios y YL coincide con la celda. El +751 de la corrida alterna de v8.15b-pre es la corrección, no un efecto secundario.
+2. **D.4 (Tabla 1, filas `*PM`, `cap6`, `cap8`).** La renta de la propiedad que recibe S.14 (D.41 544.940 + D.42 4,779.531 + D.44 735.471) no tiene contraparte utilizable en la ENIGH (intereses 19.335 + dividendos 2.368 crudos: <0.4 %). La partición pf/PM de honorarios y rentas (`H` l. 512–513, 522–523) era un proxy de propiedad presentado como celda; `ing_t4_cap3PM` negativo es el síntoma. Se separa lo que el principio C junta: **la celda del SCN fija el total; el relativo de reparto es un parámetro declarado**, con sello rojo cuando la encuesta no ve la partida.
+
+**C. Lo que 8.15b no cierra y se declara.**
+- Brecha de S residual (≈ +11 % sobre B.8n tras `cuotas_d614=neto`): D.5 LIF vs devengado (209), τ⁺ efectivo vs D.62 + D.7 (461), Cpriv vs P.3 (−438). Es Expenditures/TasasEfectivas → 8.16. El ancla multiplicativa de S se conserva con FLAG.
+- Subreporte de top incomes: `d4_relativo` lo nombra; la corrección es 9.x.
+- Informalidad: λ = 1.215 y 42.5 M formales implícitos vs 25.5 M cotizantes (v8.15b-pre 4c). La obligación estatutaria sobre ingreso con Altimir uniforme sale baja; **requisito de entrada de 8.16**: anclar la obligación de ISR PF a declaraciones SAT por rango de ingreso antes de descomponer informalidad/evasión.
 
 ### §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)
 
@@ -322,7 +335,7 @@ Regla de la firma §D: ninguna frase del método nace fuera del repo; lo citado 
 
 ## Δ esperado de 8.15b
 
-Con los defaults de §4 y `oye_en_hub=on`. Nada se corrió: es aritmética de las tablas.
+Con los defaults de §4 y `oye_en_hub=on`. Nada se corrió: es aritmética de las tablas, previa a la firma (que cambió `oye_en_hub` y sacó D.442 de YA). **Superada:** los Δ reales de v8.15.0 (hub 85.733 → 82.405 % del PIB) están en el CHANGELOG `[v8.15.0]` y en `NTA/index.php`.
 
 | Agregado publicado | v8.14.0 | 8.15b | Dirección |
 |---|---:|---:|---|
