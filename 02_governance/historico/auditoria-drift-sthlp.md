@@ -1,5 +1,7 @@
 # Auditoría de sincronía entre comandos (.ado) y sus ayudas (.sthlp)
 
+> **Archivado (nota añadida el 2026-11-03, 8.18a-2).** Auditoría one-shot del 2026-05-25 sobre `aec0e45`: no describe el estado actual de las ayudas. Se conserva porque `../guia-simulador-bien-gobernado.md` §1 la usa como ejemplo del principio (cada opción documentada en el `.sthlp` existe en el `.ado`).
+
 **Fecha de auditoría:** 2026-05-25
 **Estado del repo auditado:** commit `aec0e45` (working tree limpio)
 **Alcance:** los 10 comandos del Simulador y sus 10 archivos de ayuda en `03_help/Stata/`

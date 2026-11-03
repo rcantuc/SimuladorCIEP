@@ -76,7 +76,7 @@ if "$output" != "" {
 	}
 }
 
-** 0.8 Parámetros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 firmado en 02_governance/CUAD-0-firma.md §B). Default = valor FIRMADO
+** 0.8 Parámetros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4, firmado: §4.0). Default = valor FIRMADO
 **     (baseline v8.15.0); cualquier otro valor es un FLAG declarado en el header de Households.do (y en nta-identidad.txt) y deja los
 **     números fuera del baseline publicado (manifest: baseline). Alternativas entre paréntesis; v8.14.0 = on/actual/dentro/off/on/actual/on.
 global pensiones_en_yl "off"						// off: ing_jubila fuera de ing_t4_cap1 -> ing_subor -> Yl (D.62) | on (v8.14.0)

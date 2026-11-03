@@ -3,7 +3,7 @@
 **Alcance:** solo medición. Cero optimización, cero cambio de números, cero despliegue. Qué optimizar lo decide Ricardo con este reporte enfrente.
 **Instrumento:** `05_scripts/perfilar-web.sh` (+ `perfilar-web.py`). Reproducible por cualquiera con un clon que tenga `master/`, `raw/` y `users/ricardo/` (ver §9).
 **Base de código medida:** `origin/master` = `ffca008` (v8.11.0 + hotfix v8.10.1). El motor no se editó: los hooks viven en la copia de trabajo del `.do` de la sesión que genera el instrumento.
-**Evidencia cruda (no versionada, en el clon medido):** `users/_perf/2026-10-18/` → `escenario.json`, `perfbase/`, `perfrun1..3/`, `perftraza/`, `piso-io/`, `wall.txt`, `identicos.txt`, `resumen.md`. El `resumen.md` generado se copia íntegro como anexo en `perfil-web-2026-10-18-resumen-generado.md`.
+**Evidencia cruda (no versionada, en el clon medido):** `users/_perf/2026-10-18/` → `escenario.json`, `perfbase/`, `perfrun1..3/`, `perftraza/`, `piso-io/`, `wall.txt`, `identicos.txt`, `resumen.md`. El `resumen.md` generado se copiaba como anexo (`perfil-web-2026-10-18-resumen-generado.md`, borrado en 8.18a-2: se regenera con `perfilar-web.sh`; `git log --all -- 02_governance/perf/` lo recupera).
 
 ---
 

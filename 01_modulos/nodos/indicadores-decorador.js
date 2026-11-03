@@ -4,7 +4,16 @@
 
    FUENTE versionada: 01_modulos/nodos/indicadores-decorador.js
    Copia servible (la hace el driver): <docroot>/indicadores/decorador.js
-   Se encola con el mu-plugin ciep-indicadores.php (una línea de enqueue).
+   Se encola con el mu-plugin ciep-indicadores.php, que se instala UNA vez a
+   mano en wp-content/mu-plugins/ (los mu-plugins no se activan: existir es
+   estar activo; viaja con el rsync). Su contenido íntegro (antes
+   01_modulos/nodos/indicadores-muplugin.php, retirado en 8.18a-2):
+     <?php
+     /* Plugin Name: CIEP Indicadores (decorador de hashtags)
+        Description: Encola el decorador estático; WordPress no guarda ningún número. */
+     add_action( 'wp_enqueue_scripts', function () {
+       wp_enqueue_script( 'ciep-indicadores', home_url( '/indicadores/decorador.js' ), array(), null, true );
+     } );
 
    Lenguaje visual (ronda de estilo de Ricardo): junto al
    hashtag va SOLO el número y el signo % — columna angosta, todo en blanco

@@ -1,6 +1,6 @@
 # Fuentes del método (PDF congelados)
 
-Regla de CUAD-0-firma.md §D: ninguna frase del método nace fuera del repo; cada cita de CUAD-0 §10 apunta a un archivo de esta carpeta con su sha256, página y URL de origen.
+Regla de la firma de CUAD-0 (§D, hoy §10 bis): ninguna frase del método nace fuera del repo; cada cita de CUAD-0 §10 apunta a un archivo de esta carpeta con su sha256, página y URL de origen.
 
 | Archivo | Título | Origen (URL de descarga, 2026-10-31) | sha256 | Bytes |
 |---|---|---|---|---|

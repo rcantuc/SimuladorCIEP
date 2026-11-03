@@ -1,6 +1,6 @@
 # CUAD-0 — Capítulo `Households` del método: estado en v8.14.0 y propuesta de Cuadratura 8.15
 
-**Fecha:** 2026-10-30 · **Sesión:** v8.15a (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `ee410a3` (v8.14.0) · **Estado:** **firmado** por Ricardo el 2026-10-31 (`02_governance/CUAD-0-firma.md`, que manda donde difiera) e **implementado en la sesión v8.15b** (rama `sesion/v8.15b`; §4 lleva los valores firmados, §5 la columna «factor obtenido 8.15b», §7 los gates nuevos, §8 los FLAGs cerrados y §10 la verificación contra el manual). El paso 0 de v8.15b (firma v3 §D: «verifica al peso, no decide la celda») encontró B.2b S.14 = 2,107.569 > alquiler imputado CSVM 2024 = 1,886.385 (+221.184): FLAG 18 **de contenido** (§8, §10 bis), no de vintage ni de lectura; la celda de las rentas efectivas sigue en **B.3n** (`rentas_celda = b3n`; `b2n` es el otro escenario, medido y declarado).
+**Fecha:** 2026-10-30 · **Sesión:** v8.15a (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `ee410a3` (v8.14.0) · **Estado:** **firmado** por Ricardo el 2026-10-31 (la firma está fundida en §4.0 desde 8.18a-2) e **implementado en la sesión v8.15b** (rama `sesion/v8.15b`; §4 lleva los valores firmados, §5 la columna «factor obtenido 8.15b», §7 los gates nuevos, §8 los FLAGs cerrados y §10 la verificación contra el manual). El paso 0 de v8.15b (firma v3 §D: «verifica al peso, no decide la celda») encontró B.2b S.14 = 2,107.569 > alquiler imputado CSVM 2024 = 1,886.385 (+221.184): FLAG 18 **de contenido** (§8, §10 bis), no de vintage ni de lectura; la celda de las rentas efectivas sigue en **B.3n** (`rentas_celda = b3n`; `b2n` es el otro escenario, medido y declarado).
 
 ## Encabezado
 
@@ -25,7 +25,7 @@ Escrito en `metodo/plantilla-capitulo.md`. Añade tres cosas que pide el encargo
 |---|---|
 | `H l.N` / `N l.N` / `S l.N` | `01_modulos/Households.do`, `01_modulos/NTA.do`, `SCN.ado` |
 | `I` | `05_scripts/fixtures/nta-identidad.txt` |
-| `C1 §x` | `02_governance/conc-1-scn-sankey-2026-10-30.md` (#47) |
+| `C1 §x` | `02_governance/historico/conc-1-scn-sankey-2026-10-30.md` (#47; archivado en 8.18a-2) |
 | `(no en repo)` | La cifra no está versionada. Se lee de la corrida canónica; el origen sigue a la marca: `T` = `diag-v8.15a-2026-10-30/tabla1.out`, `CSI f.N` = tabulado INEGI en `-datos/raw/temp/SCN/`, `L` = `diag-v8.14.0-2026-10-30/02-ritual/wrap.log` |
 
 Ninguna cifra es estimada. Los factores propuestos son cocientes de las cifras de la misma fila.
@@ -72,7 +72,7 @@ Estado en v8.14.0.
 
 ## §4 Decisiones: cada cambio de 8.15 como parámetro
 
-**Firmado** (Ricardo, 2026-10-31, `CUAD-0-firma.md` §B) e **implementado en v8.15b**: «Firmado» es el default del código (`SIM.do` §0.8 lo declara; `Households.do` §0.0 lo valida y, suelto, lo impone); todo valor distinto imprime FLAG en el log de `Households.do` y en `nta-identidad.txt` y deja los números fuera del baseline (`manifest.json: baseline = v8.15.0`). «Añadido»: no estaba en el encargo; sale de la Tabla 1. Los Δ de nivel que esta tabla anotaba en v8.15a («saca 751.330 de Yl») eran ciertos solo si el ancla cambiaba a la vez (v8.15b-pre lo midió): en v8.15b cambian base y ancla juntas, así que los Δ reales están en el CHANGELOG `[v8.15.0]`.
+**Firmado** (Ricardo, 2026-10-31, firma §B; §4.0) e **implementado en v8.15b**: «Firmado» es el default del código (`SIM.do` §0.8 lo declara; `Households.do` §0.0 lo valida y, suelto, lo impone); todo valor distinto imprime FLAG en el log de `Households.do` y en `nta-identidad.txt` y deja los números fuera del baseline (`manifest.json: baseline = v8.15.0`). «Añadido»: no estaba en el encargo; sale de la Tabla 1. Los Δ de nivel que esta tabla anotaba en v8.15a («saca 751.330 de Yl») eran ciertos solo si el ancla cambiaba a la vez (v8.15b-pre lo midió): en v8.15b cambian base y ancla juntas, así que los Δ reales están en el CHANGELOG `[v8.15.0]`.
 
 | Parámetro | Firmado (default v8.15b) | Alternativas | FLAG | Memo | Qué hace |
 |---|---|---|---|---|---|
@@ -98,6 +98,19 @@ Estado en v8.14.0.
 | `perfilpc` | perfil edad-sexo | per cápita | Sin parámetro en `Households.do` | Header de `Households.do` l. 5–7 | Reparte gasto, alquiler y depreciación del hogar entre sus miembros de otro modo. |
 | `ImpNetProductos_mixK` | **desapareció en v8.15b** (no hay impuestos embebidos; `NTA.do` conserva la resta cableada, que vale 0 con la firma) | ⅓ en YA, ⅔ en YL (v8.14.0) | Sin parámetro | `C1 §6.1` | Con v8.13 YL llevaba 331.707 de impuestos a productos; con v8.14, 0 en YA y YL llevaba ⅔. |
 | `altimir` | `yes` | no | `H l.16`, `l.2108` | CUAD-0 | Sin factores: los ingresos quedan crudos y los impuestos se suman explícitos (`H l.2448–2457`). |
+
+### §4.0 — La firma (Ricardo, 2026-10-31)
+
+Ricardo firmó este memo (@ `14e6ba2`) el 2026-10-31 con un addendum de cuatro partes que fue el insumo de la sesión v8.15b. Vivió como `02_governance/CUAD-0-firma.md` hasta 8.18a-2, cuando se fundió aquí (`git log --follow` lo recupera). §B de la firma es la tabla de arriba (columna «Firmado»; la columna «Memo» dice «firma B.n»); §D es §10 bis. §A y §C, que no estaban en el memo, son estas:
+
+**A. Dos correcciones al memo.**
+1. **Pensiones (`pensiones_en_yl`, Δ esperado).** v8.14.0 no duplica pensiones: las subcuenta. `ing_jubila` entra a `ing_subor`, absorbe parte del ancla RemSalSS, y `NTA.do` las resta después, dejando YL 751.330 bn por debajo de D.1 + ⅔ B.3n. Con `off`, el ancla D.1 se reparte solo sobre salarios y YL coincide con la celda. El +751 de la corrida alterna de v8.15b-pre es la corrección, no un efecto secundario.
+2. **D.4 (Tabla 1, filas `*PM`, `cap6`, `cap8`).** La renta de la propiedad que recibe S.14 (D.41 544.940 + D.42 4,779.531 + D.44 735.471) no tiene contraparte utilizable en la ENIGH (intereses 19.335 + dividendos 2.368 crudos: <0.4 %). La partición pf/PM de honorarios y rentas (`H` l. 512–513, 522–523) era un proxy de propiedad presentado como celda; `ing_t4_cap3PM` negativo es el síntoma. Se separa lo que el principio C junta: **la celda del SCN fija el total; el relativo de reparto es un parámetro declarado**, con sello rojo cuando la encuesta no ve la partida.
+
+**C. Lo que 8.15b no cierra y se declara.**
+- Brecha de S residual (≈ +11 % sobre B.8n tras `cuotas_d614=neto`): D.5 LIF vs devengado (209), τ⁺ efectivo vs D.62 + D.7 (461), Cpriv vs P.3 (−438). Es Expenditures/TasasEfectivas → 8.16. El ancla multiplicativa de S se conserva con FLAG.
+- Subreporte de top incomes: `d4_relativo` lo nombra; la corrección es 9.x.
+- Informalidad: λ = 1.215 y 42.5 M formales implícitos vs 25.5 M cotizantes (v8.15b-pre 4c). La obligación estatutaria sobre ingreso con Altimir uniforme sale baja; **requisito de entrada de 8.16**: anclar la obligación de ISR PF a declaraciones SAT por rango de ingreso antes de descomponer informalidad/evasión.
 
 ### §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)
 

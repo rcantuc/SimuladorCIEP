@@ -47,7 +47,7 @@
 * DÓNDE VIVE CADA COSA (mismo patrón que nodo-deuda/portada)
 *   FUENTE (versionada):  01_modulos/nodos/indicadores.do
 *                         01_modulos/nodos/indicadores-decorador.js
-*                         01_modulos/nodos/indicadores-muplugin.php
+*                         (el mu-plugin que lo encola está transcrito en su header)
 *   SALIDA (ignorada, generada, bajo el docroot de ciep.mx local):
 *     04_5_ciep.mx/indicadores/statajson_indicadores.json
 *     04_5_ciep.mx/indicadores/decorador.js  (copia servible)

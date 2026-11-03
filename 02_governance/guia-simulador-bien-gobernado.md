@@ -45,7 +45,7 @@
 
 **Por qué.** Cuando aparece una segunda fuente de verdad (una hoja de cálculo donde alguien "ajustó" el número, un literal escrito a mano en el documento), funciona bien un tiempo, diverge en silencio y, cuando alguien nota la diferencia, nadie recuerda de dónde salió. El censo del documento del Paquete Económico 2026 encontró 89 grupos de cifras escritas como literales en la prosa; cada una era una divergencia potencial que ningún proceso iba a detectar.
 
-**Cómo lo hace el CIEP.** El contrato se llama `escalar` (`escalar.ado`, en la raíz del repo): `escalar pctpib YlPIB = Yl[`obs']/PIB[`obs']*100`. El tipo (`pctpib`, `pct`, `mxn`, `mxnpc`, `personas`, `anio`) fija el formato de salida; el valor se guarda con precisión completa y el formato se aplica una sola vez, al exportar. `scalarlatex` escribe los escalares a `.tex` para el libro; `scalarjson` los escribe a JSON para la web. Y hay un mecanismo de deriva: `scalarlatex` compara los escalares que *no* pasaron por `escalar` contra una lista auditada (`scalarlatex-baseline.txt`); un nombre nuevo fuera de esa lista se reporta en rojo porque casi siempre es un `scalar` que alguien escribió sin migrar. El principio completo, aplicado a la web, está en `principio-stata-produce-los-numeros.md`.
+**Cómo lo hace el CIEP.** El contrato se llama `escalar` (`escalar.ado`, en la raíz del repo): `escalar pctpib YlPIB = Yl[`obs']/PIB[`obs']*100`. El tipo (`pctpib`, `pct`, `mxn`, `mxnpc`, `personas`, `anio`) fija el formato de salida; el valor se guarda con precisión completa y el formato se aplica una sola vez, al exportar. `scalarlatex` escribe los escalares a `.tex` para el libro; `scalarjson` los escribe a JSON para la web. Y hay un mecanismo de deriva: `scalarlatex` compara los escalares que *no* pasaron por `escalar` contra una lista auditada (`scalarlatex-baseline.txt`); un nombre nuevo fuera de esa lista se reporta en rojo porque casi siempre es un `scalar` que alguien escribió sin migrar. El principio completo, aplicado a la web, está en `arquitectura.md` §6.3.1.
 
 **En tu simulador.** Define un catálogo de tipos antes de tener diez escalares, no después de tener quinientos. Escribe un comando `escalar` propio (o copia la idea) que registre nombre y tipo, y que todos los destinos lean de ahí. Prohíbete, por escrito, poner cifras a mano en los documentos: si un número no viene del registro, no entra.
 
@@ -216,8 +216,8 @@ Esta guía es la versión general. La versión precisa y específica del Simulad
 | Comandos exactos para publicar un release | `runbook-deploys-ciep.md` |
 | Qué hacer cuando el candado de datos detiene | `runbook-actualizar-assets.md` |
 | Secretos, credenciales y ciclo de vida de productos | `politicas-institucionales.md` |
-| El principio "Stata produce todos los números" aplicado a la web | `principio-stata-produce-los-numeros.md` |
+| El principio "Stata produce todos los números" aplicado a la web | `arquitectura.md` §6.3.1 |
 | Independencia metodológica y series históricas | `paquete-economico/independencia-metodologica-series.md` |
 | El contrato `escalar` y sus auxiliares | `escalar.ado` (header), `03_help/PROGRAMAS_AUXILIARES.md` |
 | Los incidentes, con fecha y commit | `CHANGELOG.md`; `historico/bitacora-arquitectura.md` |
-| Vocabulario | `glosario-ciep.md` |
+| Vocabulario | `README.md` §Vocabulario |

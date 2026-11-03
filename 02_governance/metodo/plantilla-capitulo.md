@@ -59,6 +59,8 @@ Es la tabla C de los principios A–C, por módulo. El memo CUAD-0 se escribe di
 
 Si una salida no tiene check, se declara: *"sin protección automática — gate humano"*.
 
+Regla (`arquitectura.md` §6.3.1): **todo valor en pantalla tiene origen en un archivo exportado** por el motor; si un número no está en un archivo exportado, no aparece en la página.
+
 ## 7. Identidades verificadas
 
 Lista de las igualdades que el gate del módulo comprueba y con qué tolerancia (p. ej. `nta-identidad.txt`: Σ entradas − Σ salidas = 0 a 1e-6; `gate-numeros.sh`: `output.txt` byte a byte y sankeys a 1e-9; `test-web-batch.sh`: llaves 46/46). Resultado de la última corrida, con hash.

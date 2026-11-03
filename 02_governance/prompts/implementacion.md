@@ -18,7 +18,7 @@
 
 ## Reglas de código
 
-- Todo número nace en Stata (`principio-stata-produce-los-numeros.md`): ni Python ni PHP calculan lo que se publica.
+- Todo número nace en Stata (`arquitectura.md` §6.3.1): ni Python ni PHP calculan lo que se publica.
 - Tocar `output.do` exige `test-web-batch.sh` N/N antes de cerrar la rama (runbook §14.1, lección 7). Tocar un texto de `manifest.json` o un lector `.ado` de archivos externos exige `Precache` o `test-precache-manifest.sh` con Stata.
 - Un commit por punto, con mensajes `tipo(<id>/<punto>): …`.
 - Si es un hotfix o un PR de datos que se publica, el **release commit va en el PR** (CHANGELOG `[vX.Y.Z]`, manifest `version`/`release_tag`/`release_url_prefix`, `publicar.sh --citation`): el hash que se fusiona es el que se tagea (runbook §14.1, lección 8).

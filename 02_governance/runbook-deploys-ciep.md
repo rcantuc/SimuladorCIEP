@@ -493,7 +493,8 @@ re-desplegar), no rollback.
 - Regenerar `.tex` (`$export`) + **compilar el libro** si los números del
   libro cambiaron; pasada de prosa donde las cifras se movieron.
 - Comunicado/nota de corrección si aplica (decisión institucional).
-- Bitácora del deploy queda en `02_governance/deploys/`.
+- Bitácora del endpoint: `02_governance/deploys/endpoint-stata.log`, **local** (`*.log` no se versiona; `publicar.sh` y `publicar-endpoint.sh` crean la carpeta al escribir).
+- Museo `/anteriores/` (cuarto canal, ciclo de vida propio, fuera de `current`; decisión 2026-10-01): solo si cambió `04_3_anteriores/`, `bash 05_scripts/publicar-anteriores.sh [--dry-run]` (credenciales del VPS; su Gate 2 es `05_scripts/verify_anteriores.py`: 0 recursos rotos y 0 hosts de desarrollo). Un release del motor no lo toca.
 
 ---
 
@@ -740,6 +741,8 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
 | `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14), sellos, banda en las 32 (con `users/ricardo-v<t>/`) | §13 |
 | `test-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
+| `test-precache-manifest.sh` (regresión del hotfix v8.15.0) | `_precache_manifest.ado` lee `version`/`data_updated`/`baseline` del manifest real y de uno con texto hostil (acentos graves, comillas) sin r(132) | `bash 05_scripts/test-precache-manifest.sh`, obligatorio si el PR toca texto libre de `05_scripts/manifest.json` o `_precache_manifest.ado` |
+| `verify_nodo.sh` (nodos de `01_modulos/nodos/`, Paquete Económico y ciep.mx) | las seis reglas del nodo (página sin números, contrato con procedencia, determinismo con dos corridas de Stata, raíz sin `.md`) | `bash 05_scripts/verify_nodo.sh [deuda-publica\|portada\|indicadores]` antes de publicar un nodo; no es del ritual del Simulador |
 | `test-sitio-nta.sh --png`, `test-sitio-entidades.sh --png` | lo mismo que CI pero sobre los JSON de la corrida (no los fixtures) y con la captura que se adjunta al PR | `--json/--cuenta/--panel`, `--users` |
 
 **`test-sitio-transitorios.sh` local vs CI.** Desde 2026-10-29 el gate falla a veces en local («ReferenceError:

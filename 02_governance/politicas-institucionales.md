@@ -349,7 +349,7 @@ Daniel Orduña es el primer caso del rol "desarrollador externo de infraestructu
 
 *Qué aprendes en esta sección:* cómo encaja este marco en la arquitectura general del Ecosistema CIEP.
 
-El **Ecosistema CIEP** es el conjunto completo de productos digitales, infraestructura y dominios del CIEP (definición formal en el Glosario CIEP institucional, `governance/glosario-ciep.md`). Sus componentes incluyen los Simuladores CIEP (herramientas interactivas de análisis fiscal), los Micrositios (sitios web narrativos que presentan estudios y análisis al público general), el sitio principal `ciep.mx`, y la infraestructura compartida.
+El **Ecosistema CIEP** es el conjunto completo de productos digitales, infraestructura y dominios del CIEP (definición formal en el vocabulario de `02_governance/README.md`). Sus componentes incluyen los Simuladores CIEP (herramientas interactivas de análisis fiscal), los Micrositios (sitios web narrativos que presentan estudios y análisis al público general), el sitio principal `ciep.mx`, y la infraestructura compartida.
 
 La arquitectura y la distribución de los **Simuladores CIEP** están descritas en `arquitectura.md`. Este documento aplica a un conjunto más amplio: todos los productos del Ecosistema CIEP, incluyendo los Micrositios, cuando enfrentan la decisión de qué hacer con ellos al envejecer o descontinuarse.
 

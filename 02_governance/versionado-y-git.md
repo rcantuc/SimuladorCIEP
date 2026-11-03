@@ -261,7 +261,7 @@ Sin esa cita, dentro de un año alguien que lea el commit `63d73cf` aislado pens
 
 Las bitácoras de los documentos de governance (la sección final típica de cada `.md` con la tabla `Versión / Fecha / Cambio`) son **append-only**: cada entrada registra lo que pasó en el momento de esa versión, y NO se reescribe después aunque la realidad cambie.
 
-**Ejemplo real:** la bitácora de `arquitectura-y-bitacoras.md` v1.x (hoy `historico/bitacora-arquitectura.md`) dice, en una de sus entradas, que el Glosario CIEP vivía como sección de `.windsurfrules`. Cuando posteriormente el glosario se migró a archivo propio (`governance/glosario-ciep.md`), esa entrada vieja **no se reescribió** para reflejar la nueva ubicación. Sigue diciendo lo que decía. La migración se documentó como entrada nueva en la bitácora del archivo correspondiente y como commit propio.
+**Ejemplo real:** la bitácora de `arquitectura-y-bitacoras.md` v1.x (hoy `historico/bitacora-arquitectura.md`) dice, en una de sus entradas, que el Glosario CIEP vivía como sección de `.windsurfrules`. Cuando posteriormente el glosario se migró a archivo propio (`glosario-ciep.md`, hoy fundido en `README.md` §Vocabulario), esa entrada vieja **no se reescribió** para reflejar la nueva ubicación. Sigue diciendo lo que decía. La migración se documentó como entrada nueva en la bitácora del archivo correspondiente y como commit propio.
 
 **Por qué.** La bitácora es registro histórico de cómo evolucionó la decisión, no fotografía del estado actual. Reescribir una entrada vieja para que "concuerde con hoy" falsifica el changelog: hace ver que la decisión actual estuvo siempre ahí, oculta la trayectoria, y le quita al lector futuro la posibilidad de entender cómo se llegó al estado actual paso a paso.
 

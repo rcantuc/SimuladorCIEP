@@ -4,7 +4,7 @@
 ***   (Lee–Mason), cerrada por grupo de edad y por quinquenio×sexo ***
 ***                                                               ***
 *********************************************************************
-* NTA-1 (2026-10-27). Base: memo 02_governance/nta-0-inventario-2026-10-27.md (#38) y las decisiones firmadas por
+* NTA-1 (2026-10-27). Base: memo 02_governance/historico/nta-0-inventario-2026-10-27.md (#38) y las decisiones firmadas por
 * Ricardo el 2026-10-27. NTA-1b (2026-10-27, mismo PR #40): se alinean las definiciones con el sector hogares S.14
 * del SCN ANTES de cualquier ancla de S; el ajuste de S queda como variante, no como default. NTA-1c (2026-10-28): el total
 * de YA se re-ancla a S.14 (nta_YA = S14) y, si |Σ S − B.8n|/B.8n ≤ 15 %, el ancla multiplicativa de S se activa DECLARADA

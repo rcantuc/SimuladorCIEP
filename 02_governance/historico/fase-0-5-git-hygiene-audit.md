@@ -1,5 +1,7 @@
 # Fase 0.5 — Git Hygiene Audit
 
+> **Archivado (nota añadida el 2026-11-03, 8.18a-2).** Auditoría del 2026-05-09, anterior al rewrite de mayo de 2026: sus SHAs (`2f46d92`…) ya no existen. Norma vigente: `../versionado-y-git.md` §6 y `05_scripts/verify_gitignore.sh`. Se conserva porque `../arquitectura.md` §7 y `.gitignore` la citan como origen de la decisión de los datos separados del código.
+
 **Fecha:** 2026-05-09  
 **Commit de referencia:** `2f46d92` (HEAD, `master`)  
 **Decisiones tomadas en Fase 0:** confirmadas por Ricardo el 2026-05-09  
