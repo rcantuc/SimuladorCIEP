@@ -405,6 +405,43 @@ cambio metodológico). Tarda horas: es el bloque viejo.
 
 ---
 
+## 18. _tabla_anclas.ado
+
+**Descripción:** Imprime en el log una tabla vertical de anclas (una fila por ancla: código
+SCN 2008 / serie BIE / `divSIM` de la LIF, nombre de la cuenta tal como lo escribe INEGI,
+sector, fuente «cuadro · fila», valor con separador de miles, variable del motor, sello y
+razón) y, con `motor`, la tabla «Σ motor antes del ancla, factor y cobertura ENIGH». La usan
+`Households.do`, `NTA.do`, `Expenditure.do`, `TasasEfectivas.ado` y `SCN.ado` (8.16a). Solo
+escribe en el log: no define escalares ni toca los datos.
+
+**Sintaxis:**
+```
+_tabla_anclas clear
+_tabla_anclas add, codigo(str) valor(exp) [sector(str) fuente(str) variable(str) motor(exp) factor(exp) cobertura(exp) nota(str)]
+_tabla_anclas print, titulo(str) [sello(str) razon(str) motor unidad(str)]
+```
+
+**Catálogo:** `05_scripts/scn-cuentas.csv` (separador «;»: `codigo;nombre_inegi;nombre_sna2008;sectores;fuente;nota`).
+Un código vive una sola vez; `/metodo` (8.18b) lo reutiliza. Si el catálogo no está (instalación vía
+`net install`), la columna «Cuenta» queda vacía y se avisa. Invocar `print` con `noisily` desde un
+do-file corrido con `quietly`.
+
+## 19. AccesoITAN.ado
+
+**Descripción:** ISR por rango de ingreso anual declarado × tipo de contribuyente desde los
+Informes Trimestrales de la SHCP (anexo `itanfp02_<AAAA><TT>.xlsx`, hoja «I.II RecGobFed a) ISR»,
+2019-1T en adelante). Misma política que `SCNCongelado`: lee solo el asset `raw/ITAN/itan-congelado.zip`
+(`ensure_asset`), verifica el sha256 de cada archivo contra `05_scripts/itan-catalogo.json`
+(sello verde/amarillo/rojo) y el texto de cada rótulo antes de leer, y produce
+`master/itan-isr-rangos.dta` (`anio trimestre periodo rango tipo mdp contribuyentes`; acumulado
+enero–trimestre, millones de pesos) con `import excel`.
+
+**Sintaxis:** `AccesoITAN [, validar nographs]`. `validar` compara los totales por tipo con la
+captura manual `ISRInformesTrimestrales.xlsx` y devuelve `r(maxdelta)`. El catálogo lo regenera
+`05_scripts/itan-catalogo.py`; el refresco es `refrescar-scn.sh --itan [--congelar]`
+(runbook-actualizar-assets §2e). En 8.16a el motor sigue leyendo la captura manual
+(`DatosAbiertos.ado` §4.1); el plan de retiro está en CUAD-1 §8 ter.
+
 ## Notas Técnicas Generales
 
 **Archivos de soporte común:**
