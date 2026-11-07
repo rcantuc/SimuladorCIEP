@@ -10120,6 +10120,14 @@
       "size_bytes": 760442,
       "desde": "v8.15.2",
       "regla": "Asset congelado del SCN (refrescar-scn.sh --congelar): bie/<serie>.csv (años <= anio_referencia) y CSI_1xx.xlsx; SCNCongelado lo desempaca en raw/SCN/ cuando faltan los archivos. `desde` = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores."
+    },
+    {
+      "name": "itan-congelado.zip",
+      "local_path": "raw/ITAN/itan-congelado.zip",
+      "sha256": "7c22bf1055c288978494f314cd4ef4fbf1047ee87cc74aa34fae0bd5d73734c7",
+      "size_bytes": 3450638,
+      "desde": "v8.16.0",
+      "regla": "Asset congelado de los Informes Trimestrales de la SHCP (ITAN): itanfp02_AAAATT.xlsx de 2019-1 a 2026-3 (hoja I.II RecGobFed a) ISR, ISR por rango de ingreso y tipo de contribuyente), empaquetados por 05_scripts/itan-catalogo.py --zip; las celdas, sha256 por archivo y URL viven en 05_scripts/itan-catalogo.json. AccesoITAN.ado lee SOLO el asset y produce master/itan-isr-rangos.dta (sello verde; sha distinto aborta, salvo rawwip). Se reescribe con refrescar-scn.sh --itan --congelar (PR de datos). desde = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores. En 8.16a el motor sigue leyendo ISRInformesTrimestrales.xlsx (plan de retiro en CUAD-1 paragrafo 8 ter)."
     }
   ]
 }
