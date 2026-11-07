@@ -26,6 +26,7 @@ ado_files = [
     "Poblacion.ado",
     "SCN.ado",
     "SHRFSP.ado",
+    "_tabla_anclas.ado",
     "ensure_asset.ado",
     "escalar.ado",
 ]

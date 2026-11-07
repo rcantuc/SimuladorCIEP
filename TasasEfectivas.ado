@@ -42,6 +42,12 @@ quietly {
 		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
 			escalar pctpib `k'PIB = ``k'LIF'
 		}
+		* 8.16a: tabla vertical de anclas a la recaudacion (_tabla_anclas.ado; catalogo 05_scripts/scn-cuentas.csv); solo log *
+		_tabla_anclas clear
+		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
+			_tabla_anclas add, codigo(`k') sector(S.13) fuente("LIF `anio' · divSIM") valor(``k'LIF'/100*scalar(PIB)) variable(`k') nota("`: di %7.3f ``k'LIF'' % del PIB `anio'; reparto ∝ `k' micro (Distribucion)")
+		}
+		noisily _tabla_anclas print, titulo("Anclas a la recaudación — LIF `anio' por impuesto (divSIM); Σ repartido = LIF por construcción") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anio'")
 	}
 
 

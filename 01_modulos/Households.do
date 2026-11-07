@@ -233,8 +233,19 @@ if "`faltan'" != "" {
 	exit 459
 }
 local D4Hog = `RentaPropHogNeta' - cond("$cuotas_d614" == "neto", `D442Hog', 0)
-noisily di in g "  Anclas S.14 (CSI_115 2024): D.1 " in y %16.0fc `D1HogS14' in g "  B.3n " in y %16.0fc `MixNHogS14' in g "  B.2n " in y %16.0fc `ExNOpHogS14' ///
-	in g "  D.4 neto " in y %16.0fc `RentaPropHogNeta' in g "  D.442 " in y %16.0fc `D442Hog' in g "  -> sello " in y "$scn_sello" in g " (asset congelado raw/SCN: verde; sin asset: amarillo)"
+* 8.16a: tabla vertical de anclas (_tabla_anclas.ado + catalogo 05_scripts/scn-cuentas.csv); solo cambia el log *
+local scn_razon = cond("$scn_sello" == "verde", "asset raw/SCN congelado, manifest scn_vintage", "sin asset congelado: descarga en caliente")
+if regexm(`"$SCN_CONGELADO_RES"', "consulta ([0-9]+-[0-9]+-[0-9]+)") {
+	local scn_consulta = regexs(1)
+	local scn_razon "asset raw/SCN congelado, consulta INEGI `scn_consulta'"
+}
+_tabla_anclas clear
+_tabla_anclas add, codigo(D.1) sector(S.14) fuente("CSI_115 · f.71 R/P") valor(`D1HogS14') variable(ing_subor)
+_tabla_anclas add, codigo(B.3n) sector(S.14) fuente("CSI_115 · f.70 R/P") valor(`MixNHogS14') variable(ing_mixto)
+_tabla_anclas add, codigo(B.2n) sector(S.14) fuente("CSI_115 · f.69 R/P") valor(`ExNOpHogS14') variable(ing_estim_alqu) nota("alquiler imputado neto; con rentas_celda = b2n tambien ing_t4_cap3")
+_tabla_anclas add, codigo(D.4) sector(S.14) fuente("CSI_115 · f.95 R/P − U/A") valor(`RentaPropHogNeta') variable(ing_capital) nota("neta = recibida − pagada; la celda que ancla es D.4 neto − D.442 con cuotas_d614 = neto")
+_tabla_anclas add, codigo(D.442) sector(S.14) fuente("CSI_115 · f.103 R/P") valor(`D442Hog') variable("(sale de YA: cuotas_d614=$cuotas_d614)")
+noisily _tabla_anclas print, titulo("Anclas al SCN — sector hogares S.14, año `anioenigh'") sello("$scn_sello") razon("`scn_razon'") unidad("MXN `anioenigh'")
 
 
 ** 1.2 Ajustes Rentas y Servicios Profesionales
@@ -2260,8 +2271,14 @@ if "$yk_ancla" == "actual" {
 }
 scalar TaltimirCap = `MacroCap'/`ALTIMIR0'[1,6]
 escalar pct D4CoberturaENIGH = `ALTIMIR0'[1,7]/`D4Hog'*100
-noisily di in g "   Anclas S.14: TaltimirSal " in y %8.4f TaltimirSal in g " (D.1)  TaltimirSelf " in y %8.4f TaltimirSelf in g " (B.3n)  TaltimirHouse " in y %8.4f TaltimirHouse ///
-	in g " (B.2n; rentas_celda=$rentas_celda)  D.4 neto / relativo " in y %8.4f TaltimirCap in g " (d4_relativo=$d4_relativo; cobertura ENIGH cap6+cap8 " in y %6.2f D4CoberturaENIGH in g " %)  TaltimirROWTrans " in y %8.4f TaltimirROWTrans
+* 8.16a: Σ motor antes del ancla, factor Altimir y cobertura ENIGH (la Tabla 1 de CUAD-0 viva en el log; _tabla_anclas.ado) *
+_tabla_anclas clear
+_tabla_anclas add, codigo(D.1) sector(S.14) fuente("CSI_115 · f.71 R/P") valor(`D1Hog') variable(ing_subor) motor(`ALTIMIR0'[1,1]) factor(TaltimirSal) nota("suborrow=$suborrow")
+_tabla_anclas add, codigo(B.3n) sector(S.14) fuente("CSI_115 · f.70 R/P") valor(`MixNHogS14') variable(ing_mixto) motor(`ALTIMIR0'[1,2]) factor(TaltimirSelf) nota("ing_mixto_depurado=$ing_mixto_depurado; rentas_celda=$rentas_celda")
+_tabla_anclas add, codigo(B.2n) sector(S.14) fuente("CSI_115 · f.69 R/P") valor(`ExNOpHogS14') variable("ing_estim_alqu `cap3b2n'") motor(`=`ALTIMIR0'[1,3] + cond("$rentas_celda" == "b2n", `ALTIMIR0'[1,5], 0)') factor(TaltimirHouse) nota("rentas_celda=$rentas_celda")
+_tabla_anclas add, codigo(D.4) sector(S.14) fuente("CSI_115 · f.95 (− D.442)") valor(`MacroCap') variable(ing_capital) motor(`ALTIMIR0'[1,6]) factor(TaltimirCap) cobertura(D4CoberturaENIGH) nota("d4_relativo=$d4_relativo; Σ motor = relativo ing_d4_rel; cobertura = Σ cap6+cap8 / ancla")
+_tabla_anclas add, codigo(ROWTrans) sector(S.2) fuente("BIE 724034 − 724035") valor(`ROWTrans') variable(ing_remesas) motor(`ALTIMIR0'[1,4]) factor(TaltimirROWTrans) nota("transferencias netas del exterior (BIE); D.752 S.14 se reporta aparte")
+noisily _tabla_anclas print, motor titulo("Factores Altimir — Σ motor antes del ancla, ancla S.14 y cobertura ENIGH, año `anioenigh'") sello("$scn_sello") unidad("MXN `anioenigh'")
 
 if "`altimir'" == "yes" {
 	noisily di in g "   Altimir: " in y "`altimir'"
