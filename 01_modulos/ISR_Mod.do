@@ -14,8 +14,9 @@
 **   | Formalidad para el corte        | Conteo oficial de contribuyentes o cotizantes del anio       | SAT ITG 4T 2024: 51,858,257 activos en sueldos y salarios; IMSS+ISSSTE  |
 **   |                                 |                                                             | 25,500,447 cotizantes; ENOE 23.5 M asalariados con acceso a salud; el   |
 **   |                                 |                                                             | corte actual cierra la LIF (ancla_formales = ninguna, CUAD-1 §4)        |
-**   | Declaraciones anuales por rango | Base gravable e ISR causado por rango de ingreso del anio   | El SAT publica microdatos anonimizados solo 2010-2015 (SAT mas abierto);|
-**   | (SAT)                           |                                                             | para 2024 no existe la tabla: obligacion_isrpf_ancla = enigh            |
+**   | Declaraciones anuales por rango | Base gravable e ISR causado por rango de ingreso del anio   | La SHCP publica la RECAUDACION por rango de ingreso declarado (ITAN     |
+**   | (SHCP, ITAN)                    |                                                             | 4T, 2019-1+): Households.do §11.2 ancla la obligacion de PF por rango   |
+**   |                                 |                                                             | (obligacion_isrpf_ancla = itan_rangos, 8.16b); el web sigue con factores|
 **   | Factores de empalme             | Cociente LIF / micro por impuesto, leido de la corrida       | Hoy cableados (3.793/3.255, 0.241/0.553, 4.176/2.781, 1.675/1.525):     |
 **   |                                 |                                                             | CUAD-1 FLAG 29                                                          |
 **
@@ -143,7 +144,10 @@ egen double CUOTAS = rsum(gmasgT gmpenT invyvidaT riesgoT guardT cestyvejT cuota
 	fondomedP pensjubP segriesgP presperP servsocculP admingenP fvivP)
 
 egen double cuotasF = rsum(gmasgF gmpenF invyvidaF riesgoF guardF cestyvejF cuotasocimssF cuotasocisssteF)
-replace cuotasTPF = cuotasF + CUOTAS + infonavit	// FLAG-5 (v8.14): como Households.do l. 1547 (infonavit una sola vez); antes el web lo omitia (FLAG 2 de v8.12.4)
+* 8.16b (cuotas_por_sector = on): la cuota social y las aportaciones federales (cuotasF) no son contribucion de las personas, como en Households.do §6 *
+if "$cuotas_por_sector" == "" global cuotas_por_sector "on"
+if "$cuotas_por_sector" == "on" replace cuotasTPF = CUOTAS + infonavit
+else replace cuotasTPF = cuotasF + CUOTAS + infonavit	// FLAG-5 (v8.14): como Households.do §6 (infonavit una sola vez); antes el web lo omitia (FLAG 2 de v8.12.4)
 
 
 *************************/
