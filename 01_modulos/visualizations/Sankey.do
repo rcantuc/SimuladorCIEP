@@ -1,6 +1,20 @@
 **************
 *** SANKEY ***
 **************
+**
+** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-2 §9, 2026-11-07; sin cambio de codigo):
+**   | Elemento                        | Que requiere genericamente                                  | Por que Mexico lo resuelve asi                                          |
+**   | CSI por sector institucional    | Cuentas corrientes completas (I-III) por sector con B.5n,   | INEGI publica S.11-S.15 y S.2 (base 2018) sin la matriz de quien a     |
+**   |                                 | B.6n, B.8n, B.9                                             | quien de D.4 ni D.7; los receptores se infieren por sector; las filas   |
+**   |                                 |                                                             | de sector del eje 1 (B5nNoFin, B5nFin, B5nGob, B5nISFLSH, RowPrimNeto,  |
+**   |                                 |                                                             | D442Hog) salen de SCNHogaresS14                                         |
+**   | INBD como pivote                | Un agregado neto de ingreso, despues de la renta primaria   | BIE 724037 (escalar mxn IngDisp) = 27,459.038 = 81.561 % del PIB 2024,  |
+**   |                                 | con el exterior y de las transferencias corrientes          | coincide al peso con PIN + ROW (SCN.ado cuenta C); la CSI da B.6n S.1   |
+**   |                                 |                                                             | con otro vintage (CUAD-2 §6: hub = inbd)                                |
+**   | Vintage BIE vs CSI              | Una sola fuente para anclas y PIB                            | Dos vintages del INEGI: PIB 33,667.023 vs B.1b 33,582.899; CCF 6,457.576|
+**   |                                 |                                                             | vs 6,458.352; se declara como fila «Vintage BIE vs CSI» (l. 96)         |
+**   | Remesas                         | Transferencias corrientes de hogares no residentes por edad | ROWTrans BIE 1,186.091 (D.752 CSI 1,188.474); Banxico como contraste   |
+**
 if "`1'" == "" {
 	clear programs
 	local 1 = "decil"
