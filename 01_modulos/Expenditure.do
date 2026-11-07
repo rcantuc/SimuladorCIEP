@@ -3,6 +3,21 @@
 **** A.2. MACRO + MICRO HARMONIZATION: HOUSEHOLD EXPENDITURES ****
 ****                                                          ****
 ******************************************************************
+****
+**** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-1 §9, 2026-11-07; sin cambio de codigo):
+****   | Elemento                         | Que requiere genericamente                                   | Por que Mexico lo resuelve asi                                        |
+****   | Consumo privado por finalidad    | Consumo final de hogares por COICOP con S.14 separado de las | INEGI publica la apertura por finalidad solo para «hogares e ISFLSH»  |
+****   | (BIE 724600-724656)              | ISFLSH                                                       | en territorio (BIE 7246xx); la CSI separa S.14 de S.15 solo en el     |
+****   |                                  |                                                              | total P.3 (23,381.329 vs 388.320): el ancla TT<k> es hogares + ISFLSH |
+****   |                                  |                                                              | y la correccion a S.14 es un factor unico (CUAD-1 consumo_ancla)      |
+****   | ENIGH tipo_gasto y claves 2018   | Encuesta de gasto con tipo (monetario, autoconsumo, regalos, | La ENIGH 2024 «nueva serie» cambio claves (6 digitos); §2.6 trabaja   |
+****   |                                  | en especie, transferencias, alquiler imputado) y catalogo    | con clave_2018 via clave_iva.dta (construida por CIEP); gasto_anual   |
+****   |                                  | estable                                                      | suma G1-G7 (G2 y G5 cuentan los regalos dos veces; G6 es D.63)        |
+****   | Recaudacion por impuesto (LIF)   | Recaudacion observada por impuesto del anio de la encuesta  | LIF por divCIEP/divSIM; §1.2 lee IEPS no petrolero de divCIEP (24.075)|
+****   |                                  |                                                              | y TasasEfectivas de divSIM (224.780): CUAD-1 iepsnp_macro             |
+****   | Valor agregado del ultimo        | Proporcion del precio final que es valor agregado del        | Censo Economico (VACB/PBT por clase SCIAN, §2.7): base del IVA        |
+****   | eslabon (Censo Economico)        | vendedor, para la base del IVA micro                         | micro; la «informalidad» 23.1 % (IVAT[13]) es el cociente micro/LIF   |
+****
 capture mkdir "${SIMROOT}/raw"
 capture mkdir "${SIMROOT}/raw/ENIGH/"
 capture mkdir "${SIMROOT}/raw/temp"

@@ -31,7 +31,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 |---|---|
 | `CHANGELOG.md` | Registro de cambios por versión publicada. **Único** registro: ningún otro documento de esta carpeta lleva bitácora. El gate 1 de `publicar.sh` exige una entrada por versión. |
 | `scalarlatex-baseline.txt` | No es documento: es dato. Lista auditada de escalares sin registrar que `scalarlatex.ado` lee en tiempo de ejecución para detectar deriva. Cómo actualizarla legítimamente está en su encabezado. |
-| `scn-celdas.md` | Inventario de las celdas del SCN que lee el motor (series BIE con consumidor, filas de los tabulados CSI que el BIE no tiene, escalares derivados, vintage que registra cada archivo). Es lo que recorre `05_scripts/refrescar-scn.sh --comparar` (política de fuente SCN, CUAD-0 §4 bis). Se regenera cuando cambia `UpdateSCN`. |
+| `scn-celdas.md` | Inventario de las celdas del SCN que lee el motor (series BIE con consumidor, filas de los tabulados CSI que el BIE no tiene, escalares derivados, vintage que registra cada archivo). Es lo que recorre `05_scripts/refrescar-scn.sh --comparar` (política de fuente SCN, CUAD-0 §4 bis). Lo genera `05_scripts/gen-scn-celdas.py` (anclas en `anioenigh`, marco del Paquete desde el último año congelado del asset); `--check` exige 0 diferencias con el repo. |
 | `deploys/` | Log local del pipeline de publicación al endpoint (`endpoint-stata.log`); no se versiona y no existe en git: `publicar.sh` y `publicar-endpoint.sh` crean la carpeta al escribir. |
 
 ## Subcarpetas
@@ -40,7 +40,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 
 **`perf/`** — Perfiles de rendimiento fechados del flujo web «Calcular» (dónde se va el tiempo, qué es invariante al escenario, metas propuestas). Son medición, no norma ni decisión; el instrumento es `05_scripts/perfilar-web.sh`. Tiene su propio README.
 
-**`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` (en la raíz de esta carpeta), memo de Cuadratura firmado por Ricardo el 2026-10-31 (la firma está en su §4.0, §4 y §10 bis) e implementado en v8.15b; `metodo/fuentes/` guarda los PDF citados con sha256.
+**`metodo/`** — Fuente de la página `/metodo` (prevista para v8.18): plantilla de capítulo y requerimientos del capítulo 0. El primer capítulo, `Households`, es `CUAD-0.md` (en la raíz de esta carpeta), memo de Cuadratura firmado por Ricardo el 2026-10-31 (la firma está en su §4.0, §4 y §10 bis) e implementado en v8.15b; `metodo/fuentes/` guarda los PDF citados con sha256. Los capítulos siguientes son `CUAD-1.md` (`Expenditure` y `TasasEfectivas`: Cuadratura II, 8.16; borrador para firma) y `CUAD-2.md` (Sankey de la economía completa, 8.17; borrador para firma), escritos en la misma plantilla y pendientes de firma de Ricardo.
 
 **`prompts/`** — Plantillas de prompt de sesión (`memo.md`, `implementacion.md`, `ritual.md`) con los bloques fijos de las sesiones de octubre y noviembre de 2026 y un bloque `<<CONTENIDO>>` para lo específico. Todo prompt de sesión nace de una de ellas. Tiene su propio README.
 
