@@ -1,4 +1,4 @@
-*! version 2.0.0  CIEP 03oct2026
+*! version 2.0.1  CIEP 08nov2026 (8.16b: el dataset vuelve sin deflactar; FLAG 20 de CUAD-1)
 *! Simulador — perfil, incidencia, ciclo de vida y proyección de una variable per cápita,
 *! con bootstrap por diseño muestral (UPM dentro de estrato) en Mata.
 *
@@ -106,6 +106,12 @@ quietly {
 
 
 	** Variable en valor presente **
+	* 8.16b (CUAD-1 §8 bis ficha 1, FLAG 20): la copia del dataset se guarda ANTES de deflactar y se restaura al salir (*** Final ***),
+	* asi que la variable graficada vuelve intacta a quien llama. Hasta v8.15.3 el replace quedaba en el dataset (sin if ni restore)
+	* y Expenditure.do guardo en la cache consumption_*_pc.dta los gas_pc divididos entre el deflactor del año de la corrida
+	* (1/0.920922131 = 1.085868139 con aniovp = 2026 y aniope = 2024). La deflactacion sigue siendo la misma para graficar y proyectar. *
+	tempfile original
+	save `original', replace
 	replace `varlist' = `varlist'/`deflator'
 
 	capture confirm variable ingbrutotot
@@ -121,9 +127,6 @@ quietly {
 		label var `ingreso' "`rellabel'"
 	}
 	replace `ingreso' = `ingreso'/`deflator'
-
-	tempfile original
-	save `original', replace
 
 
 

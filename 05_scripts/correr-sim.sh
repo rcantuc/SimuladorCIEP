@@ -46,8 +46,11 @@ base = [g for g in globs if g.startswith(('global nographs', 'global output'))]
 extra = [g for g in globs if g not in base]
 marca0 = "macro drop _all\n"
 t = t.replace(marca0, marca0 + "".join(g + "\n" for g in base), 1)
-marca = 'global oye_en_hub "off"'
-i = t.index(marca); j = t.index('\n', i) + 1
+# 8.16b: los globals extra van tras el ULTIMO `global` de §0.8/§0.8b (antes de «**# 1. DEMOGRAFÍA»), no tras uno fijo
+fin = t.index('**# 1. DEMOGRAF')
+j = t.rfind('\nglobal ', 0, fin)
+assert j > 0
+j = t.index('\n', j + 1) + 1
 t = t[:j] + "".join(g + "\n" for g in extra) + t[j:]
 open(dst, "w", encoding="utf-8").write(t)
 PYEOF

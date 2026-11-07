@@ -721,9 +721,36 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
+	* 8.16b (CUAD-1 §8 ter, plan de retiro de ISRInformesTrimestrales.xlsx): desde 2019-1 los totales por tipo de contribuyente (pm, pfae, pfsae,
+	* ret_ss_pm, ret_ss_pf, aux; acumulados al trimestre, mdp) salen del ITAN congelado (master/itan-isr-rangos.dta, AccesoITAN.ado, fila «Total»
+	* del bloque de rangos; sello verde); la captura manual queda solo para 2012-2018, donde la SHCP no publica la tabla por rango en .xlsx
+	* (sello amarillo: sin procedencia por celda). AccesoITAN, validar documento que 2021 (cuatro trimestres) y 2022-3T difieren de la captura:
+	* el ITAN publicado manda. Consumidores sin cambio de interfaz: PerfilesSim.do (graficas de ISR) y LIF.ado (master/DatosAbiertos.dta). *
 	ensure_asset "ISRInformesTrimestrales.xlsx"
 	import excel "${SIMROOT}/raw/ISRInformesTrimestrales.xlsx", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
+	keep if anio < 2019
+	noisily di as text "  DatosAbiertos §4.1: ISR por tipo de contribuyente 2012-2018 de la captura manual ISRInformesTrimestrales.xlsx (sello amarillo: sin procedencia por celda; el ITAN no publica la tabla en .xlsx para esos años)"
+	tempfile captura
+	save "`captura'"
+	capture confirm file "${SIMROOT}/master/itan-isr-rangos.dta"
+	if _rc != 0 capture noisily AccesoITAN, nographs
+	capture confirm file "${SIMROOT}/master/itan-isr-rangos.dta"
+	if _rc == 0 {
+		use if rango == "Total" & inlist(tipo, "pm", "pfae", "pfsae", "ret_ss_pm", "ret_ss_pf", "aux", "total") using "${SIMROOT}/master/itan-isr-rangos.dta", clear
+		local itan_sello : char _dta[itan_sello]
+		keep anio trimestre tipo mdp
+		reshape wide mdp, i(anio trimestre) j(tipo) string
+		rename mdp* *
+		order anio trimestre total pm pfae pfsae ret_ss_pm ret_ss_pf aux
+		noisily di as text "  DatosAbiertos §4.1: ISR por tipo de contribuyente 2019-1 en adelante del ITAN congelado (master/itan-isr-rangos.dta, sello `itan_sello'): la captura manual se retira desde 2019 (CUAD-1 §8 ter)"
+		append using "`captura'"
+		sort anio trimestre
+	}
+	else {
+		noisily di as err "  FLAG DatosAbiertos §4.1: sin master/itan-isr-rangos.dta (AccesoITAN); el ISR por tipo de contribuyente 2019+ se queda sin datos (la captura manual solo cubre 2012-2018 desde 8.16b)"
+		use "`captura'", clear
+	}
 	tsset anio trimestre
 	drop total
 

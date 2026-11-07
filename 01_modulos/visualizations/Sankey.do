@@ -59,9 +59,10 @@ local OtrasEmpresas = r(Otras_empresas)
 use `"${SIMROOT}/master/`2'/households.dta"', clear
 * v8.15b: los parametros firmados viajan en la base (char cuad_params), por si Sankey.do corre sin la sesion de SIM.do *
 local cuad : char _dta[cuad_params]
-foreach p in oye_en_hub suborrow cuotas_d614 {
+foreach p in oye_en_hub suborrow cuotas_d614 consumo_ancla {
 	if "${`p'}" == "" & regexm("`cuad'", "`p'=([^ ]+)") global `p' = regexs(1)
 }
+if "$consumo_ancla" == "" global consumo_ancla "p3_s14"
 
 noisily tabstat Yl Yk ing_estim_alqu [fw=factor], stat(sum) format(%20.0fc) by(`1')
 
@@ -198,6 +199,26 @@ label define `1' -3 "__El mundo", add
 replace from = 99 in -1
 replace profile = -scalar(ROWProp) - scalar(ROWRem) in -1
 label define from 99 "_Renta primaria al exterior", add
+
+* 8.16b (CUAD-1 firma, consumo_ancla = p3_s14): Σ gas_pc_* ya no es ConHog BIE (hogares + ISFLSH en territorio) sino P.3 S.14 − compras netas; lo que
+* ConHog contiene y no es consumo de las personas sale como dos filas de sector del lado de los usos: P.3 de las ISFLSH (CSI_118 f.166) y el vintage
+* BIE−CSI del consumo de residentes (ConHog + compras netas − P.3 S.14 − P.3 S.15). Asi los usos siguen sumando lo mismo que las fuentes. *
+if "$consumo_ancla" == "p3_s14" {
+	capture confirm scalar ConISFLSH
+	if _rc == 0 {
+		local vcons = scalar(ConHog) + scalar(ComprasN) - scalar(ConHogS14) - scalar(ConISFLSH)
+		set obs `=_N+2'
+		replace to = -4 if from == .
+		label define `1' -4 "__Otros sectores", add
+		replace from = 97 in -2
+		replace profile = scalar(ConISFLSH) in -2
+		label define from 97 "_Consumo ISFLSH S15", add
+		replace from = 96 in -1
+		replace profile = `vcons' in -1
+		label define from 96 "_Vintage consumo BIE vs CSI", add
+	}
+	else noisily di as err "  FLAG Sankey (consumo_ancla = p3_s14): SCN sin ConISFLSH; los usos no llevan las filas de ISFLSH y vintage del consumo."
+}
 
 
 /* Depreciacion *
