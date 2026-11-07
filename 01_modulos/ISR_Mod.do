@@ -3,6 +3,22 @@
 ***    4.1 ISR PF + PM    ***
 ***                       ***
 *****************************
+**
+** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-1 §9, 2026-11-07; sin cambio de codigo):
+**   | Elemento                        | Que requiere genericamente                                  | Por que Mexico lo resuelve asi                                          |
+**   | Tarifa LISR anual y subsidio   | Tarifa progresiva del impuesto al ingreso de personas y el  | LISR art. 96/152 (matrices ISR y SE de SIM.do §4); UMA 2024 248.93;     |
+**   | al empleo                       | credito al salario del anio                                 | el subsidio al empleo cambio de mecanica el 1-may-2024 (DRR 2024 §III.1)|
+**   | Cuotas por regimen (IMSS,       | Tablas de contribucion por ramo, tope salarial y quien paga | Informe IMSS 2021-2022 Anexo A.4 e IFA ISSSTE 2021 (CSS_IMSS,           |
+**   | ISSSTE, Infonavit, cuota social)| (patron, trabajador, gobierno)                              | CSS_ISSSTE); la cuota social la paga el gobierno federal: no es D.61    |
+**   |                                 |                                                             | de personas (CUAD-1 Tabla 1b)                                           |
+**   | Formalidad para el corte        | Conteo oficial de contribuyentes o cotizantes del anio       | SAT ITG 4T 2024: 51,858,257 activos en sueldos y salarios; IMSS+ISSSTE  |
+**   |                                 |                                                             | 25,500,447 cotizantes; ENOE 23.5 M asalariados con acceso a salud; el   |
+**   |                                 |                                                             | corte actual cierra la LIF (ancla_formales = ninguna, CUAD-1 §4)        |
+**   | Declaraciones anuales por rango | Base gravable e ISR causado por rango de ingreso del anio   | El SAT publica microdatos anonimizados solo 2010-2015 (SAT mas abierto);|
+**   | (SAT)                           |                                                             | para 2024 no existe la tabla: obligacion_isrpf_ancla = enigh            |
+**   | Factores de empalme             | Cociente LIF / micro por impuesto, leido de la corrida       | Hoy cableados (3.793/3.255, 0.241/0.553, 4.176/2.781, 1.675/1.525):     |
+**   |                                 |                                                             | CUAD-1 FLAG 29                                                          |
+**
 timer on 94
 noisily di _newline(2) in g "  MODULO: " in y "ISR " aniovp
 
