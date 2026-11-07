@@ -1052,8 +1052,14 @@ gate_baseline() {
     if [[ "$baseline" == "$version" ]]; then
         # 8.16b: una versión que mueve el baseline lo declara igual a su propia versión ANTES de que exista el tag (lo crea el paso tag del
         # ritual, después de la corrida); el PR no puede traer el tag. Se exige que la entrada [version] del CHANGELOG lo declare.
-        if grep -qE "^## \[$version\]" "$REPO_ROOT/02_governance/CHANGELOG.md" \
-           && awk -v v="$version" '/^## \[/{p = (index($0, "[" v "]") > 0)} p' "$REPO_ROOT/02_governance/CHANGELOG.md" | grep -qi 'baseline'; then
+        # (python, como ritual.sh: el awk/grep de GNU en el runner y el de BSD en macOS no leían igual el CHANGELOG en UTF-8)
+        if python3 -I - "$REPO_ROOT/02_governance/CHANGELOG.md" "$version" <<'PY'
+import re, sys
+t = open(sys.argv[1], encoding="utf-8").read()
+m = re.search(r'^## \[' + re.escape(sys.argv[2]) + r'\].*?(?=^## \[|\Z)', t, re.M | re.S)
+sys.exit(0 if m and 'baseline' in m.group(0).lower() else 1)
+PY
+        then
             log_info "✓ Gate 11: baseline $baseline = la versión que se publica (baseline nuevo; el tag lo crea el ritual) y el CHANGELOG [$version] lo declara$nota"
             return 0
         fi
