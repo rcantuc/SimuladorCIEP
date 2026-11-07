@@ -251,8 +251,13 @@ local Adultos = r(educacion_para_adultos)
 local Posgrado = r(posgrado)
 local OtrosEdu = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `Posgrado'
 
-noisily di in g "  Anclas `anio' (mxn): ConHog " in y %16.0fc `ConHog' in g "  ConGob " in y %16.0fc `ConGob' ///
-	in g "  AhorroHog (B.8n) " in y %16.0fc `AhorroHog' in g "  TransfEspecie (D.63) " in y %16.0fc `TransfEspecie'
+* 8.16a: tabla vertical de anclas (_tabla_anclas.ado; catalogo 05_scripts/scn-cuentas.csv); solo cambia el log *
+_tabla_anclas clear
+_tabla_anclas add, codigo(724600) sector("S.14+S.15") fuente("BIE 724600 · asset") valor(`ConHog') variable(Cpriv) nota("consumo de hogares e ISFLSH en territorio; Cpriv = Σ gas_pc_* anclado + compras netas (724777)")
+_tabla_anclas add, codigo(724959) sector(S.13) fuente("BIE 724959 · asset") valor(`ConGob') variable("CpubInd + CpubCol") nota("consumo de gobierno general")
+_tabla_anclas add, codigo(B.8n) sector(S.14) fuente("CSI_115 · f.171 U/A") valor(`AhorroHog') variable(S) nota("ancla de Σ S (nta_anclaS=$nta_anclaS)")
+_tabla_anclas add, codigo(D.63) sector(S.14) fuente("CSI_115 · f.176 − f.166 U/A") valor(`TransfEspecie') variable(CpubInd) nota("P.4 − P.3: transferencias sociales en especie")
+noisily _tabla_anclas print, titulo("Anclas al SCN — NTA `anio'") sello("$scn_sello") unidad("MXN `anio'")
 
 
 

@@ -650,6 +650,29 @@ quietly {
 	}
 	* v8.15b (CUAD-0 firma; sesion v8.15b E1/E3): celdas de la Tabla 1 firmada (D.1, D.442, D.752 de S.14) y filas de sector de la identidad
 	* PIB = YL + YA + D.442 + B.5n S.11 + S.12 + B.5n S.13 + B.5n S.15 + CCF + RowPrimNeto + vintage BIE−CSI (Households.do §9.1, Sankey.do) *
+	* 8.16a: tabla vertical de las celdas CSI del sector hogares que SCN deja como escalares para los modulos (_tabla_anclas.ado;
+	* catalogo 05_scripts/scn-cuentas.csv). Una vez por anio y sesion ($SCN_TABLA_ANCLAS); solo cambia el log. *
+	capture confirm variable B5nS1
+	if _rc == 0 & !regexm("$SCN_TABLA_ANCLAS", "(^| )`anio'( |$)") {
+		global SCN_TABLA_ANCLAS "$SCN_TABLA_ANCLAS `anio'"
+		_tabla_anclas clear
+		_tabla_anclas add, codigo(D.1) sector(S.14) fuente("CSI_115 · f.71 R/P") valor(D1HogS14[`obs']) variable(D1HogS14) nota("ancla de ing_subor (Households)")
+		_tabla_anclas add, codigo(B.3n) sector(S.14) fuente("CSI_115 · f.70 R/P") valor(MixNHogS14[`obs']) variable(MixNHogS14) nota("ancla de ing_mixto")
+		_tabla_anclas add, codigo(B.2n) sector(S.14) fuente("CSI_115 · f.69 R/P") valor(ExNOpHogS14[`obs']) variable(ExNOpHogS14) nota("ancla de ing_estim_alqu")
+		_tabla_anclas add, codigo(D.4) sector(S.14) fuente("CSI_115 · f.95 R/P − U/A") valor(RentaPropHogR[`obs'] - RentaPropHogU[`obs']) variable(RentaPropHogNeta) nota("ancla de ing_capital (− D.442)")
+		_tabla_anclas add, codigo(D.442) sector(S.14) fuente("CSI_115 · f.103 R/P") valor(D442Hog[`obs']) variable(D442Hog)
+		_tabla_anclas add, codigo(D.61) sector(S.14) fuente("CSI_115 · f.117 − f.127 U/A") valor(CuotasHogS14[`obs']) variable(CuotasHogS14) nota("D.61 − D.614: ancla de las cuotas en NTA (nta_cuotas = S14)")
+		_tabla_anclas add, codigo(D.21) sector(S.1) fuente("CSI_103 · f.25 − f.26 R/P") valor(ImpNetosProdS1[`obs']) variable(ImpNetosProd) nota("D.21 − D.31: impuestos netos a los productos (NTA ImpProd)")
+		_tabla_anclas add, codigo(D.8) sector(S.14) fuente("CSI_115 · f.169 R/P") valor(AjustePensHog[`obs']) variable(AjustePension)
+		_tabla_anclas add, codigo(D.62) sector(S.14) fuente("CSI_115 · f.131 R/P") valor(PrestSocHog[`obs']) variable(PrestSocHog) nota("+ D.759 f.151 = TauPubS14")
+		_tabla_anclas add, codigo(D.752) sector(S.14) fuente("CSI_115 · f.150 R/P") valor(RemesasHogS14[`obs']) variable(RemesasHogS14) nota("remesas recibidas (informativo; ing_remesas ancla a ROWTrans BIE)")
+		_tabla_anclas add, codigo(P.3) sector(S.14) fuente("CSI_115 · f.166 U/A") valor(ConHogS14[`obs']) variable(ConHogS14) nota("P.3 del sector hogares; el consumo del motor ancla a BIE 724600 (hogares + ISFLSH)")
+		_tabla_anclas add, codigo(D.63) sector(S.14) fuente("CSI_115 · f.176 − f.166 U/A") valor(ConEfecHogS14[`obs'] - ConHogS14[`obs']) variable(TransfEspecie)
+		_tabla_anclas add, codigo(B.8n) sector(S.14) fuente("CSI_115 · f.171 U/A") valor(AhorroHogN[`obs']) variable(AhorroHog)
+		_tabla_anclas add, codigo(B.5n) sector(S.1) fuente("CSI_103 · f.110 U/A") valor(B5nS1[`obs']) variable(B5nS1) nota("ingreso nacional neto; filas de sector de la identidad PIB (Households §9.1)")
+		_tabla_anclas add, codigo(B.1b) sector(S.1) fuente("CSI_103 · f.27 U/A") valor(PIBCSI[`obs']) variable(PIBCSI) nota("vs PIB BIE 724025 = `: di %21.0fc PIB[`obs']' (fila vintage)")
+		noisily _tabla_anclas print, titulo("Celdas CSI del sector hogares que SCN expone a los módulos, año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage") unidad("MXN `anio'")
+	}
 	capture confirm variable B5nS1
 	if _rc == 0 {
 		escalar mxn D1HogS14 = D1HogS14[`obs']

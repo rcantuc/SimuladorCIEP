@@ -1,0 +1,2720 @@
+{
+ "regla": "Catálogo de celdas del ISR por rango de ingreso del contribuyente en los Informes Trimestrales de la SHCP (anexo de finanzas públicas itanfp02, hoja I.II RecGobFed a) ISR). Lo genera 05_scripts/itan-catalogo.py sobre los .xlsx congelados en raw/ITAN/ (asset itan-congelado.zip, manifest.json); AccesoITAN.ado lee SOLO estas celdas, verifica el sha256 de cada archivo y el texto de cada rótulo, y produce master/itan-isr-rangos.dta. Se regenera solo con refrescar-scn.sh --itan --congelar (PR de datos).",
+ "fuente": "SHCP, Informes sobre la Situación Económica, las Finanzas Públicas y la Deuda Pública (informes trimestrales al Congreso), anexo de finanzas públicas; cifras del SAT, preliminares sujetas a revisión.",
+ "url_prefijo": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/",
+ "url_patron": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/<AAAA>/<it|iit|iiit|ivt>/04afp/itanfp02_<AAAA>0<T>.xlsx",
+ "trimestre_carpeta": {
+  "1": "it",
+  "2": "iit",
+  "3": "iiit",
+  "4": "ivt"
+ },
+ "unidades": "mdp = millones de pesos corrientes, acumulado de enero al trimestre; rangos = ingreso anual declarado por el contribuyente, miles de pesos (RIF: declaraciones bimestrales); contribuyentes = número que presentó declaración con pago, por régimen (uno puede contar en varios).",
+ "rangos": [
+  "0 ≤ 250",
+  "250 ≤ 500",
+  "500 ≤ 750",
+  "750 ≤ 1,000",
+  "1,000 ≤ 5,000",
+  "5,000 ≤ 10,000",
+  "10,000 ≤ 20,000",
+  "20,000 ≤ 50,000",
+  "50,000 ≤ 100,000",
+  "100,000 ≤ 500,000",
+  "Más de 500 mil",
+  "Resto",
+  "Total"
+ ],
+ "tipos": {
+  "total": "Total",
+  "pm": "Personas morales",
+  "pfae": "Personas físicas con actividad empresarial",
+  "pfsae": "Personas físicas sin actividad empresarial",
+  "ret_ss_pm": "Retenciones por sueldos y salarios: personas morales",
+  "ret_ss_pf": "Retenciones por sueldos y salarios: personas físicas",
+  "aux": "Otros auxiliares (aduanas, entidades federativas, Tesofe)"
+ },
+ "no_disponible": {
+  "2013-2018": "itanfp02_<AAAA><TT>.xlsx existe para 2013/3-2015/4 pero es otro anexo (donativos otorgados, calendario de presupuesto) y en 2016-2018 no existe con ese nombre; ningún anexo .xlsx de los IV trimestres 2015-2018 trae la tabla de ISR por rango (revisados itanfp01-21 de 2015, 2016, 2017 y 2018). La tabla por rango en .xlsx empieza en 2019/1. Para 2012-2018 la captura manual ISRInformesTrimestrales.xlsx (asset) sigue siendo la única fuente en el repo."
+ },
+ "generado": {
+  "script": "05_scripts/itan-catalogo.py",
+  "fecha": "2026-11-07",
+  "archivos": 31,
+  "primero": "2019-1",
+  "ultimo": "2026-3"
+ },
+ "archivos": {
+  "2019-1": {
+   "archivo": "itanfp02_201901.xlsx",
+   "anio": 2019,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2019/it/04afp/itanfp02_201901.xlsx",
+   "sha256": "e4f8adf19a2612e9d667bbcd3a1dab8f9e64089471aa88e357976999df5b3e93",
+   "size_bytes": 124945,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2019",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "TOTAL",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2019-2": {
+   "archivo": "itanfp02_201902.xlsx",
+   "anio": 2019,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2019/iit/04afp/itanfp02_201902.xlsx",
+   "sha256": "8a2a0bdaf4d68df28e4c761537907211fc3207311888f37c7bd562657e70bafd",
+   "size_bytes": 125386,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-junio de 2019",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2019-3": {
+   "archivo": "itanfp02_201903.xlsx",
+   "anio": 2019,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2019/iiit/04afp/itanfp02_201903.xlsx",
+   "sha256": "bdfc44971a599eaad1e7f8cc1b19d44da59137e1b00d94a82010cd81e29bef72",
+   "size_bytes": 124073,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-septiembre de 2019",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2019-4": {
+   "archivo": "itanfp02_201904.xlsx",
+   "anio": 2019,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2019/ivt/04afp/itanfp02_201904.xlsx",
+   "sha256": "8305a6d0968ceec7c2c99f9d9b8322829c920ac7a88bcf813511f1eb197608bc",
+   "size_bytes": 123663,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-diciembre de 2019",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2020-1": {
+   "archivo": "itanfp02_202001.xlsx",
+   "anio": 2020,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2020/it/04afp/itanfp02_202001.xlsx",
+   "sha256": "01212469a8f64922d4110512078321637f868b1542d5881f44214a6c930abd13",
+   "size_bytes": 121800,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2020",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2020-2": {
+   "archivo": "itanfp02_202002.xlsx",
+   "anio": 2020,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2020/iit/04afp/itanfp02_202002.xlsx",
+   "sha256": "5136c4a6501aa500aea51c0dbcf5386016bea53b4dd21348330e83cb480d8b56",
+   "size_bytes": 126948,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-junio de 2020",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2020-3": {
+   "archivo": "itanfp02_202003.xlsx",
+   "anio": 2020,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2020/iiit/04afp/itanfp02_202003.xlsx",
+   "sha256": "d53236cfc32563eb4cedd95531c7784993576629987d6cb7771ee254f111a9fc",
+   "size_bytes": 127571,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-septiembre de 2020",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2020-4": {
+   "archivo": "itanfp02_202004.xlsx",
+   "anio": 2020,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2020/ivt/04afp/itanfp02_202004.xlsx",
+   "sha256": "d88f909a29bf0aa0c31e55933338b726409360a7325217c4e023f9ca6c0d1268",
+   "size_bytes": 124792,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-diciembre de 2020",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2021-1": {
+   "archivo": "itanfp02_202101.xlsx",
+   "anio": 2021,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2021/it/04afp/itanfp02_202101.xlsx",
+   "sha256": "1597d84ef426970da928f1f8b41d09e3a65bf6e99662c9a75cc18791780676d3",
+   "size_bytes": 129220,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2021",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2021-2": {
+   "archivo": "itanfp02_202102.xlsx",
+   "anio": 2021,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2021/iit/04afp/itanfp02_202102.xlsx",
+   "sha256": "ad237818881f24a558f359104a2e3b93908ec289a76753458d20ee0c465a7577",
+   "size_bytes": 127504,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-junio de 2021",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2021-3": {
+   "archivo": "itanfp02_202103.xlsx",
+   "anio": 2021,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2021/iiit/04afp/itanfp02_202103.xlsx",
+   "sha256": "20da2c2d3a0a95df5810e239268bad28689ab618035880a46dff3f287a38dea1",
+   "size_bytes": 135865,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-septiembre de 2021",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2021-4": {
+   "archivo": "itanfp02_202104.xlsx",
+   "anio": 2021,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2021/ivt/04afp/itanfp02_202104.xlsx",
+   "sha256": "a5e19676b876af172f38a0122458a7656c47e93e0686d61a14260313d46f9f7a",
+   "size_bytes": 133448,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-diciembre de 2021",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2022-1": {
+   "archivo": "itanfp02_202201.xlsx",
+   "anio": 2022,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2022/it/04afp/itanfp02_202201.xlsx",
+   "sha256": "c8b642af10b9d415c51785eb2e0d9d0bfea5e367a95d36659234c8e88b8a3304",
+   "size_bytes": 123443,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2022",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2022-2": {
+   "archivo": "itanfp02_202202.xlsx",
+   "anio": 2022,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2022/iit/04afp/itanfp02_202202.xlsx",
+   "sha256": "04228afb3dc9ae703fc7737386357a433b62cd861f624011496b487934ac00ac",
+   "size_bytes": 123674,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-junio de 2022",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2022-3": {
+   "archivo": "itanfp02_202203.xlsx",
+   "anio": 2022,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2022/iiit/04afp/itanfp02_202203.xlsx",
+   "sha256": "524d6502c3b03884f1ce8f0187e67b2b76dfb934f65442c2f976ca682a77dffc",
+   "size_bytes": 127887,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-septiembre de 2022",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2022-4": {
+   "archivo": "itanfp02_202204.xlsx",
+   "anio": 2022,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2022/ivt/04afp/itanfp02_202204.xlsx",
+   "sha256": "ac934c3d9daade3a44a3f13f91a0b5d0c2d30acdb10952b4d3ffced5c3771dc7",
+   "size_bytes": 128269,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-diciembre de 2022",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2023-1": {
+   "archivo": "itanfp02_202301.xlsx",
+   "anio": 2023,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2023/it/04afp/itanfp02_202301.xlsx",
+   "sha256": "a2b0ac70fb6705aa07a74f32602ba52753324df2561c97128301246132e00826",
+   "size_bytes": 127110,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2023",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2023-2": {
+   "archivo": "itanfp02_202302.xlsx",
+   "anio": 2023,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2023/iit/04afp/itanfp02_202302.xlsx",
+   "sha256": "2c3c277754aa7af66ae2599ca6880dc0ce494c9f6d3ec5ea5e7e5d3831639ee9",
+   "size_bytes": 126172,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-junio de 2023",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 19,
+    "fila_ini": 20,
+    "fila_fin": 31,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2023-3": {
+   "archivo": "itanfp02_202303.xlsx",
+   "anio": 2023,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2023/iiit/04afp/itanfp02_202303.xlsx",
+   "sha256": "1aba5fa02d8239a1c7c9b6d12f82dfc09ebe74417d86464dfe5c48d409a57b98",
+   "size_bytes": 125703,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-septiembre de 2023",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2023-4": {
+   "archivo": "itanfp02_202304.xlsx",
+   "anio": 2023,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2023/ivt/04afp/itanfp02_202304.xlsx",
+   "sha256": "f42feefa5cc1c74a1985ebf9bc7e7fe4584766c917a4d1ba175e8b272dd228b1",
+   "size_bytes": 126328,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-diciembre de 2023",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2024-1": {
+   "archivo": "itanfp02_202401.xlsx",
+   "anio": 2024,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2024/it/04afp/itanfp02_202401.xlsx",
+   "sha256": "ece61c522223ba06ac91839f20910d0b5b636e54d976c16e1112d04a9d4d00fc",
+   "size_bytes": 125441,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2024",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2024-2": {
+   "archivo": "itanfp02_202402.xlsx",
+   "anio": 2024,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2024/iit/04afp/itanfp02_202402.xlsx",
+   "sha256": "a7b60636af06f50a3d2c36f1787067acd273748924911894a26b0f8e78000ede",
+   "size_bytes": 125567,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-junio de 2024",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2024-3": {
+   "archivo": "itanfp02_202403.xlsx",
+   "anio": 2024,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2024/iiit/04afp/itanfp02_202403.xlsx",
+   "sha256": "25e19ad995b7785536679ce16b1e23c0e571c47d26a5e3f8bb71351f6ed33bc4",
+   "size_bytes": 126059,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-septiembre de 2024",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2024-4": {
+   "archivo": "itanfp02_202404.xlsx",
+   "anio": 2024,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2024/ivt/04afp/itanfp02_202404.xlsx",
+   "sha256": "c3867beff33bf0f539aa2e37bb0828b0db439c1429c03fcc6e2afae5641f22a1",
+   "size_bytes": 125651,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-diciembre de 2024",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2025-1": {
+   "archivo": "itanfp02_202501.xlsx",
+   "anio": 2025,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2025/it/04afp/itanfp02_202501.xlsx",
+   "sha256": "ef4492e27d60244245c53bed50fcd45ec412ca6bba6fc1137ce1861ad870ef37",
+   "size_bytes": 121140,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-marzo de 2025",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2025-2": {
+   "archivo": "itanfp02_202502.xlsx",
+   "anio": 2025,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2025/iit/04afp/itanfp02_202502.xlsx",
+   "sha256": "e9fa2e6a778c105737254d82c8be8469ca64eb3016260b09a922bdb872bfcedc",
+   "size_bytes": 121634,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-Junio de 2025",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2025-3": {
+   "archivo": "itanfp02_202503.xlsx",
+   "anio": 2025,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2025/iiit/04afp/itanfp02_202503.xlsx",
+   "sha256": "4bdc78c6750dfed680bb9239528cf3ed8a9cdab943b4f2037baebeb01bc06d44",
+   "size_bytes": 122235,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-Septiembre de 2025",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2025-4": {
+   "archivo": "itanfp02_202504.xlsx",
+   "anio": 2025,
+   "trimestre": 4,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2025/ivt/04afp/itanfp02_202504.xlsx",
+   "sha256": "7f187b894ecfc37be73388ad4a2d9719970810379cfb87b1be8cbaee67aa15c7",
+   "size_bytes": 121732,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-Diciembre de 2025",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2026-1": {
+   "archivo": "itanfp02_202601.xlsx",
+   "anio": 2026,
+   "trimestre": 1,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2026/it/04afp/itanfp02_202601.xlsx",
+   "sha256": "2a2442902c7daee102767d0177d0ecbffbf23a02dafa9e66165fafd81e374c0e",
+   "size_bytes": 120943,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-Marzo de 2026",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2026-2": {
+   "archivo": "itanfp02_202602.xlsx",
+   "anio": 2026,
+   "trimestre": 2,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2026/iit/04afp/itanfp02_202602.xlsx",
+   "sha256": "5b830b567ed54af952a4814cc67763b8b77b88769c41d60150a8083ba9e5ff06",
+   "size_bytes": 120471,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-Junio de 2026",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  },
+  "2026-3": {
+   "archivo": "itanfp02_202603.xlsx",
+   "anio": 2026,
+   "trimestre": 3,
+   "url": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/2026/iiit/04afp/itanfp02_202603.xlsx",
+   "sha256": "b3ba9dc9b8a2ee74093f70ea1e954cc726f154f29acf67c009193f126bd16cc1",
+   "size_bytes": 121337,
+   "hoja": "I.II RecGobFed a) ISR",
+   "periodo": "Enero-Septiembre de 2026",
+   "rangos": {
+    "col_rango": "O",
+    "fila_total": 18,
+    "fila_ini": 19,
+    "fila_fin": 30,
+    "cols": {
+     "P": "total",
+     "Q": "pm",
+     "R": "pfae",
+     "S": "pfsae",
+     "T": "ret_ss_pm",
+     "U": "ret_ss_pf",
+     "V": "aux"
+    },
+    "encabezados": {
+     "P": "Total",
+     "Q": "Personas Morales",
+     "R": "Personas Físicas Con Actividad Empresarial",
+     "S": "Sin Actividad Empresarial",
+     "T": "Retenciones Sueldos y Salarios Personas Morales",
+     "U": "Personas Físicas",
+     "V": "Otros Auxiliares"
+    },
+    "etiquetas": [
+     "0 ≤ 250",
+     "250 ≤ 500",
+     "500 ≤ 750",
+     "750 ≤ 1,000",
+     "1,000 ≤ 5,000",
+     "5,000 ≤ 10,000",
+     "10,000 ≤ 20,000",
+     "20,000 ≤ 50,000",
+     "50,000 ≤ 100,000",
+     "100,000 ≤ 500,000",
+     "Más de 500 mil",
+     "Resto"
+    ]
+   },
+   "conceptos": {
+    "col_label": "B",
+    "col_valor": "C",
+    "fila_ini": 18,
+    "fila_fin": 22,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Retenciones a residentes en el extranjero",
+     "Retenciones por salarios"
+    ],
+    "tipos": [
+     "total_concepto",
+     "pm_concepto",
+     "pf_concepto",
+     "ret_extranjero",
+     "ret_salarios"
+    ]
+   },
+   "contribuyentes": {
+    "col_label": "E",
+    "col_valor": "F",
+    "fila_ini": 18,
+    "fila_fin": 21,
+    "etiquetas": [
+     "Total",
+     "Personas morales",
+     "Personas físicas",
+     "Otras Personas físicas y morales"
+    ],
+    "tipos": [
+     "total",
+     "pm",
+     "pf",
+     "otros_pfpm"
+    ]
+   }
+  }
+ },
+ "asset": {
+  "name": "itan-congelado.zip",
+  "sha256": "7c22bf1055c288978494f314cd4ef4fbf1047ee87cc74aa34fae0bd5d73734c7",
+  "size_bytes": 3450638
+ }
+}

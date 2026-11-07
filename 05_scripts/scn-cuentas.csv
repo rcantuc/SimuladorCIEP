@@ -1,0 +1,80 @@
+# scn-cuentas.csv — catálogo de cuentas que anclan al motor (8.16a). Separador «;». codigo = código SCN 2008 (CSI), clave de serie del BIE o divSIM de la LIF;
+# nombre_inegi = texto tal como lo escribe INEGI (columna A de los tabulados CSI; etiqueta del BIE en manifest.json scn_vintage) o el rótulo de la LIF; nombre_sna2008 = SNA 2008 / COICOP en inglés.
+# Lo lee _tabla_anclas.ado (columna «Cuenta» del log) y lo reutilizará /metodo (8.18b). Un código vive una sola vez aquí.
+codigo;nombre_inegi;nombre_sna2008;sectores;fuente;nota
+B.1b;Valor agregado bruto / Producto interno bruto;Gross value added / Gross domestic product;S.1;CSI;CSI_103 f.27
+P.51c;Consumo de capital fijo;Consumption of fixed capital;S.1;CSI;CSI_103 f.28
+D.21;Impuestos sobre los productos;Taxes on products;S.1;S.13;CSI;CSI_103 f.25 (R/P)
+D.31;Subsidios a los productos;Subsidies on products;S.1;S.13;CSI;CSI_103 f.26 (R/P, negativo)
+D.2;Impuestos sobre la producción y las importaciones;Taxes on production and imports;S.13;CSI;CSI_112 f.80 (R/P)
+D.3;Subsidios (-);Subsidies;S.13;CSI;CSI_112 f.89 (R/P)
+B.2n;Excedente neto de operación;Operating surplus, net;S.14;CSI;CSI_115 f.69 (R/P); en S.14 es el alquiler imputado neto
+B.3n;Ingreso mixto neto;Mixed income, net;S.14;CSI;CSI_115 f.70 (R/P)
+D.1;Remuneración de los asalariados;Compensation of employees;S.14;S.2;CSI;CSI_115 f.71 (R/P); CSI_121 f.71 (U/A = pagado por el resto del mundo)
+D.4;Renta de la propiedad;Property income;S.13;S.14;S.2;CSI;f.95; neta = R/P − U/A
+D.41;Intereses;Interest;S.14;CSI;CSI_115 f.96
+D.442;Renta de inversión a pagar sobre derechos de pensión;Investment income payable on pension entitlements;S.14;CSI;CSI_115 f.103 (R/P)
+B.5n;Saldo de Ingresos primarios neto / Ingreso nacional neto;Balance of primary incomes, net / National income, net;S.1;S.11;S.12;S.13;S.15;CSI;f.110 (U/A)
+D.5;Impuestos corrientes sobre el ingreso, la riqueza, etc.;Current taxes on income, wealth, etc.;S.1;S.14;CSI;f.114 (U/A)
+D.51;Impuestos sobre el ingreso;Taxes on income;S.1;S.14;CSI;f.115 (U/A)
+D.59;Otros impuestos corrientes;Other current taxes;S.1;S.14;CSI;f.116 (U/A)
+D.61;Contribuciones sociales netas;Net social contributions;S.14;CSI;CSI_115 f.117 (U/A)
+D.614;Contribuciones sociales complementarias de los hogares;Households social contribution supplements;S.14;CSI;CSI_115 f.127 (U/A)
+D.62;Prestaciones sociales distintas a las prestaciones sociales en especie;Social benefits other than social transfers in kind;S.14;CSI;CSI_115 f.131 (R/P)
+D.63;Transferencias sociales en especie;Social transfers in kind;S.14;CSI;CSI_115 f.157 (R/P) = P.4 − P.3
+D.7;Otras transferencias corrientes;Other current transfers;S.14;CSI;CSI_115 f.139
+D.752;Transferencias corrientes entre hogares residentes y no residentes;Current transfers between resident and non-resident households;S.14;CSI;CSI_115 f.150 (R/P)
+D.759;Otras transferencias corrientes diversas;Other miscellaneous current transfers;S.14;CSI;CSI_115 f.151 (R/P)
+D.8;Ajuste por cambio en los derechos de pensiones;Adjustment for the change in pension entitlements;S.14;CSI;CSI_115 f.169 (R/P)
+P.3;Gastos de consumo final;Final consumption expenditure;S.14;S.15;CSI;CSI_115 f.166, CSI_118 f.166 (U/A)
+P.4;Consumo final efectivo;Actual final consumption;S.14;CSI;CSI_115 f.176 (U/A)
+B.8b;Ahorro bruto;Saving, gross;S.14;CSI;CSI_115 f.170 (U/A)
+B.8n;Ahorro neto;Saving, net;S.14;CSI;CSI_115 f.171 (U/A)
+724025;Producto Interno Bruto;Gross domestic product;S.1;BIE;variable del motor PIB; asset raw/SCN/bie/724025.csv
+724600;Consumo de hogares e ISFLSH;Final consumption expenditure of households and NPISHs;S.14+S.15;BIE;variable del motor ConHog; asset raw/SCN/bie/724600.csv
+724602;Alimentos;Food (COICOP 01.1);S.14+S.15;BIE;variable del motor Alim; asset raw/SCN/bie/724602.csv
+724603;Bebidas no alcohólicas;Non-alcoholic beverages (COICOP 01.2);S.14+S.15;BIE;variable del motor BebN; asset raw/SCN/bie/724603.csv
+724605;Bebidas alcohólicas;Alcoholic beverages (COICOP 02.1);S.14+S.15;BIE;variable del motor BebA; asset raw/SCN/bie/724605.csv
+724606;Tabaco;Tobacco (COICOP 02.2);S.14+S.15;BIE;variable del motor Taba; asset raw/SCN/bie/724606.csv
+724608;Prendas de vestir;Clothing (COICOP 03.1);S.14+S.15;BIE;variable del motor Vest; asset raw/SCN/bie/724608.csv
+724609;Calzado;Footwear (COICOP 03.2);S.14+S.15;BIE;variable del motor Calz; asset raw/SCN/bie/724609.csv
+724611;Alquiler efectivo;Actual rentals for housing (COICOP 04.1);S.14+S.15;BIE;variable del motor Alqu; asset raw/SCN/bie/724611.csv
+724612;Conservación y reparación de la vivienda;Maintenance and repair of the dwelling (COICOP 04.3);S.14+S.15;BIE;variable del motor CRep; asset raw/SCN/bie/724612.csv
+724613;Agua;Water supply and miscellaneous services relating to the dwelling (COICOP 04.4);S.14+S.15;BIE;variable del motor Agua; asset raw/SCN/bie/724613.csv
+724614;Electricidad, gas y otros combustibles;Electricity, gas and other fuels (COICOP 04.5);S.14+S.15;BIE;variable del motor Elec; asset raw/SCN/bie/724614.csv
+724615;Artículos para el hogar;Furnishings, household equipment and routine household maintenance (COICOP 05);S.14+S.15;BIE;variable del motor HogaT; asset raw/SCN/bie/724615.csv
+724622;Salud;Health (COICOP 06);S.14+S.15;BIE;variable del motor SaluT; asset raw/SCN/bie/724622.csv
+724627;Adquisición de vehículos;Purchase of vehicles (COICOP 07.1);S.14+S.15;BIE;variable del motor Vehi; asset raw/SCN/bie/724627.csv
+724628;Funcionamiento de transporte;Operation of personal transport equipment (COICOP 07.2);S.14+S.15;BIE;variable del motor FTra; asset raw/SCN/bie/724628.csv
+724629;Servicios de transporte;Transport services (COICOP 07.3);S.14+S.15;BIE;variable del motor STra; asset raw/SCN/bie/724629.csv
+724630;Comunicaciones;Communication (COICOP 08);S.14+S.15;BIE;variable del motor ComuT; asset raw/SCN/bie/724630.csv
+724634;Recreación y cultura;Recreation and culture (COICOP 09);S.14+S.15;BIE;variable del motor RecrT; asset raw/SCN/bie/724634.csv
+724641;Educación;Education (COICOP 10);S.14+S.15;BIE;variable del motor EducT; asset raw/SCN/bie/724641.csv
+724647;Restaurantes y hoteles;Restaurants and hotels (COICOP 11);S.14+S.15;BIE;variable del motor RestT; asset raw/SCN/bie/724647.csv
+724650;Bienes y servicios diversos;Miscellaneous goods and services (COICOP 12);S.14+S.15;BIE;variable del motor DiveT; asset raw/SCN/bie/724650.csv
+724777;Compras netas de residentes y no residentes;Net purchases abroad by residents (direct purchases abroad by residents minus purchases in the domestic market by non-residents);S.14+S.15;BIE;variable del motor ComprasN; asset raw/SCN/bie/724777.csv
+724959;Gastos de consumo de gobierno general - Total;Government final consumption expenditure (general government);S.13;BIE;variable del motor ConGob; asset raw/SCN/bie/724959.csv
+724028;Consumo de capital fijo;Consumption of fixed capital;S.1;BIE;variable del motor CapFij; asset raw/SCN/bie/724028.csv
+724034;Transferencias recibidas del resto del mundo;Current transfers receivable from the rest of the world;S.2;BIE;variable del motor ROWTransR; asset raw/SCN/bie/724034.csv
+724035;Transferencias pagadas al resto del mundo;Current transfers payable to the rest of the world;S.2;BIE;variable del motor ROWTransP; asset raw/SCN/bie/724035.csv
+723656;Impuestos netos;Taxes less subsidies on products;S.1;BIE;variable del motor ImpNet; asset raw/SCN/bie/723656.csv
+725116;21 Minería;Private consumption: mining (SCIAN 21);S.14+S.15;BIE;variable del motor ConsPriv_21; asset raw/SCN/bie/725116.csv
+724015;Remuneraciones a asalariados;Compensation of employees: wages and salaries;S.1;BIE;variable del motor RemSal; asset raw/SCN/bie/724015.csv
+724016;CSS empleadores;Employers social contributions;S.1;BIE;variable del motor SSEmpleadores; asset raw/SCN/bie/724016.csv
+724611+724612;Alquiler efectivo + Conservación y reparación de la vivienda;Actual rentals for housing + maintenance and repair of the dwelling (COICOP 04.1 + 04.3);S.14+S.15;BIE;suma que usa Expenditure.do para la categoría Alqu (SCN.ado l. 867)
+ROWTrans;Transferencias recibidas del resto del mundo − pagadas al resto del mundo;Net current transfers from the rest of the world;S.2;BIE;724034 − 724035 (SCN.ado); ancla de ing_remesas
+ISRAS;ISR retenciones por salarios (LIF: ISR Asa.);Taxes on income: withholdings on wages and salaries (within D.51);S.13;LIF;relativo micro ISR_asalariados
+ISRPF;ISR personas físicas (LIF: ISR PF);Taxes on income: individuals other than wage withholdings (within D.51);S.13;LIF;relativo micro ISR_PF
+ISRPM;ISR personas morales (LIF: ISR PM);Taxes on income: corporations (within D.51);S.13;LIF;relativo micro ISR_PM
+CUOTAS;Cuotas IMSS (LIF: Cuotas IMSS);Actual social contributions to IMSS (within D.61);S.13;LIF;relativo micro CUOTAS (cuotasTP)
+OTROSK;Otros tributarios y no tributarios (LIF: derechos, productos, aprovechamientos, otros tributarios);Other taxes and non-tax revenue (D.59, D.29, D.45, D.75);S.13;LIF;per cápita en el fiscal; ∝ ISR_PM en NTA (informativo)
+FMP;Fondo Mexicano del Petróleo (LIF: FMP/Derechos);Property income receivable: oil rents (D.45);S.13;LIF;fila de sector (oye_en_hub = off)
+PEMEX;Pemex ingresos propios (LIF);Sales of public enterprises (P.11), not a tax;S.11;LIF;fila de sector
+CFE;CFE ingresos propios (LIF);Sales of public enterprises (P.11), not a tax;S.11;LIF;fila de sector
+IMSS;IMSS ingresos propios (LIF);Own revenue of social security funds;S.13;LIF;fila de sector
+ISSSTE;ISSSTE ingresos propios (LIF);Own revenue of social security funds;S.13;LIF;fila de sector
+IVA;Impuesto al valor agregado (LIF: IVA);Value added type taxes (D.211);S.13;LIF;relativo micro IVA
+IEPSNP;IEPS no petrolero (LIF divSIM: IEPS (no petrolero) + IEPS (salud));Excise duties other than fuels (within D.214);S.13;LIF;relativo micro: gas_pc_BebA en NTA; IEPS en el fiscal
+IEPSP;IEPS petrolero (LIF: IEPS (petrolero));Excise duties on fuels (within D.214);S.13;LIF;relativo micro: gas_pc_Vehi en NTA
+ISAN;Impuesto sobre automóviles nuevos (LIF: ISAN);Taxes on new vehicles (within D.214);S.13;LIF;relativo micro gas_pc_Vehi
+IMPORT;Impuestos a la importación (LIF: Importaciones);Import duties (D.2122);S.13;LIF;relativo micro gastoanualTOT

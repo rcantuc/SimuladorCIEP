@@ -176,6 +176,24 @@ Un `exit 1` en el paso 1 («INEGI REVISÓ») es una revisión de INEGI: entra so
 Un `exit 3` («NO COMPARADO») no autoriza a congelar. Los periodos posteriores a `anioenigh` no se comparan
 (son preliminares): se registran con su etiqueta en `scn_vintage.bie.<serie>.posteriores_a_referencia`.
 
+## 2e. El asset del ITAN (`raw/ITAN/itan-congelado.zip`) tampoco se edita a mano
+
+Los Informes Trimestrales de la SHCP (ISR por rango de ingreso × tipo de contribuyente, hoja «I.II RecGobFed a) ISR» del anexo
+`itanfp02_<AAAA><TT>.xlsx`) se congelan como los del SCN (sesión 8.16a): los `.xlsx` viven en `raw/ITAN/`, empaquetados en
+`itan-congelado.zip`; las celdas, el sha256 de cada archivo y la URL en `05_scripts/itan-catalogo.json`; `AccesoITAN.ado` lee
+solo el asset y produce `master/itan-isr-rangos.dta`.
+
+```bash
+bash 05_scripts/refrescar-scn.sh --itan                                  # 1. ¿hay trimestre nuevo o cambió el último? exit 0 = no
+bash 05_scripts/refrescar-scn.sh --itan --congelar --desde vX.Y.Z        # 2. baja lo nuevo a raw/ITAN/, regenera el catálogo
+#    (05_scripts/itan-catalogo.py), reempaqueta el zip y actualiza su sha256/size en manifest.json (--desde = versión del Release)
+# 3. Stata: AccesoITAN, validar     (sello verde; tabla capturado vs extraído contra ISRInformesTrimestrales.xlsx)
+# 4. CHANGELOG con el trimestre nuevo; PR de datos; al fusionar, copiar raw/ITAN/ y master/itan-isr-rangos.dta a -datos y al clon Dropbox.
+```
+
+`exit 1` en el paso 1 es «hay novedad» (trimestre nuevo o archivo revisado): entra solo por PR de datos. `exit 3` es «no comparado»
+(sin red) y no autoriza a congelar. Las descargas van por `curl` (la cadena TLS del sitio de la SHCP no valida con el `openssl` de python).
+
 ## 3. Qué NUNCA hacer
 
 - **Borrar el archivo y volver a correr después de actualizarlo.** Es el consejo

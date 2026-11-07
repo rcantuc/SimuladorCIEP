@@ -10,6 +10,13 @@
 # Uso:
 #   bash 05_scripts/refrescar-scn.sh --comparar [--series "724014 724025 …"] [--todas] [--csi] [--salida <dir>] [--repo <root>] [--anio AAAA]
 #   bash 05_scripts/refrescar-scn.sh --congelar [--todas] [--salida <dir>] [--repo <root>] [--anio AAAA] [--desde vX.Y.Z]   # v8.15b (E4): escribe los assets
+#   bash 05_scripts/refrescar-scn.sh --itan [--congelar] [--salida <dir>] [--repo <root>] [--desde vX.Y.Z]            # 8.16a: ISR por rango (ITAN, SHCP)
+#
+#   --itan       (8.16a) Informes Trimestrales de la SHCP (itanfp02_<AAAA><TT>.xlsx, hoja I.II RecGobFed a) ISR): compara el ultimo
+#                trimestre publicado en el sitio de finanzas publicas contra lo congelado en raw/ITAN/ (05_scripts/itan-catalogo.json):
+#                exit 0 = el ultimo publicado es el ultimo congelado y su sha256 coincide; 1 = hay trimestre nuevo o el archivo cambio
+#                (entra solo por PR de datos: --itan --congelar baja lo nuevo a raw/ITAN/, regenera el catalogo con itan-catalogo.py,
+#                reempaqueta raw/ITAN/itan-congelado.zip y actualiza su sha256 en manifest.json); 3 = sin red / no comparado.
 #
 #   --comparar   Descarga por API las series del inventario (las que llegan a un escalar que algún módulo lee: ~90) a un
 #                directorio temporal, calcula sha256 de la serie congelada y de la descargada y compara valor a valor con
@@ -45,11 +52,12 @@
 # publicar esa version y su Gate 8 no lo exige en Releases anteriores; ensure_asset lo descarga en una maquina sin raw/ (SCNCongelado lo desempaca).
 set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""; DESDE=""
+MODO=""; SERIES=""; TODAS=0; CSI=0; SALIDA=""; ANIO=""; DESDE=""; ITAN_CONGELAR=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --comparar) MODO="comparar"; shift ;;
-        --congelar) MODO="congelar"; shift ;;
+        --congelar) if [[ "$MODO" == "itan" ]]; then ITAN_CONGELAR=1; else MODO="congelar"; fi; shift ;;
+        --itan)     ITAN_CONGELAR=0; MODO="itan"; shift ;;
         --series)   SERIES="$2"; shift 2 ;;
         --todas)    TODAS=1; shift ;;
         --csi)      CSI=1; shift ;;
@@ -61,6 +69,96 @@ while [[ $# -gt 0 ]]; do
         *) echo "refrescar-scn: argumento desconocido: $1" >&2; exit 2 ;;
     esac
 done
+# ─── --itan (8.16a): ISR por rango de ingreso, Informes Trimestrales de la SHCP (sin token del BIE: no es el BIE) ──────────────────
+if [[ "$MODO" == "itan" ]]; then
+    [[ -n "$SALIDA" ]] || SALIDA="$(mktemp -d -t refrescar-itan-XXXXXX)"
+    mkdir -p "$SALIDA"
+    python3 -I - "$REPO_ROOT" "$SALIDA" "$ITAN_CONGELAR" "$DESDE" <<'PYITAN'
+import datetime, hashlib, json, os, subprocess, sys
+class _R:
+    def __init__(self, code, content): self.status_code, self.content = code, content
+def _get(u, timeout=90):
+    # curl (almacen de certificados del sistema): la cadena TLS de finanzaspublicas.hacienda.gob.mx no valida con el openssl de python
+    out = subprocess.run(['curl', '-sS', '-m', str(timeout), '-o', '-', '-w', '\n%{http_code}', u], capture_output=True)
+    if out.returncode != 0 and not out.stdout:
+        raise RuntimeError('curl: ' + out.stderr.decode('utf-8', 'replace').strip())
+    body, _, code = out.stdout.rpartition(b'\n')
+    return _R(int(code or 0), body)
+root, salida, congelar, desde = sys.argv[1], sys.argv[2], sys.argv[3] == '1', sys.argv[4]
+cat_p = os.path.join(root, '05_scripts', 'itan-catalogo.json')
+cat = json.load(open(cat_p, encoding='utf-8'))
+pref = cat['url_prefijo']; carp = cat['trimestre_carpeta']
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, 'rb') as f:
+        for ch in iter(lambda: f.read(65536), b''):
+            h.update(ch)
+    return h.hexdigest()
+def url(y, t):
+    return f'{pref}{y}/{carp[str(t)]}/04afp/itanfp02_{y}0{t}.xlsx'
+def sig(y, t):
+    return (y, t + 1) if t < 4 else (y + 1, 1)
+arch = cat['archivos']
+ult = max(arch, key=lambda k: (arch[k]['anio'], arch[k]['trimestre']))
+y0, t0 = arch[ult]['anio'], arch[ult]['trimestre']
+stamp = datetime.datetime.now().strftime('%Y-%m-%d')
+rep = [f'# refrescar-scn --itan ({stamp})', '', f'Último trimestre congelado: {y0}-{t0} ({arch[ult]["archivo"]}, sha256 {arch[ult]["sha256"][:12]}…)', '']
+nuevos = []; revisado = None; err = None
+try:
+    r = _get(url(y0, t0))
+    if r.status_code != 200:
+        raise RuntimeError(f'HTTP {r.status_code} al bajar {url(y0, t0)}')
+    p = os.path.join(salida, arch[ult]['archivo']); open(p, 'wb').write(r.content)
+    s0 = sha(p)
+    revisado = (s0 != arch[ult]['sha256'])
+    rep.append(f'- {y0}-{t0} en el sitio: sha256 {s0[:12]}… → ' + ('DISTINTO al congelado (revisado)' if revisado else 'igual al congelado'))
+    y, t = y0, t0; faltas = 0; k = 0
+    while k < 4 and faltas < 2:
+        y, t = sig(y, t); k += 1
+        r = _get(url(y, t))
+        if r.status_code == 200 and len(r.content) > 10000:
+            f = f'itanfp02_{y}0{t}.xlsx'; p = os.path.join(salida, f); open(p, 'wb').write(r.content)
+            nuevos.append((y, t, f)); faltas = 0
+            rep.append(f'- {y}-{t}: NUEVO en el sitio ({len(r.content)} bytes, sha256 {sha(p)[:12]}…), no congelado')
+        else:
+            faltas += 1; rep.append(f'- {y}-{t}: no publicado (HTTP {r.status_code})')
+except Exception as e:
+    err = str(e)
+def cierra(msg, code):
+    rep.append(''); rep.append(msg)
+    open(os.path.join(salida, f'refrescar-itan-{stamp}.md'), 'w', encoding='utf-8').write('\n'.join(rep) + '\n')
+    json.dump({'fecha': stamp, 'ultimo_congelado': ult, 'revisado': revisado, 'nuevos': [f'{y}-{t}' for y, t, _ in nuevos], 'error': err, 'exit': code},
+              open(os.path.join(salida, f'refrescar-itan-{stamp}.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    print('\n'.join(rep)); sys.exit(code)
+if err:
+    cierra(f'RESULTADO: NO COMPARADO (exit 3): {err}', 3)
+if not nuevos and not revisado:
+    cierra(f'RESULTADO: sin novedad (exit 0): el último trimestre publicado por la SHCP es {y0}-{t0} y coincide byte a byte con lo congelado.', 0)
+if not congelar:
+    cierra('RESULTADO: HAY NOVEDAD (exit 1): ' + ('trimestre(s) nuevo(s) ' + ', '.join(f'{y}-{t}' for y, t, _ in nuevos) if nuevos else '') + ('; ' if nuevos and revisado else '') + (f'{y0}-{t0} revisado' if revisado else '') + '. Entra solo por PR de datos: --itan --congelar.', 1)
+raw = os.path.join(root, 'raw', 'ITAN'); os.makedirs(raw, exist_ok=True)
+for y, t, f in nuevos:
+    os.replace(os.path.join(salida, f), os.path.join(raw, f))
+if revisado:
+    os.replace(os.path.join(salida, arch[ult]['archivo']), os.path.join(raw, arch[ult]['archivo']))
+zipp = os.path.join(raw, 'itan-congelado.zip')
+out = subprocess.run([sys.executable, '-I', os.path.join(root, '05_scripts', 'itan-catalogo.py'), '--dir', raw, '--out', cat_p, '--zip', zipp], capture_output=True, text=True)
+rep.append(''); rep.append(out.stdout.strip())
+if out.returncode != 0:
+    cierra('RESULTADO: NO CONGELADO (exit 3): ' + out.stderr.strip(), 3)
+mp = os.path.join(root, '05_scripts', 'manifest.json'); man = json.load(open(mp, encoding='utf-8'))
+ent = next((a for a in man['assets'] if a['name'] == 'itan-congelado.zip'), None)
+if ent is None:
+    ent = {'name': 'itan-congelado.zip', 'local_path': 'raw/ITAN/itan-congelado.zip'}; man['assets'].append(ent)
+ent['sha256'] = sha(zipp); ent['size_bytes'] = os.path.getsize(zipp)
+if desde:
+    ent['desde'] = desde
+open(mp, 'w', encoding='utf-8').write(json.dumps(man, ensure_ascii=False, indent=2) + '\n')
+rep.append(f'manifest.json: itan-congelado.zip sha256 {ent["sha256"][:12]}… {ent["size_bytes"]} bytes' + (f', desde {desde}' if desde else ''))
+cierra('RESULTADO: CONGELADO (exit 1 = hubo novedad): declara el delta en el CHANGELOG y abre el PR de datos; data_updated lo mueve el PR.', 1)
+PYITAN
+    exit $?
+fi
 CONGELAR=0
 if [[ "$MODO" == "congelar" ]]; then
     CONGELAR=1
