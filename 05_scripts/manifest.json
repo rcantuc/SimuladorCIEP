@@ -1,13 +1,14 @@
 {
-  "version": "v8.15.3",
-  "data_updated": "2026-10-31",
+  "version": "v8.16.0",
+  "data_updated": "2026-11-08",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
   "enigh_vintage": "2024",
   "enigh_vintage_regla": "Año de la ENIGH con la que corrió el motor (scalar anioenigh de SIM.do y Web.Stata.do). La Fase 4 de publicar-vps.sh la escribe como 'EnighVintage:' en DEPLOYED_COMMIT y la sección de método del sitio (/NTA) la cita en su línea de fuente. Se bumpea al cambiar de ENIGH.",
-  "baseline": "v8.15.0",
-  "baseline_regla": "Tag desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión: la última corrección de datos declarada en el CHANGELOG (CUAD-0 §4 ter, decisión 14, 2026-10-31). Para v8.14.0 y anteriores es v8.12.4; desde v8.15.0 es v8.15.0 (Cuadratura I, sesión v8.15b: Households.do re-anclado al sector hogares S.14 con CUAD-0 firmado; output.txt, los 10 sankeys y las 32 entidades NO comparan con <= v8.14.0, CHANGELOG [v8.15.0]). Se mueve SOLO en una corrección de datos o un cambio metodológico que re-ancle el baseline de gate-numeros.sh (commit 'baseline: vX.Y.Z'); el Gate 11 de publicar.sh exige que exista y que sea un tag desde v8.15.0. La Fase 4 de publicar-vps.sh lo escribe como 'Baseline:' en DEPLOYED_COMMIT (health.php) y el sidecar lo copia a manifest-datos.json.",
-  "release_tag": "v8.15.3",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.15.3/",
+  "baseline": "v8.16.0",
+  "baseline_regla": "Tag desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión: la última corrección de datos o cambio metodológico declarado en el CHANGELOG. v8.14.0 y anteriores: v8.12.4; v8.15.0-v8.15.3: v8.15.0 (Cuadratura I, CUAD-0 firmado); desde v8.16.0: v8.16.0 (Cuadratura II, sesión 8.16b: CUAD-1 firmado en CUAD-1-2-firma.md §B; consumo anclado a P.3 S.14, cuotas por sector, ISR PM por propiedad, parte salarial acotada, obligación de PF por rangos del ITAN, formales anclados a IMSS+ISSSTE, IEPS por bien gravado; output.txt, los 10 sankeys y las 32 entidades NO comparan con <= v8.15.3, CHANGELOG [v8.16.0]). Se mueve SOLO en una corrección de datos o un cambio metodológico que re-ancle el baseline de gate-numeros.sh (commit baseline: vX.Y.Z); el Gate 11 de publicar.sh exige que exista y que sea un tag desde v8.15.0. La Fase 4 de publicar-vps.sh lo escribe como Baseline: en DEPLOYED_COMMIT (health.php) y el sidecar lo copia a manifest-datos.json.",
+
+  "release_tag": "v8.16.0",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.16.0/",
   "generated_at": "2026-10-06T23:20:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "scn_vintage": {
@@ -10127,7 +10128,7 @@
       "sha256": "7c22bf1055c288978494f314cd4ef4fbf1047ee87cc74aa34fae0bd5d73734c7",
       "size_bytes": 3450638,
       "desde": "v8.16.0",
-      "regla": "Asset congelado de los Informes Trimestrales de la SHCP (ITAN): itanfp02_AAAATT.xlsx de 2019-1 a 2026-3 (hoja I.II RecGobFed a) ISR, ISR por rango de ingreso y tipo de contribuyente), empaquetados por 05_scripts/itan-catalogo.py --zip; las celdas, sha256 por archivo y URL viven en 05_scripts/itan-catalogo.json. AccesoITAN.ado lee SOLO el asset y produce master/itan-isr-rangos.dta (sello verde; sha distinto aborta, salvo rawwip). Se reescribe con refrescar-scn.sh --itan --congelar (PR de datos). desde = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores. En 8.16a el motor sigue leyendo ISRInformesTrimestrales.xlsx (plan de retiro en CUAD-1 paragrafo 8 ter)."
+      "regla": "Asset congelado de los Informes Trimestrales de la SHCP (ITAN): itanfp02_AAAATT.xlsx de 2019-1 a 2026-3 (hoja I.II RecGobFed a) ISR, ISR por rango de ingreso y tipo de contribuyente), empaquetados por 05_scripts/itan-catalogo.py --zip; las celdas, sha256 por archivo y URL viven en 05_scripts/itan-catalogo.json. AccesoITAN.ado lee SOLO el asset y produce master/itan-isr-rangos.dta (sello verde; sha distinto aborta, salvo rawwip). Se reescribe con refrescar-scn.sh --itan --congelar (PR de datos). desde = version en que entra a la Release: Gate 8 de publicar.sh no lo exige en Releases anteriores. Desde v8.16.0 el motor lo lee: Households.do paragrafo 11.2 ancla la obligacion de ISR de personas fisicas por rango (obligacion_isrpf_ancla = itan_rangos) y DatosAbiertos.ado paragrafo 4.1 toma de aqui los totales por tipo de contribuyente desde 2019-1 (ISRInformesTrimestrales.xlsx queda solo para 2012-2018, sello amarillo; CUAD-1 paragrafo 8 ter)."
     }
   ]
 }

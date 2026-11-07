@@ -31,6 +31,10 @@
 
 **Una corrida de `correr-sim.sh` por sesión** (runbook §14.1, lección 13); la de `contrato-32.sh` es propia y no cuenta. Avisa antes de lanzarla. `bash 05_scripts/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `test-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
 
+**Los tres árboles (firma CUAD-1-2 §C, 8.16b).** El clon de Dropbox es **intocable**: nada de `stash`, `reset`, `checkout`, `switch`, `pull` ni `merge` ahí, ni archivos escritos ahí; lo que tenga es de Ricardo. Trabajas en tu worktree y, si la sesión termina en ritual, en `-datos`; el paso `baile` de `ritual.sh` solo actualiza `-datos`.
+
+**Cuadros del log (firma CUAD-1-2 §D).** Todo cuadro nuevo o tocado sale con `_tabla_anclas.ado` v2: rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, columnas de ancho fijo alineadas, separador de miles y los gates debajo, una línea cada uno. Adjunta en el reporte el cuadro principal tal como sale.
+
 ## Evidencia
 
 `~/CIEP_Simuladores/diag-<tema>-<AAAA-MM-DD>/`: `commit.txt`, `wrap.log`, `gate-numeros.txt`, `test-web-batch.md`, `contrato-32.md`, los scripts de la sesión y `pr-body.md`. El worktree se borra al cerrar (`git worktree remove --force`); se conserva la carpeta diag.

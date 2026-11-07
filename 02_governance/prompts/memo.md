@@ -23,7 +23,7 @@
 
 ## Corrida
 
-No aplica: sin Stata. <O, si un diagnóstico necesita Stata: una sola corrida, en tu worktree o en `diag-*`, nunca en `-datos`; anunciada antes de lanzarla.>
+No aplica: sin Stata. <O, si un diagnóstico necesita Stata: una sola corrida, en tu worktree o en `diag-*`, nunca en `-datos` ni en el clon de Dropbox (firma CUAD-1-2 §C: Dropbox es intocable); anunciada antes de lanzarla.>
 
 ## Evidencia
 

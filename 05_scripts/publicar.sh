@@ -1049,6 +1049,21 @@ gate_baseline() {
         log_warn "Gate 11: baseline $baseline es posterior a la versión $version$nota."
         return 0
     fi
+    if [[ "$baseline" == "$version" ]]; then
+        # 8.16b: una versión que mueve el baseline lo declara igual a su propia versión ANTES de que exista el tag (lo crea el paso tag del
+        # ritual, después de la corrida); el PR no puede traer el tag. Se exige que la entrada [version] del CHANGELOG lo declare.
+        if grep -qE "^## \[$version\]" "$REPO_ROOT/02_governance/CHANGELOG.md" \
+           && awk -v v="$version" '/^## \[/{p = (index($0, "[" v "]") > 0)} p' "$REPO_ROOT/02_governance/CHANGELOG.md" | grep -qi 'baseline'; then
+            log_info "✓ Gate 11: baseline $baseline = la versión que se publica (baseline nuevo; el tag lo crea el ritual) y el CHANGELOG [$version] lo declara$nota"
+            return 0
+        fi
+        if (( aplica )); then
+            log_error "Gate 11 FALLO: baseline $baseline = la versión que se publica, pero la entrada [$version] del CHANGELOG no declara el baseline nuevo."
+            return 1
+        fi
+        log_warn "Gate 11: baseline $baseline = la versión que se publica sin que el CHANGELOG lo declare$nota."
+        return 0
+    fi
     if git rev-parse -q --verify "refs/tags/$baseline^{commit}" >/dev/null 2>&1 \
        || git ls-remote --exit-code --tags origin "refs/tags/$baseline" >/dev/null 2>&1; then
         log_info "✓ Gate 11: baseline $baseline declarado y existe como tag$nota"
