@@ -11,11 +11,11 @@
    "share_pob": 0.01148868,
    "sellos_conteo": {
     "sankeys_micro": [
-     24,
-     152
+     17,
+     156
     ],
     "ciclo": [
-     21,
+     19,
      46
     ],
     "tasas": [
@@ -23,24 +23,24 @@
      10
     ]
    },
-   "sellos_texto": "24/152 / 21/46 / 0/10",
+   "sellos_texto": "17/156 / 19/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 22,
+    "sankeys_micro": 15,
     "ciclo": 17,
     "tasas": 0,
-    "total": 39
+    "total": 32
    },
    "top1_n100": {
-    "pct": 35.741073,
-    "donde": "ciclo Mujeres 0-4 aporta (n=358)"
+    "pct": 34.95671059797213,
+    "donde": "escol Educación→Posgrado (n=102)"
    },
    "top1_te": {
-    "pct": 14.117053,
+    "pct": 16.582562,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 4.9711124838274525,
+   "neto_pct_pibe": 4.798267750066256,
    "pibe_pesos": 517276492888.0297,
-   "neto_pesos": 25714396313.86,
+   "neto_pesos": 24820311136.92,
    "tabla_32_coincide": true,
    "url": "/entidades/Ags"
   },
@@ -54,11 +54,11 @@
    "share_pob": 0.02903569,
    "sellos_conteo": {
     "sankeys_micro": [
-     21,
-     154
+     10,
+     156
     ],
     "ciclo": [
-     17,
+     16,
      46
     ],
     "tasas": [
@@ -66,24 +66,24 @@
      10
     ]
    },
-   "sellos_texto": "21/154 / 17/46 / 0/10",
+   "sellos_texto": "10/156 / 16/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 19,
+    "sankeys_micro": 8,
     "ciclo": 15,
     "tasas": 0,
-    "total": 34
+    "total": 23
    },
    "top1_n100": {
-    "pct": 45.57179,
-    "donde": "ciclo Mujeres 0-4 aporta (n=407)"
+    "pct": 53.31155240700443,
+    "donde": "rural Indígena→Imp al capital (n=162)"
    },
    "top1_te": {
-    "pct": 13.37981,
+    "pct": 22.820895,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 7.8479759079441225,
+   "neto_pct_pibe": 8.77666036152998,
    "pibe_pesos": 1509205628672.7034,
-   "neto_pesos": 118442094139.57,
+   "neto_pesos": 132457852185.7,
    "tabla_32_coincide": true,
    "url": "/entidades/BC"
   },
@@ -97,11 +97,11 @@
    "share_pob": 0.00673648,
    "sellos_conteo": {
     "sankeys_micro": [
-     27,
-     154
+     19,
+     156
     ],
     "ciclo": [
-     20,
+     19,
      46
     ],
     "tasas": [
@@ -109,24 +109,24 @@
      10
     ]
    },
-   "sellos_texto": "27/154 / 20/46 / 0/10",
+   "sellos_texto": "19/156 / 19/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 25,
+    "sankeys_micro": 15,
     "ciclo": 18,
     "tasas": 0,
-    "total": 43
+    "total": 33
    },
    "top1_n100": {
-    "pct": 49.723575,
-    "donde": "ciclo Hombres 5-9 aporta (n=315)"
+    "pct": 44.18695244111078,
+    "donde": "escol Sin escolaridad→Imp al capital (n=228)"
    },
    "top1_te": {
-    "pct": 8.665439,
-    "impuesto": "IEPSNP"
+    "pct": 8.205155,
+    "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 10.463017566136555,
+   "neto_pct_pibe": 10.729066225741283,
    "pibe_pesos": 302248879278.9288,
-   "neto_pesos": 31624353332.41,
+   "neto_pesos": 32428482424.4,
    "tabla_32_coincide": true,
    "url": "/entidades/BCS"
   },
@@ -140,36 +140,36 @@
    "share_pob": 0.00725961,
    "sellos_conteo": {
     "sankeys_micro": [
-     20,
-     154
+     11,
+     156
     ],
     "ciclo": [
-     22,
+     20,
      46
     ],
     "tasas": [
-     1,
+     0,
      10
     ]
    },
-   "sellos_texto": "20/154 / 22/46 / 1/10",
+   "sellos_texto": "11/156 / 20/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 18,
+    "sankeys_micro": 11,
     "ciclo": 17,
     "tasas": 0,
-    "total": 35
+    "total": 28
    },
    "top1_n100": {
-    "pct": 56.028108,
-    "donde": "ciclo Mujeres 0-4 aporta (n=248)"
+    "pct": 38.267663,
+    "donde": "ciclo Hombres 45-49 recibe (n=260)"
    },
    "top1_te": {
-    "pct": 43.481276,
+    "pct": 5.887268,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -0.188348975369568,
+   "neto_pct_pibe": 0.12184007023055185,
    "pibe_pesos": 534444016675.55396,
-   "neto_pesos": -1006619829.33,
+   "neto_pesos": 651166965.26,
    "tabla_32_coincide": true,
    "url": "/entidades/Camp"
   },
@@ -183,36 +183,36 @@
    "share_pob": 0.02614302,
    "sellos_conteo": {
     "sankeys_micro": [
-     19,
-     154
+     14,
+     156
     ],
     "ciclo": [
-     16,
+     14,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "19/154 / 16/46 / 0/10",
+   "sellos_texto": "14/156 / 14/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 19,
+    "sankeys_micro": 13,
     "ciclo": 14,
     "tasas": 0,
-    "total": 33
+    "total": 27
    },
    "top1_n100": {
-    "pct": 28.96179,
-    "donde": "ciclo Mujeres 65-69 aporta (n=249)"
+    "pct": 45.876852,
+    "donde": "TE ISRPF (n=13841)"
    },
    "top1_te": {
-    "pct": 12.370479,
+    "pct": 45.876852,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 4.686378628130893,
+   "neto_pct_pibe": 5.269388889542528,
    "pibe_pesos": 1435643830586.518,
-   "neto_pesos": 67279705652.69,
+   "neto_pesos": 75649656502.33,
    "tabla_32_coincide": true,
    "url": "/entidades/Coah"
   },
@@ -226,36 +226,36 @@
    "share_pob": 0.0055838,
    "sellos_conteo": {
     "sankeys_micro": [
-     20,
-     155
+     14,
+     156
     ],
     "ciclo": [
-     16,
+     15,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "20/155 / 16/46 / 0/10",
+   "sellos_texto": "14/156 / 15/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 16,
+    "sankeys_micro": 11,
     "ciclo": 14,
     "tasas": 0,
-    "total": 30
+    "total": 25
    },
    "top1_n100": {
-    "pct": 51.703844,
-    "donde": "ciclo Mujeres 30-34 aporta (n=396)"
+    "pct": 49.797617,
+    "donde": "TE ISRPF (n=10201)"
    },
    "top1_te": {
-    "pct": 17.934008,
-    "impuesto": "ISRPM"
+    "pct": 49.797617,
+    "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 5.533965610965092,
+   "neto_pct_pibe": 3.3270263267535807,
    "pibe_pesos": 257334843776.51132,
-   "neto_pesos": 14240821759.62,
+   "neto_pesos": 8561598000.35,
    "tabla_32_coincide": true,
    "url": "/entidades/Col"
   },
@@ -269,8 +269,8 @@
    "share_pob": 0.04499776,
    "sellos_conteo": {
     "sankeys_micro": [
-     19,
-     154
+     14,
+     156
     ],
     "ciclo": [
      19,
@@ -281,24 +281,24 @@
      10
     ]
    },
-   "sellos_texto": "19/154 / 19/46 / 0/10",
+   "sellos_texto": "14/156 / 19/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 19,
+    "sankeys_micro": 13,
     "ciclo": 17,
     "tasas": 0,
-    "total": 36
+    "total": 30
    },
    "top1_n100": {
-    "pct": 34.21576,
-    "donde": "ciclo Hombres 0-4 aporta (n=355)"
+    "pct": 39.21145177288506,
+    "donde": "grupoedad De 18 a 24→Imp al capital (n=489)"
    },
    "top1_te": {
-    "pct": 14.717341,
+    "pct": 8.995185,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -13.126114058059255,
+   "neto_pct_pibe": -9.128135088470723,
    "pibe_pesos": 635561313460.948,
-   "neto_pesos": -83424502913.78,
+   "neto_pesos": -58014895262.77,
    "tabla_32_coincide": true,
    "url": "/entidades/Chis"
   },
@@ -312,11 +312,11 @@
    "share_pob": 0.02982577,
    "sellos_conteo": {
     "sankeys_micro": [
-     14,
-     154
+     5,
+     156
     ],
     "ciclo": [
-     17,
+     14,
      46
     ],
     "tasas": [
@@ -324,24 +324,24 @@
      10
     ]
    },
-   "sellos_texto": "14/154 / 17/46 / 0/10",
+   "sellos_texto": "5/156 / 14/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 13,
+    "sankeys_micro": 5,
     "ciclo": 13,
     "tasas": 0,
-    "total": 26
+    "total": 18
    },
    "top1_n100": {
-    "pct": 37.74393,
-    "donde": "ciclo Hombres 70-74 aporta (n=173)"
+    "pct": 33.169072,
+    "donde": "ciclo Hombres 50-54 recibe (n=466)"
    },
    "top1_te": {
-    "pct": 10.953114,
+    "pct": 16.954345,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 4.373311730226714,
+   "neto_pct_pibe": 5.483623676740885,
    "pibe_pesos": 1495865375658.473,
-   "neto_pesos": 65418855942.07,
+   "neto_pesos": 82027627911.78,
    "tabla_32_coincide": true,
    "url": "/entidades/Chih"
   },
@@ -355,11 +355,11 @@
    "share_pob": 0.07198247,
    "sellos_conteo": {
     "sankeys_micro": [
-     16,
-     154
+     8,
+     156
     ],
     "ciclo": [
-     18,
+     15,
      46
     ],
     "tasas": [
@@ -367,24 +367,24 @@
      10
     ]
    },
-   "sellos_texto": "16/154 / 18/46 / 0/10",
+   "sellos_texto": "8/156 / 15/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 16,
+    "sankeys_micro": 7,
     "ciclo": 15,
     "tasas": 0,
-    "total": 31
+    "total": 22
    },
    "top1_n100": {
-    "pct": 44.232699,
-    "donde": "ciclo Mujeres 65-69 aporta (n=197)"
+    "pct": 43.19086493798636,
+    "donde": "escol Sin escolaridad→Imp al capital (n=186)"
    },
    "top1_te": {
-    "pct": 14.484009,
+    "pct": 17.614519,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.6189295071390288,
+   "neto_pct_pibe": 1.937524525722845,
    "pibe_pesos": 5989137941761.962,
-   "neto_pesos": 96959921362.44,
+   "neto_pesos": 116041016501.01,
    "tabla_32_coincide": true,
    "url": "/entidades/CDMX"
   },
@@ -398,11 +398,11 @@
    "share_pob": 0.01455378,
    "sellos_conteo": {
     "sankeys_micro": [
-     17,
-     154
+     13,
+     156
     ],
     "ciclo": [
-     20,
+     17,
      46
     ],
     "tasas": [
@@ -410,12 +410,12 @@
      10
     ]
    },
-   "sellos_texto": "17/154 / 20/46 / 0/10",
+   "sellos_texto": "13/156 / 17/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 16,
+    "sankeys_micro": 10,
     "ciclo": 16,
     "tasas": 0,
-    "total": 32
+    "total": 26
    },
    "top1_n100": {
     "pct": 40.40065985728457,
@@ -423,11 +423,11 @@
    },
    "top1_te": {
     "pct": 13.866232,
-    "impuesto": "IEPSP"
+    "impuesto": "ISAN"
    },
-   "neto_pct_pibe": 1.3584183205269516,
+   "neto_pct_pibe": 1.304985968343777,
    "pibe_pesos": 519611973987.6821,
-   "neto_pesos": 7058504250.3,
+   "neto_pesos": 6780863350.37,
    "tabla_32_coincide": true,
    "url": "/entidades/Dgo"
   },
@@ -441,11 +441,11 @@
    "share_pob": 0.04853528,
    "sellos_conteo": {
     "sankeys_micro": [
-     29,
-     154
+     23,
+     156
     ],
     "ciclo": [
-     21,
+     18,
      46
     ],
     "tasas": [
@@ -453,24 +453,24 @@
      10
     ]
    },
-   "sellos_texto": "29/154 / 21/46 / 0/10",
+   "sellos_texto": "23/156 / 18/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 28,
+    "sankeys_micro": 22,
     "ciclo": 15,
     "tasas": 0,
-    "total": 43
+    "total": 37
    },
    "top1_n100": {
-    "pct": 61.020479,
-    "donde": "ciclo Mujeres 0-4 aporta (n=360)"
+    "pct": 39.344046,
+    "donde": "ciclo Hombres 55-59 recibe (n=244)"
    },
    "top1_te": {
-    "pct": 11.315831,
-    "impuesto": "IEPSNP"
+    "pct": 18.090738,
+    "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.3380551211155685,
+   "neto_pct_pibe": 1.6303538667813513,
    "pibe_pesos": 1814013477006.3252,
-   "neto_pesos": 24272500226.81,
+   "neto_pesos": 29574838866.31,
    "tabla_32_coincide": true,
    "url": "/entidades/Gto"
   },
@@ -484,36 +484,36 @@
    "share_pob": 0.02766362,
    "sellos_conteo": {
     "sankeys_micro": [
-     18,
-     154
+     14,
+     156
     ],
     "ciclo": [
-     18,
+     17,
      46
     ],
     "tasas": [
-     1,
+     0,
      10
     ]
    },
-   "sellos_texto": "18/154 / 18/46 / 1/10",
+   "sellos_texto": "14/156 / 17/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 17,
+    "sankeys_micro": 13,
     "ciclo": 16,
     "tasas": 0,
-    "total": 33
+    "total": 29
    },
    "top1_n100": {
-    "pct": 46.653884,
+    "pct": 46.595121,
     "donde": "ciclo Hombres 60-64 recibe (n=159)"
    },
    "top1_te": {
-    "pct": 30.63956,
+    "pct": 12.846767,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -3.6987524178364524,
+   "neto_pct_pibe": -3.4375856755818295,
    "pibe_pesos": 524747593811.5318,
-   "neto_pesos": -19409114313.64,
+   "neto_pesos": -18038648117.83,
    "tabla_32_coincide": true,
    "url": "/entidades/Gro"
   },
@@ -527,11 +527,11 @@
    "share_pob": 0.02479829,
    "sellos_conteo": {
     "sankeys_micro": [
-     21,
-     154
+     14,
+     156
     ],
     "ciclo": [
-     18,
+     16,
      46
     ],
     "tasas": [
@@ -539,24 +539,24 @@
      10
     ]
    },
-   "sellos_texto": "21/154 / 18/46 / 0/10",
+   "sellos_texto": "14/156 / 16/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 21,
+    "sankeys_micro": 14,
     "ciclo": 16,
     "tasas": 0,
-    "total": 37
+    "total": 30
    },
    "top1_n100": {
-    "pct": 31.012007,
+    "pct": 24.883318,
     "donde": "ciclo Mujeres 0-4 aporta (n=178)"
    },
    "top1_te": {
-    "pct": 19.221699,
+    "pct": 10.261444,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 0.5988590191072719,
+   "neto_pct_pibe": -0.03662546658406988,
    "pibe_pesos": 722921639771.5875,
-   "neto_pesos": 4329281440.85,
+   "neto_pesos": -264773423.6,
    "tabla_32_coincide": true,
    "url": "/entidades/Hgo"
   },
@@ -570,11 +570,11 @@
    "share_pob": 0.06700998,
    "sellos_conteo": {
     "sankeys_micro": [
-     31,
-     153
+     22,
+     156
     ],
     "ciclo": [
-     19,
+     17,
      46
     ],
     "tasas": [
@@ -582,24 +582,24 @@
      10
     ]
    },
-   "sellos_texto": "31/153 / 19/46 / 0/10",
+   "sellos_texto": "22/156 / 17/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 29,
+    "sankeys_micro": 21,
     "ciclo": 15,
     "tasas": 0,
-    "total": 44
+    "total": 36
    },
    "top1_n100": {
-    "pct": 54.100257,
+    "pct": 54.169292,
     "donde": "ciclo Hombres 55-59 recibe (n=159)"
    },
    "top1_te": {
-    "pct": 18.701077,
+    "pct": 16.395294,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 7.753331895349508,
+   "neto_pct_pibe": 6.585827530658508,
    "pibe_pesos": 3007514453890.175,
-   "neto_pesos": 233182577410.71,
+   "neto_pesos": 198069714892.83,
    "tabla_32_coincide": true,
    "url": "/entidades/Jal"
   },
@@ -613,11 +613,11 @@
    "share_pob": 0.13612882,
    "sellos_conteo": {
     "sankeys_micro": [
-     15,
-     155
+     10,
+     156
     ],
     "ciclo": [
-     19,
+     18,
      46
     ],
     "tasas": [
@@ -625,24 +625,24 @@
      10
     ]
    },
-   "sellos_texto": "15/155 / 19/46 / 0/10",
+   "sellos_texto": "10/156 / 18/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 12,
+    "sankeys_micro": 7,
     "ciclo": 15,
     "tasas": 0,
-    "total": 27
+    "total": 22
    },
    "top1_n100": {
-    "pct": 66.594176,
-    "donde": "ciclo Hombres 75-79 aporta (n=102)"
+    "pct": 51.340074,
+    "donde": "ciclo Hombres 55-59 recibe (n=303)"
    },
    "top1_te": {
-    "pct": 11.423148,
-    "impuesto": "ISRPF"
+    "pct": 11.088963,
+    "impuesto": "ISAN"
    },
-   "neto_pct_pibe": 5.42467753245817,
+   "neto_pct_pibe": 4.398359243217323,
    "pibe_pesos": 3626065280609.1455,
-   "neto_pesos": 196702348589.47,
+   "neto_pesos": 159487377434.77,
    "tabla_32_coincide": true,
    "url": "/entidades/EdoMex"
   },
@@ -656,11 +656,11 @@
    "share_pob": 0.03793948,
    "sellos_conteo": {
     "sankeys_micro": [
-     25,
-     154
+     17,
+     156
     ],
     "ciclo": [
-     23,
+     20,
      46
     ],
     "tasas": [
@@ -668,24 +668,24 @@
      10
     ]
    },
-   "sellos_texto": "25/154 / 23/46 / 1/10",
+   "sellos_texto": "17/156 / 20/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 23,
+    "sankeys_micro": 16,
     "ciclo": 18,
     "tasas": 0,
-    "total": 41
+    "total": 34
    },
    "top1_n100": {
-    "pct": 50.418463,
-    "donde": "ciclo Mujeres 0-4 aporta (n=259)"
+    "pct": 67.987687,
+    "donde": "TE ISRPF (n=7317)"
    },
    "top1_te": {
-    "pct": 25.471222,
+    "pct": 67.987687,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 4.432075623764835,
+   "neto_pct_pibe": 4.4548862753676675,
    "pibe_pesos": 1102740499660.1345,
-   "neto_pesos": 48874292878.82,
+   "neto_pesos": 49125835172.28,
    "tabla_32_coincide": true,
    "url": "/entidades/Mich"
   },
@@ -699,11 +699,11 @@
    "share_pob": 0.01513064,
    "sellos_conteo": {
     "sankeys_micro": [
-     22,
-     154
+     16,
+     156
     ],
     "ciclo": [
-     20,
+     16,
      46
     ],
     "tasas": [
@@ -711,24 +711,24 @@
      10
     ]
    },
-   "sellos_texto": "22/154 / 20/46 / 1/10",
+   "sellos_texto": "16/156 / 16/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 21,
+    "sankeys_micro": 16,
     "ciclo": 15,
     "tasas": 0,
-    "total": 36
+    "total": 31
    },
    "top1_n100": {
-    "pct": 46.780917,
-    "donde": "ciclo Mujeres 75-79 aporta (n=113)"
+    "pct": 34.757274,
+    "donde": "ciclo Hombres 55-59 recibe (n=211)"
    },
    "top1_te": {
-    "pct": 38.448266,
+    "pct": 33.57898,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 0.3011773465486739,
+   "neto_pct_pibe": -0.25969765294945335,
    "pibe_pesos": 411899741909.498,
-   "neto_pesos": 1240548713.12,
+   "neto_pesos": -1069693962.24,
    "tabla_32_coincide": true,
    "url": "/entidades/Mor"
   },
@@ -742,11 +742,11 @@
    "share_pob": 0.0095377,
    "sellos_conteo": {
     "sankeys_micro": [
-     24,
-     154
+     17,
+     156
     ],
     "ciclo": [
-     22,
+     18,
      46
     ],
     "tasas": [
@@ -754,24 +754,24 @@
      10
     ]
    },
-   "sellos_texto": "24/154 / 22/46 / 0/10",
+   "sellos_texto": "17/156 / 18/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 20,
+    "sankeys_micro": 15,
     "ciclo": 18,
     "tasas": 0,
-    "total": 38
+    "total": 33
    },
    "top1_n100": {
-    "pct": 85.74049,
-    "donde": "ciclo Hombres 5-9 aporta (n=278)"
+    "pct": 38.00885093694684,
+    "donde": "grupoedad De 18 a 24→Imp al capital (n=435)"
    },
    "top1_te": {
-    "pct": 24.35282,
-    "impuesto": "ISRPF"
+    "pct": 15.602627,
+    "impuesto": "ISAN"
    },
-   "neto_pct_pibe": 4.628119968441678,
+   "neto_pct_pibe": 2.0151911396385827,
    "pibe_pesos": 271368113898.5347,
-   "neto_pesos": 12559241867.32,
+   "neto_pesos": 5468586187.09,
    "tabla_32_coincide": true,
    "url": "/entidades/Nay"
   },
@@ -785,8 +785,8 @@
    "share_pob": 0.04708801,
    "sellos_conteo": {
     "sankeys_micro": [
-     20,
-     154
+     11,
+     156
     ],
     "ciclo": [
      16,
@@ -797,24 +797,24 @@
      10
     ]
    },
-   "sellos_texto": "20/154 / 16/46 / 1/10",
+   "sellos_texto": "11/156 / 16/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 17,
+    "sankeys_micro": 10,
     "ciclo": 13,
     "tasas": 0,
-    "total": 30
+    "total": 23
    },
    "top1_n100": {
-    "pct": 78.54405250546249,
-    "donde": "grupoedad De 65 y más→Imp al trabajo (n=290)"
+    "pct": 71.05366513357399,
+    "donde": "grupoedad De 65 y más→Imp al trabajo (n=285)"
    },
    "top1_te": {
-    "pct": 77.830843,
+    "pct": 51.199191,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 7.305506695990477,
+   "neto_pct_pibe": 6.727456737602262,
    "pibe_pesos": 3231482553598.41,
-   "neto_pesos": 236076174332.9,
+   "neto_pesos": 217396590776.5,
    "tabla_32_coincide": true,
    "url": "/entidades/NL"
   },
@@ -828,11 +828,11 @@
    "share_pob": 0.03278734,
    "sellos_conteo": {
     "sankeys_micro": [
-     21,
-     154
+     15,
+     156
     ],
     "ciclo": [
-     19,
+     16,
      46
     ],
     "tasas": [
@@ -840,24 +840,24 @@
      10
     ]
    },
-   "sellos_texto": "21/154 / 19/46 / 0/10",
+   "sellos_texto": "15/156 / 16/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 17,
+    "sankeys_micro": 13,
     "ciclo": 14,
     "tasas": 0,
-    "total": 31
+    "total": 27
    },
    "top1_n100": {
-    "pct": 75.74395885359861,
-    "donde": "grupoedad De 18 a 24→Imp al trabajo (n=403)"
+    "pct": 39.373357,
+    "donde": "ciclo Hombres 70-74 aporta (n=124)"
    },
    "top1_te": {
-    "pct": 22.926506,
-    "impuesto": "ISRAS"
+    "pct": 15.565211,
+    "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -2.8497879302682163,
+   "neto_pct_pibe": -3.163110547902449,
    "pibe_pesos": 741851677565.1107,
-   "neto_pesos": -21141199567.74,
+   "neto_pesos": -23465588662.85,
    "tabla_32_coincide": true,
    "url": "/entidades/Oax"
   },
@@ -871,11 +871,11 @@
    "share_pob": 0.05062184,
    "sellos_conteo": {
     "sankeys_micro": [
-     23,
-     155
+     14,
+     156
     ],
     "ciclo": [
-     19,
+     18,
      46
     ],
     "tasas": [
@@ -883,24 +883,24 @@
      10
     ]
    },
-   "sellos_texto": "23/155 / 19/46 / 0/10",
+   "sellos_texto": "14/156 / 18/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 23,
+    "sankeys_micro": 14,
     "ciclo": 16,
     "tasas": 0,
-    "total": 39
+    "total": 30
    },
    "top1_n100": {
-    "pct": 41.2957,
+    "pct": 41.439448,
     "donde": "ciclo Hombres 50-54 recibe (n=191)"
    },
    "top1_te": {
     "pct": 12.132124,
-    "impuesto": "IEPSP"
+    "impuesto": "ISAN"
    },
-   "neto_pct_pibe": 2.54010357833747,
+   "neto_pct_pibe": 2.5632623222153152,
    "pibe_pesos": 1400001765115.44,
-   "neto_pesos": 35561494932.49,
+   "neto_pesos": 35885717755.55,
    "tabla_32_coincide": true,
    "url": "/entidades/Pue"
   },
@@ -914,36 +914,36 @@
    "share_pob": 0.01947265,
    "sellos_conteo": {
     "sankeys_micro": [
-     17,
-     154
+     9,
+     156
     ],
     "ciclo": [
-     21,
+     18,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "17/154 / 21/46 / 0/10",
+   "sellos_texto": "9/156 / 18/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 14,
+    "sankeys_micro": 7,
     "ciclo": 16,
     "tasas": 0,
-    "total": 30
+    "total": 23
    },
    "top1_n100": {
-    "pct": 50.02898933062838,
-    "donde": "escol Sin escolaridad→Imp al trabajo (n=101)"
+    "pct": 55.81871530486028,
+    "donde": "escol Sin escolaridad→Imp al trabajo (n=100)"
    },
    "top1_te": {
-    "pct": 18.272361,
+    "pct": 36.95546,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 9.054394739361365,
+   "neto_pct_pibe": 9.06618473522289,
    "pibe_pesos": 955724551019.0204,
-   "neto_pesos": 86535073470.25,
+   "neto_pesos": 86647753355.26,
    "tabla_32_coincide": true,
    "url": "/entidades/Qro"
   },
@@ -957,36 +957,36 @@
    "share_pob": 0.01470309,
    "sellos_conteo": {
     "sankeys_micro": [
-     30,
-     154
+     20,
+     156
     ],
     "ciclo": [
-     22,
+     21,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "30/154 / 22/46 / 0/10",
+   "sellos_texto": "20/156 / 21/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 30,
+    "sankeys_micro": 19,
     "ciclo": 20,
     "tasas": 0,
-    "total": 50
+    "total": 39
    },
    "top1_n100": {
-    "pct": 37.062743,
-    "donde": "ciclo Hombres 5-9 aporta (n=335)"
+    "pct": 39.46544205347325,
+    "donde": "grupoedad De 65 y más→Imp al trabajo (n=129)"
    },
    "top1_te": {
-    "pct": 13.765064,
+    "pct": 28.137161,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 11.695235331285845,
+   "neto_pct_pibe": 9.89480804419858,
    "pibe_pesos": 548777487311.0872,
-   "neto_pesos": 64180818586.15,
+   "neto_pesos": 54300478959.21,
    "tabla_32_coincide": true,
    "url": "/entidades/QRoo"
   },
@@ -1000,11 +1000,11 @@
    "share_pob": 0.02208933,
    "sellos_conteo": {
     "sankeys_micro": [
-     19,
-     154
+     14,
+     156
     ],
     "ciclo": [
-     19,
+     17,
      46
     ],
     "tasas": [
@@ -1012,24 +1012,24 @@
      10
     ]
    },
-   "sellos_texto": "19/154 / 19/46 / 1/10",
+   "sellos_texto": "14/156 / 17/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 19,
+    "sankeys_micro": 13,
     "ciclo": 16,
     "tasas": 0,
-    "total": 35
+    "total": 29
    },
    "top1_n100": {
-    "pct": 42.659439,
-    "donde": "ciclo Hombres 5-9 aporta (n=381)"
+    "pct": 43.797251,
+    "donde": "TE ISRPF (n=9204)"
    },
    "top1_te": {
-    "pct": 26.601978,
+    "pct": 43.797251,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.1784871043952956,
+   "neto_pct_pibe": 1.4668408061194016,
    "pibe_pesos": 940119305721.2046,
-   "neto_pesos": 11079184783.85,
+   "neto_pesos": 13790053602.53,
    "tabla_32_coincide": true,
    "url": "/entidades/SLP"
   },
@@ -1043,36 +1043,36 @@
    "share_pob": 0.0240607,
    "sellos_conteo": {
     "sankeys_micro": [
-     22,
-     154
+     13,
+     156
     ],
     "ciclo": [
      14,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "22/154 / 14/46 / 0/10",
+   "sellos_texto": "13/156 / 14/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 22,
+    "sankeys_micro": 13,
     "ciclo": 14,
     "tasas": 0,
-    "total": 36
+    "total": 27
    },
    "top1_n100": {
-    "pct": 22.18459,
-    "donde": "ciclo Mujeres 5-9 aporta (n=401)"
+    "pct": 26.432582,
+    "donde": "TE ISRPF (n=11297)"
    },
    "top1_te": {
-    "pct": 7.317972,
+    "pct": 26.432582,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.2675803032563773,
+   "neto_pct_pibe": 1.949476013617379,
    "pibe_pesos": 859092982833.3733,
-   "neto_pesos": 10889693437.05,
+   "neto_pesos": 16747811635.01,
    "tabla_32_coincide": true,
    "url": "/entidades/Sin"
   },
@@ -1086,11 +1086,11 @@
    "share_pob": 0.02347595,
    "sellos_conteo": {
     "sankeys_micro": [
-     21,
-     154
+     13,
+     156
     ],
     "ciclo": [
-     18,
+     17,
      46
     ],
     "tasas": [
@@ -1098,24 +1098,24 @@
      10
     ]
    },
-   "sellos_texto": "21/154 / 18/46 / 0/10",
+   "sellos_texto": "13/156 / 17/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 21,
+    "sankeys_micro": 12,
     "ciclo": 16,
     "tasas": 0,
-    "total": 37
+    "total": 28
    },
    "top1_n100": {
-    "pct": 29.08205,
-    "donde": "ciclo Mujeres 55-59 recibe (n=228)"
+    "pct": 32.84117725243481,
+    "donde": "rural Indígena→Imp al capital (n=302)"
    },
    "top1_te": {
-    "pct": 10.761205,
+    "pct": 20.306471,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 6.292170786359552,
+   "neto_pct_pibe": 5.788464605431287,
    "pibe_pesos": 1301013493837.6145,
-   "neto_pesos": 81861990985.85,
+   "neto_pesos": 75308705602.68,
    "tabla_32_coincide": true,
    "url": "/entidades/Son"
   },
@@ -1129,36 +1129,36 @@
    "share_pob": 0.01944815,
    "sellos_conteo": {
     "sankeys_micro": [
-     26,
-     154
+     19,
+     156
     ],
     "ciclo": [
-     23,
+     21,
      46
     ],
     "tasas": [
-     1,
+     0,
      10
     ]
    },
-   "sellos_texto": "26/154 / 23/46 / 1/10",
+   "sellos_texto": "19/156 / 21/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 24,
+    "sankeys_micro": 18,
     "ciclo": 18,
     "tasas": 0,
-    "total": 42
+    "total": 36
    },
    "top1_n100": {
-    "pct": 67.807237,
-    "donde": "ciclo Mujeres 0-4 aporta (n=261)"
+    "pct": 44.329785,
+    "donde": "ciclo Hombres 40-44 recibe (n=243)"
    },
    "top1_te": {
-    "pct": 32.63132,
+    "pct": 13.895685,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.5252926502843038,
+   "neto_pct_pibe": 2.267236297806483,
    "pibe_pesos": 772694506205.3712,
-   "neto_pesos": 11785852512.3,
+   "neto_pesos": 17518810315.84,
    "tabla_32_coincide": true,
    "url": "/entidades/Tab"
   },
@@ -1172,36 +1172,36 @@
    "share_pob": 0.02746369,
    "sellos_conteo": {
     "sankeys_micro": [
-     31,
-     154
+     21,
+     156
     ],
     "ciclo": [
      19,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "31/154 / 19/46 / 0/10",
+   "sellos_texto": "21/156 / 19/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 29,
+    "sankeys_micro": 21,
     "ciclo": 16,
     "tasas": 0,
-    "total": 45
+    "total": 37
    },
    "top1_n100": {
-    "pct": 88.674977,
-    "donde": "ciclo Mujeres 0-4 aporta (n=221)"
+    "pct": 42.999477,
+    "donde": "TE ISRPF (n=7499)"
    },
    "top1_te": {
-    "pct": 24.89533,
+    "pct": 42.999477,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.5714661693331249,
+   "neto_pct_pibe": 2.241372374249744,
    "pibe_pesos": 1212850088910.2014,
-   "neto_pesos": 19059528831.95,
+   "neto_pesos": 27184486833.9,
    "tabla_32_coincide": true,
    "url": "/entidades/Tamps"
   },
@@ -1215,11 +1215,11 @@
    "share_pob": 0.0112589,
    "sellos_conteo": {
     "sankeys_micro": [
-     23,
-     154
+     18,
+     156
     ],
     "ciclo": [
-     18,
+     17,
      46
     ],
     "tasas": [
@@ -1227,24 +1227,24 @@
      10
     ]
    },
-   "sellos_texto": "23/154 / 18/46 / 0/10",
+   "sellos_texto": "18/156 / 17/46 / 0/10",
    "celdas_n_menor": {
-    "sankeys_micro": 22,
+    "sankeys_micro": 16,
     "ciclo": 17,
     "tasas": 0,
-    "total": 39
+    "total": 33
    },
    "top1_n100": {
-    "pct": 30.026358,
-    "donde": "ciclo Mujeres 65-69 aporta (n=180)"
+    "pct": 26.68812827658285,
+    "donde": "rural Educación→Indígena (n=146)"
    },
    "top1_te": {
-    "pct": 11.57873,
-    "impuesto": "IEPSP"
+    "pct": 13.437734,
+    "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 1.3459129776373644,
+   "neto_pct_pibe": 0.6814858217369207,
    "pibe_pesos": 236960240751.28586,
-   "neto_pesos": 3189278632.11,
+   "neto_pesos": 1614850443.87,
    "tabla_32_coincide": true,
    "url": "/entidades/Tlax"
   },
@@ -1258,8 +1258,8 @@
    "share_pob": 0.06214458,
    "sellos_conteo": {
     "sankeys_micro": [
-     20,
-     154
+     13,
+     156
     ],
     "ciclo": [
      16,
@@ -1270,24 +1270,24 @@
      10
     ]
    },
-   "sellos_texto": "20/154 / 16/46 / 1/10",
+   "sellos_texto": "13/156 / 16/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 19,
+    "sankeys_micro": 12,
     "ciclo": 14,
     "tasas": 0,
-    "total": 33
+    "total": 26
    },
    "top1_n100": {
-    "pct": 37.664106,
-    "donde": "TE ISRPF (n=9831)"
+    "pct": 47.79530310561977,
+    "donde": "escol Sin escolaridad→Imp al trabajo (n=102)"
    },
    "top1_te": {
-    "pct": 37.664106,
+    "pct": 43.998846,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -9.327787545283368,
+   "neto_pct_pibe": -7.7963026480177815,
    "pibe_pesos": 1682029105037.9692,
-   "neto_pesos": -156896101367.77,
+   "neto_pesos": -131136079656.51,
    "tabla_32_coincide": true,
    "url": "/entidades/Ver"
   },
@@ -1301,36 +1301,36 @@
    "share_pob": 0.01826856,
    "sellos_conteo": {
     "sankeys_micro": [
-     22,
-     154
+     17,
+     156
     ],
     "ciclo": [
-     18,
+     17,
      46
     ],
     "tasas": [
-     0,
+     1,
      10
     ]
    },
-   "sellos_texto": "22/154 / 18/46 / 0/10",
+   "sellos_texto": "17/156 / 17/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 19,
+    "sankeys_micro": 14,
     "ciclo": 15,
     "tasas": 0,
-    "total": 34
+    "total": 29
    },
    "top1_n100": {
-    "pct": 41.382302,
-    "donde": "ciclo Mujeres 0-4 aporta (n=290)"
+    "pct": 32.324013,
+    "donde": "ciclo Mujeres 75-79 aporta (n=100)"
    },
    "top1_te": {
-    "pct": 13.260627,
+    "pct": 27.85906,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": 3.640474002200523,
+   "neto_pct_pibe": 1.7322808293480911,
    "pibe_pesos": 652890124384.5305,
-   "neto_pesos": 23768295241.15,
+   "neto_pesos": 11309890461.42,
    "tabla_32_coincide": true,
    "url": "/entidades/Yuc"
   },
@@ -1344,11 +1344,11 @@
    "share_pob": 0.01276636,
    "sellos_conteo": {
     "sankeys_micro": [
-     26,
-     153
+     19,
+     155
     ],
     "ciclo": [
-     19,
+     16,
      46
     ],
     "tasas": [
@@ -1356,24 +1356,24 @@
      10
     ]
    },
-   "sellos_texto": "26/153 / 19/46 / 1/10",
+   "sellos_texto": "19/155 / 16/46 / 1/10",
    "celdas_n_menor": {
-    "sankeys_micro": 24,
+    "sankeys_micro": 17,
     "ciclo": 16,
     "tasas": 0,
-    "total": 40
+    "total": 33
    },
    "top1_n100": {
-    "pct": 67.73421091551374,
-    "donde": "grupoedad De 65 y más→Imp al trabajo (n=138)"
+    "pct": 48.71056825421011,
+    "donde": "grupoedad De 65 y más→Imp al trabajo (n=180)"
    },
    "top1_te": {
-    "pct": 64.281947,
+    "pct": 36.176927,
     "impuesto": "ISRPF"
    },
-   "neto_pct_pibe": -0.0047111073331788135,
+   "neto_pct_pibe": 0.750936351972522,
    "pibe_pesos": 416714621046.97833,
-   "neto_pesos": -19631873.07,
+   "neto_pesos": 3129261573.43,
    "tabla_32_coincide": true,
    "url": "/entidades/Zac"
   }
@@ -1404,9 +1404,9 @@
  "faltan": [],
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "b670faf",
+  "commit": "eb20d98",
   "tabla_md": "contrato-32.md",
   "pibe32": "entidades-pibe32.json",
-  "generado_el": "2026-10-31 14:05:01"
+  "generado_el": "2026-11-07 22:15:31"
  }
 }

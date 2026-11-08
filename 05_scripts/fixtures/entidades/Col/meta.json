@@ -23,76 +23,54 @@
  "sellos": {
   "conteo": {
    "sankeys_micro": [
-    20,
-    155
+    14,
+    156
    ],
    "ciclo": [
-    16,
+    15,
     46
    ],
    "tasas": [
-    0,
+    1,
     10
    ]
   },
-  "texto": "20/155 / 16/46 / 0/10",
+  "texto": "14/156 / 15/46 / 1/10",
   "celdas_n_menor": {
-   "sankeys_micro": 16,
+   "sankeys_micro": 11,
    "ciclo": 14,
    "tasas": 0,
-   "total": 30
+   "total": 25
   },
   "sankeys": {
    "quintil": {
     "corte": "quintil estatal",
     "enlaces_micro": 40,
-    "sellados": [
-     {
-      "from": "I",
-      "to": "  Imp al capital",
-      "n": 28,
-      "top1": 19.71607998993106,
-      "motivo": "n"
-     },
-     {
-      "from": "II",
-      "to": "  Imp al capital",
-      "n": 50,
-      "top1": 9.817500877036967,
-      "motivo": "n"
-     },
-     {
-      "from": "III",
-      "to": "  Imp al capital",
-      "n": 59,
-      "top1": 9.609518513926972,
-      "motivo": "n"
-     }
-    ],
+    "sellados": [],
     "celdas": [
      {
       "celda": "I",
-      "n": "2494",
-      "hog": "785",
-      "pob": "160112"
+      "n": "2492",
+      "hog": "784",
+      "pob": "160085"
      },
      {
       "celda": "II",
-      "n": "2481",
-      "hog": "716",
-      "pob": "175249"
+      "n": "2470",
+      "hog": "714",
+      "pob": "174900"
      },
      {
       "celda": "III",
-      "n": "1948",
-      "hog": "619",
-      "pob": "159633"
+      "n": "1989",
+      "hog": "629",
+      "pob": "160685"
      },
      {
       "celda": "IV",
-      "n": "1772",
-      "hog": "622",
-      "pob": "142216"
+      "n": "1744",
+      "hog": "615",
+      "pob": "141540"
      },
      {
       "celda": "V",
@@ -104,28 +82,28 @@
    },
    "grupoedad": {
     "corte": "grupoedad",
-    "enlaces_micro": 35,
+    "enlaces_micro": 36,
     "sellados": [
+     {
+      "from": "De 0 a 4",
+      "to": "  Imp al capital",
+      "n": 58,
+      "top1": 8.1459298696458,
+      "motivo": "n"
+     },
+     {
+      "from": "De 5 a 17",
+      "to": "Imp al trabajo",
+      "n": 48,
+      "top1": 41.58496669487985,
+      "motivo": "n+top1"
+     },
      {
       "from": "De 5 a 17",
       "to": "  Imp al capital",
-      "n": 1,
-      "top1": 100.0,
-      "motivo": "n+top1"
-     },
-     {
-      "from": "De 18 a 24",
-      "to": "Imp al trabajo",
-      "n": 648,
-      "top1": 26.55013229845651,
+      "n": 651,
+      "top1": 31.95943464263974,
       "motivo": "top1"
-     },
-     {
-      "from": "De 18 a 24",
-      "to": "  Imp al capital",
-      "n": 8,
-      "top1": 76.22506963421961,
-      "motivo": "n+top1"
      }
     ],
     "celdas": [
@@ -164,15 +142,7 @@
    "sexo": {
     "corte": "sexo",
     "enlaces_micro": 16,
-    "sellados": [
-     {
-      "from": "Mujeres",
-      "to": "  Imp al capital",
-      "n": 169,
-      "top1": 41.76068464795087,
-      "motivo": "top1"
-     }
-    ],
+    "sellados": [],
     "celdas": [
      {
       "celda": "Hombres",
@@ -195,22 +165,22 @@
      {
       "from": "Indígena",
       "to": "Imp al trabajo",
-      "n": 71,
-      "top1": 32.18482333563004,
+      "n": 53,
+      "top1": 38.58857157093981,
       "motivo": "n+top1"
      },
      {
       "from": "Indígena",
       "to": "  Imp al capital",
-      "n": 2,
-      "top1": 58.19605640962212,
-      "motivo": "n+top1"
+      "n": 70,
+      "top1": 22.97842819755472,
+      "motivo": "n"
      },
      {
       "from": "Salud",
       "to": " Indígena",
       "n": 82,
-      "top1": 10.75718883673533,
+      "top1": 10.83673789101201,
       "motivo": "n"
      },
      {
@@ -255,38 +225,24 @@
     "sellados": [
      {
       "from": "Sin escolaridad",
-      "to": "  Imp al capital",
-      "n": 12,
-      "top1": 19.65051585935938,
-      "motivo": "n"
-     },
-     {
-      "from": "Media Superior",
-      "to": "  Imp al capital",
-      "n": 93,
-      "top1": 44.06879699470869,
-      "motivo": "n+top1"
-     },
-     {
-      "from": "Superior",
-      "to": "  Imp al capital",
-      "n": 76,
-      "top1": 13.33479738075044,
+      "to": "Imp al trabajo",
+      "n": 75,
+      "top1": 17.76502971535845,
       "motivo": "n"
      },
      {
       "from": "Posgrado",
       "to": "Imp al trabajo",
-      "n": 83,
-      "top1": 7.209246163903195,
+      "n": 89,
+      "top1": 7.830836217143372,
       "motivo": "n"
      },
      {
       "from": "Posgrado",
       "to": "  Imp al capital",
-      "n": 6,
-      "top1": 37.44558554691498,
-      "motivo": "n+top1"
+      "n": 95,
+      "top1": 20.21268314797748,
+      "motivo": "n"
      },
      {
       "from": "Educación",
@@ -298,8 +254,8 @@
      {
       "from": "Salud",
       "to": " Posgrado",
-      "n": 95,
-      "top1": 2.749404662758376,
+      "n": 91,
+      "top1": 2.9604202410554,
       "motivo": "n"
      },
      {
@@ -351,8 +307,8 @@
     "g": 17,
     "quinquenio": "80-84",
     "n": 49,
-    "top1_aporta": 45.388755,
-    "top1_recibe": 27.049613,
+    "top1_aporta": 32.611032,
+    "top1_recibe": 27.020594,
     "motivo": "n+top1"
    },
    {
@@ -361,8 +317,8 @@
     "g": 18,
     "quinquenio": "85-89",
     "n": 32,
-    "top1_aporta": 18.468938,
-    "top1_recibe": 35.995183,
+    "top1_aporta": 40.735774,
+    "top1_recibe": 35.935845,
     "motivo": "n+top1"
    },
    {
@@ -371,8 +327,8 @@
     "g": 19,
     "quinquenio": "90-94",
     "n": 7,
-    "top1_aporta": 91.857933,
-    "top1_recibe": 69.404255,
+    "top1_aporta": 93.115188,
+    "top1_recibe": 69.23358,
     "motivo": "n+top1"
    },
    {
@@ -381,8 +337,8 @@
     "g": 20,
     "quinquenio": "95-99",
     "n": 5,
-    "top1_aporta": 88.302974,
-    "top1_recibe": 56.378317,
+    "top1_aporta": 88.010554,
+    "top1_recibe": 56.438647,
     "motivo": "n+top1"
    },
    {
@@ -418,21 +374,11 @@
    {
     "sexo": "Mujeres",
     "s": 2,
-    "g": 5,
-    "quinquenio": "20-24",
-    "n": 404,
-    "top1_aporta": 27.006619,
-    "top1_recibe": 2.75169,
-    "motivo": "top1"
-   },
-   {
-    "sexo": "Mujeres",
-    "s": 2,
     "g": 7,
     "quinquenio": "30-34",
     "n": 396,
-    "top1_aporta": 51.703844,
-    "top1_recibe": 2.876646,
+    "top1_aporta": 40.083945,
+    "top1_recibe": 2.877613,
     "motivo": "top1"
    },
    {
@@ -441,8 +387,8 @@
     "g": 17,
     "quinquenio": "80-84",
     "n": 66,
-    "top1_aporta": 13.097399,
-    "top1_recibe": 31.225826,
+    "top1_aporta": 11.914582,
+    "top1_recibe": 31.149603,
     "motivo": "n+top1"
    },
    {
@@ -451,9 +397,9 @@
     "g": 18,
     "quinquenio": "85-89",
     "n": 43,
-    "top1_aporta": 39.728651,
-    "top1_recibe": 14.177426,
-    "motivo": "n+top1"
+    "top1_aporta": 15.421392,
+    "top1_recibe": 14.113823,
+    "motivo": "n"
    },
    {
     "sexo": "Mujeres",
@@ -461,8 +407,8 @@
     "g": 19,
     "quinquenio": "90-94",
     "n": 11,
-    "top1_aporta": 34.98441,
-    "top1_recibe": 43.445656,
+    "top1_aporta": 32.110101,
+    "top1_recibe": 43.822713,
     "motivo": "n+top1"
    },
    {
@@ -471,8 +417,8 @@
     "g": 20,
     "quinquenio": "95-99",
     "n": 4,
-    "top1_aporta": 73.723725,
-    "top1_recibe": 47.593072,
+    "top1_aporta": 67.789186,
+    "top1_recibe": 47.443106,
     "motivo": "n+top1"
    },
    {
@@ -506,26 +452,33 @@
     "motivo": "n"
    }
   ],
-  "tasas": [],
+  "tasas": [
+   {
+    "impuesto": "ISRPF",
+    "n": 10201,
+    "top1": 49.797617,
+    "motivo": "top1"
+   }
+  ],
   "top1_n100": {
-   "pct": 51.703844,
-   "donde": "ciclo Mujeres 30-34 aporta (n=396)"
+   "pct": 49.797617,
+   "donde": "TE ISRPF (n=10201)"
   },
   "top1_te": {
-   "pct": 17.934008,
-   "impuesto": "ISRPM"
+   "pct": 49.797617,
+   "impuesto": "ISRPF"
   }
  },
  "ciclo": {
-  "neto_pesos": 14240821759.62,
-  "aporta_pesos": 51409054502.35,
-  "recibe_pesos": 37168232742.72,
+  "neto_pesos": 8561598000.35,
+  "aporta_pesos": 45642012304.24,
+  "recibe_pesos": 37080414303.88,
   "pob": 755998
  },
  "pibe": {
   "pibe_pesos": 257334843776.51132,
-  "neto_pesos": 14240821759.62288,
-  "neto_pct_pibe": 5.533965610965092,
+  "neto_pesos": 8561598000.35473,
+  "neto_pct_pibe": 3.3270263267535807,
   "vintage": "2026-10-19",
   "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32)",
   "anio_vp": 2027,
@@ -539,19 +492,19 @@
   "neto_pct_pib": 3.171000000000003,
   "fuente_pct": "entidades-pibe32.json escalar NetoCicloPIBNac (contrato-32.do; null si la corrida no lo exportó)",
   "share_pob": 0.0055838,
-  "share_neto": 0.01139275,
+  "share_neto": 0.00684934,
   "n": 308598,
   "pob": 135391415
  },
  "tabla_32": {
   "fuente": "contrato-32.md §4, columna «selladas: sankeys micro / ciclo / TE»",
-  "tabla": "20/155 / 16/46 / 0/10",
-  "corrida": "20/155 / 16/46 / 0/10",
+  "tabla": "14/156 / 15/46 / 1/10",
+  "corrida": "14/156 / 15/46 / 1/10",
   "coincide": true
  },
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "b670faf",
+  "commit": "eb20d98",
   "insumos": [
    "ciclo-vida.json",
    "tasas-efectivas.json",
@@ -567,7 +520,7 @@
    "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
    "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
   },
-  "generado_el": "2026-10-31 14:05:01"
+  "generado_el": "2026-11-07 22:15:31"
  },
  "pibe_32": {
   "suma_pesos": 39629803600641.83,

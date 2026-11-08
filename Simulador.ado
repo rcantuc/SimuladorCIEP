@@ -1158,7 +1158,7 @@ program graphpiramide
 		* del propio redondeo (cinco corridas en 0.000499, 8.16b en 0.000501). Desde v8.16.0 el gate lee este archivo. *
 		tempname fh
 		file open `fh' using `"${SIMROOT}/users/$id/aportaciones-nacional.json"', write text replace
-		file write `fh' `"{"esquema": "ciep.aportaciones-nacional/v1", "fuente": "Simulador.ado (ciclo de vida): los mismos valores que APORT* en output.txt, sin redondear a %8.3f", "anio_vp": `aniovp', "orden": "grupo_edad descendente, igual que APORT* en output.txt", "vectores": {"' _n
+		file write `fh' `"{"esquema": "ciep.aportaciones-nacional/v1", "fuente": "Simulador.ado (ciclo de vida): los mismos valores que APORT* en output.txt, sin redondear a %8.3f", "variable": "`varlist'", "orden": "grupo_edad descendente, igual que APORT* en output.txt", "vectores": {"' _n
 		local j = 0
 		foreach nm in HIV HVIIX HX MIV MVIIX MX {
 			local j = `j' + 1
