@@ -892,71 +892,54 @@ fi
 # (reorg v1.12): la página abría con números fósiles aunque el motor calculara
 # bien (divergencia display-vs-cálculo), verificado en vivo contra producción.
 #
-# CONTRATO DEFAULT (censo v1.44 — dos lectores, rutas distintas):
+# CONTRATO DEFAULT (dos lectores, rutas distintas):
 #   - el motor Stata lee users/ricardo/bootstraps/  (escenario base, Fase 3b-bis)
-#   - el PHP lee users/ciepmx/                      (vista inicial, ESTA fase):
-#       output.txt            ← cargaDefault.php:326  (params/series del hero)
-#       sankey-decil.json     ← jsonSankey.php:28     (Sankey inicial por decil)
-#       sankey-escol.json     ← jsonSankeyEscol.php:22
-#       sankey-grupoedad.json ← jsonSankeyGrupoedad.php:28
-#       sankey-rural.json     ← jsonSankeyRural.php:22
-#       sankey-sexo.json      ← jsonSankeySexo.php:22
-#       SankeyNTA/sankey-v3-grupoedad.json ← jsonSankeyNTA.php?corte=v3-grupoedad (default; página de método /NTA, v8.12.6)
-#       SankeyNTA/sankey-grupoedad.json ← jsonSankeyNTA.php?corte=grupoedad (v1; /NTA ya no lo dibuja, el endpoint lo conserva)
-#       NTA/nta-grupoedad.json          ← jsonSankeyNTA.php?cuenta=grupoedad (cifras de «Anchoring and residual» en /NTA)
-#       NTA/nta-panel-grupoedad-sexo.json ← jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo (panel por grupo × sexo de /NTA, v8.12.6)
-#       NTA/nta-quinquenio-sexo.json    ← jsonSankeyNTA.php?cuenta=quinquenio-sexo
-#       NTA/nta-identidad.txt           ← jsonSankeyNTA.php?cuenta=identidad (reporte enlazado desde /NTA)
-#       (el v2, SankeyNTA/sankey-v2-grupoedad.json, lo sigue emitiendo el motor pero /NTA ya no lo dibuja: no viaja desde v8.12.6)
-#       <ABREV>/sankey-<corte>.json ×5, <ABREV>/ciclo-vida.json, <ABREV>/tasas-efectivas.json, <ABREV>/neto-pibe.json, <ABREV>/meta.json (×32)
-#                                       ← jsonEntidad.php?abrev=<ABREV>&producto=sankey|ciclo|tasas|neto|meta (/entidades/<ABREV>, v8.13.0)
-#       entidades.json                  ← jsonEntidad.php?producto=indice (/entidades, v8.13.0)
+#   - el PHP lee users/ciepmx/                      (vista inicial, ESTA fase)
+#
+# v8.17.1 (2026-11-08): el manifiesto YA NO es una lista escrita aquí. Lo deriva
+# 05_scripts/manifiesto-default.py de lo que las páginas piden y de cómo cada
+# endpoint lo resuelve (portada: js/stataCalcula.js → cargaDefault.php y los
+# jsonSankey*.php → users/ciepmx/<archivo>; /NTA: NTA/index.php →
+# jsonSankeyNTA.php?corte=…|cuenta=… → SankeyNTA/ y NTA/; /entidades:
+# entidades/index.php y _entidad.php → jsonEntidad.php → <ABREV>/… ×32 y
+# entidades.json, con el catálogo de SIMentidad.ado). La misma derivación la
+# lee humo-calcular.sh tras el swap (GET a cada endpoint → 200 con su archivo).
+# Incidente que lo motiva: la lista a mano no se actualizó cuando /NTA pasó a
+# dibujar el v4 (v8.17.0) y el deploy habría dejado /NTA sin
+# users/ciepmx/SankeyNTA/sankey-v4-economia.json (runbook §14.1 lección 20).
 # Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
 # SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
 # investigador). El contrato del PHP no se toca: se publica EN users/ciepmx/.
+# Lo que ninguna página pide no viaja aunque el endpoint lo admita (el v2 y los
+# cortes v1 del Sankey NTA, nta-quinquenio-sexo.json): a mano responden 404
+# con pista. nta-persona.dta (130 MB) tampoco: el web no lo lee.
 #
-# Fuente local de verdad, CONFIRMADA en el código: la corrida completa de
-# SIM.do escribe los 11 en users/ricardo/ — output.txt vía el log que llena
-# 01_modulos/output.do, los sankey-*.json vía SankeySF.do→SankeySumSim,
-# SankeyNTA/sankey-<corte>.json vía Households.do §"Sankeys NTA"→
-# visualizations/Sankey.do→SankeySumSim folder(SankeyNTA), y NTA/* más
-# SankeyNTA/sankey-v3-grupoedad.json vía 01_modulos/NTA.do (SIM.do §3.2b; la
-# cuenta NTA por individuo). nta-persona.dta (130 MB) NO viaja: el web no lo
-# lee. Una entrada con subcarpeta viaja a users/ciepmx/<subcarpeta>/ (misma
-# ruta relativa que local).
-DEFAULT_MANIFEST=(
-    output.txt
-    sankey-decil.json
-    sankey-escol.json
-    sankey-grupoedad.json
-    sankey-rural.json
-    sankey-sexo.json
-    SankeyNTA/sankey-grupoedad.json
-    SankeyNTA/sankey-v3-grupoedad.json
-    NTA/nta-grupoedad.json
-    NTA/nta-panel-grupoedad-sexo.json
-    NTA/nta-quinquenio-sexo.json
-    NTA/nta-identidad.txt
-)
-# v8.13.0 (template estatal, /entidades/<ABREV>): users/ricardo/<ABREV>/ para las 32 — los 5 Sankeys de
-# aportación (SankeySF.do por entidad), ciclo-vida.json (CicloEntidad.do), tasas-efectivas.json
-# (TasasEfectivasEntidad.do), neto-pibe.json (contrato-32.do §4b vía scalarjson: neto del ciclo / PIBE en
-# Stata) y meta.json (generar-entidades.py meta: sellos con su n; PIBE y neto transcritos) — más
-# entidades.json (el índice de las 32). Los produce contrato-32.sh (Ricardo lo corre antes
-# del tag); jsonEntidad.php los lee en users/<id>/<ABREV>/. El catálogo de abreviaturas se lee de
-# SIMentidad.ado (global entidadesC, sin «Nac»), la única fuente de verdad, para no copiarlo aquí.
+# Fuente local de verdad: la corrida completa de SIM.do escribe todo en
+# users/ricardo/ — output.txt vía el log que llena 01_modulos/output.do, los
+# sankey-*.json vía SankeySF.do→SankeySumSim, SankeyNTA/ y NTA/ vía
+# 01_modulos/NTA.do (SIM.do §3.2b), y <ABREV>/ + entidades.json vía
+# contrato-32.sh. Una entrada con subcarpeta viaja a users/ciepmx/<subcarpeta>/
+# (misma ruta relativa que local).
+MANIFIESTO_PY="$SCRIPT_DIR/manifiesto-default.py"
+[[ -f "$MANIFIESTO_PY" ]] || die "Fase 3b-ter: no existe $MANIFIESTO_PY (la derivación del manifiesto default)."
+_MANIF_ERR="$(mktemp -t manifiesto-default.XXXXXX)"
+if ! _MANIF_OUT="$(python3 -I "$MANIFIESTO_PY" --root "$LOCAL_REPO_ROOT" --archivos 2>"$_MANIF_ERR")"; then
+    die "Fase 3b-ter: manifiesto-default.py no pudo derivar el manifiesto del default:
+$(cat "$_MANIF_ERR")
+        El contrato de una página o de un endpoint cambió: actualiza la derivación en 05_scripts/manifiesto-default.py."
+fi
+rm -f "$_MANIF_ERR"
+DEFAULT_MANIFEST=()
+while IFS= read -r _l; do [[ -n "$_l" ]] && DEFAULT_MANIFEST+=("$_l"); done <<< "$_MANIF_OUT"
+(( ${#DEFAULT_MANIFEST[@]} > 0 )) || die "Fase 3b-ter: manifiesto-default.py no devolvió ningún archivo."
+# El catálogo de abreviaturas se lee de SIMentidad.ado (global entidadesC, sin «Nac»), la única fuente de verdad:
+# lo usa el health check de la Fase 6 (un HEAD por entidad). La derivación lo lee igual y exige 32.
 ENTIDADES_ABREV="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
 [[ -n "$ENTIDADES_ABREV" ]] || die "Fase 3b-ter: no pude leer 'global entidadesC' de SIMentidad.ado (el catálogo de las 32 entidades)."
-_n_ent=0
-for _ab in $ENTIDADES_ABREV; do
-    for _f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json neto-pibe.json meta.json; do
-        DEFAULT_MANIFEST+=("$_ab/$_f")
-    done
-    _n_ent=$((_n_ent+1))
-done
-DEFAULT_MANIFEST+=(entidades.json)
+_n_ent=0; for _ab in $ENTIDADES_ABREV; do _n_ent=$((_n_ent+1)); done
 [[ $_n_ent -eq 32 ]] || die "Fase 3b-ter: el catálogo de SIMentidad.ado trae $_n_ent entidades; esperaba 32."
-log_info "Fase 3b-ter: manifiesto del default (${#DEFAULT_MANIFEST[@]} archivos; incluye las $_n_ent entidades × 9 + entidades.json) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
+_n_sin_ent=0; for _art in "${DEFAULT_MANIFEST[@]}"; do [[ "$_art" == */* && "${_art%%/*}" != "SankeyNTA" && "${_art%%/*}" != "NTA" ]] || _n_sin_ent=$((_n_sin_ent+1)); done
+log_info "Fase 3b-ter: manifiesto del default DERIVADO por manifiesto-default.py (${#DEFAULT_MANIFEST[@]} archivos: $_n_sin_ent de portada, /NTA e índice + las $_n_ent entidades × $(( (${#DEFAULT_MANIFEST[@]} - _n_sin_ent) / _n_ent ))) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
 
 LOCAL_DEFAULT_DIR="$LOCAL_REPO_ROOT/users/ricardo"
 LOCAL_PEF_DTA="$LOCAL_REPO_ROOT/master/PEF.dta"
@@ -1158,15 +1141,9 @@ MOTOR_LECTURAS_VPS=(
     "master/${WEB_MASTER_YEAR}/cuadratura.do"        # Web.Stata.do §7.3: Cuad*PIB para output.do CUADRATURA (v8.15.1; producto de Households.do §9.1)
     "users/ricardo/cache/sello.txt"                  # Fase 3b-bis: cache de lo invariante
     "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
-    "users/ciepmx/output.txt"                        # Fase 3b-ter: escenario default (cargaDefault.php)
-    "users/ciepmx/SankeyNTA/sankey-grupoedad.json"   # Fase 3b-ter: Sankey NTA v1 (jsonSankeyNTA.php?corte=grupoedad)
-    "users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json" # Fase 3b-ter: Sankey NTA v3, el que dibuja /NTA (v8.12.6)
-    "users/ciepmx/NTA/nta-grupoedad.json"            # Fase 3b-ter: cuenta NTA por grupo (cifras de /NTA, ?cuenta=grupoedad)
-    "users/ciepmx/NTA/nta-panel-grupoedad-sexo.json" # Fase 3b-ter: panel por grupo × sexo de /NTA (?cuenta=panel-grupoedad-sexo)
-    "users/ciepmx/NTA/nta-identidad.txt"             # Fase 3b-ter: reporte de identidad enlazado desde /NTA
-    "users/ciepmx/entidades.json"                    # Fase 3b-ter: índice de las 32 (/entidades, jsonEntidad.php?producto=indice, v8.13.0)
+    # users/ciepmx/… (Fase 3b-ter): las entradas del manifiesto derivado se añaden abajo, una por archivo
 )
-for _ab in $ENTIDADES_ABREV; do MOTOR_LECTURAS_VPS+=("users/ciepmx/$_ab/meta.json"); done   # Fase 3b-ter: una por entidad (/entidades/<ABREV>, v8.13.0)
+for _art in "${DEFAULT_MANIFEST[@]}"; do MOTOR_LECTURAS_VPS+=("users/ciepmx/$_art"); done   # v8.17.1: el manifiesto derivado completo (portada, /NTA, las 32), no una lista a mano
 _GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
 for _f in "${MOTOR_LECTURAS_VPS[@]}"; do _GATE5R_CMD+=" '$_f'"; done
 _GATE5R_CMD+="; do [ -e \"\$f\" ] || echo \"FALTA \$f\"; done; sha256sum 05_scripts/manifest.json 2>/dev/null | cut -c1-64"
@@ -1402,7 +1379,7 @@ elif [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Fase 6: se verificaría HTTP 200 y 'Commit: ${CURRENT_COMMIT_SHORT}...' en $VPS_HEALTH_URL"
     log_info "[dry-run] Fase 6: y HTTP 200 en ${#SITE_SMOKE_ASSETS[@]} activos del esqueleto bajo ${VPS_HEALTH_URL%/*}/: ${SITE_SMOKE_ASSETS[*]}"
     log_info "[dry-run] Fase 6: y HTTP 200 (HEAD) en ${VPS_HEALTH_URL%/*}/jsonEntidad.php?abrev=<ABREV>&producto=meta para las $_n_ent entidades"
-    log_info "[dry-run] Fase 6: y, tras $( [[ $ESPERA_REALPATH -eq 1 ]] && echo '125 s de espera (caché de realpath)' || echo '0 s' ), el «Calcular» de humo: bash 05_scripts/humo-calcular.sh ${VPS_HEALTH_URL%/*} --timeout 120$( [[ $SKIP_HUMO -eq 1 ]] && echo ' (SALTADO por --skip-humo)' )"
+    log_info "[dry-run] Fase 6: y, tras $( [[ $ESPERA_REALPATH -eq 1 ]] && echo '125 s de espera (caché de realpath)' || echo '0 s' ), el «Calcular» de humo: bash 05_scripts/humo-calcular.sh ${VPS_HEALTH_URL%/*} --timeout 120$( [[ $SKIP_HUMO -eq 1 ]] && echo ' (SALTADO por --skip-humo)' ) (incluye, v8.17.1, un GET a cada endpoint del default que las páginas piden —manifiesto-default.py, entidades: NL— y al default de jsonSankeyNTA.php: 200 con su archivo de users/ciepmx/, o rollback)"
 else
     log_info "Fase 6: verificación post-deploy contra $VPS_HEALTH_URL"
     if health_check; then
@@ -1438,8 +1415,12 @@ else
         # health.php, el commit y el esqueleto no prueban el motor: el deploy v8.12
         # (2026-10-18) pasó los tres y «Calcular» abortaba con r(601). Desde aquí el
         # clic lo da humo-calcular.sh: POST del escenario default a calculaStata.php
-        # (como el JS), números en la respuesta y los 5 sankeys de la sesión. Si
-        # falla, HEALTH_PASSED=0 → la Fase 7 hace el rollback.
+        # (como el JS), números en la respuesta y los 5 sankeys de la sesión; y,
+        # desde v8.17.1, un GET a cada endpoint del default que las páginas piden
+        # (el mismo manifiesto derivado de la Fase 3b-ter, entidades solo NL) y al
+        # default de jsonSankeyNTA.php: 200 con el archivo de users/ciepmx/ (el
+        # incidente v8.17: /NTA sin sankey-v4-economia.json). Si algo falla,
+        # HEALTH_PASSED=0 → la Fase 7 hace el rollback.
         if [[ $HEALTH_PASSED -eq 1 && $SKIP_HUMO -eq 0 ]]; then
             if [[ $ESPERA_REALPATH -eq 1 ]]; then
                 # PHP cachea realpath() 120 s (realpath_cache_ttl): tras el swap de
@@ -1459,7 +1440,7 @@ else
             if [[ $_rc_humo -eq 0 ]]; then
                 log_ok "Fase 6: «Calcular» de humo VERDE en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID; evidencia $HUMO_EVID)."
             else
-                log_error "Fase 6: «Calcular» de humo ROJO en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID). El motor del deployment $VERSION_ARG no produce números o sankeys."
+                log_error "Fase 6: «Calcular» de humo ROJO en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID). El motor del deployment $VERSION_ARG no produce números o sankeys, o un endpoint del default (manifiesto-default.py) no sirve su archivo de users/ciepmx/."
                 log_error "Cola del log de Stata de la sesión ($VPS_SIM_ROOT/$VPS_SIM_VERSION/users/$HUMO_ID/$HUMO_ID.log):"
                 { ssh_vps "tail -n 40 '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/$HUMO_ID/$HUMO_ID.log' 2>/dev/null || echo '(sin log de sesión: Stata no llegó a arrancar o la sesión no se creó)'" 2>&1 || true; } | sed 's/^/    /' | tee -a "$LOG_FILE" || true
                 HEALTH_PASSED=0

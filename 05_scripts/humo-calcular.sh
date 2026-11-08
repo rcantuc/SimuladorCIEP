@@ -19,7 +19,7 @@
 #
 # Lo llama publicar-vps.sh en la Fase 6 (tras el swap y la espera del caché de
 # realpath de PHP); si falla, publicar-vps.sh hace rollback. También corre a mano:
-#   bash 05_scripts/humo-calcular.sh https://simuladorfiscal.ciep.mx [--timeout 120] [--evidencia <dir>]
+#   bash 05_scripts/humo-calcular.sh https://simuladorfiscal.ciep.mx [--timeout 120] [--evidencia <dir>] [--entidades NL]
 #   bash 05_scripts/humo-calcular.sh http://localhost:8123                     (harness local)
 # Salida: 0 = humo verde; 1 = algún aserto falló (imprime el motivo y la cola del
 # log de la sesión que devuelva checkStataStatus.php); 2 = uso.
@@ -30,18 +30,20 @@
 # =============================================================================
 set -uo pipefail
 
-BASE=""; TIMEOUT=120; EVID=""; ID=""; CORTES="decil escol grupoedad rural sexo"
+BASE=""; TIMEOUT=120; EVID=""; ID=""; CORTES="decil escol grupoedad rural sexo"; ENTIDADES="NL"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --timeout) TIMEOUT="$2"; shift 2 ;;
         --evidencia) EVID="$2"; shift 2 ;;
         --id) ID="$2"; shift 2 ;;
+        --entidades) ENTIDADES="$2"; shift 2 ;;
         -h|--help) sed -n '2,30p' "$0"; exit 2 ;;
         *) if [[ -z "$BASE" ]]; then BASE="${1%/}"; shift; else echo "argumento inesperado: $1" >&2; exit 2; fi ;;
     esac
 done
-[[ -n "$BASE" ]] || { echo "Uso: $0 <https://sitio> [--timeout SEG] [--evidencia DIR] [--id IDSESSION]" >&2; exit 2; }
+[[ -n "$BASE" ]] || { echo "Uso: $0 <https://sitio> [--timeout SEG] [--evidencia DIR] [--id IDSESSION] [--entidades \"NL Jal\"|todas]" >&2; exit 2; }
 HERE="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$HERE/.." && pwd)"
 [[ -n "$ID" ]] || ID="humo$(date +%Y%m%d%H%M%S)"
 [[ "$ID" =~ ^[A-Za-z0-9]+$ ]] || { echo "idSession debe ser alfanumérico: $ID" >&2; exit 2; }
 W="$(mktemp -d /tmp/humo-calcular.XXXXXX)"
@@ -117,6 +119,46 @@ for c in $CORTES; do
     fi
 done
 (( ${#FALLAS[@]} == 0 )) && log "5/5 sankeys de la sesión $ID responden 200 con nodes/links"
+
+# --- 4b. el default que las páginas piden (v8.17.1): un GET por endpoint del manifiesto derivado -----------------
+# Sin idSession cada endpoint sirve users/ciepmx/<archivo> (lo que embarcó la Fase 3b-ter). La lista es la MISMA
+# derivación que usa el deploy (manifiesto-default.py: portada, /NTA, /entidades), restringida a las entidades de
+# --entidades (default NL, el testigo; las 32 ya reciben un HEAD en el health check). Cada uno: 200; JSON válido si
+# el archivo es .json; y el endpoint nombra el archivo del manifiesto ("nombre" en el JSON o la cabecera
+# X-NTA-Archivo / X-Entidad-Archivo; cargaDefault.php no lo expone y solo se exige la llave INGRESOS, ya probada).
+MANIF_TSV="$W/manifiesto-default.tsv"
+if ! python3 -I "$HERE/manifiesto-default.py" --root "$REPO_ROOT" --tsv --entidades "$ENTIDADES" > "$MANIF_TSV" 2> "$W/manifiesto-default.err"; then
+    falla "manifiesto-default.py no pudo derivar el manifiesto del default: $(cat "$W/manifiesto-default.err")"
+else
+    NDEF=0; NDEF_OK=0
+    while IFS=$'\t' read -r archivo endpoint _origen; do
+        [[ -n "$archivo" ]] || continue
+        NDEF=$((NDEF + 1))
+        out="$W/default-$(printf '%s' "$endpoint" | tr -c 'A-Za-z0-9._-' '_')"
+        code=$(curl -s -o "$out.body" -D "$out.hdr" -w '%{http_code}' --max-time 30 "$BASE/$endpoint" 2>/dev/null || echo 000)
+        if [[ "$code" != "200" ]]; then falla "default: $endpoint -> HTTP $code (users/ciepmx/$archivo no viajó o el endpoint falla); cuerpo: $(head -c 200 "$out.body" 2>/dev/null)"; continue; fi
+        [[ -s "$out.body" ]] || { falla "default: $endpoint -> 200 pero cuerpo vacío"; continue; }
+        if [[ "$archivo" == *.json && "$endpoint" != cargaDefault.php ]] && ! python3 -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$out.body" 2>/dev/null; then
+            falla "default: $endpoint -> 200 pero el cuerpo no es JSON válido"; continue
+        fi
+        # (grep directo sobre los dos archivos: con pipefail, «cat | grep -q» marca fallo cuando grep cierra antes el pipe)
+        if [[ "$endpoint" != cargaDefault.php ]] && ! grep -q "users/ciepmx/$archivo" "$out.hdr" "$out.body"; then
+            falla "default: $endpoint no nombra users/ciepmx/$archivo (sirvió: $(grep -o 'users/[^"]*' "$out.hdr" "$out.body" 2>/dev/null | head -1 | sed 's/^[^:]*://'))"; continue
+        fi
+        NDEF_OK=$((NDEF_OK + 1))
+    done < "$MANIF_TSV"
+    # el default del endpoint de /NTA (sin corte ni cuenta) debe servir un archivo que viaja (lo que /NTA dibuja al abrir)
+    code=$(curl -s -o "$W/default-jsonSankeyNTA.body" -D "$W/default-jsonSankeyNTA.hdr" -w '%{http_code}' --max-time 30 "$BASE/jsonSankeyNTA.php" 2>/dev/null || echo 000)
+    nombre_def="$(grep -o '"nombre":"users/ciepmx/[^"]*"' "$W/default-jsonSankeyNTA.body" 2>/dev/null | head -1 | sed 's/.*users\/ciepmx\///; s/"$//')"
+    if [[ "$code" != "200" ]]; then
+        falla "default: jsonSankeyNTA.php (sin corte) -> HTTP $code: /NTA abriría sin su Sankey"
+    elif [[ -z "$nombre_def" ]] || ! cut -f1 "$MANIF_TSV" | grep -qx "$nombre_def"; then
+        falla "default: jsonSankeyNTA.php (sin corte) sirve «${nombre_def:-?}», que no está en el manifiesto que viaja"
+    else
+        NDEF=$((NDEF + 1)); NDEF_OK=$((NDEF_OK + 1))
+    fi
+    log "$NDEF_OK/$NDEF endpoints del default (manifiesto-default.py, entidades: $ENTIDADES; + jsonSankeyNTA.php sin corte → $nombre_def) responden 200 con su archivo de users/ciepmx/"
+fi
 
 # --- 5. veredicto ---------------------------------------------------------------------------------
 t1=$(date +%s)
