@@ -16,6 +16,14 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+Sesión 8.17, Bloque 0 (2026-11-08; rama `sesion/8.17-bloque0`, sobre el hotfix 49f65fb de Ricardo): configuración local por clon. **Ningún número publicado se mueve** (`SIM.do` §0 solo cambia dónde viven las palancas; `Simulador.ado` cambia por el hotfix de la pirámide por sexo).
+
+- **Correcciones — hotfix de Ricardo (49f65fb, tal cual).** `Simulador.ado`: pirámide por sexo (`graphpiramide`); `simulador.stpr` re-guardado. El `global hasta "3"` que ese commit activaba en `SIM.do` §0.4 pasa a `config-local.do.ejemplo`; `SIM.do` queda sin la línea.
+- **Comandos — `SIM.do` §0.1b carga `config-local.do` si existe** (`capture confirm file` + `run`), tras `macro drop _all` y antes de los defaults de §0.2–§0.8b; imprime las palancas que trae. §0.2 pone `id = c(username)` solo si viene vacío. §0.4 documenta las palancas (`hasta` 1–7 con el nombre de cada sección, `nographs`, `update`, `id`; también `textbook`, `rawwip`, `export`, `entidad`, `output`) y pierde el `global hasta` activo. Lo que `SIM.do` fija sin condición (`bootstrap`, `seed`, `algebra`, parámetros firmados) sigue mandando sobre el archivo. Nuevo `config-local.do.ejemplo` versionado (`cp` → `config-local.do`). Humo con StataNow sobre §0: sin archivo `id = ricardo`, `hasta` vacío; con archivo `hasta`/`id`/`update` se respetan y `cap4 "dentro"` queda pisado por el firmado `fuera`.
+- **Institucional — `.gitignore` + `verify_gitignore.sh`.** `config-local.do` ignorado (no es secreto: es estado de un clon) y `config-local.do.ejemplo` versionado; 110/110 casos. `correr-sim.sh` y `contrato-32.sh` **abortan (exit 2)** si hay `config-local.do` en la raíz del clon de corrida (un `hasta` olvidado cortaría la corrida de 33 min en silencio); `contrato-32.sh --sin-sim` no lo exige. `simulador.stpr` sigue versionado; runbook §10.5 nuevo (`git update-index --skip-worktree simulador.stpr` en clones personales, cómo volver a commitearlo y qué hacer en el `pull`), README (`simulador.stpr`, `config-local.do.ejemplo`, «Opciones globales»), `arquitectura.md` §2.8 y `manual-investigador-ciep.md` (fila nueva).
+
 ## [v8.16.0] — 2026-11-08
 
 ### [v8.16.0] — Cuadratura II: consumo, impuestos y cuotas anclados al sector hogares (sesión 8.16b, 2026-11-08; CUAD-1 firmado)

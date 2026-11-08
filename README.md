@@ -223,7 +223,10 @@ Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arqu
 ### Archivos principales
 
 #### `simulador.stpr`
-Proyecto que concentra todos los do-files y ado-files del Simulador Fiscal CIEP.
+Proyecto que concentra todos los do-files y ado-files del Simulador Fiscal CIEP. Está versionado; como Stata lo reescribe en cada save, en un clon personal conviene `git update-index --skip-worktree simulador.stpr` (receta en [`02_governance/runbook-deploys-ciep.md`](02_governance/runbook-deploys-ciep.md) §10.5).
+
+#### `config-local.do.ejemplo`
+Plantilla de `config-local.do` (ignorado por git): las palancas de cada clon (`hasta`, `nographs`, `update`, `id`, …). `SIM.do` §0.1b lo corre si existe, antes de sus defaults, así que el `SIM.do` versionado queda sin palancas personales. Los clones de corrida no lo llevan (`correr-sim.sh` y `contrato-32.sh` abortan si lo encuentran).
 
 #### `SIM.do` 
 Plantilla maestra (template) para hacer simulaciones fiscales. Configura el entorno, define opciones globales, establece el directorio de trabajo basado en el usuario y ejecuta varios comandos de forma secuencial. Es el flujo **canónico**: el «Calcular» del sitio (`01_modulos/Web.Stata.do`) debe reproducir con los valores default exactamente su `output.txt` (gate `05_scripts/test-web-batch.sh`, 46/46 llaves).
@@ -256,7 +259,8 @@ Archivo de configuración inicial que se ejecuta automáticamente al iniciar Sta
 - `output`: Determina si se generan salidas para la web
 - `update`: Determina si se actualizan las bases de datos (toma tiempo); desde v8.8.0 también rehace los cachés micro de `master/<anioenigh>/`
 - `entidad`: Nombre exacto de una entidad federativa (catálogo `$entidadesL`, comando `SIMentidad`). Vacío = solo nacional. Con entidad: `Poblacion` de la entidad (§1) y el Sankey del sistema fiscal de la entidad por **quintil estatal** más los cortes grupoedad/sexo/rural/escol en `users/<id>/<ABREV>/` (p. ej. `users/ricardo/NL/sankey-quintil.json`), con banda de vintages ENIGH y sellos de muestra como campos del JSON; los archivos nacionales no cambian. También la gráfica de ciclo de vida de la entidad (`users/<id>/<ABREV>/ciclo-vida.json`, `CicloEntidad.do`). Las reglas (banda 2016-2024, renglones macro por población, cuotas dentro de "Imp al trabajo", sellos n<100 / top1>25 %, series por deciles nacionales) son fijas en el código (runbook §9.7)
-- `hasta`: Paro temprano para desarrollo: termina al cerrar la sección indicada (1-7)
+- `hasta`: Paro temprano para desarrollo: termina al cerrar la sección indicada (1 Demografía, 2 Economía, 3 Hogares, 4 Ingresos, 5 Egresos, 6 Deuda, 7 Ciclo de vida); vacío = corrida completa
+- Dónde fijarlas (8.17): en `config-local.do` del clon (plantilla `config-local.do.ejemplo`; `SIM.do` §0.1b lo carga si existe), no editando `SIM.do`. `id` se respeta si viene de ahí (§0.2 solo pone el usuario si está vacío); lo que `SIM.do` fija sin condición (`bootstrap`, `seed`, `algebra`, parámetros de §0.8/§0.8b) manda sobre el archivo
 - `bootstrap`: Réplicas bootstrap de `Simulador` en los perfiles (`PerfilesSim.do`, `Expenditure.do`, `Households.do`): EE e IC 95 % en el log. Default versionado 250. `PerfilesSim.do` §8 promedia las réplicas en `users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta`, que es lo que lee `FiscalGap` (sin fallback: si falta, aborta con la receta)
 - `seed`: Semilla del remuestreo (default versionado 1111, la de `Simulador` desde v1.x). Misma semilla + mismas fuentes = mismo `output.txt`
 - `idbase`: Usuario cuyo escenario base lee `FiscalGap` (`users/<idbase>/bootstraps/…`). Local: el propio `id`; `Web.Stata.do` lo fija en `ricardo` (el escenario publicado al VPS por `publicar-vps.sh`)

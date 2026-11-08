@@ -385,7 +385,8 @@ Qué esperas ver: al abrir Stata, un menú te pregunta qué proyecto cargar; esc
 | Regla | Por qué |
 |---|---|
 | El clon experimental es **local a tu Mac** — nunca lo pongas dentro de la carpeta Dropbox-CIEP institucional | Si vive en Dropbox, tus experimentos se propagan a las máquinas de todo el equipo, que es exactamente lo que queremos evitar. |
-| El archivo `simulador.stpr` (el proyecto del Project Manager de Stata) se registra en Git **solo cuando lo modificas intencionalmente** (agregar items, reorganizar el árbol) | Stata lo re-guarda automáticamente cada vez que abres el proyecto, aunque no hayas cambiado nada. Registrar esos saves automáticos ensucia la historia del proyecto con cambios vacíos. |
+| El archivo `simulador.stpr` (el proyecto del Project Manager de Stata) se registra en Git **solo cuando lo modificas intencionalmente** (agregar items, reorganizar el árbol) | Stata lo re-guarda automáticamente cada vez que abres el proyecto, aunque no hayas cambiado nada. Registrar esos saves automáticos ensucia la historia del proyecto con cambios vacíos. En tu clon: `git update-index --skip-worktree simulador.stpr` y git deja de verlos (runbook §10.5). |
+| Tus palancas de `SIM.do` (`hasta`, `nographs`, `update`, `id`) van en `config-local.do` (copia `config-local.do.ejemplo`), nunca editando `SIM.do` | `config-local.do` está ignorado por git y `SIM.do` §0.1b lo carga si existe: así tu paro temprano o tu carpeta `users/<id>/` no viajan en un commit ni cortan la corrida de otro. |
 
 🧠 **Concepto: clon.** Git permite que existan muchas copias completas del mismo proyecto ("clones"), cada una con vida propia. El clon institucional (el de Dropbox) es la referencia del equipo; tu clon experimental es tu laboratorio. Si un experimento sale bien, se lo propones al investigador principal para que lo incorpore formalmente; si sale mal, borras la carpeta y no pasó nada.
 
