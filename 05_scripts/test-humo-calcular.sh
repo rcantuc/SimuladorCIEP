@@ -10,7 +10,14 @@
 #   ROJO 1 rechaza un motor que aborta sin output.txt (el incidente v8.12: r(601) del
 #          candado del cache -> calculaStata.php responde sin números);
 #   ROJO 2 rechaza un motor que deja output.txt pero ningún sankey (jsonSankey.php
-#          cae al default ciepmx y el humo lo detecta por "nombre").
+#          cae al default ciepmx y el humo lo detecta por "nombre");
+#   ROJO 3 (v8.17.1) rechaza un default incompleto: el motor calcula bien pero en
+#          users/ciepmx/ falta SankeyNTA/sankey-v4-economia.json (el incidente v8.17:
+#          la lista a mano de la Fase 3b-ter no lo embarcaba); el humo pide cada
+#          endpoint del manifiesto derivado (manifiesto-default.py, entidades NL) y
+#          el default de jsonSankeyNTA.php, y /NTA habría abierto en 404.
+# El default de users/ciepmx/ se arma con los fixtures reales de 05_scripts/fixtures/ (NTA, SankeyNTA, NL,
+# entidades.json) más el output.txt y los 5 sankeys de forma real de este harness.
 # Uso: bash 05_scripts/test-humo-calcular.sh [--puerto N] [--conservar]
 # =============================================================================
 set -uo pipefail
@@ -63,6 +70,16 @@ for c in ('decil', 'escol', 'grupoedad', 'rural', 'sexo'):
 PYEOF
 cp "$H/canned/output.txt" "$H/users/ciepmx/output.txt"
 cp "$H/canned/"sankey-*.json "$H/users/ciepmx/"
+# el resto del manifiesto derivado (v8.17.1): /NTA, el índice de /entidades y NL, desde los fixtures reales
+FIX="$REPO_ROOT/05_scripts/fixtures"
+mkdir -p "$H/users/ciepmx/SankeyNTA" "$H/users/ciepmx/NTA" "$H/users/ciepmx/NL"
+cp "$FIX/sankey-nta-v4-economia.json" "$H/users/ciepmx/SankeyNTA/sankey-v4-economia.json"
+cp "$FIX/sankey-nta-grupoedad.json"   "$H/users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json"
+cp "$FIX/nta-grupoedad.json" "$FIX/nta-identidad.txt" "$FIX/nta-panel-grupoedad-sexo.json" "$H/users/ciepmx/NTA/"
+cp "$FIX/entidades/NL/"*.json "$H/users/ciepmx/NL/"
+cp "$FIX/entidades/entidades.json" "$H/users/ciepmx/entidades.json"
+# todo lo que la derivación pide para NL debe existir en la copia (si no, el caso VERDE no prueba nada)
+while IFS= read -r _f; do [[ -f "$H/users/ciepmx/$_f" ]] || { echo "test-humo-calcular: falta el fixture para users/ciepmx/$_f (manifiesto-default.py --entidades NL)" >&2; exit 2; }; done < <(python3 -I "$REPO_ROOT/05_scripts/manifiesto-default.py" --root "$REPO_ROOT" --archivos --entidades NL)
 
 # Stata falso con tres modos (archivo $H/modo): verde | sin-output | sin-sankeys
 cat > "$H/fake-stata" <<'EOF'
@@ -108,11 +125,15 @@ caso() { # caso <modo> <rc esperado> <descripción> [texto que debe aparecer]
     printf '%s\n' "$salida" | sed 's/^/         /' | grep -E "VERDE|ROJO|FALLO|- " | head -6
 }
 echo "== humo-calcular.sh contra php -S ($U) + Stata falso"
-caso verde       0 "VERDE: output.txt con números + 5 sankeys de la sesión" "VERDE"
+caso verde       0 "VERDE: output.txt con números + 5 sankeys de la sesión + default completo" "endpoints del default"
 caso sin-output  1 "ROJO 1: el motor aborta sin output.txt (incidente v8.12, r(601))" "no trae los numeros"
 caso sin-sankeys 1 "ROJO 2: output.txt sí, sankeys no (jsonSankey cae a ciepmx)" "cayó al default ciepmx"
+# ROJO 3 (v8.17.1): el motor está bien (modo verde) pero el default embarcado no trae el v4 de /NTA
+mv "$H/users/ciepmx/SankeyNTA/sankey-v4-economia.json" "$H/sankey-v4-economia.json.fuera"
+caso verde       1 "ROJO 3: default sin SankeyNTA/sankey-v4-economia.json (/NTA en 404)" "sankey-v4-economia.json"
+mv "$H/sankey-v4-economia.json.fuera" "$H/users/ciepmx/SankeyNTA/sankey-v4-economia.json"
 aserta_corridas="$(grep -c ' start ' "$H/fake-stata.log")"
-[[ "$aserta_corridas" == "3" ]] && printf 'OK     Stata falso corrió 3 veces (una por caso)\n' || { printf 'FALLO  Stata falso corrió %s veces (esperaba 3)\n' "$aserta_corridas"; fallos=$((fallos+1)); }
+[[ "$aserta_corridas" == "4" ]] && printf 'OK     Stata falso corrió 4 veces (una por caso)\n' || { printf 'FALLO  Stata falso corrió %s veces (esperaba 4)\n' "$aserta_corridas"; fallos=$((fallos+1)); }
 
 if [[ $fallos -eq 0 ]]; then echo "RESULTADO: humo-calcular.sh distingue verde de rojo (0 fallos)"; exit 0; fi
 echo "RESULTADO: $fallos fallo(s) en el rojo/verde de humo-calcular.sh"; exit 1
