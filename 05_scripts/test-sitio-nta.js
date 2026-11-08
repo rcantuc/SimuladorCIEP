@@ -136,6 +136,11 @@ function panelesIguales(leidos, panel, s) {
       'FusionCharts.getJSONData() devuelve los mismos nodos y enlaces (from, to) que el origen, con pctpib como value y el MXN del motor en mxn');
     ok(enChart && enChart.tips.every((s, i) => /% of GDP/.test(s) && /bn MXN/.test(s) && s.indexOf(pp(origen.enlaces[i].pctpib)) >= 0 && s.indexOf(bn(Number(origen.enlaces[i].value))) >= 0), 'cada enlace lleva un tooltext con ambas unidades (% of GDP y bn MXN) formateadas desde los valores del motor');
     // el tooltip real: se lleva el Sankey a la pantalla, se posa el cursor sobre la cinta más alta y se lee lo que FusionCharts muestra
+    // (8.17: el v4 es más ancho que la ventana y vive en un wrap con scroll; para el hover se ensancha el viewport y se quita el recorte)
+    const anchoHover = await page.evaluate(() => { const c = document.getElementById('sankey-nta'); return c ? c.scrollWidth : 0; });
+    await page.setViewport({ width: Math.max(1440, anchoHover + 300), height: 1100 });
+    await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = 'visible'; });
+    await sleep(500);
     const tip = await page.evaluate(async () => {
       const paths = [...document.querySelectorAll('#sankey-nta svg path')].filter(p => p.getBBox && p.getBBox().width > 60 && p.getBBox().height > 8);
       if (!paths.length) return null;
@@ -153,9 +158,10 @@ function panelesIguales(leidos, panel, s) {
       tooltip = await page.evaluate(() => [...document.querySelectorAll('[class*="tooltip"], [class*="fc__tooltip"]')].map(e => e.textContent).join(' | '));
     }
     ok(/% of GDP/.test(tooltip) && /MXN/.test(tooltip), `el tooltip de un enlace muestra ambas unidades (${tooltip.replace(/\s+/g, ' ').slice(0, 90)})`);
-    // se retira el cursor (el hover atenúa las demás cintas) para que las capturas salgan con el Sankey completo
+    // se retira el cursor (el hover atenúa las demás cintas) para que las capturas salgan con el Sankey completo; viewport y wrap de vuelta
     await page.mouse.move(0, 0);
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = ''; window.scrollTo(0, 0); });
+    await page.setViewport({ width: 1440, height: 900 });
     await sleep(400);
   }
   // el corte v3 (8.17): se dibuja en #sankey-nta-v3 con el JSON de origen del v3, con su hub Ing nacional
