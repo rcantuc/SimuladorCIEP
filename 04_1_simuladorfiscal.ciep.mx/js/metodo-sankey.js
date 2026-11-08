@@ -66,12 +66,19 @@ function metodoSankeys(lista) {
 				window.metodoSankeyData[cfg.renderAt] = dataSource;
 				var dibujado = metodoSankeyEnUnidad(dataSource);
 				window.metodoSankeyDibujado[cfg.renderAt] = dibujado;
+				// 8.17: el v4 (la economía completa) vive en un contenedor más ancho que la página (css/metodo.css: min-width) dentro de un wrap
+				// con scroll; FusionCharts mide el ancho visible, así que se le da el min-width del contenedor en px cuando lo tiene.
+				var ancho = '100%';
+				if (contenedor) {
+					var mw = parseFloat(getComputedStyle(contenedor).minWidth);
+					if (mw > 0) ancho = String(mw);
+				}
 				FusionCharts.ready(function () {
 					new FusionCharts({
 						id: cfg.renderAt + '-chart',
 						type: 'sankey',
 						renderAt: cfg.renderAt,
-						width: '100%',
+						width: ancho,
 						height: '100%',
 						dataFormat: 'json',
 						dataSource: dibujado

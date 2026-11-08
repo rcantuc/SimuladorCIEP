@@ -1,7 +1,7 @@
-// test-sitio-nta.js <urlBase> <jsonOrigen> <cuentaOrigen> <panelOrigen> [<png>] — la página /NTA con Chrome headless (puppeteer-core).
-// La abre, espera al Sankey v3 de FusionCharts y comprueba que lo que se dibuja es EXACTAMENTE lo que el motor
+// test-sitio-nta.js <urlBase> <jsonOrigen> <cuentaOrigen> <panelOrigen> <jsonV3> [<png>] — la página /NTA con Chrome headless (puppeteer-core).
+// La abre, espera al Sankey v4 (8.17: la economía completa) de FusionCharts y comprueba que lo que se dibuja es EXACTAMENTE lo que el motor
 // emitió: cada enlace (from, to, value, pctpib) del dataSource que recibió el navegador es igual, como cadena, al del
-// users/…/SankeyNTA/sankey-v3-grupoedad.json de origen (sin redondeo en PHP ni en JS), los nodos son los mismos y en
+// users/…/SankeyNTA/sankey-v4-economia.json de origen (sin redondeo en PHP ni en JS), los nodos son los mismos y en
 // el mismo orden, y lo que FusionCharts tiene cargado (getJSONData) trae pctpib como value (NTA-4: el Sankey se dibuja en
 // % del PIB), el MXN del motor en mxn y un tooltext con ambas unidades; al posar el cursor sobre un enlace el tooltip dice
 // «% of GDP» y «bn MXN». Las cifras de «Anchoring and residual» (<span data-nta>) se llenaron desde
@@ -17,7 +17,8 @@
 // Salida: 0 todo verde; 1 algún aserto falló. Imprime una línea por aserto.
 const fs = require('fs');
 const puppeteer = require('puppeteer-core');
-const [urlBase, jsonOrigen, cuentaOrigen, panelOrigen, png] = process.argv.slice(2);
+const [urlBase, jsonOrigen, cuentaOrigen, panelOrigen, jsonV3, pngArg] = process.argv.slice(2);
+const png = (pngArg === undefined && jsonV3 && /\.png$/i.test(jsonV3)) ? jsonV3 : pngArg;
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let fallos = 0;
@@ -103,7 +104,7 @@ function panelesIguales(leidos, panel, s) {
     svg = await page.evaluate(() => document.querySelectorAll('#sankey-nta svg path').length);
     if (svg === 0) await sleep(200);
   }
-  ok(svg > 0, `el Sankey v3 se dibujó (#sankey-nta tiene ${svg} trazos SVG)`);
+  ok(svg > 0, `el Sankey v4 se dibujó (#sankey-nta tiene ${svg} trazos SVG)`);
 
   const recibido = await page.evaluate(() => window.metodoSankeyData && window.metodoSankeyData['sankey-nta']);
   ok(!!recibido, 'el navegador recibió el dataSource del PHP (window.metodoSankeyData["sankey-nta"])');
@@ -120,10 +121,10 @@ function panelesIguales(leidos, panel, s) {
     distintos.slice(0, 5).forEach(d => console.log('       ' + d));
     ok(recibido.chart && recibido.chart.unidad === 'pctpib', 'el PHP declara chart.unidad = pctpib para el v3 (se dibuja en % del PIB)');
     const hubs = recibido.nodes.filter(n => n.toolText).map(n => n.label).sort();
-    ok(JSON.stringify(hubs) === JSON.stringify(['Activos', 'Gobierno', 'Ing nacional', 'Transferencias en efectivo']), `solo los cuatro hubs llevan el toolText «inflows = outflows» (${hubs.join(', ')})`);
+    ok(JSON.stringify(hubs) === JSON.stringify(['Gobierno ingreso disponible', 'Gobierno ingreso primario', 'Hogares', 'Hogares ingreso disponible', 'ISFLSH ingreso disponible', 'Ingreso nacional disponible', 'Sociedades', 'Sociedades ingreso disponible']), `solo el hub y los siete nodos de sector llevan el toolText «inflows = outflows» (${hubs.join(', ')})`);
     ok(recibido.nodes.filter(n => n.toolText).every(n => /% of GDP/.test(n.toolText)), 'el toolText de los hubs lee el total en % of GDP');
-    ok(!nodosRec.some(n => /^(Ingreso|Consumo|Desahorro|Futuro) /.test(n) || /^Ancla S14/.test(n) || ['Familias', 'Salud pública', 'Educación pública', 'Otros en especie'].includes(n)) && ['Desahorro', 'Futuro', 'Colectivo', 'Ajuste a cuentas nacionales S14'].every(n => nodosRec.includes(n)),
-      'el v3 (NTA-4): Desahorro, Futuro, Colectivo y Ajuste a cuentas nacionales S14 únicos; sin Ingreso <g> / Consumo <g> / Familias / Desahorro <g> / Futuro <g> / especie aparte / Ancla recorte+complemento');
+    ok(['Ingreso nacional disponible', 'Hogares', 'Sociedades', 'Gobierno ingreso primario', 'ISFLSH', 'El mundo', 'Por identificar', 'Futuro', 'Colectivo', 'Financiamiento deuda y venta de activos', 'Vintage BIE vs CSI', 'Transferencias en efectivo', 'Derechos de pensión D8'].every(n => nodosRec.includes(n)) && !['Ing nacional', 'Activos', 'Empresas públicas', 'Déficit público', 'Desahorro'].some(n => nodosRec.includes(n)) && nodosRec.filter(n => /^De /.test(n)).length === 5 && nodosRec.filter(n => /^ De /.test(n)).length === 5,
+      'el v4 (8.17): hub INBD, sectores antes y después del hub, el mundo, Por identificar, Futuro, Colectivo, Financiamiento y Vintage; 5 grupos perceptores y 5 consumidores; sin Ing nacional / Activos / Empresas públicas / Déficit público / Desahorro');
     // lo que FusionCharts tiene cargado: los mismos nodos y enlaces, con pctpib como value (NTA-4), el MXN en mxn y un tooltext con ambas unidades
     const enChart = await page.evaluate(() => {
       const c = FusionCharts.items['sankey-nta-chart'];
@@ -135,6 +136,11 @@ function panelesIguales(leidos, panel, s) {
       'FusionCharts.getJSONData() devuelve los mismos nodos y enlaces (from, to) que el origen, con pctpib como value y el MXN del motor en mxn');
     ok(enChart && enChart.tips.every((s, i) => /% of GDP/.test(s) && /bn MXN/.test(s) && s.indexOf(pp(origen.enlaces[i].pctpib)) >= 0 && s.indexOf(bn(Number(origen.enlaces[i].value))) >= 0), 'cada enlace lleva un tooltext con ambas unidades (% of GDP y bn MXN) formateadas desde los valores del motor');
     // el tooltip real: se lleva el Sankey a la pantalla, se posa el cursor sobre la cinta más alta y se lee lo que FusionCharts muestra
+    // (8.17: el v4 es más ancho que la ventana y vive en un wrap con scroll; para el hover se ensancha el viewport y se quita el recorte)
+    const anchoHover = await page.evaluate(() => { const c = document.getElementById('sankey-nta'); return c ? c.scrollWidth : 0; });
+    await page.setViewport({ width: Math.max(1440, anchoHover + 300), height: 1100 });
+    await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = 'visible'; });
+    await sleep(500);
     const tip = await page.evaluate(async () => {
       const paths = [...document.querySelectorAll('#sankey-nta svg path')].filter(p => p.getBBox && p.getBBox().width > 60 && p.getBBox().height > 8);
       if (!paths.length) return null;
@@ -152,10 +158,24 @@ function panelesIguales(leidos, panel, s) {
       tooltip = await page.evaluate(() => [...document.querySelectorAll('[class*="tooltip"], [class*="fc__tooltip"]')].map(e => e.textContent).join(' | '));
     }
     ok(/% of GDP/.test(tooltip) && /MXN/.test(tooltip), `el tooltip de un enlace muestra ambas unidades (${tooltip.replace(/\s+/g, ' ').slice(0, 90)})`);
-    // se retira el cursor (el hover atenúa las demás cintas) para que las capturas salgan con el Sankey completo
+    // se retira el cursor (el hover atenúa las demás cintas) para que las capturas salgan con el Sankey completo; viewport y wrap de vuelta
     await page.mouse.move(0, 0);
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = ''; window.scrollTo(0, 0); });
+    await page.setViewport({ width: 1440, height: 900 });
     await sleep(400);
+  }
+  // el corte v3 (8.17): se dibuja en #sankey-nta-v3 con el JSON de origen del v3, con su hub Ing nacional
+  if (jsonV3 && fs.existsSync(jsonV3) && !/\.png$/i.test(jsonV3)) {
+    const origen3 = leerOrigen(jsonV3);
+    let svg3 = 0;
+    for (let i = 0; i < 100 && svg3 === 0; i++) {
+      svg3 = await page.evaluate(() => document.querySelectorAll('#sankey-nta-v3 svg path').length);
+      if (svg3 === 0) await sleep(200);
+    }
+    ok(svg3 > 0, `el corte v3 se dibujó (#sankey-nta-v3 tiene ${svg3} trazos SVG)`);
+    const rec3 = await page.evaluate(() => window.metodoSankeyData && window.metodoSankeyData['sankey-nta-v3']);
+    ok(!!rec3 && rec3.links.length === origen3.enlaces.length && origen3.enlaces.every((e, i) => rec3.links[i] && rec3.links[i].from === e.from && rec3.links[i].to === e.to && String(rec3.links[i].value) === e.value && String(rec3.links[i].pctpib) === e.pctpib) && rec3.nodes.some(n => n.label === 'Ing nacional'),
+      `el corte v3 recibido es idéntico al JSON v3 de origen (${origen3.nodos.length} nodos / ${origen3.enlaces.length} enlaces) con su hub Ing nacional`);
   }
 
   // las cifras de «Anchoring and residual» se llenaron desde la cuenta
@@ -213,8 +233,20 @@ function panelesIguales(leidos, panel, s) {
     await page.screenshot({ path: png, fullPage: true });
     ok(fs.existsSync(png) && fs.statSync(png).size > 0, `captura de la página completa guardada en ${png}`);
     const base = png.replace(/\.png$/i, '');
-    const wrap = await page.$('.metodo-sankey-wrap');
-    if (wrap) { await wrap.screenshot({ path: base + '-v3.png' }); ok(fs.existsSync(base + '-v3.png'), `captura del Sankey v3 guardada en ${base}-v3.png`); }
+    // el v4 es más ancho que la página (wrap con scroll): para la captura se ensancha el viewport y se quita el recorte del wrap, y luego se restaura
+    const wrap = await page.$('#sankey-nta');
+    if (wrap) {
+      const anchoV4 = await page.evaluate(() => { const c = document.getElementById('sankey-nta'); return c ? c.scrollWidth : 0; });
+      await page.setViewport({ width: Math.max(1440, anchoV4 + 300), height: 1100 });
+      await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = 'visible'; });
+      await sleep(600);
+      await wrap.screenshot({ path: base + '-v4.png' }); ok(fs.existsSync(base + '-v4.png'), `captura del Sankey v4 guardada en ${base}-v4.png (${anchoV4} px de ancho)`);
+      await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = ''; });
+      await page.setViewport({ width: 1440, height: 900 });
+      await sleep(400);
+    }
+    const wrap3 = await page.$('#sankey-nta-v3');
+    if (wrap3) { await wrap3.screenshot({ path: base + '-v3.png' }); ok(fs.existsSync(base + '-v3.png'), `captura del corte v3 guardada en ${base}-v3.png`); }
     const pan = await page.$('.metodo-panel-wrap');
     if (pan) { await pan.screenshot({ path: base + '-panel.png' }); ok(fs.existsSync(base + '-panel.png'), `captura del panel (Total) guardada en ${base}-panel.png`); }
   }

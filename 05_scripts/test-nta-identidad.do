@@ -1,4 +1,4 @@
-*! test-nta-identidad.do  v1.2 (NTA-1c, 2026-10-28) — gate de identidad de la cuenta NTA por individuo
+*! test-nta-identidad.do  v1.3 (8.17, 2026-11-08; NTA-1c, 2026-10-28) — gate de identidad de la cuenta NTA por individuo
 *
 * Recalcula desde users/$id/NTA/nta-persona.dta (lo que escribió 01_modulos/NTA.do) y exige:
 *   1. identidad SIN ancla por grupo de edad y por quinquenio × sexo: C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla)
@@ -53,10 +53,20 @@ foreach v in CpubInd YA_d8 TpubEf YA_base {
 	capture confirm variable `v'
 	if _rc != 0 quietly g double `v' = .
 }
+* 8.17: la fila τ por sector (OtrosRec = D.72; OtrosOtor = D.7 pagada a otros sectores) y lo atribuido de los otros sectores (S_ret, S_def, S_isflsh);
+* S_hh es el ahorro del hogar anclado a B.8n S.14 y S el de la persona (Σ = B.8n S.1 con los defaults). Bases anteriores: 0 / S_hh = S. *
+foreach v in OtrosRec OtrosOtor S_ret S_def S_isflsh {
+	capture confirm variable `v'
+	if _rc != 0 quietly g double `v' = 0
+}
+capture confirm variable S_hh
+if _rc != 0 quietly g double S_hh = S
+local B8nS1 : char _dta[nta_B8nS1]
+if "`B8nS1'" == "" local B8nS1 = .
 
 ** 1. Identidad SIN ancla por grupo de edad y por quinquenio × sexo; con ancla, residual = S_ajuste declarado **
-quietly g double resid = C - YL - ImpProd - (Tpub + InterRec + Remesas - Tmen - InterOtor) - (YA - YA_ajuste - S_sinancla) - Intra
-quietly g double residancla = C - YL - ImpProd - (Tpub + InterRec + Remesas - Tmen - InterOtor) - (YA - S) - Intra - S_ajuste
+quietly g double resid = C - YL - ImpProd - (Tpub + InterRec + OtrosRec + Remesas - Tmen - InterOtor - OtrosOtor) - (YA - YA_ajuste - S_sinancla - S_ret - S_def - S_isflsh) - Intra
+quietly g double residancla = C - YL - ImpProd - (Tpub + InterRec + OtrosRec + Remesas - Tmen - InterOtor - OtrosOtor) - (YA - S) - Intra - S_ajuste
 foreach corte in "grupoedad" "quinq sexo" {
 	preserve
 	quietly collapse (sum) C resid residancla [fw=factor], by(`corte')
@@ -89,18 +99,25 @@ noisily di in g "  Σ intra nacional " in y %14.4f `inac' in g " (relativo a Σ|
 if abs(`inac')/`iabs' > `tol' | `mxhog' > `tol' local rojo = 1
 
 ** 3. Σ S sin ancla vs AhorroHog (informativo); con ancla, Σ S = AhorroHog **
-quietly tabstat S S_sinancla S_ajuste [fw=factor], stat(sum) save
+quietly tabstat S_hh S_sinancla S_ajuste S [fw=factor], stat(sum) save
 local Snac = r(StatTotal)[1,1]
 local Ssin = r(StatTotal)[1,2]
 local Saj = r(StatTotal)[1,3]
+local Spers = r(StatTotal)[1,4]
 noisily di in g "  Σ S sin ancla " in y %20.0fc `Ssin' in g " vs AhorroHog (B.8n S.14 `anio') " in y %20.0fc `AhorroHog' in g " (factor implícito " in y %8.4f `AhorroHog'/`Ssin' in g "; brecha " in y %7.1f (`Ssin'/`AhorroHog' - 1)*100 in g " %)"
 if `sinancla' {
 	noisily di in g "  Σ S final = sin ancla (nta_anclaS=off) -> " in y "OK"
 }
 else {
-	noisily di in g "  Σ S con ancla " in y %20.0fc `Snac' in g " vs AhorroHog (reldif " in y %9.2e reldif(`Snac', `AhorroHog') in g "); Σ S_ajuste declarado " in y %20.0fc `Saj' in g " -> " in y cond(reldif(`Snac', `AhorroHog') <= `tol', "OK", "ROJO")
+	noisily di in g "  Σ S_hh con ancla " in y %20.0fc `Snac' in g " vs AhorroHog (reldif " in y %9.2e reldif(`Snac', `AhorroHog') in g "); Σ S_ajuste declarado " in y %20.0fc `Saj' in g " -> " in y cond(reldif(`Snac', `AhorroHog') <= `tol', "OK", "ROJO")
 	if reldif(`Snac', `AhorroHog') > `tol' local rojo = 1
 }
+* 8.17: Σ S de las personas = B.8n S.1 con retenido_a_personas = on y deficit_a_personas ≠ off (el char nta_B8nS1 lo trae la base) *
+if `B8nS1' < . & strpos("`params'", "retenido_a_personas=on") > 0 & strpos("`params'", "deficit_a_personas=off") == 0 & !`sinancla' {
+	noisily di in g "  Σ S personas " in y %20.0fc `Spers' in g " vs B.8n S.1 " in y %20.0fc `B8nS1' in g " (reldif " in y %9.2e reldif(`Spers', `B8nS1') in g ") -> " in y cond(reldif(`Spers', `B8nS1') <= `tol', "OK", "ROJO")
+	if reldif(`Spers', `B8nS1') > `tol' local rojo = 1
+}
+else noisily di in g "  Σ S personas " in y %20.0fc `Spers' in g " (sin gate contra B.8n S.1: retenido/deficit en off, ancla off o base anterior a 8.17)"
 
 ** 4. Anclas S.14 por construcción **
 quietly tabstat CpubInd ImpProd YA_d8 TpubEf YA_base [fw=factor], stat(sum) save

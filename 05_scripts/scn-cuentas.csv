@@ -12,24 +12,39 @@ B.2n;Excedente neto de operación;Operating surplus, net;S.14;CSI;CSI_115 f.69 (
 B.3n;Ingreso mixto neto;Mixed income, net;S.14;CSI;CSI_115 f.70 (R/P)
 D.1;Remuneración de los asalariados;Compensation of employees;S.14;S.2;CSI;CSI_115 f.71 (R/P); CSI_121 f.71 (U/A = pagado por el resto del mundo)
 D.4;Renta de la propiedad;Property income;S.13;S.14;S.2;CSI;f.95; neta = R/P − U/A
-D.41;Intereses;Interest;S.14;CSI;CSI_115 f.96
+D.41;Intereses;Interest;S.13;S.14;CSI;f.96; S.13 U/A = intereses de la deuda pública (CUAD-2)
 D.442;Renta de inversión a pagar sobre derechos de pensión;Investment income payable on pension entitlements;S.14;CSI;CSI_115 f.103 (R/P)
 B.5n;Saldo de Ingresos primarios neto / Ingreso nacional neto;Balance of primary incomes, net / National income, net;S.1;S.11;S.12;S.13;S.15;CSI;f.110 (U/A)
-D.5;Impuestos corrientes sobre el ingreso, la riqueza, etc.;Current taxes on income, wealth, etc.;S.1;S.14;CSI;f.114 (U/A)
+D.5;Impuestos corrientes sobre el ingreso, la riqueza, etc.;Current taxes on income, wealth, etc.;S.1;S.11;S.12;S.14;CSI;f.114 (U/A)
 D.51;Impuestos sobre el ingreso;Taxes on income;S.1;S.14;CSI;f.115 (U/A)
 D.59;Otros impuestos corrientes;Other current taxes;S.1;S.14;CSI;f.116 (U/A)
 D.61;Contribuciones sociales netas;Net social contributions;S.14;CSI;CSI_115 f.117 (U/A)
 D.614;Contribuciones sociales complementarias de los hogares;Households social contribution supplements;S.14;CSI;CSI_115 f.127 (U/A)
-D.62;Prestaciones sociales distintas a las prestaciones sociales en especie;Social benefits other than social transfers in kind;S.14;CSI;CSI_115 f.131 (R/P)
-D.63;Transferencias sociales en especie;Social transfers in kind;S.14;CSI;CSI_115 f.157 (R/P) = P.4 − P.3
-D.7;Otras transferencias corrientes;Other current transfers;S.14;CSI;CSI_115 f.139
-D.752;Transferencias corrientes entre hogares residentes y no residentes;Current transfers between resident and non-resident households;S.14;CSI;CSI_115 f.150 (R/P)
-D.759;Otras transferencias corrientes diversas;Other miscellaneous current transfers;S.14;CSI;CSI_115 f.151 (R/P)
-D.8;Ajuste por cambio en los derechos de pensiones;Adjustment for the change in pension entitlements;S.14;CSI;CSI_115 f.169 (R/P)
-P.3;Gastos de consumo final;Final consumption expenditure;S.14;S.15;CSI;CSI_115 f.166, CSI_118 f.166 (U/A)
+D.62;Prestaciones sociales distintas a las prestaciones sociales en especie;Social benefits other than social transfers in kind;S.11;S.12;S.13;S.14;S.15;CSI;f.131 (R/P en S.14; U/A en los pagadores)
+D.63;Transferencias sociales en especie;Social transfers in kind;S.13;S.14;S.15;CSI;f.157 (R/P en S.14 = P.4 − P.3; U/A en S.13 y S.15)
+D.7;Otras transferencias corrientes;Other current transfers;S.11;S.12;S.13;S.14;S.15;S.2;CSI;f.139
+D.752;Transferencias corrientes entre hogares residentes y no residentes;Current transfers between resident and non-resident households;S.14;S.2;CSI;CSI_115 f.150 (R/P remesas recibidas; U/A remesas enviadas)
+D.759;Otras transferencias corrientes diversas;Other miscellaneous current transfers;S.11;S.12;S.13;S.14;CSI;f.151
+D.8;Ajuste por cambio en los derechos de pensiones;Adjustment for the change in pension entitlements;S.12;S.14;CSI;f.169 (U/A en S.12, R/P en S.14)
+P.3;Gastos de consumo final;Final consumption expenditure;S.1;S.13;S.14;S.15;CSI;f.166 (U/A)
 P.4;Consumo final efectivo;Actual final consumption;S.14;CSI;CSI_115 f.176 (U/A)
 B.8b;Ahorro bruto;Saving, gross;S.14;CSI;CSI_115 f.170 (U/A)
-B.8n;Ahorro neto;Saving, net;S.14;CSI;CSI_115 f.171 (U/A)
+B.8n;Ahorro neto;Saving, net;S.1;S.11;S.12;S.13;S.14;S.15;CSI;f.171 (U/A)
+D.29;Otros impuestos sobre la producción;Other taxes on production;S.1;S.11;S.12;S.13;S.15;CSI;f.52 (U/A); 8.17 CUAD-2
+D.39;Otros subsidios a la producción;Other subsidies on production;S.1;S.11;CSI;f.58 (U/A, negativo); 8.17 CUAD-2
+D.45;Renta;Rent;S.11;S.13;S.14;CSI;f.105; renta de recursos naturales (petrolera) recibida por S.13; 8.17 CUAD-2
+D.71;Primas netas de seguros no de vida;Net non-life insurance premiums;S.11;S.12;S.13;S.14;S.15;S.2;CSI;f.140; 8.17 CUAD-2
+D.72;Indemnizaciones de seguros no de vida;Non-life insurance claims;S.11;S.12;S.13;S.14;S.2;CSI;f.143; 8.17 CUAD-2
+D.73;Transferencias corrientes dentro del gobierno general;Current transfers within general government;S.13;CSI;CSI_112 f.146 (intra-sector, no se dibuja); 8.17 CUAD-2
+D.74;Cooperación internacional corriente;Current international cooperation;S.13;S.2;CSI;f.147; 8.17 CUAD-2
+D.751;Transferencias corrientes a ISFLSH;Current transfers to NPISHs;S.11;S.12;S.13;S.14;S.15;CSI;f.149; 8.17 CUAD-2
+B.6n;Ingreso disponible neto;Disposable income, net;S.1;S.11;S.12;S.13;S.14;S.15;CSI;f.153 (U/A); 8.17 CUAD-2
+P.32;Gastos de consumo colectivo;Collective consumption expenditure;S.13;CSI;CSI_112 f.168 (U/A); 8.17 CUAD-2
+P.5n;Formación neta de capital;Net capital formation;S.11;S.12;S.13;S.14;S.15;CSI;f.189 (U/A); 8.17 CUAD-2 (solo con discrepancia_gasto = nodo)
+B.9;Préstamo neto (+) / endeudamiento neto (-);Net lending (+) / net borrowing (-);S.1;S.11;S.12;S.13;S.14;S.15;S.2;CSI;f.265 (U/A); 8.17 CUAD-2
+B.11;Saldo exterior en bienes y servicios;External balance of goods and services;S.2;CSI;CSI_121 f.66 (R/P); 8.17 CUAD-2
+B.12;Saldo corriente con el exterior;Current external balance;S.2;CSI;CSI_121 f.172 (U/A); 8.17 CUAD-2
+724037;Ingreso nacional disponible bruto;Gross national disposable income;S.1;BIE;variable del motor IngDispCalc; IngDisp = 724037 − CCF = hub del Sankey v4 (hub = inbd); asset raw/SCN/bie/724037.csv
 724025;Producto Interno Bruto;Gross domestic product;S.1;BIE;variable del motor PIB; asset raw/SCN/bie/724025.csv
 724600;Consumo de hogares e ISFLSH;Final consumption expenditure of households and NPISHs;S.14+S.15;BIE;variable del motor ConHog; asset raw/SCN/bie/724600.csv
 724602;Alimentos;Food (COICOP 01.1);S.14+S.15;BIE;variable del motor Alim; asset raw/SCN/bie/724602.csv

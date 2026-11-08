@@ -1,4 +1,4 @@
-*! version 8.6 CIEP 01nov2026 (v8.15.2, PR de datos scn-congelado-2024: UpdateSCN lee SOLO el asset congelado raw/SCN/ (525 series completas tal como las publica INEGI, «2025 p1» etiquetado); anclas en anioenigh, el pastcast de §1.2 parte del ultimo año congelado)
+*! version 8.7 CIEP 08nov2026 (v8.17.0, sesion 8.17 / CUAD-2: lector SCNSectores con las celdas CSI por sector institucional del Sankey de la economia completa, escalares y cuadro con gates Σ B.5n/B.6n/B.8n/B.9 por sector = S.1; v8.15.2, PR de datos scn-congelado-2024: UpdateSCN lee SOLO el asset congelado raw/SCN/ (525 series completas tal como las publica INEGI, «2025 p1» etiquetado); anclas en anioenigh, el pastcast de §1.2 parte del ultimo año congelado)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -66,7 +66,8 @@ quietly {
 	if "$SCN_CONGELADO_SELLO" == "" noisily SCNCongelado
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin {
+	SCNSectores vars
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars' {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -75,7 +76,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars', before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -435,6 +436,30 @@ quietly {
 	*************************
 	*** 2. Resultados (R) ***
 	*************************
+	* 8.17 (CUAD-2 §6.4): celdas por sector del Sankey de la economia completa como escalares (escalar mxn <variable>) y cuadro propio, una vez por
+	* anio y sesion ($SCN_TABLA_SECTORES); solo cambia el log. Los nombres son los del lector SCNSectores (ver ahi codigo, sector y fila). *
+	capture confirm variable B8nS1
+	if _rc == 0 {
+		SCNSectores vars
+		foreach v of local scn_sectores_vars {
+			escalar mxn `v' = `v'[`obs']
+		}
+		escalar mxn D29D39GobR = ImpProdGobR[`obs'] + SubGobR[`obs'] - ImpNetosProdS1[`obs']
+		escalar mxn VintageNNI = (IngDispCalc[`obs'] - CapFij[`obs']) - ROWTrans[`obs'] - B5nS1[`obs']
+		if !regexm("$SCN_TABLA_SECTORES", "(^| )`anio'( |$)") {
+			global SCN_TABLA_SECTORES "$SCN_TABLA_SECTORES `anio'"
+			_tabla_anclas clear
+			SCNSectores tabla `obs'
+			_tabla_anclas add, codigo(B.6n) sector(S.1) rotulo("Ingreso nacional disponible neto") fuente("BIE 724037 − 724028") valor(IngDispCalc[`obs'] - CapFij[`obs']) variable(IngDisp) sep nota("hub del Sankey v4 (hub = inbd); vs B.6n S.1 CSI: vintage `: di %21.0fc (IngDispCalc[`obs'] - CapFij[`obs'] - B6nS1[`obs'])' = NNI `: di %21.0fc scalar(VintageNNI)' + transferencias del mundo `: di %21.0fc (B6nS1[`obs'] - B5nS1[`obs'] - ROWTrans[`obs'])'")
+			_tabla_anclas gate, texto("Σ B.5n por sector = B.5n S.1 (CSI f.110)") a(B5nNoFin[`obs'] + B5nFin[`obs'] + B5nGob[`obs'] + B5nISFLSH[`obs'] + D1HogS14[`obs'] + MixNHogS14[`obs'] + ExNOpHogS14[`obs'] + RentaPropHogR[`obs'] - RentaPropHogU[`obs']) b(B5nS1[`obs']) tol(1e-6)
+			_tabla_anclas gate, texto("Σ B.6n por sector = B.6n S.1 (CSI f.153)") a(B6nNoFin[`obs'] + B6nFin[`obs'] + B6nGob[`obs'] + B6nHog[`obs'] + B6nISFLSH[`obs']) b(B6nS1[`obs']) tol(1e-6)
+			_tabla_anclas gate, texto("Σ B.8n por sector = B.8n S.1 (CSI f.171)") a(B8nNoFin[`obs'] + B8nFin[`obs'] + B8nGob[`obs'] + AhorroHogN[`obs'] + B8nISFLSH[`obs']) b(B8nS1[`obs']) tol(1e-6)
+			_tabla_anclas gate, texto("Σ B.9 < 0 (S.11, S.13) = Σ B.9 > 0 (S.12, S.14, S.15) + Mundo (CSI f.265)") a(-B9NoFin[`obs'] - B9Gob[`obs']) b(B9Fin[`obs'] + B9Hog[`obs'] + B9ISFLSH[`obs'] + B9Row[`obs']) tol(1e-6)
+			_tabla_anclas gate, texto("Usos: Σ B.6n = Σ P.3 + Σ B.8n (CSI)") a(B6nS1[`obs']) b(P3S1[`obs'] + B8nS1[`obs']) tol(1e-6)
+			noisily _tabla_anclas print, titulo("Celdas CSI por sector del Sankey de la economía completa (CUAD-2 §6.4), año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage; la CSI redondea a miles: gates a 1e-6") unidad("MXN `anio'") pib(PIB[`obs'])
+		}
+	}
+
 	** R.3. Graph **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		*drop if RemSalSS == .
@@ -699,6 +724,8 @@ quietly {
 		escalar mxn B5nISFLSH = B5nISFLSH[`obs']
 		escalar mxn ImpNetGobR = ImpProdGobR[`obs'] + SubGobR[`obs']
 		escalar mxn RentaPropGobNeta = RentaPropGobR[`obs'] - RentaPropGobU[`obs']
+		escalar mxn RentaPropGobR = RentaPropGobR[`obs']
+		escalar mxn RentaPropGobU = RentaPropGobU[`obs']
 		escalar mxn RemRowU = RemRowU[`obs']
 		escalar mxn RowPrimNeto = RowPrimNeto[`obs']
 		escalar mxn PIBCSI = PIBCSI[`obs']
@@ -2807,7 +2834,8 @@ program define UpdateSCN
 	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto, before(IngDisp)
+		SCNSectores vars
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars', before(IngDisp)
 	}
 	* v8.15.2: la serie NO se corta: el asset trae la serie completa (los periodos posteriores al año de referencia llevan la etiqueta
 	* INEGI, «2025 p1»). Las anclas usan anioenigh (Households, NTA, Expenditure llaman SCN, anio(anioenigh)); el pastcast de SCN §1.2
@@ -2862,6 +2890,11 @@ program define SCNHogaresS14
 	local specs `"`specs' "CSI_112 117 CuotasGobR D.61 R" "CSI_109 117 CuotasFinR D.61 R" "CSI_106 117 CuotasNoFinR D.61 R" "CSI_118 117 CuotasISFLSHR D.61 R""'
 * 8.16b (firma, decision 7 corregida por Ricardo 2026-11-08): excedente neto de operacion de S.11 y S.12 (f.63 U/A), denominador de ISRPMTE *
 	local specs `"`specs' "CSI_106 63 B2nNoFin B.2n U" "CSI_109 63 B2nFin B.2n U""'
+* 8.17 (CUAD-2 §6.4; firma CUAD-1-2 §A 16, 19-23 y §B 17-18): celdas por sector del Sankey de la economia completa (hub = INBD): B.6n, B.8n, B.9,
+* D.5, D.62, D.7 y sus componentes (D.71, D.72, D.73, D.74, D.751, D.752, D.759), D.8, D.63, P.3, P.32, P.5n de S.1, S.11, S.12, S.13, S.14, S.15 y
+* D.7, B.11, B.12, B.9 de S.2; D.41 y D.45 del gobierno; D.59 de los hogares. El lector SCNSectores guarda la lista (specs, nombres y etiquetas). *
+	SCNSectores specs
+	local specs `"`specs' `scn_sectores_specs'"'
 	noisily SCNCongelado, copiar
 	local dir "${SIMROOT}/raw/temp/SCN"
 	foreach cuadro in CSI_115 CSI_103 CSI_106 CSI_109 CSI_112 CSI_118 CSI_121 {
@@ -3008,6 +3041,7 @@ program define SCNHogaresS14
 	label var CuotasISFLSHR "Contribuciones sociales netas recibidas por las ISFLSH (S.15 D.61, fila 117, R/P)"
 	label var B2nNoFin "Excedente neto de operacion, sociedades no financieras (S.11 B.2n, fila 63, U/A)"
 	label var B2nFin "Excedente neto de operacion, sociedades financieras (S.12 B.2n, fila 63, U/A)"
+	SCNSectores labels
 	g double RowPrimNeto = RentaPropRowR - RentaPropRowU - RemRowU
 	format RowPrimNeto %20.0fc
 	label var RowPrimNeto "Renta primaria neta pagada al resto del mundo (S.2: D.4 recibida − D.4 pagada − D.1 pagada; PIB − INB)"
@@ -3022,6 +3056,51 @@ program define SCNHogaresS14
 	save "${SIMROOT}/raw/temp/HogaresS14.dta", replace
 end
 
+
+program define SCNSectores
+* 8.17 (CUAD-2 §6.4; sesion 8.17). Lector de las celdas CSI por sector institucional que alimentan el Sankey de la economia completa (NTA.do §7d).
+* Una sola lista, tres usos: `SCNSectores specs` agrega las specs "<cuadro> <fila> <variable> <codigo> <lado>" al local `specs' del que llama
+* (SCNHogaresS14 las lee con la misma mecanica que las de S.14: rotulo verificado, U/A o R/P del año); `SCNSectores vars` deja la lista de
+* variables en el local `scn_sectores_vars' del que llama (orden del dataset, sentinelas de §1.1b, escalares de R.2b); `SCNSectores labels`
+* etiqueta las variables; `SCNSectores tabla <obs>` agrega las filas al cuadro de _tabla_anclas. Sectores: S.1 (CSI_103), S.11 (CSI_106),
+* S.12 (CSI_109), S.13 (CSI_112), S.14 (CSI_115), S.15 (CSI_118), S.2 (CSI_121). Un codigo por fila, nombre INEGI via 05_scripts/scn-cuentas.csv.
+	args que obs
+	local L ""
+	* cuadro fila variable codigo lado | sector | etiqueta
+	local L `"`L' "CSI_103 171 B8nS1 B.8n U|S.1|Ahorro neto, economia total" "CSI_103 153 B6nS1 B.6n U|S.1|Ingreso disponible neto, economia total" "CSI_103 265 B9S1 B.9 U|S.1|Prestamo neto, economia total" "CSI_103 166 P3S1 P.3 U|S.1|Gasto de consumo final, economia total""'
+	local L `"`L' "CSI_106 114 D5NoFin D.5 U|S.11|Impuestos corrientes sobre el ingreso pagados por S.11" "CSI_106 131 D62NoFinU D.62 U|S.11|Prestaciones sociales pagadas por S.11" "CSI_106 139 D7NoFinU D.7 U|S.11|Otras transferencias corrientes pagadas por S.11" "CSI_106 139 D7NoFinR D.7 R|S.11|Otras transferencias corrientes recibidas por S.11" "CSI_106 140 D71NoFinU D.71 U|S.11|Primas netas pagadas por S.11" "CSI_106 143 D72NoFinR D.72 R|S.11|Indemnizaciones recibidas por S.11" "CSI_106 149 D751NoFinU D.751 U|S.11|Transferencias a ISFLSH pagadas por S.11" "CSI_106 151 D759NoFinU D.759 U|S.11|Otras transferencias diversas pagadas por S.11" "CSI_106 151 D759NoFinR D.759 R|S.11|Otras transferencias diversas recibidas por S.11" "CSI_106 153 B6nNoFin B.6n U|S.11|Ingreso disponible neto S.11" "CSI_106 171 B8nNoFin B.8n U|S.11|Ahorro neto S.11" "CSI_106 189 P5nNoFin P.5n U|S.11|Formacion neta de capital S.11" "CSI_106 265 B9NoFin B.9 U|S.11|Prestamo neto S.11""'
+	local L `"`L' "CSI_109 114 D5Fin D.5 U|S.12|Impuestos corrientes sobre el ingreso pagados por S.12" "CSI_109 131 D62FinU D.62 U|S.12|Prestaciones sociales pagadas por S.12" "CSI_109 139 D7FinU D.7 U|S.12|Otras transferencias corrientes pagadas por S.12" "CSI_109 139 D7FinR D.7 R|S.12|Otras transferencias corrientes recibidas por S.12" "CSI_109 140 D71FinU D.71 U|S.12|Primas netas pagadas por S.12" "CSI_109 140 D71FinR D.71 R|S.12|Primas netas recibidas por S.12" "CSI_109 143 D72FinU D.72 U|S.12|Indemnizaciones pagadas por S.12" "CSI_109 143 D72FinR D.72 R|S.12|Indemnizaciones recibidas por S.12" "CSI_109 149 D751FinU D.751 U|S.12|Transferencias a ISFLSH pagadas por S.12" "CSI_109 151 D759FinU D.759 U|S.12|Otras transferencias diversas pagadas por S.12" "CSI_109 151 D759FinR D.759 R|S.12|Otras transferencias diversas recibidas por S.12" "CSI_109 153 B6nFin B.6n U|S.12|Ingreso disponible neto S.12" "CSI_109 169 D8FinU D.8 U|S.12|Ajuste por derechos de pension pagado por S.12" "CSI_109 171 B8nFin B.8n U|S.12|Ahorro neto S.12" "CSI_109 189 P5nFin P.5n U|S.12|Formacion neta de capital S.12" "CSI_109 265 B9Fin B.9 U|S.12|Prestamo neto S.12""'
+	local L `"`L' "CSI_112 96 D41GobU D.41 U|S.13|Intereses pagados por el gobierno general" "CSI_112 105 D45GobR D.45 R|S.13|Renta de recursos naturales recibida por el gobierno" "CSI_112 131 D62GobU D.62 U|S.13|Prestaciones sociales pagadas por S.13" "CSI_112 139 D7GobU D.7 U|S.13|Otras transferencias corrientes pagadas por S.13" "CSI_112 139 D7GobR D.7 R|S.13|Otras transferencias corrientes recibidas por S.13" "CSI_112 140 D71GobU D.71 U|S.13|Primas netas pagadas por S.13" "CSI_112 143 D72GobR D.72 R|S.13|Indemnizaciones recibidas por S.13" "CSI_112 146 D73Gob D.73 U|S.13|Transferencias dentro del gobierno general" "CSI_112 147 D74GobU D.74 U|S.13|Cooperacion internacional pagada por S.13" "CSI_112 149 D751GobU D.751 U|S.13|Transferencias a ISFLSH pagadas por S.13" "CSI_112 151 D759GobU D.759 U|S.13|Otras transferencias diversas pagadas por S.13" "CSI_112 151 D759GobR D.759 R|S.13|Otras transferencias diversas recibidas por S.13" "CSI_112 153 B6nGob B.6n U|S.13|Ingreso disponible neto S.13" "CSI_112 157 D63GobU D.63 U|S.13|Transferencias sociales en especie pagadas por S.13" "CSI_112 166 P3Gob P.3 U|S.13|Gasto de consumo final S.13" "CSI_112 168 P32Gob P.32 U|S.13|Gasto de consumo colectivo S.13" "CSI_112 171 B8nGob B.8n U|S.13|Ahorro neto S.13" "CSI_112 189 P5nGob P.5n U|S.13|Formacion neta de capital S.13" "CSI_112 265 B9Gob B.9 U|S.13|Prestamo neto S.13""'
+	local L `"`L' "CSI_115 116 D59Hog D.59 U|S.14|Otros impuestos corrientes pagados por los hogares" "CSI_115 140 D71HogU D.71 U|S.14|Primas netas pagadas por los hogares" "CSI_115 143 D72HogR D.72 R|S.14|Indemnizaciones recibidas por los hogares" "CSI_115 149 D751HogU D.751 U|S.14|Transferencias a ISFLSH pagadas por los hogares" "CSI_115 150 D752HogU D.752 U|S.14|Remesas enviadas por los hogares" "CSI_115 151 D759HogU D.759 U|S.14|Otras transferencias diversas pagadas por los hogares" "CSI_115 153 B6nHog B.6n U|S.14|Ingreso disponible neto S.14" "CSI_115 189 P5nHog P.5n U|S.14|Formacion neta de capital S.14" "CSI_115 265 B9Hog B.9 U|S.14|Prestamo neto S.14""'
+	local L `"`L' "CSI_118 131 D62ISFLSHU D.62 U|S.15|Prestaciones sociales pagadas por S.15" "CSI_118 139 D7ISFLSHU D.7 U|S.15|Otras transferencias corrientes pagadas por S.15" "CSI_118 139 D7ISFLSHR D.7 R|S.15|Otras transferencias corrientes recibidas por S.15" "CSI_118 140 D71ISFLSHU D.71 U|S.15|Primas netas pagadas por S.15" "CSI_118 149 D751ISFLSHR D.751 R|S.15|Transferencias a ISFLSH recibidas por S.15" "CSI_118 149 D751ISFLSHU D.751 U|S.15|Transferencias a ISFLSH pagadas por S.15" "CSI_118 153 B6nISFLSH B.6n U|S.15|Ingreso disponible neto S.15" "CSI_118 157 D63ISFLSHU D.63 U|S.15|Transferencias sociales en especie pagadas por S.15" "CSI_118 171 B8nISFLSH B.8n U|S.15|Ahorro neto S.15" "CSI_118 265 B9ISFLSH B.9 U|S.15|Prestamo neto S.15""'
+	local L `"`L' "CSI_121 66 B11Row B.11 R|S.2|Saldo exterior en bienes y servicios" "CSI_121 139 D7RowU D.7 U|S.2|Otras transferencias corrientes pagadas por el mundo a residentes" "CSI_121 139 D7RowR D.7 R|S.2|Otras transferencias corrientes recibidas por el mundo de residentes" "CSI_121 172 B12Row B.12 U|S.2|Saldo corriente con el exterior" "CSI_121 265 B9Row B.9 U|S.2|Prestamo neto del resto del mundo""'
+	local specs_add ""
+	local vars ""
+	foreach item of local L {
+		gettoken spec rest : item, parse("|")
+		gettoken bar rest : rest, parse("|")
+		gettoken sector rest : rest, parse("|")
+		gettoken bar etiqueta : rest, parse("|")
+		local etiqueta = trim(`"`etiqueta'"')
+		gettoken cuadro spec2 : spec
+		gettoken fila spec2 : spec2
+		gettoken var spec2 : spec2
+		gettoken cod spec2 : spec2
+		local lado = trim("`spec2'")
+		if "`que'" == "specs" local specs_add `"`specs_add' "`spec'""'
+		local vars "`vars' `var'"
+		if "`que'" == "labels" {
+			capture confirm variable `var'
+			if _rc == 0 label var `var' "`etiqueta' (`sector' `cod', `cuadro' fila `fila', `=cond("`lado'" == "U", "U/A", "R/P")')"
+		}
+		if "`que'" == "tabla" {
+			capture confirm variable `var'
+			if _rc == 0 _tabla_anclas add, codigo(`cod') sector(`sector') fuente("`cuadro' · f.`fila' `=cond("`lado'" == "U", "U/A", "R/P")'") valor(`var'[`obs']) variable(`var')
+		}
+	}
+	if "`que'" == "specs" c_local scn_sectores_specs `"`specs_add'"'
+	if "`que'" == "vars" c_local scn_sectores_vars "`vars'"
+end
 
 program define SCNCongelado, rclass
 * v8.15b (E4, 2026-10-31; CUAD-0 §4 bis «congelamiento»): assets congelados del SCN en raw/SCN/ (refrescar-scn.sh --congelar):

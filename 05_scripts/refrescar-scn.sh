@@ -428,7 +428,24 @@ if csi:
               ('CSI_115', 115, 'D51HogS14 D.51 (U/A)'), ('CSI_106', 115, 'D51NoFin D.51 (U/A)'), ('CSI_109', 115, 'D51Fin D.51 (U/A)'),
               ('CSI_118', 166, 'ConISFLSH P.3 (U/A)'), ('CSI_112', 117, 'CuotasGobR D.61 (R/P)'), ('CSI_109', 117, 'CuotasFinR D.61 (R/P)'),
               ('CSI_106', 117, 'CuotasNoFinR D.61 (R/P)'), ('CSI_118', 117, 'CuotasISFLSHR D.61 (R/P)'),
-              ('CSI_106', 63, 'B2nNoFin B.2n (U/A)'), ('CSI_109', 63, 'B2nFin B.2n (U/A)')]
+              ('CSI_106', 63, 'B2nNoFin B.2n (U/A)'), ('CSI_109', 63, 'B2nFin B.2n (U/A)'),
+              # 8.17 (CUAD-2 §6.4; lector SCNSectores de SCN.ado): celdas por sector del Sankey de la economía completa
+              ('CSI_103', 171, 'B8nS1 B.8n (U/A)'), ('CSI_103', 153, 'B6nS1 B.6n (U/A)'), ('CSI_103', 265, 'B9S1 B.9 (U/A)'), ('CSI_103', 166, 'P3S1 P.3 (U/A)'),
+              ('CSI_106', 114, 'D5NoFin D.5 (U/A)'), ('CSI_106', 131, 'D62NoFinU D.62 (U/A)'), ('CSI_106', 139, 'D7NoFinU/R D.7 (U/A y R/P)'), ('CSI_106', 140, 'D71NoFinU D.71 (U/A)'),
+              ('CSI_106', 143, 'D72NoFinR D.72 (R/P)'), ('CSI_106', 149, 'D751NoFinU D.751 (U/A)'), ('CSI_106', 151, 'D759NoFinU/R D.759 (U/A y R/P)'), ('CSI_106', 153, 'B6nNoFin B.6n (U/A)'),
+              ('CSI_106', 171, 'B8nNoFin B.8n (U/A)'), ('CSI_106', 189, 'P5nNoFin P.5n (U/A)'), ('CSI_106', 265, 'B9NoFin B.9 (U/A)'),
+              ('CSI_109', 114, 'D5Fin D.5 (U/A)'), ('CSI_109', 131, 'D62FinU D.62 (U/A)'), ('CSI_109', 139, 'D7FinU/R D.7 (U/A y R/P)'), ('CSI_109', 140, 'D71FinU/R D.71 (U/A y R/P)'),
+              ('CSI_109', 143, 'D72FinU/R D.72 (U/A y R/P)'), ('CSI_109', 149, 'D751FinU D.751 (U/A)'), ('CSI_109', 151, 'D759FinU/R D.759 (U/A y R/P)'), ('CSI_109', 153, 'B6nFin B.6n (U/A)'),
+              ('CSI_109', 169, 'D8FinU D.8 (U/A)'), ('CSI_109', 171, 'B8nFin B.8n (U/A)'), ('CSI_109', 189, 'P5nFin P.5n (U/A)'), ('CSI_109', 265, 'B9Fin B.9 (U/A)'),
+              ('CSI_112', 96, 'D41GobU D.41 (U/A)'), ('CSI_112', 105, 'D45GobR D.45 (R/P)'), ('CSI_112', 131, 'D62GobU D.62 (U/A)'), ('CSI_112', 139, 'D7GobU/R D.7 (U/A y R/P)'),
+              ('CSI_112', 140, 'D71GobU D.71 (U/A)'), ('CSI_112', 143, 'D72GobR D.72 (R/P)'), ('CSI_112', 146, 'D73Gob D.73 (U/A)'), ('CSI_112', 147, 'D74GobU D.74 (U/A)'),
+              ('CSI_112', 149, 'D751GobU D.751 (U/A)'), ('CSI_112', 151, 'D759GobU/R D.759 (U/A y R/P)'), ('CSI_112', 153, 'B6nGob B.6n (U/A)'), ('CSI_112', 157, 'D63GobU D.63 (U/A)'),
+              ('CSI_112', 166, 'P3Gob P.3 (U/A)'), ('CSI_112', 168, 'P32Gob P.32 (U/A)'), ('CSI_112', 171, 'B8nGob B.8n (U/A)'), ('CSI_112', 189, 'P5nGob P.5n (U/A)'), ('CSI_112', 265, 'B9Gob B.9 (U/A)'),
+              ('CSI_115', 116, 'D59Hog D.59 (U/A)'), ('CSI_115', 140, 'D71HogU D.71 (U/A)'), ('CSI_115', 143, 'D72HogR D.72 (R/P)'), ('CSI_115', 149, 'D751HogU D.751 (U/A)'),
+              ('CSI_115', 150, 'D752HogU D.752 (U/A)'), ('CSI_115', 151, 'D759HogU D.759 (U/A)'), ('CSI_115', 153, 'B6nHog B.6n (U/A)'), ('CSI_115', 189, 'P5nHog P.5n (U/A)'), ('CSI_115', 265, 'B9Hog B.9 (U/A)'),
+              ('CSI_118', 131, 'D62ISFLSHU D.62 (U/A)'), ('CSI_118', 139, 'D7ISFLSHU/R D.7 (U/A y R/P)'), ('CSI_118', 140, 'D71ISFLSHU D.71 (U/A)'), ('CSI_118', 149, 'D751ISFLSHR/U D.751 (R/P y U/A)'),
+              ('CSI_118', 153, 'B6nISFLSH B.6n (U/A)'), ('CSI_118', 157, 'D63ISFLSHU D.63 (U/A)'), ('CSI_118', 171, 'B8nISFLSH B.8n (U/A)'), ('CSI_118', 265, 'B9ISFLSH B.9 (U/A)'),
+              ('CSI_121', 66, 'B11Row B.11 (R/P)'), ('CSI_121', 139, 'D7RowU/R D.7 (U/A y R/P)'), ('CSI_121', 172, 'B12Row B.12 (U/A)'), ('CSI_121', 265, 'B9Row B.9 (U/A)')]
     csi_rep = {'zip': 'https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip', 'cuadros': {}, 'celdas': []}
     try:
         import openpyxl

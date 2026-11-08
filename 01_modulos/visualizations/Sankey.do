@@ -2,6 +2,10 @@
 *** SANKEY ***
 **************
 **
+** 8.17 (v8.17.0, CUAD-2 firmado): este do-file sigue emitiendo los cinco cortes del «PIB demografico» (users/$id/SankeyNTA/sankey-<corte>.json,
+** hub Ing nacional = PIB con las filas de sector de CUAD-0, gate-numeros los compara); el Sankey de la ECONOMIA COMPLETA (hub = INBD, sectores
+** institucionales en medio conservando, personas por edad en los extremos) vive en NTA.do §7d (sankey-v4-economia.json) porque necesita la cuenta por
+** persona (τ por sector, retenido y deficit a personas). Ningun numero de este archivo cambia en 8.17.
 ** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-2 §9, 2026-11-07; sin cambio de codigo):
 **   | Elemento                        | Que requiere genericamente                                  | Por que Mexico lo resuelve asi                                          |
 **   | CSI por sector institucional    | Cuentas corrientes completas (I-III) por sector con B.5n,   | INEGI publica S.11-S.15 y S.2 (base 2018) sin la matriz de quien a     |

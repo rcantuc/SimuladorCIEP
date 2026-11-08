@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # =============================================================================
-# test-sitio-nta.sh — la página de método /NTA (Sankey NTA v3 de la cuenta por individuo + panel grupo × sexo) como gate
+# test-sitio-nta.sh — la página de método /NTA (Sankey NTA v4 de la economía completa, el corte v3 y el panel grupo × sexo) como gate
 # =============================================================================
 # Levanta el sitio (04_1_simuladorfiscal.ciep.mx/) con php -S en una copia temporal, con lo que el motor
 # emite para esta página en el lugar del escenario default (users/ciepmx/):
-#   - el Sankey v3 (users/<id>/SankeyNTA/sankey-v3-grupoedad.json, NTA.do §7b, contrato v3: edades solo al inicio y al final;
-#     NTA-4: cada enlace con value en MXN y pctpib en % del PIB, un solo Desahorro / Futuro / ajuste S.14, especie fundida),
+#   - el Sankey v4 (users/<id>/SankeyNTA/sankey-v4-economia.json, NTA.do §7d, 8.17: la economía completa, hub = INBD, sectores en medio
+#     conservando; cada enlace con value en MXN y pctpib en % del PIB) y, como corte, el v3 (sankey-v3-grupoedad.json, NTA.do §7b),
 #   - la cuenta NTA por grupo (users/<id>/NTA/nta-grupoedad.json, NTA.do §6.2) + nta-identidad.txt, y
 #   - el panel por grupo de edad × sexo (users/<id>/NTA/nta-panel-grupoedad-sexo.json, NTA.do §7c, esquema nta-panel/v2),
 # y comprueba:
-#   1. HTTP: /NTA y /NTA/ responden 200; jsonSankeyNTA.php sirve el v3 por default y con corte=v3-grupoedad, con el MISMO
-#      número de nodos y enlaces que el JSON de origen (35/99 cuando el origen es el fixture; el conteo del v3 queda fijado
-#      aquí) y cada enlace idéntico (from, to, value, pctpib) al de origen, chart.unidad = pctpib; corte fuera de la lista
+#   1. HTTP: /NTA y /NTA/ responden 200; jsonSankeyNTA.php sirve el v4 por default y con corte=v4-economia, con el MISMO
+#      número de nodos y enlaces que el JSON de origen (57/134 cuando el origen es el fixture; el conteo del v4 queda fijado
+#      aquí) y cada enlace idéntico (from, to, value, pctpib) al de origen, chart.unidad = pctpib; corte=v3-grupoedad sirve el
+#      v3 (35/99 con el fixture); corte fuera de la lista
 #      blanca → 400; idSession con traversal → cae al default ciepmx; el v2 y el v1 sin archivo → 404 con pista de deploy;
 #      ?cuenta=grupoedad y ?cuenta=panel-grupoedad-sexo se sirven byte a byte; ?cuenta=identidad sirve el reporte de texto;
 #      cuenta fuera de la lista → 400; el panel trae 15 celdas balanceadas en ambas unidades, pib.valor y nacional_pctpib.
@@ -26,9 +27,10 @@
 #      panel se dibujan con las celdas Total (cintas con data-value y data-pctpib), los pies traen ambas unidades, y el
 #      selector Hombres / Mujeres cambia los cinco sin recargar; y, si se pide, las capturas PNG (página completa, Sankey
 #      v3 solo y panel en Total: la evidencia del PR).
-# Origen del Sankey: --json <ruta>; si no, users/ricardo/SankeyNTA/sankey-v3-grupoedad.json del repo si
-# existe; si no, el fixture 05_scripts/fixtures/sankey-nta-grupoedad.json (el v3 real de la corrida completa
-# de SIM.do, CI sin corrida local). Origen de la cuenta: --cuenta <ruta>; si no, users/ricardo/NTA/
+# Origen del Sankey v4: --json <ruta>; si no, users/ricardo/SankeyNTA/sankey-v4-economia.json del repo si
+# existe; si no, el fixture 05_scripts/fixtures/sankey-nta-v4-economia.json (el v4 real de la corrida completa
+# de SIM.do, CI sin corrida local). El v3 se toma de al lado del v4 (sankey-v3-grupoedad.json) o del fixture
+# sankey-nta-grupoedad.json. Origen de la cuenta: --cuenta <ruta>; si no, users/ricardo/NTA/
 # nta-grupoedad.json (+ nta-identidad.txt y nta-panel-grupoedad-sexo.json a su lado); si no, los fixtures nta-grupoedad.json,
 # nta-identidad.txt y nta-panel-grupoedad-sexo.json. Con --json se espera --cuenta de la MISMA corrida (si no, se usan los
 # fixtures y se avisa). --panel <ruta> fuerza el JSON del panel.
@@ -63,17 +65,19 @@ export CHROME_PATH
 
 ES_FIXTURE=false
 if [[ -z "$JSON" ]]; then
-    if [[ -f "$REPO_ROOT/users/ricardo/SankeyNTA/sankey-v3-grupoedad.json" ]]; then
-        JSON="$REPO_ROOT/users/ricardo/SankeyNTA/sankey-v3-grupoedad.json"
+    if [[ -f "$REPO_ROOT/users/ricardo/SankeyNTA/sankey-v4-economia.json" ]]; then
+        JSON="$REPO_ROOT/users/ricardo/SankeyNTA/sankey-v4-economia.json"
     else
-        JSON="$FIX/sankey-nta-grupoedad.json"; ES_FIXTURE=true
+        JSON="$FIX/sankey-nta-v4-economia.json"; ES_FIXTURE=true
     fi
 fi
 [[ -f "$JSON" ]] || { echo "no existe el JSON de origen: $JSON" >&2; exit 2; }
+JSON3="$(dirname "$JSON")/sankey-v3-grupoedad.json"
+[[ -f "$JSON3" ]] || JSON3="$FIX/sankey-nta-grupoedad.json"
 if [[ -z "$CUENTA" ]]; then
     if $ES_FIXTURE; then
         CUENTA="$FIX/nta-grupoedad.json"
-    elif [[ "$JSON" == "$REPO_ROOT/users/ricardo/SankeyNTA/sankey-v3-grupoedad.json" && -f "$REPO_ROOT/users/ricardo/NTA/nta-grupoedad.json" ]]; then
+    elif [[ "$JSON" == "$REPO_ROOT/users/ricardo/SankeyNTA/sankey-v4-economia.json" && -f "$REPO_ROOT/users/ricardo/NTA/nta-grupoedad.json" ]]; then
         CUENTA="$REPO_ROOT/users/ricardo/NTA/nta-grupoedad.json"
     else
         CUENTA="$FIX/nta-grupoedad.json"
@@ -88,7 +92,8 @@ if [[ -z "$PANEL" ]]; then
     [[ -f "$PANEL" ]] || { PANEL="$FIX/nta-panel-grupoedad-sexo.json"; echo "# aviso: el panel se toma del fixture $PANEL"; }
 fi
 [[ -f "$PANEL" ]] || { echo "no existe el JSON del panel: $PANEL" >&2; exit 2; }
-echo "# Sankey de origen: $JSON"
+echo "# Sankey de origen (v4): $JSON"
+echo "# corte v3 de origen: $JSON3"
 echo "# cuenta de origen: $CUENTA (reporte: $IDENT)"
 echo "# panel de origen: $PANEL"
 
@@ -110,7 +115,8 @@ export NODE_PATH="${NODE_PATH_EXTRA}${NODE_PATH:+:$NODE_PATH}"
 #     y un DEPLOYED_COMMIT de prueba para que el pie pinte versión, fecha y vintage como en el VPS ---
 mkdir -p "$H/users/ciepmx/SankeyNTA" "$H/users/ciepmx/NTA"
 cp -R "$SITE" "$H/site"; rm -rf "$H/site/logs" "$H/site/ssl"; mkdir -p "$H/site/logs"
-cp "$JSON" "$H/users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json"
+cp "$JSON" "$H/users/ciepmx/SankeyNTA/sankey-v4-economia.json"
+cp "$JSON3" "$H/users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json"
 cp "$CUENTA" "$H/users/ciepmx/NTA/nta-grupoedad.json"
 cp "$IDENT" "$H/users/ciepmx/NTA/nta-identidad.txt"
 cp "$PANEL" "$H/users/ciepmx/NTA/nta-panel-grupoedad-sexo.json"
@@ -143,16 +149,17 @@ t=open(sys.argv[1],encoding="utf-8").read()
 print(len(re.findall(r"\{label:\"([^\"]*)\"\}",t)), len(re.findall(r"\{to:\"([^\"]*)\",value:\"([^\"]*)\",from:\"([^\"]*)\"(?:,pctpib:\"([^\"]*)\")?\}",t)))' "$JSON")
 echo "# origen: $N_ORI nodos / $L_ORI enlaces"
 if $ES_FIXTURE; then
-    aserta '[[ "$N_ORI" == 35 && "$L_ORI" == 99 ]]' "el fixture es el v3 real (NTA-4): 35 nodos / 99 enlaces ($N_ORI/$L_ORI)"
+    aserta '[[ "$N_ORI" == 57 && "$L_ORI" == 134 ]]' "el fixture es el v4 real (8.17): 57 nodos / 134 enlaces ($N_ORI/$L_ORI)"
 fi
-aserta 'python3 -c "import re,sys; t=open(sys.argv[1],encoding=\"utf-8\").read(); L=re.findall(r\"\\{to:\\\"[^\\\"]*\\\",value:\\\"[^\\\"]*\\\",from:\\\"[^\\\"]*\\\"(,pctpib:\\\"[^\\\"]*\\\")?\\}\", t); assert L and all(p for p in L)" "$JSON"' "cada enlace del v3 de origen trae pctpib (NTA-4: value en MXN y % del PIB, dividido en Stata)"
+aserta 'python3 -c "import re,sys; t=open(sys.argv[1],encoding=\"utf-8\").read(); L=re.findall(r\"\\{to:\\\"[^\\\"]*\\\",value:\\\"[^\\\"]*\\\",from:\\\"[^\\\"]*\\\"(,pctpib:\\\"[^\\\"]*\\\")?\\}\", t); assert L and all(p for p in L)" "$JSON"' "cada enlace del v4 de origen trae pctpib (value en MXN y % del PIB, dividido en Stata)"
 aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"esquema\"]==\"nta-panel/v2\" and len(d[\"celdas\"])==15 and d[\"pib\"][\"valor\"]>0 and \"nacional_pctpib\" in d and \"v3_mxn\" in d and all(abs(sum(c[\"entradas_flujos\"].values())-sum(c[\"salidas_flujos\"].values()))/c[\"C\"]<=1e-9 and abs(sum(c[\"pctpib\"][\"entradas_flujos\"].values())-sum(c[\"pctpib\"][\"salidas_flujos\"].values()))/c[\"pctpib\"][\"C\"]<=1e-9 for c in d[\"celdas\"])" "$PANEL"' "el panel de origen es nta-panel/v2 con 15 celdas balanceadas en MXN y en % del PIB (1e-9 relativo a C), pib.valor, nacional_pctpib y v3_mxn"
 
 echo "## 1. HTTP"
 chk 200 "GET /NTA (la ruta)"                                  "$U/NTA"
 chk 200 "GET /NTA/"                                           "$U/NTA/"
 aserta 'grep -q "id=\"sankey-nta\"" "$H/body"' "la página trae el contenedor #sankey-nta"
-aserta 'grep -q "jsonSankeyNTA.php?corte=v3-grupoedad" "$H/body"' "la página pide /jsonSankeyNTA.php?corte=v3-grupoedad"
+aserta 'grep -q "jsonSankeyNTA.php?corte=v4-economia" "$H/body"' "la página pide /jsonSankeyNTA.php?corte=v4-economia (el Sankey principal)"
+aserta 'grep -q "id=\"sankey-nta-v3\"" "$H/body" && grep -q "jsonSankeyNTA.php?corte=v3-grupoedad" "$H/body"' "la página dibuja el corte v3 en #sankey-nta-v3 (corte=v3-grupoedad)"
 aserta 'grep -q "jsonSankeyNTA.php?cuenta=grupoedad" "$H/body"' "la página pide /jsonSankeyNTA.php?cuenta=grupoedad (cifras)"
 aserta 'grep -q "jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo" "$H/body"' "la página pide /jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo (panel)"
 aserta '[[ $(grep -c "id=\"nta-panel-[1-5]\"" "$H/body") == 5 ]]' "la página trae los cinco contenedores del panel (#nta-panel-1 … -5)"
@@ -160,9 +167,11 @@ aserta '[[ $(grep -c "name=\"nta-sexo\"" "$H/body") == 3 ]]' "la página trae el
 aserta '! grep -q "corte=grupoedad\"" "$H/body" && ! grep -q "renderAt.*corte=v2-grupoedad" "$H/body"' "la página ya no dibuja el v1 ni el v2 (sin url corte=grupoedad ni Sankey con corte=v2-grupoedad)"
 aserta 'grep -q "split household-level items among the members of each household<sup" "$H/body"' "la frase del reparto intra-hogar lleva el superíndice de la nota"
 aserta 'grep -q "id=\"nota-1\"" "$H/body" && grep -q "Within-household allocation" "$H/body"' "la nota al pie 1 existe (Within-household allocation)"
-chk 200 "jsonSankeyNTA.php (sin corte: default v3)"            "$U/jsonSankeyNTA.php"
-aserta 'grep -q "ciepmx/SankeyNTA/sankey-v3-grupoedad.json" "$H/body"' "el default sirve users/ciepmx/SankeyNTA/sankey-v3-grupoedad.json"
-chk 200 "jsonSankeyNTA.php?corte=v3-grupoedad"                 "$U/jsonSankeyNTA.php?corte=v3-grupoedad"
+chk 200 "jsonSankeyNTA.php (sin corte: default v4)"            "$U/jsonSankeyNTA.php"
+aserta 'grep -q "ciepmx/SankeyNTA/sankey-v4-economia.json" "$H/body"' "el default sirve users/ciepmx/SankeyNTA/sankey-v4-economia.json"
+chk 200 "jsonSankeyNTA.php?corte=v3-grupoedad (el corte)"      "$U/jsonSankeyNTA.php?corte=v3-grupoedad"
+aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"chart\"][\"unidad\"]==\"pctpib\" and any(n[\"label\"]==\"Ing nacional\" for n in d[\"nodes\"])" "$H/body"' "el corte v3 se sirve en % del PIB con su hub Ing nacional"
+chk 200 "jsonSankeyNTA.php?corte=v4-economia"                  "$U/jsonSankeyNTA.php?corte=v4-economia"
 aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"nodes\"] and d[\"links\"]" "$H/body"' "la respuesta es JSON válido con nodes y links"
 read -r N_SRV L_SRV < <(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(len(d["nodes"]), len(d["links"]))' "$H/body" 2>/dev/null || echo "0 0")
 aserta '[[ "$N_SRV" == "$N_ORI" && "$L_SRV" == "$L_ORI" ]]' "el JSON servido tiene los mismos nodos/enlaces que el origen ($N_SRV/$L_SRV vs $N_ORI/$L_ORI)"
@@ -173,12 +182,12 @@ O=re.findall(r\"\\{to:\\\"([^\\\"]*)\\\",value:\\\"([^\\\"]*)\\\",from:\\\"([^\\
 assert len(O)==len(d[\"links\"]) and all(l[\"to\"]==o[0] and l[\"value\"]==o[1] and l[\"from\"]==o[2] and l[\"pctpib\"]==o[3] for l,o in zip(d[\"links\"],O))
 assert d[\"chart\"][\"unidad\"]==\"pctpib\"
 " "$H/body" "$JSON"' "cada enlace servido es idéntico (from, to, value, pctpib) al de origen y el chart declara unidad = pctpib"
-aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); g=[n for n in d[\"nodes\"] if n[\"label\"] in (\"Ing nacional\",\"Gobierno\",\"Activos\",\"Transferencias en efectivo\")]; assert len(g)==4 and all(\"toolText\" in n for n in g) and not any(\"toolText\" in n for n in d[\"nodes\"] if n not in g)" "$H/body"' "solo los cuatro hubs (Ing nacional, Gobierno, Activos, Transferencias en efectivo) llevan el toolText «inflows = outflows»"
-aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); L=[n[\"label\"] for n in d[\"nodes\"]]; assert not any(l.startswith((\"Ingreso \",\"Consumo \",\"Desahorro \",\"Futuro \",\"Ancla S14\")) or l in (\"Familias\",\"Salud pública\",\"Educación pública\",\"Otros en especie\") for l in L) and sum(l.startswith(\"De \") for l in L)==5 and sum(l.startswith(\" De \") for l in L)==5 and all(x in L for x in (\"Desahorro\",\"Futuro\",\"Colectivo\",\"Ajuste a cuentas nacionales S14\"))" "$H/body"' "el v3 servido (NTA-4): 5 grupos perceptores y 5 consumidores; Desahorro, Futuro, Colectivo y Ajuste a cuentas nacionales S14 únicos; sin Ingreso g / Consumo g / Familias / Desahorro g / Futuro g / especie aparte / Ancla recorte+complemento"
+aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); H=(\"Ingreso nacional disponible\",\"Hogares\",\"Gobierno ingreso primario\",\"Hogares ingreso disponible\",\"Gobierno ingreso disponible\",\"Sociedades ingreso disponible\",\"ISFLSH ingreso disponible\",\"Sociedades\"); g=[n for n in d[\"nodes\"] if n[\"label\"] in H]; assert len(g)==8 and all(\"toolText\" in n for n in g) and not any(\"toolText\" in n for n in d[\"nodes\"] if n not in g)" "$H/body"' "solo el hub y los siete nodos de sector llevan el toolText «inflows = outflows»"
+aserta 'python3 -c "import json,sys; d=json.load(open(sys.argv[1])); L=[n[\"label\"] for n in d[\"nodes\"]]; assert sum(l.startswith(\"De \") for l in L)==5 and sum(l.startswith(\" De \") for l in L)==5 and all(x in L for x in (\"Ingreso nacional disponible\",\"Hogares\",\"Sociedades\",\"Gobierno ingreso primario\",\"ISFLSH\",\"El mundo\",\"Por identificar\",\"Futuro\",\"Colectivo\",\"Financiamiento deuda y venta de activos\",\"Vintage BIE vs CSI\",\"Transferencias en efectivo\",\"Derechos de pensión D8\")) and not any(l in (\"Ing nacional\",\"Activos\",\"Empresas públicas\",\"Déficit público\",\"Desahorro\") for l in L)" "$H/body"' "el v4 servido: 5 grupos perceptores y 5 consumidores; hub INBD, sectores, el mundo, Por identificar, Futuro, Colectivo, Financiamiento, Vintage; sin Ing nacional / Activos / Empresas públicas / Déficit público / Desahorro"
 chk 400 "jsonSankeyNTA.php?corte=../x (fuera de lista)"       "$U/jsonSankeyNTA.php?corte=../x"
-chk 400 "jsonSankeyNTA.php?corte=v3-grupoedad%00"             "$U/jsonSankeyNTA.php?corte=v3-grupoedad%00"
-chk 200 "jsonSankeyNTA.php traversal en idSession"            "$U/jsonSankeyNTA.php?corte=v3-grupoedad&idSession=../../../../etc/passwd%00"
-aserta 'grep -q "ciepmx/SankeyNTA/sankey-v3-grupoedad.json" "$H/body"' "el traversal cayó al default ciepmx"
+chk 400 "jsonSankeyNTA.php?corte=v4-economia%00"              "$U/jsonSankeyNTA.php?corte=v4-economia%00"
+chk 200 "jsonSankeyNTA.php traversal en idSession"            "$U/jsonSankeyNTA.php?corte=v4-economia&idSession=../../../../etc/passwd%00"
+aserta 'grep -q "ciepmx/SankeyNTA/sankey-v4-economia.json" "$H/body"' "el traversal cayó al default ciepmx"
 chk 404 "jsonSankeyNTA.php?corte=v2-grupoedad (v2 sin archivo)" "$U/jsonSankeyNTA.php?corte=v2-grupoedad"
 chk 404 "jsonSankeyNTA.php?corte=grupoedad (v1 sin archivo)"  "$U/jsonSankeyNTA.php?corte=grupoedad"
 aserta 'grep -q "Fase 3b-ter" "$H/body"' "el 404 explica qué falta (NTA/ y SankeyNTA/ en el deploy)"
@@ -198,9 +207,9 @@ for f in NTA/index.php js/metodo-sankey.js metodo/plantilla.php css/metodo.css j
 done
 
 echo "## 3. Chrome headless: se dibuja, los números son los del motor, las cifras se llenaron y el panel cambia con el selector"
-node "$REPO_ROOT/05_scripts/test-sitio-nta.js" "$U" "$JSON" "$CUENTA" "$PANEL" ${PNG:+"$PNG"} || fallos=$((fallos+1))
+node "$REPO_ROOT/05_scripts/test-sitio-nta.js" "$U" "$JSON" "$CUENTA" "$PANEL" "$JSON3" ${PNG:+"$PNG"} || fallos=$((fallos+1))
 
 echo
-if (( fallos == 0 )); then echo "RESULTADO: /NTA OK (0 fallos; Sankey v3 $N_ORI nodos / $L_ORI enlaces; panel 15 celdas)"; exit 0; fi
+if (( fallos == 0 )); then echo "RESULTADO: /NTA OK (0 fallos; Sankey v4 $N_ORI nodos / $L_ORI enlaces; corte v3; panel 15 celdas)"; exit 0; fi
 echo "RESULTADO: $fallos fallo(s) en /NTA"
 exit 1
