@@ -1,0 +1,22 @@
+* PLANTILLA — copia este archivo como `config-local.do` (mismo directorio) y ajusta tus palancas.
+* `config-local.do` está en .gitignore (verify_gitignore.sh lo exige); este ejemplo SÍ se versiona.
+* SIM.do §0.1b lo corre si existe, tras `macro drop _all` y ANTES de los defaults de §0.2–§0.8b. Así SIM.do versionado
+* queda sin palancas personales y cada clon lleva las suyas. Los clones de corrida (-datos, worktrees del ritual) NO lo
+* llevan: correr-sim.sh y contrato-32.sh abortan si lo encuentran, para que un `hasta` olvidado no corte una corrida de
+* 33 min en silencio.
+*
+* Palancas (las que SIM.do deja comentadas en §0.4–§0.7, más `id`):
+*   hasta     "1"–"7": paro temprano al cerrar la sección (1 Demografía, 2 Economía, 3 Hogares: armonización macro-micro,
+*             4 Sistema fiscal: ingresos, 5 egresos, 6 deuda, 7 Ciclo de vida fiscal). Vacío o ausente = corrida completa.
+*   nographs  "nographs": suprime las gráficas (así corre el ritual en batch).
+*   update    "update": borra raw/temp/ y las cachés micro de master/<anioenigh>/ y rehace las bases (tarda).
+*   id        carpeta users/<id>/ de la corrida; default `c(username)` (§0.2). Útil para no pisar tu corrida base.
+*   También: textbook, rawwip, export (§0.4), entidad (§0.5), output (§0.7): mismo efecto que descomentarlas en SIM.do.
+* Lo que SIM.do fija sin condición con `global x "..."` (bootstrap, seed, algebra, parámetros firmados de §0.8/§0.8b) NO se
+* cambia desde aquí: el valor de SIM.do pisa el tuyo. Los valores alternos de §0.8 van como globals extra de correr-sim.sh
+* (se insertan tras los defaults), no aquí.
+
+global hasta "3"									// PARO TEMPRANO (venía de SIM.do en 49f65fb): corta al cerrar §3 Hogares
+//global nographs "nographs"						// SUPRIMIR GRAFICAS
+//global update "update"							// UPDATE BASES DE DATOS
+//global id "ricardo-pruebas"						// CARPETA users/<id>/ (default: usuario de la Mac)

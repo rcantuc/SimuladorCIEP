@@ -30,6 +30,9 @@ EVID="$2"; shift 2
 STATA="${STATA:-/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se}"
 [[ -x "$STATA" ]] || { echo "correr-sim: no encuentro Stata en $STATA (usa la variable STATA)" >&2; exit 2; }
 [[ -f "$ROOT/SIM.do" ]] || { echo "correr-sim: no hay $ROOT/SIM.do" >&2; exit 2; }
+# 8.17 Bloque 0: SIM.do §0.1b corre ${SIMROOT}/config-local.do si existe (palancas personales: hasta, nographs, update, id).
+# Un clon de corrida no lo lleva: un `global hasta "3"` olvidado cortaría la corrida en silencio y el gate lo acusaría 33 min después.
+[[ -e "$ROOT/config-local.do" ]] && { echo "correr-sim: ABORTA, hay $ROOT/config-local.do y SIM.do §0.1b lo cargaría. Los clones de corrida no llevan configuración local: muévelo o bórralo." >&2; exit 2; }
 # 8.16b: las 5 bases de vintages (banda bmin/bmax de los sankeys de entidad, runbook §13) tienen que estar en el árbol; sin
 # ellas SankeySF.do las omite en silencio y los productos de /entidades salen sin banda (c32 lo acusa 40 min después).
 ID="$(whoami)"; FALTAN_V=()

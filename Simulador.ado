@@ -1035,6 +1035,27 @@ program graphpiramide
 		local agehlab =`AGEH'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
 		local agehlab1 =`AGEH1'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
 		local agehlab2 =`AGEH2'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
+
+		* Eje de la piramide (% del total por celda edad-sexo). Paso 1 cuando el rango es el *
+		* habitual (<= 10 pp). Si el total nacional de la variable es cercano a cero (p. ej. Ahorro), *
+		* los porcentajes se disparan a cientos y un paso de 1 pondria cientos de etiquetas: se *
+		* usa entonces un paso redondo (1, 2, 5 x 10^k) con ~5 etiquetas y extremos multiplos del paso. *
+		local ymin = `PORmaxval'[2,1]
+		local ymax = `PORmaxval'[1,1]
+		local yrng = `ymax' - `ymin'
+		if `yrng' < . & `yrng' > 10 {
+			local ymag = 10^floor(log10(`yrng'/5))
+			local yrat = `yrng'/5/`ymag'
+			local ystep = `ymag'*cond(`yrat' < 1.5, 1, cond(`yrat' < 3.5, 2, cond(`yrat' < 7.5, 5, 10)))
+			local ylab `=floor(`ymin'/`ystep')*`ystep''(`ystep')`=ceil(`ymax'/`ystep')*`ystep''
+		}
+		else if `yrng' < . {
+			local ylab `=round(`ymin',.1)'(1)`ymax'
+		}
+		else {
+			local ylab #5
+		}
+
 		graph hbar (sum) `POR' if sexo == 1, ///
 			over(`over') over(edad, axis(noextend noline outergap(0) off) descending ///
 			relabel(`relabel') ///
@@ -1042,11 +1063,11 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline range(2.5)) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Hombres}: `men'%, size(vlarge)) ///
+			t2title(`"{bf:Hombres}: `men'%"', size(vlarge)) ///
 			ytitle(%, size(vlarge)) ///
 			///t2title({bf:Men} (`men'%), size(vlarge)) ///
 			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
+			ylabel(`ylab', format(%7.0fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) ///
 			label(1 `"{bf:0-18}: `=string(`agehlab',"%7.0fc")' %"') ///
@@ -1065,11 +1086,11 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline range(2.5)) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Mujeres}: `women'%, size(vlarge)) ///
+			t2title(`"{bf:Mujeres}: `women'%"', size(vlarge)) ///
 			ytitle(%, size(vlarge)) ///
 			///t2title({bf:Women} (`women'%), size(vlarge)) ///
 			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
+			ylabel(`ylab', format(%7.0fc) noticks) ///
 			name(M`varlist', replace) ///
 			legend(cols(4) pos(5) bmargin(zero) size(vlarge) keygap(1) symxsize(3) textwidth(30) forcesize) ///
 			plotregion(margin(zero)) ///

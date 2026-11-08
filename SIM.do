@@ -24,12 +24,24 @@ if _rc != 0 {
 	exit
 }
 
+** 0.1b Configuración local del clon (opcional; 8.17 Bloque 0)
+*  Si existe ${SIMROOT}/config-local.do (ignorado por git; plantilla versionada: config-local.do.ejemplo) se corre aquí, tras
+*  `macro drop _all` y ANTES de los defaults de §0.2–§0.8b. Es el lugar de las palancas de cada clon (hasta, nographs, update,
+*  id, …; lista en §0.4): SIM.do versionado queda sin ellas. Lo que SIM.do fija sin condición (`global x "..."`: bootstrap, seed,
+*  algebra y los parámetros firmados de §0.8/§0.8b) pisa lo que venga de aquí; solo `id` se respeta (§0.2). Los clones de
+*  corrida (-datos, worktrees del ritual) no llevan config-local.do: correr-sim.sh y contrato-32.sh abortan si lo encuentran.
+capture confirm file "${SIMROOT}/config-local.do"
+if _rc == 0 {
+	run "${SIMROOT}/config-local.do"
+	noisily di _newline in g "config-local.do cargado (§0.1b): " in y `"hasta="$hasta" nographs="$nographs" update="$update" id="$id" entidad="$entidad" output="$output""'
+}
+
 ** 0.2 Parámetros
 scalar aniovp = 2027								// ANIO VALOR PRESENTE
 scalar anioPE = 2027								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
-global id = "`c(username)'"
+if "$id" == "" global id = "`c(username)'"		// config-local.do (§0.1b) puede fijarlo; default = usuario
 global idbase "$id"									// ESCENARIO BASE
 global bootstrap "250"								// RÉPLICAS BOOTSTRAP
 global seed "1111"									// SEMILLA del remuestreo
@@ -39,11 +51,13 @@ set seed $seed
 capture mkdir "${SIMROOT}/users/"
 capture mkdir "${SIMROOT}/users/$id"
 
-** 0.4 Opciones (descomentar para activar)
+** 0.4 Opciones (descomentar para activar; en un clon personal van en config-local.do, §0.1b, no aquí)
+*  Palancas: hasta "1"–"7" = paro temprano al cerrar la sección (1 Demografía, 2 Economía, 3 Hogares, 4 Ingresos, 5 Egresos,
+*  6 Deuda, 7 Ciclo de vida; vacío = corrida completa); nographs = sin gráficas; update = rehace bases y cachés (§0.6);
+*  id = carpeta users/<id>/ (§0.2); textbook, rawwip, export abajo; entidad (§0.5) y output (§0.7).
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global textbook "textbook"						// SCALAR TO LATEX
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
-//global hasta "3"									// PARO TEMPRANO
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 global algebra "algebra"							// FORMA CERRADA SOBRE ESCALARES ("" = ruta micro, solo para auditar paridad)
 

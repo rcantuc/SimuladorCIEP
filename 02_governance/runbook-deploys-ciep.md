@@ -703,6 +703,36 @@ Síntomas y causa:
 5. **Los números del PR salen de `-datos` o de la carpeta diag de una corrida completa** (10.1, cuarto
    árbol), nunca de una corrida suelta sobre el `households.dta` del clon de Dropbox (difiere del canónico).
 
+### 10.5 Lo que es de un solo clon: `config-local.do` y `simulador.stpr` (8.17 Bloque 0)
+
+Dos archivos de la raíz son estado de **un** clon, no del proyecto, y cada uno se trata distinto:
+
+- **`config-local.do` (ignorado por git).** `SIM.do` §0.1b lo corre si existe (`capture confirm file` + `run`), tras
+  `macro drop _all` y antes de los defaults de §0.2–§0.8b. Ahí viven las palancas personales: `hasta` (paro temprano
+  al cerrar la sección 1–7), `nographs`, `update`, `id` (carpeta `users/<id>/`; §0.2 solo pone `c(username)` si viene
+  vacío) y las demás que `SIM.do` deja comentadas (`textbook`, `rawwip`, `export`, `entidad`, `output`). Lo que `SIM.do`
+  fija sin condición (`bootstrap`, `seed`, `algebra`, los parámetros firmados de §0.8/§0.8b) pisa lo que diga el archivo:
+  los valores alternos de Cuadratura siguen entrando como globals extra de `correr-sim.sh`. Plantilla versionada:
+  `config-local.do.ejemplo` (`cp config-local.do.ejemplo config-local.do`). Desde 8.17 `SIM.do` versionado no lleva
+  `global hasta` activo: el `global hasta "3"` del hotfix 49f65fb vive en la plantilla. **Los clones de corrida no lo
+  llevan**: `correr-sim.sh` y `contrato-32.sh` abortan (exit 2) si encuentran `config-local.do` en la raíz, porque un
+  `hasta` olvidado cortaría la corrida de 33 min en silencio y el gate lo acusaría al final. Antes del ritual en `-datos`:
+  `ls config-local.do` debe fallar. `verify_gitignore.sh` exige que `config-local.do` esté ignorado y que el `.ejemplo` no.
+- **`simulador.stpr` (versionado).** Sigue en git (decisión 2026-07-04, `arquitectura.md` §2.8): es el mapa del proyecto
+  para quien abre Stata. Pero Stata lo reescribe en cada save del Project Manager, así que en un clon personal (el de
+  Dropbox, el experimental del manual) conviene decirle a git que ignore los cambios locales sin sacarlo del repo:
+
+  ```bash
+  git update-index --skip-worktree simulador.stpr       # git deja de ver los saves automáticos de Stata
+  git ls-files -v | grep '^S'                            # inventario: qué archivos están en skip-worktree
+  git update-index --no-skip-worktree simulador.stpr    # para commitear un cambio INTENCIONAL del árbol del proyecto
+  ```
+
+  Si `master` trae un `.stpr` nuevo, `git pull` se queja de que el archivo local cambiaría: `--no-skip-worktree`,
+  `git checkout -- simulador.stpr`, `pull`, y de nuevo `--skip-worktree`. Los worktrees de sesión y de corrida no lo
+  necesitan (no abren el Project Manager). No usar `assume-unchanged` para esto: es una pista de rendimiento, no una
+  promesa, y git la descarta cuando le conviene.
+
 ---
 
 ## 11. Qué gate corre dónde: CI (GitHub Actions) vs. sesión
