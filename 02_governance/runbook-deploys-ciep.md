@@ -413,8 +413,13 @@ done
 `05_scripts/humo-calcular.sh` tras el swap (y tras 125 s de espera por el caché de
 realpath de PHP): POST del escenario default a `calculaStata.php` como lo hace el
 JS, números en la respuesta (el `output.txt` de la sesión) y los 5 `jsonSankey*.php`
-de ESA sesión (no el fallback `ciepmx`). Si falla → rollback automático (Fase 7) con
-la cola del log de Stata de la sesión en pantalla. Lo que sigue abajo es lo que el
+de ESA sesión (no el fallback `ciepmx`); y, desde v8.17.1, **un GET a cada endpoint del
+default que las páginas piden** (`05_scripts/manifiesto-default.py --endpoints --entidades NL`:
+`cargaDefault.php`, los 5 `jsonSankey*.php`, `jsonSankeyNTA.php?corte=v4-economia|v3-grupoedad`
+y `?cuenta=grupoedad|panel-grupoedad-sexo|identidad`, `jsonEntidad.php?producto=indice` y los 9
+productos de NL) más el default de `jsonSankeyNTA.php`: cada uno 200 con el archivo de
+`users/ciepmx/` que la Fase 3b-ter embarcó (la misma derivación). Si algo falla → rollback
+automático (Fase 7) con la cola del log de Stata de la sesión en pantalla. Lo que sigue abajo es lo que el
 humo NO prueba (interacción, módulos, brecha fiscal con inputs distintos al default).
 
 En Chrome (o Firefox sin VPN):
@@ -835,7 +840,9 @@ probado en el worktree del agente, nunca contra el layout del deployment.
 **Regla.** Un `.ado`/`.do` del motor web solo puede leer, bajo `${SIMROOT}/`, lo que la Fase 3
 (motor), 3b (`master/`), 3b-bis (`users/ricardo/bootstraps`, `users/ricardo/cache`) y 3b-ter
 (`users/ciepmx`) de `publicar-vps.sh` embarcan. Lo que no embarca, **se embarca** (se añade a la
-fase y a `MOTOR_LECTURAS_VPS`) **o no se lee**. El **Gate 5-remoto** de `publicar-vps.sh` comprueba
+fase y a `MOTOR_LECTURAS_VPS`) **o no se lee**. Para `users/ciepmx/` (v8.17.1) no hay lista que
+añadir: la Fase 3b-ter y `MOTOR_LECTURAS_VPS` la derivan con `05_scripts/manifiesto-default.py` de lo
+que las páginas piden; una página que pide un producto nuevo lo mete sola (lección 20). El **Gate 5-remoto** de `publicar-vps.sh` comprueba
 en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y que
 `05_scripts/manifest.json` es idéntico al local); la Fase 6 da el clic «Calcular» real.
 
@@ -854,7 +861,7 @@ en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y q
 | `01_raw/CONEVAL/2022/Base` | `Expenditure.do` | batch | no se lee en web (FLAG: ruta `01_raw/`, ¿alias viejo de `raw/`?) |
 | `02_governance/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
 | `05_scripts/compuertas-entidad.do` | sesión `compuertas-entidad.sh` | sesión | no se lee en web |
-| `users/ciepmx/SankeyNTA/sankey-v2-grupoedad.json`, `users/ciepmx/NTA/{nta-grupoedad.json, nta-quinquenio-sexo.json, nta-identidad.txt}` (v8.12.5: los escribe `01_modulos/NTA.do`, `SIM.do` §3.2b, en `users/ricardo/`) y `users/ciepmx/SankeyNTA/sankey-grupoedad.json` (v1, solo `?corte=grupoedad`) | `jsonSankeyNTA.php` (página de método `/NTA`: `?corte=v2-grupoedad` default, `?cuenta=…`; el v1 lo escribe `Households.do` §"Sankeys NTA" → `visualizations/Sankey.do` → `SankeySumSim folder(SankeyNTA)` en `users/ricardo/SankeyNTA/`) | **web** (lectura PHP, sin Stata) | **embarcar** (Fase 3b-ter, `DEFAULT_MANIFEST` admite subcarpetas; en `MOTOR_LECTURAS_VPS`) |
+| `users/ciepmx/SankeyNTA/sankey-{v4-economia,v3-grupoedad}.json`, `users/ciepmx/NTA/{nta-grupoedad.json, nta-panel-grupoedad-sexo.json, nta-identidad.txt}` (los escribe `01_modulos/NTA.do`, `SIM.do` §3.2b, en `users/ricardo/`), `users/ciepmx/<ABREV>/{sankey-<5 cortes>, ciclo-vida, tasas-efectivas, neto-pibe, meta}.json` ×32 y `users/ciepmx/entidades.json` (`contrato-32.sh`) | `jsonSankeyNTA.php` (`/NTA`: `?corte=v4-economia` default desde v8.17.0, `?corte=v3-grupoedad`, `?cuenta=…`) y `jsonEntidad.php` (`/entidades`, `/entidades/<ABREV>`) | **web** (lectura PHP, sin Stata) | **embarcar**: Fase 3b-ter y `MOTOR_LECTURAS_VPS` lo DERIVAN con `05_scripts/manifiesto-default.py` de lo que `NTA/index.php`, `entidades/index.php`, `_entidad.php` y `js/stataCalcula.js` piden (v8.17.1; antes `DEFAULT_MANIFEST` a mano, que no supo del v4). Lo que ninguna página pide no viaja aunque el endpoint lo admita (v2, v1 `?corte=grupoedad`, `nta-quinquenio-sexo.json`: 404 con pista) |
 
 FLAG (hallazgo del humo): `checkStataStatus.php` solo reporta `completed` cuando existe
 `<id>.done`, y nada en el motor ni en `Web.Stata.do` lo escribe; el JS no lo consulta (el POST a
@@ -969,7 +976,7 @@ bash 05_scripts/ritual.sh v8.15.3 --desde check
 - **Lo que no hace.** Fusionar, editar `master`, publicar, desplegar, decidir un baseline nuevo.
 - **Probado (8.18a-1, sin Stata).** `--desde check` sobre la evidencia de v8.15.2 da 11/11 sin escribir nada en `-datos`. `merge`, `precache` (sello = manifest), `release-commit` y `tag` (idempotente: el tag ya existía) pasaron contra el estado real. `release-commit` y `tag` fallan como se espera para una versión sin release commit y sin tty. Los pasos `baile`, `sim`, `web`, `c32`, `sidecar` y la rama de `Precache` suelto no se ejercieron: la primera corrida real es la del siguiente release.
 
-### 14.1 Lecciones del ritual (v8.14.0–8.18a)
+### 14.1 Lecciones del ritual (v8.14.0–v8.17.1)
 
 Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las demás siguen siendo criterio:
 
@@ -992,6 +999,7 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las d
 17. **Los cuadros del log siguen el estándar §D de la firma CUAD-1-2** (8.16b): rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, columnas de ancho fijo, separador de miles, gates debajo una línea cada uno (`_tabla_anclas.ado` v2). Un cuadro nuevo que no lo siga es un defecto de la sesión.
 18. **Una versión que mueve el baseline trae sus fixtures en dos tiempos** (8.16b, decisión de Ricardo 2026-11-08). Los que no dependen de las bases de vintages (`output-default.txt`, `sankeys-default/`, los de NTA y el testigo NL `statajson_entidad-nl.json`) salen de la corrida de la sesión y entran en el mismo PR: así `gate-numeros` sale VERDE en el `sim` del ritual contra el baseline nuevo (`--baseline-nuevo` cubre el ROJO) y `c32` no tropieza con el testigo. Los de `/entidades` llevan la banda `bmin`/`bmax`, que solo existe donde están las 5 bases `users/<id>-v{2016…2024}/aportaciones.dta` (`-datos`, no el worktree): salen del paso `c32` del ritual, entran en un PR corto `fixtures/entidades-vX.Y.Z` y el ritual se reanuda con el hash nuevo. Por eso el ritual se lanza **`--hasta c32`** (completo etiquetaría vX.Y.Z sobre el hash del PR de código y el tag ya no se mueve); tras el merge del PR corto: `ritual.sh vX.Y.Z --hash <merge nuevo> --desde baile --hasta baile` (deja `-datos` en el hash nuevo) y `ritual.sh vX.Y.Z --hash <merge nuevo> --desde precache --si` (`precache` se salta solo si el sello del cache ya es el del manifest; `sidecar` y `check` exigen HEAD de `-datos` = hash). `correr-sim.sh` y `contrato-32.sh` abortan sin las 5 bases (antes seguían sin banda, en silencio; receta: `cp -Rc` desde `-datos`). (`sim`, `c32`)
 19. **Un gate que compara contra texto redondeado se queda sin tolerancia** (8.16b): `contrato-32.py` §2 comparaba Σ32 `pct_nac` contra los `APORT*` de `output.txt` a `%8.3f` con tolerancia 0.0005, que es exactamente el error máximo de ese redondeo; cinco corridas en 0.000499 y la de 8.16b en 0.000501 sin que la aditividad cambiara. Desde v8.16.0 `Simulador.ado` escribe `users/<id>/aportaciones-nacional.json` (los mismos vectores sin redondear) y el gate lee ese archivo; `output.txt` no cambia. Regla: el comparando de un gate es el escalar, no el texto formateado. (`c32`)
+20. **Una lista a mano de lo que viaja al VPS envejece en silencio; el manifiesto se deriva de lo que las páginas piden** (v8.17.1, 2026-11-08). La Fase 3b-ter de `publicar-vps.sh` embarcaba `users/ricardo/` → `users/ciepmx/` con `DEFAULT_MANIFEST` escrito a mano; v8.17.0 cambió el default de `/NTA` al v4 (`SankeyNTA/sankey-v4-economia.json`) y la lista no se tocó: el ritual (11/11), `test-sitio-nta.sh` y `test-sitio-seguridad.sh` estaban verdes porque prueban el sitio con sus propios archivos, no el layout del deployment, y el deploy habría dejado `/NTA` en 404 (tercera vez: v8.10 sitio sin css/js, v8.12 motor sin `manifest.json`, v8.17 el v4). Desde v8.17.1 la lista vive en un solo lugar, `05_scripts/manifiesto-default.py`, que la deriva del código del sitio (qué endpoint pide cada página y a qué `users/ciepmx/<archivo>` cae cada endpoint) y la leen la Fase 3b-ter, el Gate 5-remoto y `humo-calcular.sh` (un GET por endpoint tras el swap, entidades solo NL; rojo → rollback). `test-manifiesto-default.sh` (CI) prueba que es derivación: una página que pide un corte más lo mete sola, una URL en un comentario no cuenta, un corte que el endpoint rechaza aborta. Regla: todo producto nuevo que una página pida se prueba contra el layout del deployment (`manifiesto-default.py --tsv` lo lista; `humo-calcular.sh http://localhost:8000` contra `php -S` del docroot con `users/ciepmx/` armado como la Fase 3b-ter), no solo contra el harness. Consecuencia declarada: lo que ninguna página pide deja de viajar (v2 y v1 del Sankey NTA, `nta-quinquenio-sexo.json`). (`publicar-vps.sh`)
 
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 
