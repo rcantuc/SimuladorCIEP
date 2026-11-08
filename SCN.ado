@@ -1,4 +1,4 @@
-*! version 8.6 CIEP 01nov2026 (v8.15.2, PR de datos scn-congelado-2024: UpdateSCN lee SOLO el asset congelado raw/SCN/ (525 series completas tal como las publica INEGI, «2025 p1» etiquetado); anclas en anioenigh, el pastcast de §1.2 parte del ultimo año congelado)
+*! version 8.7 CIEP 08nov2026 (v8.17.0, sesion 8.17 / CUAD-2: lector SCNSectores con las celdas CSI por sector institucional del Sankey de la economia completa, escalares y cuadro con gates Σ B.5n/B.6n/B.8n/B.9 por sector = S.1; v8.15.2, PR de datos scn-congelado-2024: UpdateSCN lee SOLO el asset congelado raw/SCN/ (525 series completas tal como las publica INEGI, «2025 p1» etiquetado); anclas en anioenigh, el pastcast de §1.2 parte del ultimo año congelado)
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****

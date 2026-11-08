@@ -1,6 +1,6 @@
 # CUAD-2 — Sankey de la economía completa: Tabla 2 (principio B) con todas las partidas de S.11, S.12, S.13, S.15 y S.2, nodos, identidades y parámetros (8.17)
 
-**Fecha:** 2026-11-07 · **Sesión:** 8.16/8.17-memo (memo; ningún `.do`/`.ado`/JSON/número publicado cambia) · **Base:** `master` `9005ed3` (v8.15.3; baseline `v8.15.0`; hub `Ing nacional` = 27,743.270 bn = **82.405 %** del PIB) · **Estado:** **borrador para firma**. Esqueleto de partida: CONC-1 §4 (`historico/conc-1-scn-sankey-2026-10-30.md`, sobre v8.13.0; sus 13 decisiones D1–D13 quedaron firmadas en CUAD-0 §4 salvo las que aquí se vuelven parámetro). Nada de lo que aquí se propone se ejecuta en esta sesión.
+**Fecha:** 2026-11-07 · **Sesión:** 8.16/8.17-memo (memo; ningún `.do`/`.ado`/JSON/número publicado cambia) · **Base:** `master` `9005ed3` (v8.15.3; baseline `v8.15.0`; hub `Ing nacional` = 27,743.270 bn = **82.405 %** del PIB) · **Estado:** **firmado** por Ricardo el 2026-11-07 (`CUAD-1-2-firma.md` §A 16, 19–23 y §B 17–18; fundida en §4.0) e **implementado en la sesión 8.17** (v8.17.0, rama `sesion/8.17`; §4.0 lleva los valores firmados, §7 los gates con su resultado medido, §8 los FLAGs cerrados y abiertos). Esqueleto de partida: CONC-1 §4 (`historico/conc-1-scn-sankey-2026-10-30.md`, sobre v8.13.0; sus 13 decisiones D1–D13 quedaron firmadas en CUAD-0 §4 salvo las que aquí se vuelven parámetro). Nada de lo que aquí se propone se ejecuta en esta sesión.
 
 ## Encabezado
 
@@ -74,6 +74,23 @@ Lo que 8.16b deja listo para el Sankey de la economía completa (v8.16.0):
 | ISR de sociedades a personas (regla P) | `isrpm_incidencia = propiedad`: en el fiscal el ISR PM se reparte ∝ `ing_d4_rel` (lo que `retenido_a_personas = on` usará para B.5n/B.8n de S.11 + S.12); `ISRPMTE` se mide sobre B.2n S.11 + S.12 (CSI f.63, escalares `B2nNoFin`/`B2nFin` de `SCN.ado`) | `Households.do` §11.3; `TasasEfectivas.ado` §4.1 |
 | Cuota social y aportaciones federales (`cuotasF`) | fuera de las cuotas de las personas: son S.13 → S.13 (D.73/D.62), como pide la Tabla 1b de CUAD-1 | `Households.do` §6 |
 | Fila τ⁺ vs D.62 + D.7 netas (+461.011) | **sigue abierta**: donativos a ISFLSH, primas, remesas enviadas y D.759 privado son de este memo (`isflsh_regla`, S.12); por eso la brecha de Σ S sin ancla de 8.16b la lleva íntegra (+24.5 %; CUAD-1 §7, `nta-identidad.txt` cuadro 3) y `NTA.do` lleva `brecha_max = 30 %` con FLAG hasta que este memo la cierre | 8.17 |
+
+### §4.0 bis — La firma de 8.17 (Ricardo, 2026-11-07; `CUAD-1-2-firma.md` §A 16, 19–23 y §B 17–18) y lo que la sesión 8.17 implementó (v8.17.0)
+
+| Parámetro (`SIM.do` §0.8c) | Firmado | Implementado en `NTA.do` | Alternativas que corren con FLAG |
+|---|---|---|---|
+| `hub` | `inbd` | §7d: hub = `IngDisp` BIE (724037 − CCF) = 27,459.038 bn = 81.561 % del PIB, exacto; Σ B.5n de los sectores (celdas CSI) + ROWTrans + vintage NNI 84.901 | `ing_nacional`: el v4 no se emite, el v3 sigue |
+| `retenido_a_personas` | **`on`** (§B 17) | §4.7b: `YA_ret` = B.5n S.11 + S.12 (953.904) ∝ `ing_d4_rel`; `TmenRet` = B.5n − B.8n de S.11 + S.12 (2,067.513: ISR de sociedades, D.8, transferencias netas) ∝ `ing_d4_rel`; `S_ret` = B.8n S.11 + S.12 (−1,113.609). Nodo «Sociedades» en medio: entra de los grupos ∝ `ing_d4_rel`, sale al hub | `off`: «Sociedades» fuente sin edad; Σ S de personas = B.8n S.14 + S.13 + S.15 |
+| `deficit_a_personas` | **`per_capita`** (§B 18) | §4.7b: `TmenDef` = −B.8n S.13 (1,157.268) por igual a cada persona y `S_def` = −`TmenDef`; la alternativa ∝ τ⁻ del hogar se calcula (`TmenDefTau`) y se imprime por grupo en el cuadro 1 de `nta-identidad.txt` (déf∝τ⁻: 0–4 −2.1, 5–17 −24.0, 18–24 −93.0, 25–64 −960.0, 65+ −78.1 vs per cápita −66.6, −254.3, −129.0, −587.5, −119.9) | `tau_menos`, `off` |
+| `isflsh_regla` | `sector` | nodo «ISFLSH» (B.5n 116.767 → hub) e «ISFLSH ingreso disponible» (donativos 274.349, saldo, D.751 de S.11/S.12/S.13 → D.62 4.182 a hogares, D.63 388.320 a Otros gastos, B.8n 61.425 a Futuro); el ahorro de las ISFLSH llega a personas per cápita (`TpubISFLSH`, `S_isflsh`) para que Σ S de personas = B.8n S.1 (decisión de la sesión, a confirmar: las ISFLSH sirven a los hogares) | `hogares`, `d63_perfil`: no implementados (FLAG, se dibuja sector) |
+| `circuito_d442` | `neto` | «Fondos de pensión D442» → Hogares 605.932; cuotas a Afores sin D.614 (849.170); el circuito viaja dentro de «Sociedades saldo primario» | `bruto`: cuotas a S.12 con D.614 (1,455.102) |
+| `vintage_nodo` | `si` | fuente «Vintage BIE vs CSI» → hub 84.901 (= NNI BIE − B.5n S.1); sink «Vintage BIE vs CSI usos» 83.400 (= INBD − Σ B.6n CSI − residuo D.759 6.568); el vintage del consumo (49.749) y de ConGob (8.480) no se dibujan: el v4 usa P.3 por sector de la CSI y se declaran como FLAG | `absorbido`: ambos se suman a Hogares |
+| `bruto_neto` | `neto` | hub neto de CCF; la CCF no se dibuja | `bruto`: no implementado (FLAG) |
+| `financiamiento` | `un_nodo_4` | «Financiamiento deuda y venta de activos» 2,406.884 = desahorro de los grupos 136.007 + S.11 + S.12 1,113.609 + S.13 1,157.268; gate de la CSI Σ B.9 < 0 = Σ B.9 > 0 + Mundo (3,573.208) impreso | `por_sector` (tres nodos), `un_nodo_2` (FLAG: no conserva con S.11, se dibuja un_nodo_4) |
+| `discrepancia_gasto` | `fuera` | cuenta corriente: INBD = Σ P.3 + Σ B.8n (gate) | `nodo`: no implementado (FLAG) |
+| `inter_hogar` (nuevo, decisión de la sesión) | `balance` | lo otorgado entre hogares (173416 + 133030: 83.7 bn) × 3.3745 = lo recibido (282.4): D.75 entre residentes neto cero como en el SCN; cierra los 193.653 de «Otras transferencias privadas» (sello rojo: la ENIGH subreporta lo dado) | `enigh`: sin escalar, el desbalance queda en la brecha de S |
+
+La fila τ⁺/inter/remesas vs D.62 + D.7 netas (+461.0 en 8.16b) se cierra por sector en §4.6–§4.9 de `NTA.do`: D.59 (21.138) ∝ alquiler imputado + vehículos a τ⁻; D.72 indemnizaciones (168.468) ∝ gasto en seguros a τ⁺; D.751 donativos a ISFLSH (274.349) ∝ gastohogar 173417 con factor 54.01 (FLAG 35: la ENIGH solo ve 5.1 bn); D.71 primas netas (116.394) ∝ `gas_pc_DiveT`; D.752 remesas enviadas (23.889) per cápita de adultos con ingreso (FLAG 36); D.759 pagada (23.578) ∝ YL + YA («Por identificar»); prestaciones privadas (442.344) separadas de las públicas ∝ pensiones. Resultado medido (corrida de la sesión): **Σ S sin ancla 1,881.607 vs B.8n S.14 1,901.026 = −19.419 (−1.0 %; esperado −0.9 %)** = ImpProd − τ⁻ indirectos LIF (−17.0) + vintage de remesas D.752 CSI vs ROWTrans BIE (−2.4); `nta_anclaS = auto` → multiplicativo con factor 1.0103 y el nodo «Ajuste a cuentas nacionales S14» del v4 es un sink de 19.4 bn (0.058 % del PIB). **Σ S de las personas = −308.425 = B.8n S.1** al peso (gate 1e-9). Consumo colectivo = P.32 S.13 (1,896.999) en vez de ConGob − D.63 (1,517.160: FLAG 15 cerrado).
 
 ## §5 Tabla 2 — Principio B completo: una fila por partida de S.11, S.12, S.13, S.15 y S.2
 
@@ -281,32 +298,39 @@ Identidad de usos: Σ B.6n 27,369.071 = P.3 S.14 23,381.329 + S.15 388.320 + S.1
 
 Escalares nuevos de `SCN.ado` (lector `SCNHogaresS14`, mismo `specs` con rótulo y año): filas 110, 114, 117, 131, 139, 153, 157, 166, 168, 169, 171, 189, 265 de CSI_106/109/112/118; filas 66, 139, 172, 265 de CSI_121; ya existen B5n* (f.110), D442Hog, RemesasHogS14, ImpIngHog, OtrasTransfHogR/U, B.1b y P.51c de S.1.
 
-## §7 Identidades verificadas / por verificar
+## §7 Identidades verificadas (8.17: medidas en la corrida de la sesión; cuadro 5 y gates de `nta-identidad.txt`, `SCN.ado` cuadro de celdas por sector, `test-nta-identidad.sh` D)
 
-| Identidad | Hoy (v8.15.3) | 8.17 | Tolerancia |
+| Identidad | Hoy (v8.15.3) | 8.17 (v8.17.0, medido) | Tolerancia |
 |---|---|---|---|
-| PIB BIE = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage | VERDE (`CUADRATURA` Σ = 100.000) | se conserva como gate de `Households` | 1e-9 |
-| Hub = INBD BIE 27,459.038 | hub 27,743.270 (82.405 %) | **= 27,459.038 (81.561 %)** al peso | 1e-9 |
-| Hub = B.5n S.1 CSI + ROWTrans + vintage NNI | — | 26,188.047 + 1,186.091 + 84.901 | 1e-9 |
-| Cada sector: B.5n + recibidos − pagados = B.6n (f.153) | — | cinco gates (§6.2) | 1e-9 (CSI redondea a 0.001) |
-| Σ B.6n = INBD − vintage (84.901 + 5.067) | — | 27,369.071 | 1e-9 |
-| Usos: Σ B.6n = Σ P.3 + Σ B.8n | — | 27,677.497 − 308.425 | 1e-9 |
-| Σ S de personas = B.8n S.14 (defaults) / = B.8n S.1 (todo a personas) | 1,901.026 con ancla 0.8983 | residual sin ancla si CUAD-1 deja −17.035 | declarada |
-| Financiamiento: Σ B.9 < 0 = Σ B.9 > 0 + Mundo | — | 3,573.208 = 3,573.208 | 1e-9 |
-| NTA por persona (`N` §5) | VERDE 2.98e-08 MXN | se conserva | 1e-9 × C |
+| PIB BIE = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage | VERDE (`CUADRATURA` Σ = 100.000) | se conserva (gate de `Households`; `CUADRATURA` sin cambio) | 1e-9 |
+| Hub = INBD BIE 27,459.038 | hub 27,743.270 (82.405 %) | **= 27,459.038 (81.561 %)**, diferencia 0.00 MXN | 1e-9 |
+| Hub = B.5n S.1 CSI + ROWTrans + vintage NNI | — | 26,188.047 + 1,186.091 + 84.901: 0.00 MXN | 1e-9 |
+| Hogares → hub = B.5n S.14 (f.110) | — | 23,523.274; −0.31 MXN (1e-14) | 1e-9 |
+| Cada sector: B.5n + recibidos − pagados = B.6n (f.153) | — | cuatro gates (Hogares + D.8, Gobierno, Sociedades = S.11 + S.12, ISFLSH) a 1e-14; Σ B.5n, Σ B.6n, Σ B.8n por sector = S.1 (CSI, reldif 0) en `SCN.ado` | 1e-9 (CSI redondea a 0.001) |
+| Σ B.6n = INBD − vintage (84.901 + 5.067) | — | 27,369.071 = INBD − 89.967; en el Sankey: vintage usos 83.400 + «Por identificar» D.759 6.568 | 1e-9 |
+| Usos: Σ B.6n = Σ P.3 + Σ B.8n | — | 27,677.496 − 308.425: 0.00 MXN | 1e-9 |
+| Σ S de personas = B.8n S.1 (defaults firmados) | 1,901.026 con ancla 0.8983 | **−308.425 = B.8n S.1** (S hogar 1,901.026 + retenido −1,113.609 + déficit −1,157.268 + ISFLSH 61.425); con `retenido`/`deficit` = off: 1,901.026 (B.8n S.14) | 1e-9 |
+| Σ S sin ancla vs B.8n S.14 | +11.3 % (8.16b: +24.5 %) | **1,881.607 vs 1,901.026: −19.419 (−1.0 %)**; esperado −0.9 %: ImpProd − τ⁻ indirectos −17.0 + vintage de remesas −2.4; ancla multiplicativa 1.0103 y nodo «Ajuste a cuentas nacionales S14» sink de 19.4 | ≤ 2 puntos de la esperada |
+| Futuro − Financiamiento + ajuste S.14 = B.8n S.1 | — | 2,079.039 − 2,406.884 + 19.419 = −308.425: −0.25 MXN | 1e-9 |
+| Financiamiento: Σ B.9 < 0 = Σ B.9 > 0 + Mundo | — | 3,573.208 = 3,573.208 (CSI f.265; reldif 0) | 1e-9 |
+| Conservación en los 35 nodos intermedios del v4 (MXN y % del PIB) | — | reldif máx 2.8e-14; 57 nodos / 134 enlaces | 1e-9 |
+| NTA por persona (`N` §5) | VERDE 2.98e-08 MXN | 1.5e-08 MXN; Σ intra por hogar 3.4e-08 | 1e-9 × C |
 
 ## §8 Límites conocidos
 
 | # | FLAG | Magnitud | Cierre |
 |---|---|---:|---|
-| 33 | Matriz «de quién a quién» de D.4 (intereses, dividendos) no publicada en la CSI: las particiones S.11/S.12/S.13 → Hogares/Mundo son residuo por identificar | D.4 pagada S.1 11,554.663 | 8.17: enlaces agregados por sector pagador con receptor «Hogares + otros»; tooltip declara |
-| 34 | D.759 de S.11 (700.204) y de S.13 a hogares (1,612.421 vs 1,605.191) sin receptor exacto | 700.204; 7.230 | 8.17: residuo declarado |
-| 35 | D.751 a ISFLSH: ENIGH 88.773 vs CSI 274.349 | 185.576 | 8.17: factor con FLAG |
-| 36 | Remesas enviadas (D.752 pagada 23.889) sin variable ENIGH | 23.889 | 8.17: per cápita o ∝ recibidas, declarado |
-| 37 | Vintage en cuatro sitios (NNI 84.901; D.7 del mundo 5.067; CCF 0.776; ConGob 8.480; consumo 49.749) | 0.25–0.44 % PIB | `vintage_nodo = si` |
-| 13, 14, 15 | Cuotas a Gobierno; D.62 privado en Gobierno; ISFLSH mezcladas (CUAD-0) | 1,045.130; 442.344; 388.320/379.839 | 8.17 con `cuotas_por_sector` (8.16) |
-| 38 | B.5n S.11 negativo exige nodo de financiamiento desde el inicio (`C1 §6` #8) | −1,116.929 | `financiamiento = un_nodo_4` |
-| 17 | Top incomes y `d4_relativo` (sello rojo) condicionan toda regla P | — | 9.x |
+| 33 | Matriz «de quién a quién» de D.4 (intereses, dividendos) no publicada en la CSI | D.4 pagada S.1 11,554.663 | **8.17, abierto y declarado**: los intereses de la deuda pública (D.41 S.13 1,205.483) salen de «Gobierno ingreso primario» al nodo «Por identificar» (sello rojo); la D.4 de los hogares ya viaja neta en «Ing capital» y la de las sociedades dentro de su B.5n |
+| 34 | D.759 de S.11 (700.204) y S.12 (73.975) + D.759 pagada por hogares (23.578) = 797.757 vs 791.189 recibidas por S.13 | 6.568 | **8.17, declarado**: nodo «Otras transferencias D759» → Gobierno 791.189 y → «Por identificar» 6.568 («Por identificar» total 1,212.051 = 3.600 % del PIB) |
+| 35 | D.751 a ISFLSH: ENIGH 173417 vs CSI 274.349 | la ENIGH solo ve 5.080 bn (el 88.773 del memo era todo lo otorgado, incl. inter-hogar): factor **54.01** | **8.17, declarado**: ∝ 173417 del hogar × factor (sello rojo); candidato a regla per cápita o ∝ ingreso en 9.x |
+| 36 | Remesas enviadas (D.752 pagada 23.889) sin variable ENIGH | 23.889 | **8.17, declarado**: per cápita de adultos con ingreso |
+| 37 | Vintage en cinco sitios (NNI 84.901; D.7 del mundo 5.067; CCF 0.776; ConGob 8.480; consumo 49.749) | 0.25–0.44 % PIB | `vintage_nodo = si`: NNI al hub (84.901) y sink de usos 83.400; ConGob y consumo declarados en el log (el v4 usa P.3 por sector CSI) |
+| 13, 14, 15 | Cuotas a Gobierno; D.62 privado en Gobierno; ISFLSH mezcladas (CUAD-0) | 1,045.130; 442.344; 388.320/379.839 | **cerrados en 8.17**: cuotas por sector (nodos Afores, planes, seguridad social), prestaciones privadas desde Sociedades e ISFLSH, D.63 de ISFLSH desde su nodo, colectivo = P.32 S.13 |
+| 38 | B.5n S.11 negativo exige nodo de financiamiento desde el inicio (`C1 §6` #8) | −1,116.929 | `financiamiento = un_nodo_4`; S.11 y S.12 se dibujan fundidos («Sociedades»: B.6n de S.11 −2,903.413 solo no cabe en un grafo sin ciclos) |
+| 39 | Desbalance ENIGH de las transferencias entre hogares (recibido 282.426 vs otorgado 83.7) | 198.7 | **8.17, declarado**: `inter_hogar = balance` escala lo otorgado × 3.3745 (sello rojo) |
+| 40 | Ahorro de las ISFLSH (B.8n S.15 61.425) atribuido a personas per cápita para que Σ S = B.8n S.1 | 61.425 | decisión de la sesión 8.17, a confirmar por Ricardo (alternativa: ISFLSH → Futuro y Σ S de personas = −369.851) |
+| 41 | Grafo acíclico: la distribución secundaria se dibuja como casa de compensación desde el hub (los pagos de cada sector a los demás salen del hub por nodos con nombre; cada sector recibe su saldo residual); las D.7 menores entre S.11/S.12/S.13/S.15/S.2 viajan dentro de los saldos | — | diseño de 8.17 (CUAD-2 §6.2 dibujaba Hogares → Gobierno y Gobierno → Hogares, un ciclo que FusionCharts no acepta) |
+| 17 | Top incomes y `d4_relativo` (sello rojo) condicionan toda regla P (también `YA_ret`, `TmenRet`, `S_ret`) | — | 9.x |
 
 ## §9 Específico de México
 
