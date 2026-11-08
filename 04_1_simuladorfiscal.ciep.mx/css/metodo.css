@@ -113,6 +113,18 @@ body.metodo {
 .metodo-sankey.metodo-sankey-alto {
 	height: 820px;
 }
+/* v4 (8.17, CUAD-2): la economía completa tiene doce columnas y ~57 nodos; a ancho de página FusionCharts trunca toda
+   etiqueta, así que el contenedor es ancho (22 × 100 px) y el wrap hace scroll horizontal. */
+.metodo-sankey-wrap.metodo-sankey-scroll {
+	overflow-x: auto;
+}
+.metodo-sankey-wrap.metodo-sankey-scroll .metodo-titulos-economia {
+	min-width: calc(22 * 100px);
+}
+.metodo-sankey.metodo-sankey-economia {
+	height: 980px;
+	min-width: calc(22 * 100px);
+}
 .metodo-sankey * {
 	font-size: 13px;
 	letter-spacing: -1px;

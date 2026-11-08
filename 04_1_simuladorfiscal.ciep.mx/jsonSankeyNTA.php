@@ -6,7 +6,7 @@
 //   ?corte=<corte>   (default v4-economia desde v8.17.0) → users/<id>/SankeyNTA/sankey-<corte>.json
 //       v4-economia:  (8.17, CUAD-2) el Sankey de la economía completa que escribe NTA.do §7d: personas por edad en los extremos, sectores
 //                     institucionales en medio (Hogares, Sociedades, Gobierno, ISFLSH, el mundo) conservando, hub = ingreso nacional disponible
-//                     BIE (81.561 % del PIB 2024). Cada enlace trae value (MXN) y pctpib. Es lo que dibuja /NTA desde v8.17.0; el v3 sigue
+//                     BIE (81.561 % del PIB del año ENIGH). Cada enlace trae value (MXN) y pctpib. Es lo que dibuja /NTA desde v8.17.0; el v3 sigue
 //                     disponible con corte=v3-grupoedad.
 //       v3-grupoedad: el Sankey v3 (contrato v3) que escribe 01_modulos/NTA.do §7b → SankeySumSim folder(SankeyNTA)
 //                     name(v3-grupoedad): edades solo al inicio (perceptores) y al final (consumidores), sin «Familias»
