@@ -119,6 +119,20 @@ global ancla_formales "imss"						// imss: N = 25,500,447 cotizantes IMSS + ISSS
 global iepsnp_macro "divsim"						// divsim: IEPS no petrolero macro = IEPSNP de divSIM (224.780: no petrolero + salud) | divciep (24.075, v8.15.3)
 global ieps_relativo "micro"						// micro: IEPSP ∝ gas_pc_Gasolinas + gas_pc_Combustibles e IEPSNP ∝ IEPS micro por categoría | proxy (gas_pc_Vehi / gas_pc_BebA, v8.15.3)
 
+** 0.8c Parámetros del Sankey de la economía completa (v8.17.0, 2026-11-08; CUAD-2 §4, firmado: CUAD-1-2-firma.md §A 16, 19–23 y §B 17–18).
+**      Default = valor FIRMADO (baseline v8.17.0); cualquier otro valor es un FLAG declarado en el header de NTA.do y en nta-identidad.txt.
+**      v8.16.0 = ing_nacional (el v3 era el Sankey principal; los demás no existían).
+global hub "inbd"									// inbd: hub = ingreso nacional disponible BIE 724037 (81.561 % PIB 2024); los sectores entran con su B.5n | ing_nacional (lado hogares, v3; el v4 no se emite)
+global retenido_a_personas "on"						// on: B.5n y B.8n de S.11 + S.12 llegan a personas ∝ ing_d4_rel (regla P, sello rojo); «Sociedades» visible en medio | off (nodo de sector sin edad)
+global deficit_a_personas "per_capita"				// per_capita: B.8n S.13 (−1,157.268) a todas las personas por igual (C) | tau_menos (∝ τ⁻ de cada persona) | off (solo «Financiamiento → Gobierno»)
+global isflsh_regla "sector"						// sector: ISFLSH con nodo propio (B.5n al hub, D.751 de hogares, D.63 a categorías, B.8n a personas per cápita) | hogares | d63_perfil (no implementados en 8.17: FLAG, se dibuja sector)
+global circuito_d442 "neto"							// neto: D.442 → Hogares como fila de sector y D.614 fuera de las cuotas a Afores | bruto (cuotas a S.12 con D.614; D.442 igual)
+global vintage_nodo "si"							// si: nodo «Vintage BIE vs CSI» al hub (NNI) y sink tras el hub (Σ B.6n CSI vs INBD BIE) | absorbido (se suma a Hogares, el sector mayor)
+global bruto_neto "neto"							// neto: hub neto de CCF (PIN como origen) | bruto (CCF por sector hasta la formación de capital; no implementado en 8.17: FLAG)
+global financiamiento "un_nodo_4"					// un_nodo_4: un solo nodo fuente «Financiamiento deuda y venta de activos» (desahorro de hogares, S.11 + S.12 y S.13) | por_sector (un nodo por sector) | un_nodo_2 (= un_nodo_4 con FLAG: sin S.11 + S.12 no conserva)
+global discrepancia_gasto "fuera"					// fuera: el Sankey es cuenta corriente (INBD = C + B.8n) | nodo (solo con la formación de capital; no implementado en 8.17: FLAG)
+global inter_hogar "balance"						// balance: lo otorgado entre hogares (ENIGH 173416 + 133030) se escala a lo recibido (P039 + P040 + P057): D.75 entre residentes neto cero, como el SCN (sello rojo) | enigh (sin escalar: el desbalance 193.7 bn queda en la brecha de S)
+
 
 ***
 **# 1. DEMOGRAFÍA
