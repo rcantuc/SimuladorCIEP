@@ -724,6 +724,8 @@ quietly {
 		escalar mxn B5nISFLSH = B5nISFLSH[`obs']
 		escalar mxn ImpNetGobR = ImpProdGobR[`obs'] + SubGobR[`obs']
 		escalar mxn RentaPropGobNeta = RentaPropGobR[`obs'] - RentaPropGobU[`obs']
+		escalar mxn RentaPropGobR = RentaPropGobR[`obs']
+		escalar mxn RentaPropGobU = RentaPropGobU[`obs']
 		escalar mxn RemRowU = RemRowU[`obs']
 		escalar mxn RowPrimNeto = RowPrimNeto[`obs']
 		escalar mxn PIBCSI = PIBCSI[`obs']
