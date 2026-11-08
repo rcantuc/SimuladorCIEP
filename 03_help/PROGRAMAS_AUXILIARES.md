@@ -407,19 +407,26 @@ cambio metodológico). Tarda horas: es el bloque viejo.
 
 ## 18. _tabla_anclas.ado
 
-**Descripción:** Imprime en el log una tabla vertical de anclas (una fila por ancla: código
-SCN 2008 / serie BIE / `divSIM` de la LIF, nombre de la cuenta tal como lo escribe INEGI,
-sector, fuente «cuadro · fila», valor con separador de miles, variable del motor, sello y
-razón) y, con `motor`, la tabla «Σ motor antes del ancla, factor y cobertura ENIGH». La usan
-`Households.do`, `NTA.do`, `Expenditure.do`, `TasasEfectivas.ado` y `SCN.ado` (8.16a). Solo
-escribe en el log: no define escalares ni toca los datos.
+**Descripción:** Imprime en el log un cuadro de anclas al estándar de la firma CUAD-1-2 §D (v2,
+8.16b): una fila por ancla con código SCN 2008 / serie BIE / `divSIM`, sector, rótulo = nombre
+de la cuenta tal como lo escribe INEGI **sin paréntesis** (o `rotulo()` cuando la fila no es una
+cuenta del catálogo), fuente «cuadro · fila», valor con separador de miles y, con `motor`, Σ motor
+antes del ancla, factor y cobertura ENIGH; opcionalmente Gini y % del PIB (`pib()`). Todo comentario
+o parámetro va a una nota al pie (`^n` pegado al rótulo, `Nota n:` debajo; la 1 es el sello y su
+razón); los gates (`gate`) se imprimen debajo, una línea cada uno, alineados, y el resultado queda
+en los globals `TA_GATES_OK` (1/0) y `TA_N_ROJO`. Las columnas se alinean por caracteres (los acentos
+no desalinean). La usan `Households.do` (anclas S.14, factores Altimir, ISR por rango del ITAN, ISR
+vs LIF, Paso 4 y gates), `NTA.do`, `Expenditure.do`, `TasasEfectivas.ado` y `SCN.ado`. Solo escribe
+en el log: no define escalares ni toca los datos.
 
 **Sintaxis:**
 ```
 _tabla_anclas clear
-_tabla_anclas add, codigo(str) valor(exp) [sector(str) fuente(str) variable(str) motor(exp) factor(exp) cobertura(exp) nota(str)]
-_tabla_anclas print, titulo(str) [sello(str) razon(str) motor unidad(str)]
+_tabla_anclas add, codigo(str) valor(exp) [sector(str) fuente(str) variable(str) motor(exp) factor(exp) cobertura(exp) gini(exp) rotulo(str) nota(str) sep]
+_tabla_anclas gate, texto(str) a(exp) b(exp) [tol(real 1e-9)]
+_tabla_anclas print, titulo(str) [sello(str) razon(str) motor unidad(str) pib(exp) nota(str)]
 ```
+`sep` dibuja una regla antes de la fila (subtotales).
 
 **Catálogo:** `05_scripts/scn-cuentas.csv` (separador «;»: `codigo;nombre_inegi;nombre_sna2008;sectores;fuente;nota`).
 Un código vive una sola vez; `/metodo` (8.18b) lo reutiliza. Si el catálogo no está (instalación vía
@@ -439,7 +446,10 @@ enero–trimestre, millones de pesos) con `import excel`.
 **Sintaxis:** `AccesoITAN [, validar nographs]`. `validar` compara los totales por tipo con la
 captura manual `ISRInformesTrimestrales.xlsx` y devuelve `r(maxdelta)`. El catálogo lo regenera
 `05_scripts/itan-catalogo.py`; el refresco es `refrescar-scn.sh --itan [--congelar]`
-(runbook-actualizar-assets §2e). En 8.16a el motor sigue leyendo la captura manual
+(runbook-actualizar-assets §2e). Desde v8.16.0 el motor lo lee: `Households.do` §11.2 ancla la
+obligación de ISR de personas físicas por rango (`obligacion_isrpf_ancla = itan_rangos`) y
+`DatosAbiertos.ado` §4.1 toma de aquí los totales por tipo de contribuyente desde 2019-1 (la captura
+manual queda para 2012–2018 con sello amarillo). Hasta 8.16a el motor seguía leyendo la captura manual
 (`DatosAbiertos.ado` §4.1); el plan de retiro está en CUAD-1 §8 ter.
 
 ## Notas Técnicas Generales

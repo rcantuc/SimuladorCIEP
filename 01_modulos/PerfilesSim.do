@@ -285,14 +285,28 @@ noisily Simulador ISAN if ISAN != 0 [fw=factor], aniope(`1') aniovp(`1') reboot 
 noisily Gini ISAN, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (no petrolero) **
-Distribucion IEPSNP, relativo(gas_pc_BebA) macro(`IEPSNP')
-label var IEPSNP "IEPS (no petrolero)"
+* 8.16b (ieps_relativo = micro; CUAD-1 §8 bis ficha 4, FLAG 26/34): el IEPS no petrolero se reparte ∝ IEPS micro por categoria (Expenditure §6:
+* alcohol, tabaco, bebidas, alimentos, telecom, juegos) y el petrolero ∝ gasolinas + combustibles (base_iepsp, de consumption_categ_ieps_pc; como
+* TasasEfectivasMicro). Con proxy (v8.15.3): ∝ bebidas alcoholicas y ∝ compra de vehiculos. Lo que sale de aqui es lo que llega a INCD*. *
+if "$ieps_relativo" == "" global ieps_relativo "micro"
+if "$ieps_relativo" == "micro" {
+	capture confirm variable IEPS
+	if _rc != 0 {
+		noisily di as err "  FLAG PerfilesSim (ieps_relativo = micro): households.dta sin IEPS/base_iepsp (anterior a 8.16b); se cae a proxy."
+		global ieps_relativo "proxy"
+	}
+}
+local rel_iepsnp = cond("$ieps_relativo" == "micro", "IEPS", "gas_pc_BebA")
+local rel_iepsp = cond("$ieps_relativo" == "micro", "base_iepsp", "gas_pc_Vehi")
+if "$ieps_relativo" != "micro" noisily di as err "  FLAG PerfilesSim (ieps_relativo = $ieps_relativo): IEPS repartido ∝ `rel_iepsnp' / `rel_iepsp' (proxy de v8.15.3), no ∝ el bien gravado."
+Distribucion IEPSNP, relativo(`rel_iepsnp') macro(`IEPSNP')
+label var IEPSNP "IEPS (no petrolero) ∝ `rel_iepsnp'"
 noisily Simulador IEPSNP if IEPSNP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IEPSNP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (petrolero) **
-Distribucion IEPSP, relativo(gas_pc_Vehi) macro(`IEPSP')
-label var IEPSP "IEPS (petrolero)"
+Distribucion IEPSP, relativo(`rel_iepsp') macro(`IEPSP')
+label var IEPSP "IEPS (petrolero) ∝ `rel_iepsp'"
 noisily Simulador IEPSP if IEPSP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IEPSP, hogar(folioviv foliohog) factor(factor)
 

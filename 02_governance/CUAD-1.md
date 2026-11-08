@@ -1,6 +1,6 @@
 # CUAD-1 — Capítulos `Expenditure` y `TasasEfectivas` del método: estado en v8.15.3 y propuesta de Cuadratura II (8.16)
 
-**Fecha:** 2026-11-07 · **Sesión:** 8.16/8.17-memo (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `9005ed3` (v8.15.3; baseline `v8.15.0`) · **Estado:** **borrador para firma** (Ricardo con Claude). Lo que decide Ricardo está en §4 y en la lista cerrada del PR. Nada de lo que aquí se propone se ejecuta en esta sesión. **Sesión 8.16a (2026-11-07):** se añaden §8 bis (diagnóstico de los hallazgos: dónde, mecanismo, desde cuándo, cuánto pesa, corrección) y §8 ter (plan de retiro de `ISRInformesTrimestrales.xlsx`); se corrigen la Tabla 1 (Σ ENIGH) y la decisión 9 (el ITAN sí publica el ISR por rango); el motor no cambia de números.
+**Fecha:** 2026-11-07 · **Sesión:** 8.16/8.17-memo (memo; ningún `.do`/`.ado`/número publicado cambia) · **Base:** `master` `9005ed3` (v8.15.3; baseline `v8.15.0`) · **Estado:** **firmado** por Ricardo el 2026-11-07 (`CUAD-1-2-firma.md`; la firma está fundida en §4.0) e **implementado en la sesión 8.16b** (v8.16.0, rama `sesion/8.16b`; §4 lleva los valores firmados, §7 los gates nuevos y su resultado, §8 los FLAGs cerrados y abiertos). **Sesión 8.16a (2026-11-07):** se añaden §8 bis (diagnóstico de los hallazgos: dónde, mecanismo, desde cuándo, cuánto pesa, corrección) y §8 ter (plan de retiro de `ISRInformesTrimestrales.xlsx`); se corrigen la Tabla 1 (Σ ENIGH) y la decisión 9 (el ITAN sí publica el ISR por rango); el motor no cambia de números. **Sesión 8.16b (2026-11-08):** todo lo propuesto en §4 entra como parámetro con el valor firmado como default; `baseline = v8.16.0`.
 
 ## Encabezado
 
@@ -105,6 +105,39 @@ Formato de CUAD-0 §4. **Propuesto** = default que este memo propone para 8.16; 
 | `IEPST` tasas/cuotas y gasolinas excluidas | matriz cableada; `Gasolinas` y `Sin_IEPS` se saltan | `E l.1248–1258, 1282` | El IEPS petrolero (403.584) no tiene micro en `Expenditure.do` |
 | Cuotas con tablas 2021 y UMA 2024; tope 25 UMA (IMSS) / 10 (ISSSTE) | cableado | `H l.1572–1611` | La CSS macro de comparación es D.12 S.14 (1,676.058); no hay ancla, solo display |
 | Deducciones personales al jefe del hogar; límite min(5 UMA, 15 %) | cableado | `H l.2325–2329`; `E l.180–198` | `DRR` cuadro 3.2.1: 45,232 mdp en 2024 (todas las PF) |
+
+### §4.0 — La firma (Ricardo, 2026-11-07; `CUAD-1-2-firma.md`, implementada en 8.16b)
+
+Donde la firma difiere de este memo, manda la firma. Los parámetros viven en `SIM.do` §0.8b con el valor firmado como default; cualquier otro valor imprime FLAG en el header del módulo y en `nta-identidad.txt`. La fila «qué mueve en lo publicado» es la que explica cada llave de `output.txt`, sankey o entidad que cambia respecto a v8.15.3 (`gate-numeros` ROJO esperado; `baseline = v8.16.0`).
+
+**Correcciones de código (§8 bis; sin parámetro):**
+
+| Ficha | Decisión | Qué mueve en lo publicado |
+|---|---|---|
+| 1 (FLAG 20) | `Simulador.ado` guarda la copia del dataset **antes** de deflactar y la restaura al salir; `master/2024/consumption_*_pc.dta` se regeneran sin gráficas (`gas_pc_*` idéntico a 1e-15 a la caché regenerada; `TT<k>` sin el 1.085868; `ETotPIB` correcto) | nada; solo el log |
+| 2 | `iepsnp_macro = divsim` (224.780) y `DifIEPSNP` honesto: FLAG «IEPS micro incompleto: gasolinas fuera de `Expenditure.do`» (cobertura `IEPSNPCobertura`) | nada; solo el log |
+| 4 | `ieps_relativo = micro` en `PerfilesSim.do` **y** `NTA.do`: IEPSP ∝ `gas_pc_Gasolinas + gas_pc_Combustibles` (`base_iepsp`, de `consumption_categ_ieps_pc.dta`), IEPSNP ∝ `IEPS` micro por categoría | `INCD*` de IEPSNP, IEPSP, Consumo, ImpuestosAportaciones, AportacionesNetas; `APORT*`, `PROY*`; SankeySF; τ⁻ indirecto por edad en NTA |
+| 5 | Regalos: cuenta **G5** (quien recibe); `tipo_gasto == "G2"` fuera en `Expenditure.do` §2.9b (90.530 bn crudos) | `gas_pc_*` por persona: SankeyNTA, base micro del IVA/IEPS (`INCD` IVA de 2.º orden) |
+| 6 | R004 (predial 30.328) y R012 (tenencia 23.116) fuera del consumo → D.59 (`OTROSK`); G009–G016 y R003 → categoría 9 (BIE 724614) | ídem ficha 5 |
+| FLAG 33 | `gastotarjetas` (TB01–TB16, sin `tipo_gasto`) fuera del consumo: flujo financiero; el monto se declara (`ExpTarjetas`) | ídem ficha 5 |
+
+**Parámetros firmados (`SIM.do` §0.8b):**
+
+| # | Parámetro | Valor | Nota |
+|---|---|---|---|
+| 1 | `consumo_ancla` | **`p3_s14`** | 19 relativos BIE + un factor `TTp3 = (P.3 S.14 − compras netas) / ConHog`; P.3 S.15 y vintage como filas de sector; gate Σ Cpriv = P.3 S.14 |
+| 2 | `consumo_precios` | **`comprador`** | único implementado; `basicos` es de 8.17 |
+| 3 | `cuotas_por_sector` | **`on`** | Tabla 1b: D.61 por pagador y receptor; `cuotasF` (cuota social y aportaciones federales) fuera de `cuotasTPF` |
+| 4 | `isrpm_incidencia` | **`propiedad`** | ISR PM ∝ `ing_d4_rel`; negocios propios a la base de PF; denominador de `ISRPMTE` = B.2n S.11 + S.12 (excedente neto de operación de las sociedades; corrección de Ricardo 2026-11-08: con B.5n la tasa pasaba de 100 %) |
+| 5 | `isr_personas_ancla` | **`d51_s14`** | NTA: ISR asalariados + PF → D.51 S.14 (1,518.912), ISR PM → D.51 S.11 + S.12 (1,165.676); fila «LIF vs CSI por sector» |
+| 6 | `isras_share` | **`acotado`** | parte salarial del ISR en [0, 1] |
+| 7 | `obligacion_isrpf_ancla` | **`itan_rangos`** | PF por los 11 rangos ≥ 0 del ITAN 4T 2024; «Resto» y rangos negativos ∝ ENIGH; asalariados por total; retiro de `ISRInformesTrimestrales.xlsx` desde 2019-1 (§8 ter), 2013–2018 con sello amarillo |
+| 8 | `informalidad` | **`corte`** | el corte se aplica (hasta v8.15.3 no tocaba `ISR_asalariados`) |
+| 9 | `ancla_formales` | **`imss`** | N = 25,500,447; el residuo Σ obligación(formales) − LIF es «ajuste por subreporte de ingresos altos» con sello rojo, **no** evasión |
+| 10 | `iepsnp_macro` | **`divsim`** | 224.780 |
+| 11 | `ieps_relativo` | **`micro`** | ficha 4 |
+
+Gates nuevos (1e-9) en el log: Σ Cpriv = P.3 S.14; Σ cuotas = D.61 por sector receptor; Σ ISR personas = D.51 S.14; Σ ISR PM = D.51 S.11 + S.12; Σ IEPS repartido = LIF por tipo (§7). Lo que la firma declara y 8.16b no cierra (fila τ⁺ vs D.62 + D.7 netas, FLAG 27, FLAG 33, IEPS micro incompleto) está en `CUAD-1-2-firma.md` §E y en §8.
 
 ### §4 bis — Informalidad, elusión y evasión: los cuatro componentes (4c ampliado)
 
@@ -247,7 +280,7 @@ Estado en v8.15.3 (`nta-identidad.txt` de `-datos/users/ricardo/NTA/`, 2026-11-0
 | Σ ISR de personas = D.5 S.14 | 1,330.838 (LIF) vs 1,540.050 (**+209.212**) | ancla a D.51 S.14 1,518.912 (D.59 aparte) o a D.5; la diferencia con la LIF se declara como «LIF vs CSI por sector» | 1e-9 | `nta-identidad.txt`, tabla «De dónde sale la brecha» |
 | Σ ISR PM = D.5 S.11 + S.12 | 1,351.427 (LIF) vs 1,188.648 | mismo tratamiento; incidencia P | 1e-9 | ídem |
 | τ⁺ efectivo vs D.62 + D.7 netas | 4,824.887 vs 4,363.876 (**+461.011**) | es de 8.17 (D.62 privado 442.344 fuera de Gobierno; D.759 de S.11 700.204 no va a hogares) | — | CUAD-2 |
-| **Σ S sin ancla vs B.8n S.14** | **2,116.145 vs 1,901.026: +215.119 (+11.3 %)** | tras cerrar 209.212 (D.5) + 461.011 (τ) − 438.069 (Cpriv): 215.119 − 232.154 = **−17.035** = la fila LIF vs devengado de los indirectos (**−0.9 %**) | ≤ 15 % para que `nta_anclaS = auto` siga en multiplicativo; la meta de 8.16 es declarar los −17.035 y apagar el ancla | `NTA.do` §4.11 |
+| **Σ S sin ancla vs B.8n S.14** | **2,116.145 vs 1,901.026: +215.119 (+11.3 %)** | **Tras 8.16 (medido en 8.16b): 2,366.139 vs 1,901.026 = +465.1 (+24.5 %)** = τ⁺/inter/remesas vs D.62 + D.7 netas +461.0 (8.17) + D.59 +21.1 − ImpProd 17.0, con D.5 (→ D.51 S.14) y Cpriv (→ P.3 S.14) en 0. **Tras 8.17** (cerrada la fila τ): ≈ **−17.035 (−0.9 %)**, la fila LIF vs devengado de los indirectos | `brecha_max` = 30 % en 8.16b (decisión de Ricardo 2026-11-08; antes 15) para que `nta_anclaS = auto` siga en multiplicativo declarado hasta 8.17; la meta de 8.17 es declarar los −17.035 y apagar el ancla | `NTA.do` §4.11 |
 | IEPS micro vs macro | 28.3 vs 24.075 (`DifIEPSNP` 15.0 %) | 28.3 vs 224.780 declarado; gasolinas con micro | — | `Expenditure.do` §6.3 |
 | Parte salarial del ISR ∈ [0, 1] | mediana 1.150; extremos ±miles | acotada | — | gate nuevo en `Households.do` §11.1 |
 
@@ -272,6 +305,9 @@ Estado en v8.15.3 (`nta-identidad.txt` de `-datos/users/ricardo/NTA/`, 2026-11-0
 | 34 | El reparto del IEPS ∝ `gas_pc_Vehi` / `gas_pc_BebA` también vive en `PerfilesSim.do` l. 288 y 294 (no solo en `NTA.do`): es lo que llega a `INCD*` | IEPSP 81.6 y IEPSNP 41.7 bn cambian de decil | 8.16: `ieps_relativo = micro` en los dos módulos |
 | 31 | Tablas de cuotas IMSS/ISSSTE 2021 con UMA 2024 | — | 8.16: vintage declarado |
 | 32 | Anclas de informalidad externas no cierran la LIF (`imss`/`enoe` dan evasión negativa) | −124.048 / −169.150 | 8.16: primero FLAG 27 y gasto fiscal por concepto; después decidir ancla |
+| 35 | IEPS micro incompleto: gasolinas fuera de `Expenditure.do` §6 (`Gasolinas` y `Sin_IEPS` se saltan); el micro cubre una fracción del IEPSNP macro (`IEPSNPCobertura`) | 224.780 vs micro ≈ 28 | declarado en 8.16b (FLAG en el log); el ancla LIF manda y el reparto va ∝ micro |
+
+**Estado en 8.16b (v8.16.0; firma `CUAD-1-2-firma.md`).** Cerrados: 20 (`Simulador.ado` restaura la variable; cachés regeneradas), 21 (`consumo_ancla = p3_s14`), 22 (G5 cuenta; G2 fuera), 24 (R004/R012 fuera → D.59), 25 (G009–G016 y R003 → 724614), 26 y 34 (`iepsnp_macro = divsim`, `ieps_relativo = micro` en los dos módulos), 19 (`isrpm_incidencia = propiedad`), 13 en su parte de 8.16 (`cuotas_por_sector = on`: destinos por sector receptor; los nodos son de 8.17), 28 (`cuotasF` fuera de `cuotasTPF`), 30 (`obligacion_isrpf_ancla = itan_rangos`), 33 (`gastotarjetas` fuera; el monto se declara). Declarados con sello: 27 (`isras_share = acotado`; con `ancla_formales = imss` el residuo Σ obligación(formales) − LIF se imprime como **ajuste por subreporte de ingresos altos**, sello rojo: la ENIGH no ve los ingresos altos), 31 (tablas de cuotas 2021 con UMA 2024), 32 (el ancla `imss` elegida; el residuo no es evasión), 35 (IEPS micro incompleto). Abiertos: 23 (G6 es D.63: 8.17), 29 (factores de empalme de `ISR_Mod.do`), la fila τ⁺ vs D.62 + D.7 netas (+461.0 bn; CUAD-2, 8.17) y, con ella, la brecha de Σ S sin ancla (ver §7).
 
 ### §8 bis — Diagnóstico de los hallazgos (sesión 8.16a, 2026-11-07)
 
@@ -387,10 +423,10 @@ Solo por inferencia de las tablas; nada se corrió. `baseline` pasa a **v8.16.0*
 | Llave / agregado | v8.15.3 | 8.16 (propuesto) | Dirección | Por qué |
 |---|---:|---:|---|---|
 | Σ Cpriv (`nta-identidad.txt`) | 23,819.398 | 23,381.329 | ↓ −438.069 | `consumo_ancla = p3_s14` |
-| Σ S sin ancla vs B.8n | 2,116.145 (+11.3 %) | ≈ 1,883.991 (**−0.9 %**) si cierran D.5 y τ (8.17) y Cpriv | ↓ | §7 |
+| Σ S sin ancla vs B.8n | 2,116.145 (+11.3 %) | **tras 8.16: 2,366.139 (+24.5 %)**, medido en 8.16b (D.5 y Cpriv cierran; la fila τ +461.0 queda para 8.17); tras 8.17 ≈ 1,883.991 (**−0.9 %**) | ↑ en 8.16, ↓ en 8.17 | §7 |
 | `CUADRATURA` (YL, YA, …) | 43.636, 24.435, … | **sin cambio** | = | 8.16 no toca las anclas de `Households` §9 |
 | `INGRESOS` (LIF `anioPE` % PIB, 20 valores) | 3.855, 0.244, 1.782, … | **sin cambio** | = | son la LIF 2027; no dependen del micro |
-| `INGRESOSTEF[4,5,6]` (ISRPMTE, OTROSKTE, IngKPrivadoTotTE) | 12.9, 5.0, 19.5 | cambian si el denominador pasa de `IngKPrivado` (CapIncImp − públicos) a B.5n o B.2n de S.11 + S.12 | ↑ con B.5n (denominador menor) | `isrpm_incidencia` |
+| `INGRESOSTEF[4,5,6]` (ISRPMTE, OTROSKTE, IngKPrivadoTotTE) | 12.9, 5.0, 19.5 | `ISRPMTE` pasa a B.2n S.11 + S.12 como denominador (decisión 7 corregida, 2026-11-08); OTROSKTE e IngKPrivadoTotTE siguen sobre `IngKPrivado` | ↑ ISRPMTE (denominador menor) | `isrpm_incidencia` |
 | `INGRESOSTEF[9]` (IEPSNPTE) | 47.9 | sin cambio (el macro de `TasasEfectivas` ya es `divSIM`) | = | `iepsnp_macro` solo corrige `Expenditure.do` |
 | `INCD`, `INCD2`, `INCD3` (43 bloques: incidencia por decil, nacional y 32 entidades, ISR/IVA/…) | — | **se mueven**: ISR PM ∝ `d4_relativo` concentra en deciles altos; IEPS ∝ gasolinas/alcohol/tabaco reparte distinto; cuotas por sector no cambia quién paga | ISR PM ↑ en X, ↓ en I–VIII | `isrpm_incidencia`, `ieps_relativo` |
 | `GASTOS`, `GASTOSPC`, `GASTOSPOB*`, `PROY*` | — | **sin cambio** | = | PEF, no micro |

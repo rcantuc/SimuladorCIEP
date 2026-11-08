@@ -90,6 +90,21 @@ global suborrow "off"								// off: D.1 S.14 ya incluye el exterior; sin ing_su
 global cuotas_d614 "neto"							// neto: D.442 fuera de la celda de ing_capital y de YA (D.614 ya fuera de cuotas) | actual
 global oye_en_hub "off"								// off: OyE no llega a personas; «Empresas públicas → Gobierno» en los Sankeys | on (v8.14.0)
 
+** 0.8b Parámetros de Cuadratura II (v8.16.0, 2026-11-08; CUAD-1 §4, firmado: CUAD-1-2-firma.md §B, fundida en CUAD-1 §4.0). Default = valor
+**      FIRMADO (baseline v8.16.0); cualquier otro valor es un FLAG declarado en el header del módulo que lo lee y en nta-identidad.txt.
+**      v8.15.3 = conhog/comprador/off/negocios/lif/libre/enigh/corte/lif/divciep/proxy.
+global consumo_ancla "p3_s14"						// p3_s14: Σ Cpriv = P.3 S.14 (CSI_115 f.166); ISFLSH (P.3 S.15) y vintage como filas de sector | conhog (BIE 724600 hogares + ISFLSH, v8.15.3)
+global consumo_precios "comprador"					// comprador: C a precios de comprador e impuestos a productos ∝ gasto como ingreso (único implementado) | basicos (8.17: C − D.21 + D.31 por categoría)
+global cuotas_por_sector "on"						// on: D.61 por sector receptor (S.13, S.12, S.11, S.15) y cuota social federal (cuotasF) fuera de cuotasTPF | off (todo a Gobierno, v8.15.3)
+global isrpm_incidencia "propiedad"					// propiedad: ISR PM ∝ ing_d4_rel (regla P); negocios propios a la base de PF; TE con denominador B.2n S.11 + S.12 (decisión 7 corregida) | negocios (ing_bruto_tpm × 30 %, FLAG 19, v8.15.3)
+global isr_personas_ancla "d51_s14"					// d51_s14: en NTA, ISR asalariados + PF anclado a D.51 S.14 e ISR PM a D.51 S.11 + S.12 (fila «LIF vs CSI por sector») | lif (v8.15.3)
+global isras_share "acotado"						// acotado: parte salarial del ISR en [0, 1] | libre (ing_subor/(ing_bruto_tax − cuotasTPF) sin acotar, mediana 1.150, v8.15.3)
+global obligacion_isrpf_ancla "itan_rangos"			// itan_rangos: ISR PF anclado por rango de ingreso declarado (ITAN 4T del año ENIGH; AccesoITAN) | enigh (cut-off por probit a la LIF, v8.15.3)
+global informalidad "corte"							// corte: formal = los de mayor p hasta N (ancla_formales) | probabilistica (λ·p·obligación; no implementada en 8.16b)
+global ancla_formales "imss"						// imss: N = 25,500,447 cotizantes IMSS + ISSSTE (31-dic-2024); el residuo vs LIF es «ajuste por subreporte de ingresos altos» | lif (el corte cierra la recaudación, v8.15.3)
+global iepsnp_macro "divsim"						// divsim: IEPS no petrolero macro = IEPSNP de divSIM (224.780: no petrolero + salud) | divciep (24.075, v8.15.3)
+global ieps_relativo "micro"						// micro: IEPSP ∝ gas_pc_Gasolinas + gas_pc_Combustibles e IEPSNP ∝ IEPS micro por categoría | proxy (gas_pc_Vehi / gas_pc_BebA, v8.15.3)
+
 
 ***
 **# 1. DEMOGRAFÍA

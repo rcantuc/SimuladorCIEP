@@ -27,7 +27,7 @@
 #      users/<id>/entidades.json (índice; Σ32 PIBE transcrita de entidades-pibe32.json): lo que /entidades y
 #      /entidades/<ABREV> leen y lo que la Fase 3b-ter de publicar-vps.sh embarca. El vintage de las bases PIBE se
 #      lee de master/PIBDeflactor<ABREV>.meta (sello de pibe-32.sh; v8.14: los .meta viven junto a los .dta en master/).
-# Bases precedentes (banda de vintages y testigo): ver runbook §13 — se validan y se imprime la
+# Bases precedentes (banda de vintages y testigo): ver runbook §13 — sin las 5 bases ABORTA (8.16b) y se imprime la
 # receta; si faltan, el recorrido sigue sin banda / sin testigo y lo declara.
 # Pensado para correr de noche: nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-... &
 # =============================================================================
@@ -52,7 +52,7 @@ done
 mkdir -p "$EVID"
 ID="$(whoami)"
 
-# --- bases precedentes: se validan, se imprime la receta, se sigue ---------------------------
+# --- bases precedentes: se validan; sin las 5 bases de vintages ABORTA (8.16b: antes seguía sin banda) ---
 echo "== Bases precedentes (runbook §13)"
 FALTAN_V=()
 for v in 2016 2018 2020 2022 2024; do
@@ -62,6 +62,9 @@ if (( ${#FALTAN_V[@]} )); then
     echo "  banda de vintages: NO (faltan users/$ID-v{${FALTAN_V[*]// /,}}/aportaciones.dta)."
     echo "  Receta (v8.14, runbook §13): bash 05_scripts/test-maquina-virgen.sh --download --vintages \"${FALTAN_V[*]}\" --into \"$REPO_ROOT\""
     echo "  (SIM.do con anioPE = aniovp = anioenigh = vintage y calibracion contemporanea: 05_scripts/vintage-aportaciones.do)."
+    echo "  O, si ya existen en el clon de publicación: cp -Rc ~/CIEP_Simuladores/SimuladorCIEP-datos/users/$ID-v<t> $REPO_ROOT/users/ (APFS, gratis)."
+    echo "contrato-32: ABORTA (8.16b): sin las 5 bases los sankey-*.json de /entidades salen sin banda (bmin/bmax) y antes seguía en silencio." >&2
+    exit 2
 else
     echo "  banda de vintages: sí (5 bases)."
 fi

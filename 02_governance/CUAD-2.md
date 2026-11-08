@@ -60,6 +60,21 @@ Dibujar todo el PIB (BIE) como flujo de personas por edad → sectores instituci
 | `financiamiento` | `un_nodo_4` | `un_nodo_2` (lado hogares), `por_sector` | «Financiamiento: deuda y venta de activos» (`C1` §2.4, D8) | `un_nodo_4`: un nodo fuente con S.11 1,416.744 + S.13 2,156.464 (B.9 < 0) y, del otro lado, préstamo neto S.12 1,780.446 + S.14 1,450.512 + S.15 90.408 + Mundo 251.842 (Σ = 3,573.208 a cada lado). `un_nodo_2`: solo Gobierno y Desahorro de hogares (hoy). |
 | `discrepancia_gasto` | `fuera` | `nodo` | «Discrepancia estadística del gasto −1,616.168» (`C1` D9) | Solo entra si se dibuja la formación de capital (P.5): FBCF + existencias 8,052.454 vs ahorro bruto 6,180.888 − déficit externo. Con `fuera` el Sankey es cuenta corriente (INBD = C + B.8n). |
 
+### §4.0 — La firma (Ricardo, 2026-11-07; `CUAD-1-2-firma.md`): lo que 8.16b implementa de este memo
+
+Donde la firma difiere de este memo, manda la firma. La firma de 2026-11-07 decide CUAD-1 (Cuadratura II) y, de este memo, solo lo que 8.16b necesita para cerrar las anclas de CUAD-1; los parámetros de §4 (`hub`, `retenido_a_personas`, `deficit_a_personas`, `isflsh_regla`, `circuito_d442`, `vintage_nodo`, `bruto_neto`, `financiamiento`, `discrepancia_gasto`) siguen **pendientes de firma** para 8.17.
+
+Lo que 8.16b deja listo para el Sankey de la economía completa (v8.16.0):
+
+| Partida de la Tabla 2 | Qué hace 8.16b | Dónde |
+|---|---|---|
+| P.3 S.15 (ISFLSH, 388.320) y vintage BIE−CSI del consumo de residentes (49.749) | dejan de estar dentro del consumo de personas: `consumo_ancla = p3_s14` reancla Σ Cpriv a P.3 S.14 y ambas quedan declaradas como filas de sector (`ExpVintageCons`, escalar `ConISFLSH` de `SCN.ado`) | `Expenditure.do` §4.1–4.2; `SCN.ado` (`ConISFLSH`) |
+| D.61 recibido por S.13 (683.959), S.12 (1,455.102 con D.614), S.11 (193.870) y S.15 (2.091) | `cuotas_por_sector = on`: NTA reparte las cuotas de las personas por sector receptor con la celda f.117 R/P de cada cuadro (`nta_CUOTAS_S13`, `_S12` sin D.614, `_S11`, `_S15`; relativos: seguros sociales de afiliados a IMSS/ISSSTE, retiro + vivienda, cuotas de otros regímenes); los nodos «Hogares → Afores/aseguradoras» y «→ planes de empleadores» se dibujan en 8.17 | `NTA.do` §4.6; `SCN.ado` (`CuotasGobR`, `CuotasFinR`, `CuotasNoFinR`, `CuotasISFLSHR`); `Households.do` §6 (`cuotasRCV`, `cuotasViv`, `cuotasSeg`) |
+| D.5 pagado por S.14 (1,540.050) y por S.11 + S.12 (1,188.648) | `isr_personas_ancla = d51_s14`: el τ⁻ directo de las personas se ancla a D.51 S.14 (1,518.912) y el ISR de sociedades a D.51 S.11 + S.12 (1,165.676); la fila «LIF vs CSI por sector» queda en `nta-identidad.txt` (D.59 = D.5 − D.51 es predial y tenencia, fuera del consumo desde 8.16b) | `NTA.do` §4.6; `SCN.ado` (`D51HogS14`, `D51NoFin`, `D51Fin`) |
+| ISR de sociedades a personas (regla P) | `isrpm_incidencia = propiedad`: en el fiscal el ISR PM se reparte ∝ `ing_d4_rel` (lo que `retenido_a_personas = on` usará para B.5n/B.8n de S.11 + S.12); `ISRPMTE` se mide sobre B.2n S.11 + S.12 (CSI f.63, escalares `B2nNoFin`/`B2nFin` de `SCN.ado`) | `Households.do` §11.3; `TasasEfectivas.ado` §4.1 |
+| Cuota social y aportaciones federales (`cuotasF`) | fuera de las cuotas de las personas: son S.13 → S.13 (D.73/D.62), como pide la Tabla 1b de CUAD-1 | `Households.do` §6 |
+| Fila τ⁺ vs D.62 + D.7 netas (+461.011) | **sigue abierta**: donativos a ISFLSH, primas, remesas enviadas y D.759 privado son de este memo (`isflsh_regla`, S.12); por eso la brecha de Σ S sin ancla de 8.16b la lleva íntegra (+24.5 %; CUAD-1 §7, `nta-identidad.txt` cuadro 3) y `NTA.do` lleva `brecha_max = 30 %` con FLAG hasta que este memo la cierre | 8.17 |
+
 ## §5 Tabla 2 — Principio B completo: una fila por partida de S.11, S.12, S.13, S.15 y S.2
 
 Valor = CSI 2024 (U/A o R/P del cuadro del sector; bn). Relativo = la variable del motor con la que se repartiría a personas. «Hoy» = qué hace v8.15.3 con la partida y la cifra que `CUADRATURA` imprime (% del PIB) cuando viaja como fila de sector. Las filas en **negrita** son las que el hub `inbd` añade o quita.

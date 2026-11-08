@@ -1,4 +1,4 @@
-*! version 2.0.0  CIEP 03oct2026
+*! version 2.0.1  CIEP 08nov2026 (8.16b: el dataset vuelve sin deflactar; FLAG 20 de CUAD-1)
 *! Simulador — perfil, incidencia, ciclo de vida y proyección de una variable per cápita,
 *! con bootstrap por diseño muestral (UPM dentro de estrato) en Mata.
 *
@@ -106,6 +106,12 @@ quietly {
 
 
 	** Variable en valor presente **
+	* 8.16b (CUAD-1 §8 bis ficha 1, FLAG 20): la copia del dataset se guarda ANTES de deflactar y se restaura al salir (*** Final ***),
+	* asi que la variable graficada vuelve intacta a quien llama. Hasta v8.15.3 el replace quedaba en el dataset (sin if ni restore)
+	* y Expenditure.do guardo en la cache consumption_*_pc.dta los gas_pc divididos entre el deflactor del año de la corrida
+	* (1/0.920922131 = 1.085868139 con aniovp = 2026 y aniope = 2024). La deflactacion sigue siendo la misma para graficar y proyectar. *
+	tempfile original
+	save `original', replace
 	replace `varlist' = `varlist'/`deflator'
 
 	capture confirm variable ingbrutotot
@@ -121,9 +127,6 @@ quietly {
 		label var `ingreso' "`rellabel'"
 	}
 	replace `ingreso' = `ingreso'/`deflator'
-
-	tempfile original
-	save `original', replace
 
 
 
@@ -1150,6 +1153,32 @@ program graphpiramide
 				}		
 			}
 		}
+		* --- aportaciones-nacional.json (inicio) --- 8.16b: los mismos seis vectores sin redondear. output.txt imprime
+		* APORT* a %8.3f y contrato-32.py §2 gateaba Σ32 pct_nac contra ese texto con tolerancia 0.0005 = el error máximo
+		* del propio redondeo (cinco corridas en 0.000499, 8.16b en 0.000501). Desde v8.16.0 el gate lee este archivo. *
+		tempname fh
+		file open `fh' using `"${SIMROOT}/users/$id/aportaciones-nacional.json"', write text replace
+		file write `fh' `"{"esquema": "ciep.aportaciones-nacional/v1", "fuente": "Simulador.ado (ciclo de vida): los mismos valores que APORT* en output.txt, sin redondear a %8.3f", "anio_vp": `aniovp', "orden": "grupo_edad descendente, igual que APORT* en output.txt", "vectores": {"' _n
+		local j = 0
+		foreach nm in HIV HVIIX HX MIV MVIIX MX {
+			local j = `j' + 1
+			local s = cond(`j' <= 3, 1, 2)
+			local o = mod(`j' - 1, 3) + 1
+			local lista ""
+			forvalues k = `=_N'(-1)1 {
+				if sexo[`k'] == `s' & over[`k'] == `o' {
+					local v = trim(string(porcentaje[`k'], "%18.0g"))
+					if substr("`v'", 1, 1) == "." local v = "0`v'"
+					if substr("`v'", 1, 2) == "-." local v = "-0" + substr("`v'", 2, .)
+					local lista "`lista'`v', "
+				}
+			}
+			local lista = substr("`lista'", 1, strlen("`lista'") - 2)
+			file write `fh' `"  "APORT`nm'": [`lista']`=cond(`j' < 6, ",", "")'"' _n
+		}
+		file write `fh' "}}" _n
+		file close `fh'
+		* --- aportaciones-nacional.json (fin) ---
 		quietly log on output
 		local lengthHIV = strlen("`aportHIV'")
 		noisily di in w "APORTHIV: [`=substr("`aportHIV'",1,`=`lengthHIV'-1')']"

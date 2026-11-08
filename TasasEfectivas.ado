@@ -1,4 +1,4 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 08nov2026 (8.16b: isrpm_incidencia = propiedad -> denominador de ISRPMTE = B.2n S.11 + S.12; cuadro de anclas al estandar §D)
 program define TasasEfectivas, return
 quietly {
 
@@ -42,12 +42,12 @@ quietly {
 		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
 			escalar pctpib `k'PIB = ``k'LIF'
 		}
-		* 8.16a: tabla vertical de anclas a la recaudacion (_tabla_anclas.ado; catalogo 05_scripts/scn-cuentas.csv); solo log *
+		* 8.16a/8.16b: cuadro de anclas a la recaudacion al estandar §D (_tabla_anclas.ado v2; catalogo 05_scripts/scn-cuentas.csv); solo log *
 		_tabla_anclas clear
 		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
-			_tabla_anclas add, codigo(`k') sector(S.13) fuente("LIF `anio' · divSIM") valor(``k'LIF'/100*scalar(PIB)) variable(`k') nota("`: di %7.3f ``k'LIF'' % del PIB `anio'; reparto ∝ `k' micro (Distribucion)")
+			_tabla_anclas add, codigo(`k') sector(S.13) fuente("LIF `anio' · divSIM") valor(``k'LIF'/100*scalar(PIB)) variable(`k')
 		}
-		noisily _tabla_anclas print, titulo("Anclas a la recaudación — LIF `anio' por impuesto (divSIM); Σ repartido = LIF por construcción") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anio'")
+		noisily _tabla_anclas print, titulo("Anclas a la recaudación — LIF `anio' por impuesto (divSIM); Σ repartido = LIF por construcción") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anio'") pib(scalar(PIB)) nota("cada impuesto se reparte con Distribucion ∝ su variable micro de perfiles`anio'.dta (ISR_asalariados, ISR_PF, ISR_PM ∝ ing_d4_rel con isrpm_incidencia = propiedad, cuotasTP, IVA, IEPS micro y gasolinas + combustibles con ieps_relativo = micro, ISAN ∝ vehiculos, importaciones ∝ gasto); Σ repartido = LIF al peso")
 	}
 
 
@@ -126,6 +126,20 @@ quietly {
 
 	local IngKPublicosPIB = `PEMEXPIB'+`CFEPIB'+`IMSSPIB'+`ISSSTEPIB'
 	local IngKPrivadoPIB = `CapIncImpPIB'-`IngKPublicosPIB'
+	* 8.16b (isrpm_incidencia = propiedad; CUAD-1 §4; firma decision 7 corregida por Ricardo 2026-11-08): el ISR de personas morales es de sociedades
+	* y su tasa efectiva se mide sobre el excedente neto de operacion de S.11 + S.12 (B.2n, CSI f.63; pastcast del SCN para `anio'), no sobre el
+	* residuo BIE de capital privado ni sobre B.5n (saldo tras pagar renta de la propiedad, que dejaba la tasa por encima de 100 %). *
+	if "$isrpm_incidencia" == "" global isrpm_incidencia "propiedad"
+	local ISRPMBasePIB = `IngKPrivadoPIB'
+	local ISRPMBaseTxt "Ing. de capital privado"
+	if "$isrpm_incidencia" == "propiedad" {
+		capture confirm scalar B2nNoFin
+		if _rc == 0 {
+			local ISRPMBasePIB = (scalar(B2nNoFin) + scalar(B2nFin))/scalar(PIB)*100
+			local ISRPMBaseTxt "B.2n S.11 + S.12"
+		}
+		else noisily di as err "  FLAG TasasEfectivas (isrpm_incidencia = propiedad): SCN sin B2nNoFin/B2nFin para `anio'; ISRPMTE sobre el capital privado BIE."
+	}
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
@@ -136,11 +150,11 @@ quietly {
 	noisily di in g _dup(71) "-"
 
 	** 4.1 ISR (personas morales) **
-	noisily di in g "  Ing. de capital privado" ///
-		_col(30) %7.3fc in y `IngKPrivadoPIB' ///
+	noisily di in g "  `ISRPMBaseTxt'" ///
+		_col(30) %7.3fc in y `ISRPMBasePIB' ///
 		_col(40) in g "ISR (morales)" ///
 		_col(55) %7.3fc in y `ISRPMPIB' ///
-		_col(63) %7.3fc in y `ISRPMPIB'/`IngKPrivadoPIB'*100 " %"
+		_col(63) %7.3fc in y `ISRPMPIB'/`ISRPMBasePIB'*100 " %"
 
 	** 4.2 Productos, derechos, aprovechamientos, contribuciones **
 	noisily di in g "  Ing. de capital privado" ///
@@ -148,8 +162,10 @@ quietly {
 		_col(40) in g "Otros ingresos" ///
 		_col(55) %7.3fc in y `OTROSKPIB' ///
 		_col(63) %7.3fc in y `OTROSKPIB'/`IngKPrivadoPIB'*100 " %"
-	escalar pct ISRPMTE = `ISRPMPIB'/`IngKPrivadoPIB'*100
+	escalar pct ISRPMTE = `ISRPMPIB'/`ISRPMBasePIB'*100
+	escalar pctpib ISRPMBasePIB = `ISRPMBasePIB'
 	escalar pct OTROSKTE = `OTROSKPIB'/`IngKPrivadoPIB'*100
+	if "$isrpm_incidencia" == "propiedad" & "`ISRPMBaseTxt'" == "B.2n S.11 + S.12" noisily di in g "  (ISRPMTE sobre B.2n S.11 + S.12 = " in y %7.3fc `ISRPMBasePIB' in g " % del PIB; isrpm_incidencia = propiedad, 8.16b)"
 
 	** 4.3 FMP (energía) **
 	noisily di in g "  Ing. de capital privado" ///

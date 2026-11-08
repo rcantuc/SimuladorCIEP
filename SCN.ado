@@ -66,7 +66,7 @@ quietly {
 	if "$SCN_CONGELADO_SELLO" == "" noisily SCNCongelado
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -75,7 +75,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -671,6 +671,18 @@ quietly {
 		_tabla_anclas add, codigo(B.8n) sector(S.14) fuente("CSI_115 · f.171 U/A") valor(AhorroHogN[`obs']) variable(AhorroHog)
 		_tabla_anclas add, codigo(B.5n) sector(S.1) fuente("CSI_103 · f.110 U/A") valor(B5nS1[`obs']) variable(B5nS1) nota("ingreso nacional neto; filas de sector de la identidad PIB (Households §9.1)")
 		_tabla_anclas add, codigo(B.1b) sector(S.1) fuente("CSI_103 · f.27 U/A") valor(PIBCSI[`obs']) variable(PIBCSI) nota("vs PIB BIE 724025 = `: di %21.0fc PIB[`obs']' (fila vintage)")
+		capture confirm variable CuotasISFLSHR
+		if _rc == 0 {
+			_tabla_anclas add, codigo(D.51) sector(S.14) fuente("CSI_115 · f.115 U/A") valor(D51HogS14[`obs']) variable(D51HogS14) nota("ancla de ISR asalariados + PF en NTA (isr_personas_ancla = d51_s14); D.5 = D.51 + D.59")
+			_tabla_anclas add, codigo(D.51) sector("S.11+S.12") fuente("CSI_106/109 · f.115 U/A") valor(D51NoFin[`obs'] + D51Fin[`obs']) variable("D51NoFin + D51Fin") nota("ancla de ISR PM en NTA (isr_personas_ancla = d51_s14)")
+			_tabla_anclas add, codigo(P.3) sector(S.15) fuente("CSI_118 · f.166 U/A") valor(ConISFLSH[`obs']) variable(ConISFLSH) nota("fila de sector del consumo: ConHog BIE − P.3 S.14 − P.3 S.15 − compras netas = vintage (consumo_ancla = p3_s14)")
+			_tabla_anclas add, codigo(D.61) sector(S.13) fuente("CSI_112 · f.117 R/P") valor(CuotasGobR[`obs']) variable(CuotasGobR) nota("D.61 recibido por sector (cuotas_por_sector = on): S.13 + S.12 + S.11 + S.15 = D.61 pagado por S.14")
+			_tabla_anclas add, codigo(D.61) sector(S.12) fuente("CSI_109 · f.117 R/P") valor(CuotasFinR[`obs']) variable(CuotasFinR) nota("incluye D.614 (circuito D.442/D.614, cuotas_d614 = neto lo descuenta)")
+			_tabla_anclas add, codigo(D.61) sector(S.11) fuente("CSI_106 · f.117 R/P") valor(CuotasNoFinR[`obs']) variable(CuotasNoFinR)
+			_tabla_anclas add, codigo(D.61) sector(S.15) fuente("CSI_118 · f.117 R/P") valor(CuotasISFLSHR[`obs']) variable(CuotasISFLSHR)
+		}
+		capture confirm variable B2nFin
+		if _rc == 0 _tabla_anclas add, codigo(B.2n) sector("S.11+S.12") fuente("CSI_106/109 · f.63 U/A") valor(B2nNoFin[`obs'] + B2nFin[`obs']) variable("B2nNoFin + B2nFin") nota("denominador de ISRPMTE con isrpm_incidencia = propiedad (firma, decisión 7 corregida: B.2n, no B.5n)")
 		noisily _tabla_anclas print, titulo("Celdas CSI del sector hogares que SCN expone a los módulos, año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage") unidad("MXN `anio'")
 	}
 	capture confirm variable B5nS1
@@ -692,6 +704,23 @@ quietly {
 		escalar mxn PIBCSI = PIBCSI[`obs']
 		escalar mxn CapFijCSI = CapFijCSI[`obs']
 		escalar mxn B5nS1 = B5nS1[`obs']
+	}
+	* 8.16b: celdas de Cuadratura II (CUAD-1 firma): D.51 por sector pagador, P.3 de las ISFLSH y D.61 por sector receptor *
+	capture confirm variable B2nFin
+	if _rc == 0 {
+		escalar mxn B2nNoFin = B2nNoFin[`obs']
+		escalar mxn B2nFin = B2nFin[`obs']
+	}
+	capture confirm variable CuotasISFLSHR
+	if _rc == 0 {
+		escalar mxn D51HogS14 = D51HogS14[`obs']
+		escalar mxn D51NoFin = D51NoFin[`obs']
+		escalar mxn D51Fin = D51Fin[`obs']
+		escalar mxn ConISFLSH = ConISFLSH[`obs']
+		escalar mxn CuotasGobR = CuotasGobR[`obs']
+		escalar mxn CuotasFinR = CuotasFinR[`obs']
+		escalar mxn CuotasNoFinR = CuotasNoFinR[`obs']
+		escalar mxn CuotasISFLSHR = CuotasISFLSHR[`obs']
 	}
 
 	** R.3. Graph **
@@ -2827,6 +2856,12 @@ program define SCNHogaresS14
 	local specs `"`specs' "CSI_112 80 ImpProdGobR D.2 R" "CSI_112 89 SubGobR D.3 R" "CSI_112 95 RentaPropGobR D.4 R" "CSI_112 95 RentaPropGobU D.4 U""'
 	local specs `"`specs' "CSI_121 71 RemRowU D.1 U" "CSI_121 95 RentaPropRowU D.4 U" "CSI_121 95 RentaPropRowR D.4 R""'
 	local specs `"`specs' "CSI_103 27 PIBCSI B.1b U" "CSI_103 28 CapFijCSI P.51c U" "CSI_103 110 B5nS1 B.5n U""'
+* 8.16b (CUAD-1 firma; Cuadratura II): D.51 pagado por S.14 (ancla de ISR asalariados + PF en NTA) y por S.11 y S.12 (ancla de ISR PM), P.3 de
+* las ISFLSH (fila de sector del consumo con consumo_ancla = p3_s14) y D.61 RECIBIDO por cada sector (f.117 R/P: S.13, S.12, S.11, S.15; cuotas_por_sector). *
+	local specs `"`specs' "CSI_115 115 D51HogS14 D.51 U" "CSI_106 115 D51NoFin D.51 U" "CSI_109 115 D51Fin D.51 U" "CSI_118 166 ConISFLSH P.3 U""'
+	local specs `"`specs' "CSI_112 117 CuotasGobR D.61 R" "CSI_109 117 CuotasFinR D.61 R" "CSI_106 117 CuotasNoFinR D.61 R" "CSI_118 117 CuotasISFLSHR D.61 R""'
+* 8.16b (firma, decision 7 corregida por Ricardo 2026-11-08): excedente neto de operacion de S.11 y S.12 (f.63 U/A), denominador de ISRPMTE *
+	local specs `"`specs' "CSI_106 63 B2nNoFin B.2n U" "CSI_109 63 B2nFin B.2n U""'
 	noisily SCNCongelado, copiar
 	local dir "${SIMROOT}/raw/temp/SCN"
 	foreach cuadro in CSI_115 CSI_103 CSI_106 CSI_109 CSI_112 CSI_118 CSI_121 {
@@ -2963,6 +2998,16 @@ program define SCNHogaresS14
 	label var PIBCSI "Producto interno bruto, economia total, vintage CSI (S.1 B.1b, fila 27)"
 	label var CapFijCSI "Consumo de capital fijo, economia total, vintage CSI (S.1 P.51c, fila 28)"
 	label var B5nS1 "Saldo de ingresos primarios neto, economia total (S.1 B.5n, fila 110)"
+	label var D51HogS14 "Impuestos sobre el ingreso pagados por los hogares (S.14 D.51, fila 115, U/A)"
+	label var D51NoFin "Impuestos sobre el ingreso pagados por las sociedades no financieras (S.11 D.51, fila 115, U/A)"
+	label var D51Fin "Impuestos sobre el ingreso pagados por las sociedades financieras (S.12 D.51, fila 115, U/A)"
+	label var ConISFLSH "Gasto de consumo final de las ISFLSH (S.15 P.3, fila 166, U/A)"
+	label var CuotasGobR "Contribuciones sociales netas recibidas por el gobierno general (S.13 D.61, fila 117, R/P)"
+	label var CuotasFinR "Contribuciones sociales netas recibidas por las sociedades financieras (S.12 D.61, fila 117, R/P; incluye D.614)"
+	label var CuotasNoFinR "Contribuciones sociales netas recibidas por las sociedades no financieras (S.11 D.61, fila 117, R/P)"
+	label var CuotasISFLSHR "Contribuciones sociales netas recibidas por las ISFLSH (S.15 D.61, fila 117, R/P)"
+	label var B2nNoFin "Excedente neto de operacion, sociedades no financieras (S.11 B.2n, fila 63, U/A)"
+	label var B2nFin "Excedente neto de operacion, sociedades financieras (S.12 B.2n, fila 63, U/A)"
 	g double RowPrimNeto = RentaPropRowR - RentaPropRowU - RemRowU
 	format RowPrimNeto %20.0fc
 	label var RowPrimNeto "Renta primaria neta pagada al resto del mundo (S.2: D.4 recibida − D.4 pagada − D.1 pagada; PIB − INB)"

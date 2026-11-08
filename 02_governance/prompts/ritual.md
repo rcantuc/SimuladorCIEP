@@ -6,7 +6,7 @@
 
 <<CONTENIDO>>
 
-<Lo que hay que salvar de worktrees o ramas antes de fusionar (`gh pr merge --delete-branch` borra el worktree local: runbook §14.1, lección 9), datos que se copian a `-datos` o a Dropbox con su verificación (sha contra el manifest, sello, `cmp`), y conflictos esperados entre PR.>
+<Lo que hay que salvar de worktrees o ramas antes de fusionar (`gh pr merge --delete-branch` borra el worktree local: runbook §14.1, lección 9), datos que se copian a `-datos` con su verificación (sha contra el manifest, sello, `cmp`; nunca a Dropbox: firma §C), y conflictos esperados entre PR.>
 
 ## 2. Merges
 
@@ -18,12 +18,14 @@
 
 `bash 05_scripts/ritual.sh v<X.Y.Z> --hash <$H literal> --si` en `-datos` (runbook §14). Corre merge → baile → sim → web → c32 → precache → sidecar → release-commit → tag → check → listo y se detiene en el primer rojo.
 
+- **El clon de Dropbox es intocable** (firma CUAD-1-2 §C, 8.16b): el paso `baile` solo mueve `-datos` (`fetch`, `checkout master`, `pull --ff-only`); ninguna orden del ritual ni de la sesión toca Dropbox. Si `master` quedó extraído ahí, lo resuelve Ricardo.
+
 - **`--si` es obligatorio en sesiones nocturnas:** sin tty el paso `tag` no puede preguntar, y sin `--si` falla sin crear nada. Con Ricardo presente se omite y el tag se confirma en la terminal.
 
 - **gate-numeros:** <VERDE (no mueve números) | ROJO aceptado con `--baseline-nuevo` (mueve el baseline a vX.Y.Z)>. Si sale ROJO sin estar previsto, para: reporte con el diff de llaves y nada más.
 - **Release commit:** ya debe estar en el PR. Si `release-commit` falla, es un PR corto (branch protection: sin push directo) y el ritual vuelve a empezar en `merge` con el hash nuevo.
 - **Al reanudar:** `--desde <paso>` y la misma evidencia; no se repite lo que ya pasó.
-- **Al cerrar:** `-datos` en `master` = `$H` (Ricardo publica desde ahí), Dropbox detached, sin Stata vivo y árboles limpios.
+- **Al cerrar:** `-datos` en `master` = `$H` (Ricardo publica desde ahí), Dropbox sin tocar, sin Stata vivo y árbol de `-datos` limpio.
 
 ## Evidencia
 

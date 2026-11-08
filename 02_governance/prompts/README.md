@@ -15,4 +15,4 @@
 3. Deja los bloques fijos como están. Si uno no aplica, escribe «no aplica» y la razón; no lo borres: el agente lee la ausencia como permiso.
 4. El cambio que aparezca en tres prompts seguidos sube a la plantilla en un PR, y este README dice de qué sesión salió.
 
-Los bloques fijos no sustituyen al runbook. Lo citan: §14 (`ritual.sh` y lecciones), §10 (topología y baile), §11 (qué gate corre dónde).
+Los bloques fijos no sustituyen al runbook. Lo citan: §14 (`ritual.sh` y lecciones), §10 (topología y baile), §11 (qué gate corre dónde). Desde 8.16b las tres plantillas llevan la regla §C de la firma CUAD-1-2 (el clon de Dropbox es intocable; el `baile` solo mueve `-datos`) y `implementacion.md` el estándar §D de los cuadros del log.

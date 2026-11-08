@@ -646,24 +646,22 @@ git worktree list                                          # inventario: qué á
 ### 10.3 El «baile de master» (cada vez que un PR entra)
 
 1. **GitHub**: el PR se mergea a `master` (con el check `gates-sin-stata` verde, §11).
-2. **Clon de Dropbox** (casa de `master`): traer el merge, nada más.
+2. **Clon de Dropbox: intocable** (firma CUAD-1-2 §C, 8.16b). Ninguna sesión ni ningún script hace ahí
+   `stash`, `reset`, `checkout`, `switch`, `pull` ni `merge`, ni escribe archivos: es el árbol que abre el IDE y
+   el que Dropbox sincroniza, y lo que tenga (rama, cambios sin commit, conflictos) es de Ricardo. Si Ricardo
+   quiere traer el merge, lo hace él, a mano y cuando quiera. El `baile` ya no lo toca.
+3. **Clon de publicación `-datos`** (`~/CIEP_Simuladores/SimuladorCIEP-datos`): tiene `master` extraído desde
+   8.18a y los datos canónicos. El paso `baile` de `ritual.sh` hace aquí `fetch` + `checkout master` +
+   `pull --ff-only` y exige HEAD = hash del merge y árbol limpio.
    ```bash
-   cd "$HOME/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-   git status                       # debe estar limpio; si Dropbox dejó basura, NO se commitea
-   git pull --ff-only origin master # ff-only: si no avanza en línea recta, algo se commiteó aquí por error
-   ```
-3. **Worktree de publicación**: ponerlo en ese mismo commit **sin extraer la rama** (la rama
-   vive en Dropbox; aquí siempre HEAD desprendido).
-   ```bash
-   cd "$HOME/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.Z"
+   cd "$HOME/CIEP_Simuladores/SimuladorCIEP-datos"
    git status                       # limpio (lo que generan los rituales está en .gitignore: users/, raw/, master/, logs)
    git fetch origin --tags
-   git checkout --detach origin/master      # o: git checkout --detach vX.Y.Z, si el tag ya existe
-   git log --oneline -1                     # debe ser el mismo hash que acaba de llegar a Dropbox
+   git checkout master && git pull --ff-only
+   git log --oneline -1             # debe ser el hash del merge
    ```
    Desde aquí corren §1–§5 (pre-flight, tag, `publicar.sh`, `publicar-vps.sh`). El tag creado
-   aquí (`git tag -a ... && git push origin vX.Y.Z`) lo ven todos los árboles: no hay que
-   repetirlo en Dropbox.
+   aquí (`git tag -a ... && git push origin vX.Y.Z`) lo ven todos los árboles.
 4. **Minor con deployment nuevo**: en vez de reutilizar el worktree anterior, se crea uno
    (`git worktree add --detach "$HOME/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.0" origin/master`)
    y se le copian a mano, **una vez**, `.clon-desarrollo` y los dos `*-credentials.sh` del
@@ -677,16 +675,16 @@ Síntomas y causa:
 
 | Síntoma | Causa | Qué hacer |
 |---|---|---|
-| `fatal: 'master' is already checked out at '…/Dropbox-CIEP/…'` | se intentó extraer `master` en un worktree | usar `git checkout --detach origin/master` (10.3.3); `master` solo vive en Dropbox |
+| `fatal: 'master' is already checked out at '…/Dropbox-CIEP/…'` | `master` quedó extraído en el clon de Dropbox y `ritual.sh baile` intenta extraerlo en `-datos` | el ritual no toca Dropbox (firma §C): Ricardo mueve el clon de Dropbox a otra rama o a HEAD desprendido cuando quiera; mientras, `-datos` puede correr en `git checkout --detach <hash>` a mano |
 | `git pull` en Dropbox dice "Not possible to fast-forward" | alguien commiteó en el clon de Dropbox | `git log origin/master..master` para ver qué es; moverlo a una rama (`git branch rescate/<tema>`) y `git reset --hard origin/master` |
 | `publicar.sh` aborta "NO está marcado como clon de desarrollo" | se corrió desde Dropbox o desde un worktree de sesión | ir al worktree de publicación; si es uno nuevo, `touch .clon-desarrollo` (10.3.4) |
 | El sitio o `raw/` están incompletos en el worktree de publicación | se creó el worktree y se copió a mano | `git checkout -- 04_1_simuladorfiscal.ciep.mx` (nunca copiar de Dropbox); `test-maquina-virgen.sh --download --into "$PWD"` |
 
 ### 10.4 Lo obligatorio, en cinco líneas (v8.14)
 
-1. **El baile es obligatorio** en cada merge (§10.3): GitHub mergea → Dropbox `git pull --ff-only` →
-   worktree de publicación `git checkout --detach origin/master`. Si se salta un paso, el worktree de
-   publicación publica un commit que no es `master` o Dropbox se queda atrás y el IDE edita sobre viejo.
+1. **El baile es obligatorio** en cada merge (§10.3) y **solo mueve `-datos`**: GitHub mergea → `-datos`
+   `git checkout master && git pull --ff-only` (paso `baile` de `ritual.sh`). El clon de Dropbox es intocable
+   (firma CUAD-1-2 §C, 8.16b): si se queda atrás, el IDE edita sobre viejo y eso lo resuelve Ricardo, no un script.
 2. **El tag se crea sobre el hash explícito**, no sobre «lo que esté extraído»: `git tag -a vX.Y.Z <hash>
    -m "…"` con el hash que `git log --oneline -1 origin/master` acaba de mostrar y que coincide con el
    `version` del manifest (Gate 3). Después `git push origin vX.Y.Z`. Un tag sobre HEAD de un worktree
@@ -748,7 +746,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | Dos caminos | `output.txt` y los 11 JSON byte-idénticos entre una corrida con `master/SCN.dta` enriquecido y otra con las 18 series S.14 borradas (`strip-s14.do`) | dos worktrees desechables, `comparar.py` |
 | `test-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **47/47 llaves** (46 + `CUADRATURA`, v8.15.0; v8.15.1: `Web.Stata.do` §7.3 carga `master/<anioenigh>/cuadratura.do`) de `output.txt` como cadena | `bash 05_scripts/test-web-batch.sh --root <worktree con la corrida>` (~2 min) |
 | `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
-| `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14), sellos, banda en las 32 (con `users/ricardo-v<t>/`) | §13 |
+| `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14; regenerado v8.16.0), ciclo de vida Σ32 = `aportaciones-nacional.json` (sin redondear, 8.16b), sellos, banda en las 32 (exige `users/ricardo-v<t>/`: sin las 5 bases aborta, 8.16b) | §13 |
 | `test-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
 | `test-precache-manifest.sh` (regresión del hotfix v8.15.0) | `_precache_manifest.ado` lee `version`/`data_updated`/`baseline` del manifest real y de uno con texto hostil (acentos graves, comillas) sin r(132) | `bash 05_scripts/test-precache-manifest.sh`, obligatorio si el PR toca texto libre de `05_scripts/manifest.json` o `_precache_manifest.ado` |
 | `verify_nodo.sh` (nodos de `01_modulos/nodos/`, Paquete Económico y ciep.mx) | las seis reglas del nodo (página sin números, contrato con procedencia, determinismo con dos corridas de Stata, raíz sin `.md`) | `bash 05_scripts/verify_nodo.sh [deuda-publica\|portada\|indicadores]` antes de publicar un nodo; no es del ritual del Simulador |
@@ -923,7 +921,7 @@ bash 05_scripts/ritual.sh v8.15.3 --desde check
 | # | Paso | Qué hace | Gate | Evidencia |
 |---|---|---|---|---|
 | 1 | `merge` | **no fusiona**: `git fetch` y compara | `origin/master` = `--hash`; árbol limpio | `ritual.hash` |
-| 2 | `baile` | Dropbox `git switch --detach <hash>`; `-datos` `checkout master` + `pull --ff-only` | HEAD = hash; árboles limpios | — |
+| 2 | `baile` | `-datos` `fetch` + `checkout master` + `pull --ff-only` (**solo `-datos`**: el clon de Dropbox es intocable, firma CUAD-1-2 §C, 8.16b) | HEAD = hash; árbol limpio | — |
 | 3 | `sim` | `05_scripts/correr-sim.sh` (~33 min) | «end of do-file»; 0 `r(#);`; `commit.txt` = hash sin cambios locales; `gate-numeros` VERDE (ROJO solo con `--baseline-nuevo`, que exige `manifest.baseline` = `<v>` y que `[<v>]` del CHANGELOG lo declare) | `01-ritual/` |
 | 4 | `web` | `test-web-batch.sh --root <clon>` | N/N llaves, con N = las llaves de `output.txt` (no se fija en 47) | `02-test-web-batch/` |
 | 5 | `c32` | `contrato-32.sh --evidencia c32 --refs 01-ritual` (~42 min) | PASÓ y 32 `meta.json` | `c32/` |
@@ -935,7 +933,7 @@ bash 05_scripts/ritual.sh v8.15.3 --desde check
 | 11 | `listo` | imprime «listo para publicar: `publicar.sh <v>` y `publicar-vps.sh <vN.M>`» (`vN.M` sale de la versión) | — | — |
 
 - **Registro.** Cada paso anota inicio, fin, duración y resultado en `<evidencia>/ritual.log` y guarda su salida completa (sin filtrar, también en la terminal) en `ritual-<n>-<paso>.out`. Los resúmenes y la única pregunta, antes de empujar el tag, van a `/dev/tty` (a stderr si no hay terminal).
-- **Opciones.** `--desde`/`--hasta` aceptan nombre o número de paso. `--root` y `--dropbox` (o `SIM_DROPBOX`) apuntan a otros clones. `--evidencia` fija la carpeta. `--mensaje` sustituye el mensaje del tag. `--si` no pregunta antes del tag: lo usan las sesiones nocturnas sin terminal; sin `--si` y sin tty, el paso falla sin crear nada.
+- **Opciones.** `--desde`/`--hasta` aceptan nombre o número de paso. `--root` apunta a otro clon de publicación (`--dropbox` desapareció en 8.16b: el ritual no toca Dropbox). `--evidencia` fija la carpeta. `--mensaje` sustituye el mensaje del tag. `--si` no pregunta antes del tag: lo usan las sesiones nocturnas sin terminal; sin `--si` y sin tty, el paso falla sin crear nada. `--baseline-nuevo` acepta `gate-numeros` ROJO solo si `manifest.baseline` = `<v>` y la entrada `[<v>]` del CHANGELOG lo declara.
 - **Hash.** `merge`, `baile` y `tag` exigen `--hash` de 40 hex o el `ritual.hash` que dejó `merge`. Los demás pasos, sin ninguno de los dos, usan el HEAD del clon y lo dicen en la primera línea.
 - **Candado.** `sim`, `web`, `c32` y `precache` no arrancan con otra corrida viva (mismo `pgrep` que el candado de `publicar.sh`). `sim` conserva una `01-ritual` previa como `01-ritual.previa-<hora>`.
 - **Lo que no hace.** Fusionar, editar `master`, publicar, desplegar, decidir un baseline nuevo.
@@ -960,10 +958,14 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las d
 13. **Una corrida de `correr-sim.sh` por sesión, anunciada.** El motor completo corre una sola vez, al final, y se avisa antes de lanzarlo (~30 min de máquina; máximo tres en paralelo). La de `contrato-32.sh` (45 min) es propia del ritual de las 32 y no cuenta. Si hace falta una segunda corrida, se pregunta; no se improvisa.
 14. **«Nada en caliente» es sobre la fuente, no sobre el año.** La política SCN (`CUAD-0.md` §4 bis) prohíbe leer INEGI durante la corrida; no prohíbe que el asset traiga años posteriores a `anioenigh` (2025 p1, etiquetado preliminar). El motor usa la serie congelada completa y las anclas se leen en `anioenigh`: cortar la serie en `anioenigh` movía el PIB 2027 −1.48 % (v8.15.2, CHANGELOG).
 15. **Errores de Stata: `grep -c 'r([0-9][0-9]*);' wrap.log` = 0**, además de «end of do-file» al final. Ese patrón es la firma exacta de un error (`r(111);`); buscar «error» o «r(» da falsos positivos (`r(N)`, `r(mean)`, etiquetas). (`sim`)
+16. **El clon de Dropbox es intocable** (firma CUAD-1-2 §C, 8.16b). La sesión trabaja en su worktree y en `-datos`; el `baile` solo mueve `-datos`. Lo que el clon de Dropbox tenga sin commit o en conflicto no se arregla desde una sesión ni desde un script. (`baile`)
+17. **Los cuadros del log siguen el estándar §D de la firma CUAD-1-2** (8.16b): rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, columnas de ancho fijo, separador de miles, gates debajo una línea cada uno (`_tabla_anclas.ado` v2). Un cuadro nuevo que no lo siga es un defecto de la sesión.
+18. **Una versión que mueve el baseline trae sus fixtures en dos tiempos** (8.16b, decisión de Ricardo 2026-11-08). Los que no dependen de las bases de vintages (`output-default.txt`, `sankeys-default/`, los de NTA y el testigo NL `statajson_entidad-nl.json`) salen de la corrida de la sesión y entran en el mismo PR: así `gate-numeros` sale VERDE en el `sim` del ritual contra el baseline nuevo (`--baseline-nuevo` cubre el ROJO) y `c32` no tropieza con el testigo. Los de `/entidades` llevan la banda `bmin`/`bmax`, que solo existe donde están las 5 bases `users/<id>-v{2016…2024}/aportaciones.dta` (`-datos`, no el worktree): salen del paso `c32` del ritual, entran en un PR corto `fixtures/entidades-vX.Y.Z` y el ritual se reanuda `--desde sidecar --hash <merge nuevo>`. `correr-sim.sh` y `contrato-32.sh` abortan sin las 5 bases (antes seguían sin banda, en silencio; receta: `cp -Rc` desde `-datos`). (`sim`, `c32`)
+19. **Un gate que compara contra texto redondeado se queda sin tolerancia** (8.16b): `contrato-32.py` §2 comparaba Σ32 `pct_nac` contra los `APORT*` de `output.txt` a `%8.3f` con tolerancia 0.0005, que es exactamente el error máximo de ese redondeo; cinco corridas en 0.000499 y la de 8.16b en 0.000501 sin que la aditividad cambiara. Desde v8.16.0 `Simulador.ado` escribe `users/<id>/aportaciones-nacional.json` (los mismos vectores sin redondear) y el gate lee ese archivo; `output.txt` no cambia. Regla: el comparando de un gate es el escalar, no el texto formateado. (`c32`)
 
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 
-Para depurar un paso o si el script no está disponible en el clon (versiones anteriores a 8.18a-1): merge del PR → `-datos` al hash del merge (Dropbox `git switch --detach <hash>`; `-datos` `git checkout master && git pull --ff-only`) → `bash 05_scripts/correr-sim.sh <-datos> diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0; `commit.txt` = hash) → **`test-web-batch.sh --root -datos`** (N/N llaves, web = batch byte a byte) → `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/01-ritual` → PASÓ → `Precache` suelto solo si el sello difiere del manifest → `publicar.sh vX.Y.Z --empaquetar-datos` → release commit verificado (CHANGELOG, manifest, CITATION) → `git tag -a vX.Y.Z <hash literal>` + `git push origin vX.Y.Z` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
+Para depurar un paso o si el script no está disponible en el clon (versiones anteriores a 8.18a-1): merge del PR → `-datos` al hash del merge (`git checkout master && git pull --ff-only`; el clon de Dropbox no se toca: firma §C) → `bash 05_scripts/correr-sim.sh <-datos> diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0; `commit.txt` = hash) → **`test-web-batch.sh --root -datos`** (N/N llaves, web = batch byte a byte) → `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/01-ritual` → PASÓ → `Precache` suelto solo si el sello difiere del manifest → `publicar.sh vX.Y.Z --empaquetar-datos` → release commit verificado (CHANGELOG, manifest, CITATION) → `git tag -a vX.Y.Z <hash literal>` + `git push origin vX.Y.Z` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
 
 ---
 

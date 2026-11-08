@@ -8,8 +8,8 @@
 #
 #   1 merge           NO fusiona: verifica que origin/master sea --hash y que el árbol esté limpio;
 #                     escribe <evidencia>/ritual.hash (lo leen los pasos siguientes al reanudar).
-#   2 baile           Dropbox `git switch --detach <hash>`; worktree de publicación `checkout master` +
-#                     `pull --ff-only`; HEAD = hash y árbol limpio.
+#   2 baile           worktree de publicación `checkout master` + `pull --ff-only`; HEAD = hash y árbol limpio.
+#                     (8.16b, firma CUAD-1-2 §C: el clon de Dropbox es intocable; el ritual no lo toca.)
 #   3 sim             correr-sim.sh → 01-ritual (~33 min): «end of do-file», 0 `r(#);`, commit.txt = hash
 #                     sin cambios locales, gate-numeros VERDE (ROJO solo con --baseline-nuevo, que exige
 #                     manifest.baseline = <v> y que la entrada [<v>] del CHANGELOG lo declare).
@@ -29,8 +29,7 @@
 # sin --check o --empaquetar-datos, ni a publicar-vps.sh: publicar es de Ricardo.
 #
 # Uso: bash 05_scripts/ritual.sh <version> [--hash <40 hex>] [--desde <paso>] [--hasta <paso>]
-#        [--root <clon de publicación>] [--dropbox <clon Dropbox>] [--evidencia <dir>] [--baseline-nuevo]
-#        [--mensaje <mensaje del tag>] [--si]
+#        [--root <clon de publicación>] [--evidencia <dir>] [--baseline-nuevo] [--mensaje <mensaje del tag>] [--si]
 #   <paso>       nombre (merge, baile, …, listo) o número (1–11).
 #   --hash       hash COMPLETO del merge (runbook §14.1 lección 2: nunca una variable que pueda venir vacía).
 #                Obligatorio para merge, baile y tag; los demás pasos lo leen de <evidencia>/ritual.hash
@@ -47,7 +46,6 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PASOS=(merge baile sim web c32 precache sidecar release-commit tag check listo)
 BASE="${SIM_EVIDENCIA:-$HOME/CIEP_Simuladores}"
 VERSION=""; HASH=""; DESDE=1; HASTA=${#PASOS[@]}; ROOT=""; EVID=""; BASELINE_NUEVO=false; MENSAJE=""; SI=false
-DROPBOX="${SIM_DROPBOX:-$HOME/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP}"
 
 uso() { sed -n '/^# Uso:/,/^# Exit/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 a_tty() { if { true > /dev/tty; } 2>/dev/null; then printf '%s\n' "$*" > /dev/tty; else printf '%s\n' "$*" >&2; fi; }
@@ -67,7 +65,7 @@ while [[ $# -gt 0 ]]; do
         --desde) DESDE="$(indice "${2:-}")"; shift 2 ;;
         --hasta) HASTA="$(indice "${2:-}")"; shift 2 ;;
         --root) ROOT="${2:-}"; shift 2 ;;
-        --dropbox) DROPBOX="${2:-}"; shift 2 ;;
+        --dropbox) echo "ritual: --dropbox ya no existe (8.16b, firma CUAD-1-2 §C: el clon de Dropbox es intocable; el paso baile solo actualiza el clon de publicación)" >&2; uso ;;
         --evidencia) EVID="${2:-}"; shift 2 ;;
         --baseline-nuevo) BASELINE_NUEVO=true; shift ;;
         --mensaje) MENSAJE="${2:-}"; shift 2 ;;
@@ -142,18 +140,14 @@ paso_merge() {
 }
 
 paso_baile() {
-    if [[ -d "$DROPBOX/.git" || -f "$DROPBOX/.git" ]]; then
-        [[ -z "$(git -C "$DROPBOX" status --short)" ]] || { falla "el clon Dropbox tiene cambios: no se baila con el árbol sucio ($DROPBOX)"; return 1; }
-        corre git -C "$DROPBOX" fetch -q origin || { falla "git fetch en Dropbox falló"; return 1; }
-        corre git -C "$DROPBOX" switch --detach "$HASH" || { falla "Dropbox: git switch --detach $HASH falló"; return 1; }
-    else
-        echo "ritual: no hay clon Dropbox en $DROPBOX (--dropbox o SIM_DROPBOX); sigo solo con $ROOT" | tee -a "$OUT"
-    fi
-    corre git -C "$ROOT" checkout master || { falla "$ROOT: git checkout master falló (¿master sigue en el clon Dropbox?)"; return 1; }
+    # 8.16b (firma CUAD-1-2 §C): el clon de Dropbox es intocable (ni stash, reset, checkout, switch, pull ni merge ahí); el ritual solo mueve el
+    # clon de publicación. Si master sigue extraído en Dropbox, checkout master falla aquí y el remedio es de Ricardo, no del script.
+    corre git -C "$ROOT" fetch -q origin || { falla "$ROOT: git fetch falló"; return 1; }
+    corre git -C "$ROOT" checkout master || { falla "$ROOT: git checkout master falló (¿master sigue extraído en el clon de Dropbox? El ritual no lo toca: firma §C)"; return 1; }
     corre git -C "$ROOT" pull --ff-only || { falla "$ROOT: git pull --ff-only falló"; return 1; }
     [[ "$(git -C "$ROOT" rev-parse HEAD)" == "$HASH" ]] || { falla "$ROOT quedó en $(git -C "$ROOT" rev-parse --short HEAD), no en $CORTO"; return 1; }
     [[ -z "$(git -C "$ROOT" status --short)" ]] || { falla "$ROOT tiene cambios tras el pull"; return 1; }
-    RESUMEN="Dropbox detached y $ROOT en master = $CORTO, árbol limpio"
+    RESUMEN="$ROOT en master = $CORTO, árbol limpio (Dropbox sin tocar: firma §C)"
 }
 
 paso_sim() {

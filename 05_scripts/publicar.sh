@@ -1049,6 +1049,27 @@ gate_baseline() {
         log_warn "Gate 11: baseline $baseline es posterior a la versión $version$nota."
         return 0
     fi
+    if [[ "$baseline" == "$version" ]]; then
+        # 8.16b: una versión que mueve el baseline lo declara igual a su propia versión ANTES de que exista el tag (lo crea el paso tag del
+        # ritual, después de la corrida); el PR no puede traer el tag. Se exige que la entrada [version] del CHANGELOG lo declare.
+        # (python, como ritual.sh: el awk/grep de GNU en el runner y el de BSD en macOS no leían igual el CHANGELOG en UTF-8)
+        if python3 -I - "$REPO_ROOT/02_governance/CHANGELOG.md" "$version" <<'PY'
+import re, sys
+t = open(sys.argv[1], encoding="utf-8").read()
+m = re.search(r'^## \[' + re.escape(sys.argv[2]) + r'\].*?(?=^## \[|\Z)', t, re.M | re.S)
+sys.exit(0 if m and 'baseline' in m.group(0).lower() else 1)
+PY
+        then
+            log_info "✓ Gate 11: baseline $baseline = la versión que se publica (baseline nuevo; el tag lo crea el ritual) y el CHANGELOG [$version] lo declara$nota"
+            return 0
+        fi
+        if (( aplica )); then
+            log_error "Gate 11 FALLO: baseline $baseline = la versión que se publica, pero la entrada [$version] del CHANGELOG no declara el baseline nuevo."
+            return 1
+        fi
+        log_warn "Gate 11: baseline $baseline = la versión que se publica sin que el CHANGELOG lo declare$nota."
+        return 0
+    fi
     if git rev-parse -q --verify "refs/tags/$baseline^{commit}" >/dev/null 2>&1 \
        || git ls-remote --exit-code --tags origin "refs/tags/$baseline" >/dev/null 2>&1; then
         log_info "✓ Gate 11: baseline $baseline declarado y existe como tag$nota"
