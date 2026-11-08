@@ -11,12 +11,13 @@
 #      `macro drop _all` (antes de §0.7, que abre el log output) y los globals extra tras los defaults
 #      de §0.8 (así `global cap4 "fuera"` manda; `global hasta "3"` corta tras PerfilesSim);
 #   2. wrap.do: set processors 1, SITE = <root>, y `do SIM_run.do` en batch (StataNow SE);
-#   3. copia a la evidencia output.txt, SankeySF/ (5), SankeyNTA/ (5), NTA/, sha256.txt, commit.txt
+#   3. copia a la evidencia output.txt, aportaciones-nacional.json, SankeySF/ (5), SankeyNTA/ (5), NTA/, sha256.txt, commit.txt
 #      (hash corto + `git status --short`), tiempo.txt, households-sumas.txt (Σ expandidas, para el Δ);
 #   4. gate-numeros.sh sobre users/ricardo → gate-numeros.txt (no decide: ritual.sh lo re-corre y lee el exit).
 #
 # Uso: bash 05_scripts/correr-sim.sh <root> <evidencia> [global ...]
-#   <root>       clon con master/, raw/, set_token.do (sin set_token.do SIM.do aborta al instante)
+#   <root>       clon con master/, raw/, set_token.do (sin set_token.do SIM.do aborta al instante) y las 5 bases
+#                users/<id>-v{2016…2024}/aportaciones.dta (sin ellas aborta aquí: banda de vintages, 8.16b)
 #   <evidencia>  carpeta de salida (se crea); en el ritual, ~/CIEP_Simuladores/diag-<v>-<fecha>/01-ritual
 #   global ...   líneas literales, p. ej. 'global cap4 "fuera"'
 # Stata: variable STATA (default StataNow SE). ~33 min; ~4.8 GB en users/. Máximo 3 a la vez (memoria
@@ -29,6 +30,15 @@ EVID="$2"; shift 2
 STATA="${STATA:-/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se}"
 [[ -x "$STATA" ]] || { echo "correr-sim: no encuentro Stata en $STATA (usa la variable STATA)" >&2; exit 2; }
 [[ -f "$ROOT/SIM.do" ]] || { echo "correr-sim: no hay $ROOT/SIM.do" >&2; exit 2; }
+# 8.16b: las 5 bases de vintages (banda bmin/bmax de los sankeys de entidad, runbook §13) tienen que estar en el árbol; sin
+# ellas SankeySF.do las omite en silencio y los productos de /entidades salen sin banda (c32 lo acusa 40 min después).
+ID="$(whoami)"; FALTAN_V=()
+for v in 2016 2018 2020 2022 2024; do [[ -f "$ROOT/users/$ID-v$v/aportaciones.dta" ]] || FALTAN_V+=("$v"); done
+if (( ${#FALTAN_V[@]} )); then
+    echo "correr-sim: ABORTA, faltan users/$ID-v{${FALTAN_V[*]// /,}}/aportaciones.dta en $ROOT (banda de vintages)." >&2
+    echo "  Receta: cp -Rc ~/CIEP_Simuladores/SimuladorCIEP-datos/users/$ID-v<t> $ROOT/users/ (APFS, gratis) o runbook §13 (test-maquina-virgen.sh --vintages)." >&2
+    exit 2
+fi
 mkdir -p "$EVID"
 EVID="$(cd "$EVID" && pwd)"
 cd "$ROOT" || exit 2
@@ -61,6 +71,7 @@ echo "Stata: $((($(date +%s)-T0)/60)) min" | tee "$EVID/tiempo.txt"
 grep -E '^r\([0-9]+\);' "$EVID/wrap.log" | head -3 >> "$EVID/tiempo.txt"
 U="$ROOT/users/ricardo"
 cp "$U/output.txt" "$EVID/" 2>/dev/null
+cp "$U/aportaciones-nacional.json" "$EVID/" 2>/dev/null   # 8.16b: APORT* sin redondear (contrato-32.py §2)
 mkdir -p "$EVID/SankeySF" "$EVID/SankeyNTA"
 cp "$U"/sankey-*.json "$EVID/SankeySF/" 2>/dev/null
 cp "$U"/SankeyNTA/sankey-*.json "$EVID/SankeyNTA/" 2>/dev/null

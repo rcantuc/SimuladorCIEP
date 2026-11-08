@@ -4,8 +4,9 @@
 Lee lo que dejó la sesión (users/<id>/<ABREV>/{sankey-*.json, ciclo-vida.json, tasas-efectivas.json},
 <evidencia>/contrato-32.tsv) y escribe <evidencia>/contrato-32.md con:
   (a) PARIDAD: output.txt y sankey-*.json nacionales byte-idénticos a --refs (sha256).
-  (b) ADITIVIDAD de lo aditivo: ciclo de vida (Σ32 pct_nac celda a celda = APORT* del output.txt,
-      tolerancia 0.0005 = medio milésimo del %8.3f; Σ32 neto = neto nacional a 1e-9) — port de
+  (b) ADITIVIDAD de lo aditivo: ciclo de vida (Σ32 pct_nac celda a celda = APORT* sin redondear, leídos de
+      users/<id>/aportaciones-nacional.json que escribe Simulador.ado desde v8.16.0 —no del %8.3f de output.txt,
+      cuyo medio milésimo de redondeo agotaba la tolerancia—; tolerancia 0.0005; Σ32 neto = neto nacional a 1e-9) — port de
       gate-aditividad.py (F3, 2026-10-11). Los Sankeys los compara compuertas-entidad.py (reuso).
   (c) TASAS EFECTIVAS (no aditivas): PROPUESTA de gate de consistencia, con FLAG — los montos sí son
       aditivos (Σ32 rec = rec nacional, Σ32 base = base nacional, a 1e-9) y por tanto la tasa nacional
@@ -78,14 +79,17 @@ def main():
     por_abrev = {f['abrev']: f for f in filas}
 
     # ---------------- (b) ciclo de vida ----------------
-    P('## 2 Aditividad del ciclo de vida: Σ32 pct_nac = APORT* del output.txt')
-    out_txt = os.path.join(U, 'output.txt')
-    apv = {}
-    txt = open(out_txt, encoding='utf-8', errors='replace').read() if os.path.isfile(out_txt) else ''
-    txt = re.sub(r'\n>\s*', '', txt)
-    for l in txt.splitlines():
-        m = re.match(r'^(APORT\w+):\s*\[(.*)\]', l)
-        if m: apv[m.group(1)] = [float(x) for x in m.group(2).split(',')]
+    P('## 2 Aditividad del ciclo de vida: Σ32 pct_nac = APORT* sin redondear (aportaciones-nacional.json)')
+    # 8.16b: el gate compara contra los vectores sin redondear que Simulador.ado escribe junto a output.txt (los APORT* de
+    # output.txt van a %8.3f y su medio milésimo de redondeo es exactamente la tolerancia: cinco corridas en 0.000499 y
+    # 8.16b en 0.000501, sin que la aditividad hubiera cambiado). Sin el archivo el gate FALLA (motor anterior a v8.16.0).
+    apn = os.path.join(U, 'aportaciones-nacional.json')
+    apv = {}; falta_apn = ''
+    try:
+        apj = json.load(open(apn, encoding='utf-8'))
+        apv = {k: [float(x) for x in v] for k, v in apj['vectores'].items()}
+    except Exception as e:
+        falta_apn = f'falta o es ilegible {apn} (lo escribe Simulador.ado desde v8.16.0; el %8.3f de output.txt ya no es el comparando): {e}'
     names = {('Hombres', 'Deciles I-V'): 'APORTHIV', ('Hombres', 'VI-IX'): 'APORTHVIIX', ('Hombres', 'X'): 'APORTHX',
              ('Mujeres', 'Deciles I-V'): 'APORTMIV', ('Mujeres', 'VI-IX'): 'APORTMVIIX', ('Mujeres', 'X'): 'APORTMX'}
     ciclos = {}
@@ -112,9 +116,10 @@ def main():
             vals = apv.get(nm, []); L = len(vals)
             mine = [suma.get((sexo, grupo, k), 0.0) for k in range(L, 0, -1)]
             w = max([abs(x - y) for x, y in zip(vals, mine)] or [0]); worst = max(worst, w); det.append((nm, L, w))
-    ok_ciclo = len(ciclos) == 32 and worst <= a.tol_ciclo and not fc and netonac and reldif(netos, netonac) < a.tol_add
+    ok_ciclo = len(ciclos) == 32 and bool(apv) and worst <= a.tol_ciclo and not fc and netonac and reldif(netos, netonac) < a.tol_add
     P(); P(f'- JSON de ciclo de vida: **{len(ciclos)}/32**')
-    if apv: P(f'- Σ32 pct_nac vs APORT* (6 vectores, celda a celda): diferencia máxima **{worst:.6f}** (tolerancia {a.tol_ciclo}): ' + ', '.join(f'{n} L={L} máx {w:.6f}' for n, L, w in det))
+    if falta_apn: P(f'- ✗ {falta_apn}')
+    if apv: P(f'- Σ32 pct_nac vs APORT* sin redondear (6 vectores, celda a celda; aportaciones-nacional.json): diferencia máxima **{worst:.6f}** (tolerancia {a.tol_ciclo}): ' + ', '.join(f'{n} L={L} máx {w:.6f}' for n, L, w in det))
     if netonac: P(f'- Σ32 neto = {netos/1e6:,.2f} mdp vs nacional {netonac/1e6:,.2f} mdp (reldif {reldif(netos, netonac):.2e}, tol {a.tol_add})')
     for x in fc[:20]: P(f'- ✗ {x}')
     P(f'- **{"PASÓ" if ok_ciclo else "FALLÓ"}**')
