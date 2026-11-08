@@ -24,7 +24,10 @@
 #      Cpriv + CpubInd del grupo, Colectivo, Futuro, Desahorro, la especie por categoría y el ajuste neto = la cuenta (1e-9).
 #      El panel (NTA/nta-panel-grupoedad-sexo.json, esquema nta-panel/v2) trae 15 celdas (5 grupos × T/H/M) cuyas entradas =
 #      salidas a 1e-9 relativo a C en ambas unidades, pctpib por celda a 1e-12, nacional_pctpib = cuenta / PIB × 100 y = hubs
-#      del v3, Σ S (Total) = Σ S (H) + Σ S (M) y, si hay ancla, Σ S (Total) = B.8n. Conteos impresos (35/99 en 2024).
+#      del v3, Σ S (Total) = Σ S (H) + Σ S (M) y, si hay ancla, Σ S (Total) = S_personas de la cuenta (8.17: B.8n S.1). Conteos impresos (35/99 en 2024).
+#   D. Python (sin Stata; 8.17, CUAD-2): el Sankey v4 (sankey-v4-economia.json, la economía completa) conserva en todo nodo intermedio en ambas
+#      unidades, hub = INBD BIE (sectores.IngDisp_INBD de la cuenta), nodos del contrato v4, 5 grupos perceptores y 5 consumidores, sinks
+#      terminales (Por identificar, Futuro, Colectivo) y Σ entradas de cada grupo consumidor = Cpriv + CpubInd. Conteos impresos (57/134 en 2024).
 #
 # Uso: bash 05_scripts/test-nta-identidad.sh [--dir <users/<id>>] [--stata <ruta stata-se>] [--sin-stata]
 #      Exit 0 = VERDE; 1 = ROJO; 2 = faltan archivos.
@@ -213,8 +216,8 @@ if cu:
         return next((float(v) for t_, v, f_, _ in links if f_ == f and t_ == to), 0.0)
     comp = [('Σ entradas « De g» = Cpriv + CpubInd del grupo', peorsink),
             ('Colectivo = CpubCol nacional', rd(I['Colectivo'], G[0]['CpubCol'])),
-            ('Futuro = Σ_g max(S_g, 0)', rd(I['Futuro'], sum(max(G[g]['S'], 0) for g in range(1, 6)))),
-            ('Desahorro = Σ_g max(−S_g, 0)', rd(O['Desahorro'], sum(max(-G[g]['S'], 0) for g in range(1, 6)))),
+            ('Futuro = Σ_g max(S_hh_g, 0)', rd(I['Futuro'], sum(max(G[g].get('S_hh', G[g]['S']), 0) for g in range(1, 6)))),
+            ('Desahorro = Σ_g max(−S_hh_g, 0)', rd(O['Desahorro'], sum(max(-G[g].get('S_hh', G[g]['S']), 0) for g in range(1, 6)))),
             ('Gobierno → Salud = congob.salud', rd(enlace('Gobierno', 'Salud'), cu['congob']['salud'])),
             ('Gobierno → Educación = congob.educacion', rd(enlace('Gobierno', 'Educación'), cu['congob']['educacion'])),
             ('Gobierno → Otros gastos = congob.resto_individual_per_capita', rd(enlace('Gobierno', 'Otros gastos'), cu['congob']['resto_individual_per_capita']))]
@@ -289,17 +292,83 @@ if cu and pib:
             print(f'OK     panel: nacional_pctpib = cuenta / PIB × 100 ({len(pares)} cifras, reldif máx {mxn:.1e}) y = hubs del v3 en % del PIB (reldif máx {mxh:.1e}); PIB {pib:,.0f} MXN')
 try:
     if cu and cu['parametros']['nta_anclaS'] != 'off':
-        b8 = cu['anclas']['AhorroHog_B8n']
+        # 8.17: S de la persona = S del hogar (anclado a B.8n S.14) + retenido + déficit + ISFLSH: Σ S Total = S_personas de la cuenta (= B.8n S.1 con los defaults)
+        b8 = cu['S_vs_B8n'].get('S_personas', cu['anclas']['AhorroHog_B8n'])
+        que = 'S_personas (B.8n S.1 con los defaults de CUAD-2)' if 'S_personas' in cu['S_vs_B8n'] else 'B.8n'
         if abs(ST - b8) / abs(b8) > 1e-9:
-            print(f'ROJO   panel: Σ S Total {ST:,.0f} ≠ B.8n {b8:,.0f} (con ancla {cu["parametros"]["nta_anclaS"]})'); rojo = True
+            print(f'ROJO   panel: Σ S Total {ST:,.0f} ≠ {que} {b8:,.0f} (con ancla {cu["parametros"]["nta_anclaS"]})'); rojo = True
         else:
-            print(f'       panel: Σ S Total = B.8n ({b8/1e9:,.1f} bn; ancla {cu["parametros"]["nta_anclaS"]})')
+            print(f'       panel: Σ S Total = {que} ({b8/1e9:,.1f} bn; ancla {cu["parametros"]["nta_anclaS"]})')
 except (KeyError, TypeError):
     print('       panel: sin cuenta para comparar Σ S con B.8n')
 if mxc <= 1e-9 and mxcp <= 1e-9 and mxpp <= 1e-12 and len(celdas) == 15:
     print(f'OK     panel grupo × sexo (nta-panel/v2): {len(celdas)} celdas balanceadas en MXN (|entradas − salidas|/C máx {mxc:.1e}) y en % del PIB (máx {mxcp:.1e}); pctpib = valor / PIB × 100 (reldif máx {mxpp:.1e}); Σ S Total = Σ S H + M')
 sys.exit(1 if rojo else 0)
 PYEOF
+
+# --- D. Sankey v4 (8.17, CUAD-2): la economía completa conserva en todo nodo intermedio, en ambas unidades; hub = INBD; sin negativos ni duplicados ---
+JSON4="$DIR/SankeyNTA/sankey-v4-economia.json"
+if [[ -f "$JSON4" ]]; then
+python3 - "$JSON4" "$PANEL" "$CUENTA" <<'PYEOF' || rojo=1
+import re, sys, json, collections
+p4, pp, pc = sys.argv[1:4]
+rojo = False
+t = open(p4, encoding='utf-8').read()
+nodes = re.findall(r'\{label:"([^"]*)"\}', t)
+links = re.findall(r'\{to:"([^"]*)",value:"([^"]*)",from:"([^"]*)"(?:,pctpib:"([^"]*)")?\}', t)
+vals = [float(v) for _, v, _, _ in links]
+if any(v < 0 for v in vals):
+    print(f'ROJO   Sankey v4: {sum(1 for v in vals if v < 0)} enlace(s) con valor negativo'); rojo = True
+dup = [k for k, n in collections.Counter((f, to) for to, _, f, _ in links).items() if n > 1]
+if dup:
+    print(f'ROJO   Sankey v4: enlaces duplicados {dup[:5]}'); rojo = True
+if any(p == '' for *_, p in links):
+    print('ROJO   Sankey v4: enlaces sin pctpib'); rojo = True
+d = json.load(open(pp, encoding='utf-8')); pib = (d.get('pib') or {}).get('valor')
+cu = json.load(open(pc, encoding='utf-8'))
+inn = {}; out = {}
+for u, idx in (('MXN', 1), ('% PIB', 3)):
+    inn[u] = collections.defaultdict(float); out[u] = collections.defaultdict(float)
+    for l in links:
+        x = float(l[idx]) if l[idx] != '' else 0.0
+        inn[u][l[0]] += x; out[u][l[2]] += x
+I, O = inn['MXN'], out['MXN']
+mx = 0.0; peor = ''
+for u in ('MXN', '% PIB'):
+    for n in nodes:
+        if inn[u][n] and out[u][n]:
+            dd = abs(inn[u][n] - out[u][n]) / max(inn[u][n], out[u][n])
+            if dd > mx: mx, peor = dd, n
+if mx > 1e-9:
+    print(f'ROJO   Sankey v4: nodo {peor} no conserva (|in−out|/max = {mx:.3e})'); rojo = True
+hub = 'Ingreso nacional disponible'
+sect = cu.get('sectores') or {}
+if hub not in nodes:
+    print('ROJO   Sankey v4: falta el hub «Ingreso nacional disponible»'); rojo = True
+elif sect.get('IngDisp_INBD'):
+    dh = abs(I[hub] - sect['IngDisp_INBD']) / sect['IngDisp_INBD']
+    if dh > 1e-9: print(f'ROJO   Sankey v4: hub {I[hub]:,.0f} ≠ INBD BIE {sect["IngDisp_INBD"]:,.0f} (reldif {dh:.3e})'); rojo = True
+    else: print(f'OK     Sankey v4: hub = INBD BIE {I[hub]/1e9:,.3f} bn = {inn["% PIB"][hub]:.3f} % del PIB (reldif {dh:.1e})')
+contrato = [hub, 'Hogares', 'Gobierno ingreso primario', 'Hogares ingreso disponible', 'Gobierno ingreso disponible', 'Sociedades ingreso disponible', 'ISFLSH ingreso disponible', 'Sociedades', 'ISFLSH', 'Por identificar', 'Futuro', 'Colectivo', 'Vintage BIE vs CSI', 'Intereses de la deuda', 'Transferencias en efectivo', 'Derechos de pensión D8', 'Ing laboral', 'Ing capital', 'Alquiler propio', 'Impuestos a productos', 'Remesas', 'El mundo']
+faltan_c = [n for n in contrato if n not in nodes]
+if faltan_c: print(f'ROJO   Sankey v4: faltan nodos del contrato v4: {faltan_c}'); rojo = True
+fuentes_g = [n for n in nodes if n.startswith('De ') and not I[n]]; sinks_g = [n for n in nodes if n.startswith(' De ') and not O[n]]
+if len(fuentes_g) != 5 or len(sinks_g) != 5:
+    print(f'ROJO   Sankey v4: esperaba 5 grupos perceptores y 5 consumidores, hay {len(fuentes_g)}/{len(sinks_g)}'); rojo = True
+for n in ('Por identificar', 'Futuro', 'Colectivo'):
+    if n in nodes and O[n]: print(f'ROJO   Sankey v4: «{n}» debe ser sink'); rojo = True
+G = {g['g']: g for g in cu['grupos']}
+peorsink = max(abs(I[' ' + G[g]['grupo']] - (G[g]['Cpriv'] + G[g]['CpubInd'])) / (G[g]['Cpriv'] + G[g]['CpubInd']) for g in range(1, 6))
+if peorsink > 1e-9: print(f'ROJO   Sankey v4: lo que llega a algún grupo consumidor ≠ Cpriv + CpubInd (reldif {peorsink:.3e})'); rojo = True
+if not rojo:
+    print(f'OK     Sankey v4: {len(nodes)} nodos / {len(links)} enlaces; conservación en nodos intermedios ≤ 1e-9 en MXN y % del PIB (máx {mx:.1e} en {peor or "—"}); Σ entradas de cada grupo consumidor = Cpriv + CpubInd (reldif máx {peorsink:.1e})')
+print(f'       v4 fuentes ({len([n for n in nodes if not I[n]])}): {", ".join(n for n in nodes if not I[n])}')
+print(f'       v4 sinks ({len([n for n in nodes if not O[n]])}): {", ".join(n for n in nodes if not O[n])}')
+sys.exit(1 if rojo else 0)
+PYEOF
+else
+    echo "       sin $JSON4: el Sankey v4 no se emitió (hub = ing_nacional) — se omite la mitad D"
+fi
 
 if (( rojo )); then echo "RESULTADO: test-nta-identidad ROJO"; exit 1; fi
 echo "RESULTADO: test-nta-identidad VERDE"

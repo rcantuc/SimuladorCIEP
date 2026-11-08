@@ -3,7 +3,11 @@
 //
 // Dos lecturas de solo lectura sobre users/<id>/ (v8.12.5, NTA-2; v8.12.6, NTA-3: default v3 + panel):
 //
-//   ?corte=<corte>   (default v3-grupoedad) → users/<id>/SankeyNTA/sankey-<corte>.json
+//   ?corte=<corte>   (default v4-economia desde v8.17.0) → users/<id>/SankeyNTA/sankey-<corte>.json
+//       v4-economia:  (8.17, CUAD-2) el Sankey de la economía completa que escribe NTA.do §7d: personas por edad en los extremos, sectores
+//                     institucionales en medio (Hogares, Sociedades, Gobierno, ISFLSH, el mundo) conservando, hub = ingreso nacional disponible
+//                     BIE (81.561 % del PIB 2024). Cada enlace trae value (MXN) y pctpib. Es lo que dibuja /NTA desde v8.17.0; el v3 sigue
+//                     disponible con corte=v3-grupoedad.
 //       v3-grupoedad: el Sankey v3 (contrato v3) que escribe 01_modulos/NTA.do §7b → SankeySumSim folder(SankeyNTA)
 //                     name(v3-grupoedad): edades solo al inicio (perceptores) y al final (consumidores), sin «Familias»
 //                     ni «Ingreso <g>»/«Consumo <g>»; las transferencias en efectivo salen de Gobierno a un nodo único.
@@ -83,9 +87,9 @@ if ($cuenta !== '') {
 	exit;
 }
 
-// --- ?corte= : el Sankey (default: v2 por grupo de edad) ---
-$cortes_validos = array('v3-grupoedad', 'v2-grupoedad', 'decil', 'sexo', 'grupoedad', 'escol', 'rural');
-$corte = $_GET['corte'] ?? $_POST['corte'] ?? 'v3-grupoedad';
+// --- ?corte= : el Sankey (default: v4 la economía completa; v8.17.0) ---
+$cortes_validos = array('v4-economia', 'v3-grupoedad', 'v2-grupoedad', 'decil', 'sexo', 'grupoedad', 'escol', 'rural');
+$corte = $_GET['corte'] ?? $_POST['corte'] ?? 'v4-economia';
 if (!is_string($corte) || !in_array($corte, $cortes_validos, true)) {
 	nta_error(400, 'corte inválido: ' . implode('|', $cortes_validos));
 }
@@ -118,10 +122,13 @@ fclose($gestor);
 // Solo texto de presentación: la etiqueta y el orden de los nodos no cambian (05_scripts/test-sitio-nta.js lo exige).
 // Unidad de presentación (NTA-4): el v3 se dibuja en % del PIB (js/metodo-sankey.js pone pctpib como value del enlace y
 // deja el MXN en el tooltip); el v2 y los v1 siguen en MXN. El chart lo declara en `unidad` (FusionCharts la ignora).
-$unidad = ($corte === 'v3-grupoedad') ? 'pctpib' : 'mxn';
+$unidad = ($corte === 'v3-grupoedad' || $corte === 'v4-economia') ? 'pctpib' : 'mxn';
 $sufijo = ($unidad === 'pctpib') ? '% of GDP' : 'MXN';
 $hubs = null;
-if ($corte === 'v3-grupoedad') {
+if ($corte === 'v4-economia') {
+	// v4 (8.17): el hub y los nodos de sector conservan (entradas = salidas); el toolText lo declara en % del PIB
+	$hubs = '/\{"label":"(Ingreso nacional disponible|Hogares|Gobierno ingreso primario|Hogares ingreso disponible|Gobierno ingreso disponible|Sociedades ingreso disponible|ISFLSH ingreso disponible|Sociedades)"\}/u';
+} elseif ($corte === 'v3-grupoedad') {
 	$hubs = '/\{"label":"(Ing nacional|Gobierno|Activos|Transferencias en efectivo)"\}/u';
 } elseif ($corte === 'v2-grupoedad') {
 	$hubs = '/\{"label":"((?:Ingreso|Consumo) [^"]*)"\}/u';
