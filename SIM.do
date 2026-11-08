@@ -43,7 +43,7 @@ capture mkdir "${SIMROOT}/users/$id"
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global textbook "textbook"						// SCALAR TO LATEX
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
-//global hasta "3"									// PARO TEMPRANO
+global hasta "3"									// PARO TEMPRANO
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 global algebra "algebra"							// FORMA CERRADA SOBRE ESCALARES ("" = ruta micro, solo para auditar paridad)
 
