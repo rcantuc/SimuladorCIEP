@@ -12,7 +12,7 @@ quietly {
 	}
 
 	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1) EOFP ENIGH]
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Tasas Efectivas INGRESOS " in y `anio' "   }" in g _dup(20) "."
+	noisily _log modulo "TasasEfectivas  ·  tasas efectivas de los ingresos públicos, `anio'" ref("CUAD-1 §4; /metodo")
 
 
 
@@ -47,7 +47,7 @@ quietly {
 		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
 			_tabla_anclas add, codigo(`k') sector(S.13) fuente("LIF `anio' · divSIM") valor(``k'LIF'/100*scalar(PIB)) variable(`k')
 		}
-		noisily _tabla_anclas print, titulo("Anclas a la recaudación — LIF `anio' por impuesto (divSIM); Σ repartido = LIF por construcción") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anio'") pib(scalar(PIB)) nota("cada impuesto se reparte con Distribucion ∝ su variable micro de perfiles`anio'.dta (ISR_asalariados, ISR_PF, ISR_PM ∝ ing_d4_rel con isrpm_incidencia = propiedad, cuotasTP, IVA, IEPS micro y gasolinas + combustibles con ieps_relativo = micro, ISAN ∝ vehiculos, importaciones ∝ gasto); Σ repartido = LIF al peso")
+		noisily _tabla_anclas print, titulo("Anclas a la recaudación: LIF `anio' por impuesto, divSIM; Σ repartido = LIF por construcción") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anio'") pib(scalar(PIB)) nota("cada impuesto se reparte con Distribucion ∝ su variable micro de perfiles`anio'.dta (ISR_asalariados, ISR_PF, ISR_PM ∝ ing_d4_rel con isrpm_incidencia = propiedad, cuotasTP, IVA, IEPS micro y gasolinas + combustibles con ieps_relativo = micro, ISAN ∝ vehículos, importaciones ∝ gasto); Σ repartido = LIF al peso") ref("CUAD-1 §4")
 	}
 
 
@@ -55,57 +55,40 @@ quietly {
 	*************************************/
 	**# 3 Impuestos al ingreso laboral ***
 	**************************************
-	noisily di _newline(2) in y "{bf: A. " in y "Impuestos al trabajo}"
-	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-		_col(30) %7s in g "% PIB" ///
-		_col(40) "Al trabajo" ///
-		_col(55) %7s in g "% PIB" ///
-		_col(63) in g "  TE (%)" "}"
-	noisily di in g _dup(71) "-"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Base en cuentas nacionales") flex
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Impuesto") ancho(30)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("TE %") fmt(%7.3f)
 
 	** 3.1 ISR (asalariados) **
 	local RemSalPIB = scalar(RemSalPIB)
 	local ISRASPIB = scalar(ISRASPIB)
 	local RemSalSSPIB = scalar(RemSalPIB)+scalar(SSImputadaPIB)+scalar(SSEmpleadoresPIB)+scalar(ImpNetProduccionLPIB)
 
-	noisily di in g "  Rem. de asalariados" ///
-		_col(30) %7.3fc in y `RemSalSSPIB' ///
-		_col(40) in g "ISR (salarios)" ///
-		_col(55) %7.3fc in y `ISRASPIB' ///
-		_col(63) %7.3fc in y `ISRASPIB'/`RemSalSSPIB'*100 " %"
+	noisily _log cuadro fila "Remuneración de los asalariados y contribuciones" "`RemSalSSPIB'" "ISR por salarios" "`ISRASPIB'" "`ISRASPIB'/`RemSalSSPIB'*100"
 	escalar pct ISRASTE = `ISRASPIB'/`RemSalSSPIB'*100
 
 	** 3.2 ISR (personas físicas) **
 	local MixLPIB = scalar(MixLPIB)
 	local ISRPFPIB = scalar(ISRPFPIB)
 
-	noisily di in g "  Ingreso mixto laboral" ///
-		_col(30) %7.3fc in y `MixLPIB' ///
-		_col(40) in g "ISR (f{c i'}sicas)" ///
-		_col(55) %7.3fc in y `ISRPFPIB' ///
-		_col(63) %7.3fc in y `ISRPFPIB'/`MixLPIB'*100 " %"
+	noisily _log cuadro fila "Ingreso mixto neto, parte laboral" "`MixLPIB'" "ISR de personas físicas" "`ISRPFPIB'" "`ISRPFPIB'/`MixLPIB'*100"
 	escalar pct ISRPFTE = `ISRPFPIB'/`MixLPIB'*100
 
 	** 3.3 Cuotas (IMSS) **
 	local CUOTASPIB = scalar(CUOTASPIB)
 
-	noisily di in g "  Rem. de asalariados" ///
-		_col(30) %7.3fc in y `RemSalSSPIB' ///
-		_col(40) in g "Cuotas IMSS" ///
-		_col(55) %7.3fc in y `CUOTASPIB' ///
-		_col(63) %7.3fc in y `CUOTASPIB'/`RemSalSSPIB'*100 " %"
+	noisily _log cuadro fila "Remuneración de los asalariados y contribuciones" "`RemSalSSPIB'" "Cuotas IMSS" "`CUOTASPIB'" "`CUOTASPIB'/`RemSalSSPIB'*100"
 	escalar pct CUOTASTE = `CUOTASPIB'/`RemSalSSPIB'*100
 
 	** 3.4 TOTAL LABORALES **
 	local YlPIB = scalar(YlPIB)
 	local YlImpPIB = `ISRASPIB'+`ISRPFPIB'+`CUOTASPIB'
 
-	noisily di in g _dup(71) "-"
-	noisily di in g "{bf:  Ingresos laborales" ///
-		_col(30) %7.3fc in y `YlPIB' ///
-		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y `YlImpPIB' ///
-		_col(63) %7.3fc in y `YlImpPIB'/`YlPIB'*100 " %" "}"
+	noisily _log cuadro fila "(=) Ingresos laborales" "`YlPIB'" "(=) Recaudación" "`YlImpPIB'" "`YlImpPIB'/`YlPIB'*100", sep negrita
+	noisily _log cuadro print, titulo("A. Impuestos al trabajo, año `anio'") unidad("% del PIB `anio'") ref("CUAD-1 §4; /metodo tasas efectivas")
 	escalar pctpib YlImpPIB = `YlImpPIB'
 	escalar pct YlImpTE = `YlImpPIB'/`YlPIB'*100
 
@@ -138,52 +121,35 @@ quietly {
 			local ISRPMBasePIB = (scalar(B2nNoFin) + scalar(B2nFin))/scalar(PIB)*100
 			local ISRPMBaseTxt "B.2n S.11 + S.12"
 		}
-		else noisily di as err "  FLAG TasasEfectivas (isrpm_incidencia = propiedad): SCN sin B2nNoFin/B2nFin para `anio'; ISRPMTE sobre el capital privado BIE."
+		else noisily _log aviso, tipo(FLAG) texto("TasasEfectivas: SCN sin B2nNoFin/B2nFin para `anio'; ISRPMTE sobre el capital privado BIE") ref("CUAD-1 §4.0") rojo
 	}
 
-	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
-	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-		_col(30) %7s in g "% PIB" ///
-		_col(40) "Al capital" ///
-		_col(55) %7s in g "% PIB" ///
-		_col(63) in g "  TE (%)" "}"
-	noisily di in g _dup(71) "-"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Base en cuentas nacionales") flex
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Impuesto") ancho(30)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("TE %") fmt(%7.3f)
 
 	** 4.1 ISR (personas morales) **
-	noisily di in g "  `ISRPMBaseTxt'" ///
-		_col(30) %7.3fc in y `ISRPMBasePIB' ///
-		_col(40) in g "ISR (morales)" ///
-		_col(55) %7.3fc in y `ISRPMPIB' ///
-		_col(63) %7.3fc in y `ISRPMPIB'/`ISRPMBasePIB'*100 " %"
+	noisily _log cuadro fila "`ISRPMBaseTxt'" "`ISRPMBasePIB'" "ISR de personas morales" "`ISRPMPIB'" "`ISRPMPIB'/`ISRPMBasePIB'*100"
 
 	** 4.2 Productos, derechos, aprovechamientos, contribuciones **
-	noisily di in g "  Ing. de capital privado" ///
-		_col(30) %7.3fc in y `IngKPrivadoPIB' ///
-		_col(40) in g "Otros ingresos" ///
-		_col(55) %7.3fc in y `OTROSKPIB' ///
-		_col(63) %7.3fc in y `OTROSKPIB'/`IngKPrivadoPIB'*100 " %"
+	noisily _log cuadro fila "Ingreso de capital privado" "`IngKPrivadoPIB'" "Otros ingresos: productos, derechos, aprovechamientos" "`OTROSKPIB'" "`OTROSKPIB'/`IngKPrivadoPIB'*100"
 	escalar pct ISRPMTE = `ISRPMPIB'/`ISRPMBasePIB'*100
 	escalar pctpib ISRPMBasePIB = `ISRPMBasePIB'
 	escalar pct OTROSKTE = `OTROSKPIB'/`IngKPrivadoPIB'*100
-	if "$isrpm_incidencia" == "propiedad" & "`ISRPMBaseTxt'" == "B.2n S.11 + S.12" noisily di in g "  (ISRPMTE sobre B.2n S.11 + S.12 = " in y %7.3fc `ISRPMBasePIB' in g " % del PIB; isrpm_incidencia = propiedad, 8.16b)"
+	if "$isrpm_incidencia" == "propiedad" & "`ISRPMBaseTxt'" == "B.2n S.11 + S.12" noisily _log cuadro nota "ISRPMTE sobre B.2n S.11 + S.12 = `=strtrim(string(`ISRPMBasePIB', "%7.3f"))' % del PIB (isrpm_incidencia = propiedad, firma decisión 7)"
 
 	** 4.3 FMP (energía) **
-	noisily di in g "  Ing. de capital privado" ///
-		_col(30) %7.3fc in y `IngKPrivadoPIB' ///
-		_col(40) in g "FMP" ///
-		_col(55) %7.3fc in y `FMPPIB' ///
-		_col(63) %7.3fc in y `FMPPIB'/`IngKPrivadoPIB'*100 " %"
+	noisily _log cuadro fila "Ingreso de capital privado" "`IngKPrivadoPIB'" "Fondo Mexicano del Petróleo" "`FMPPIB'" "`FMPPIB'/`IngKPrivadoPIB'*100"
 	escalar pct FMPTE = `FMPPIB'/`IngKPrivadoPIB'*100
 
 	** 4.4 TOTAL CAPITAL PRIVADO **
 	local ImpKPrivadoPIB = `ISRPMPIB'+`OTROSKPIB'+`FMPPIB'
 
-	noisily di in g _dup(71) "-"
-	noisily di in g "{bf:  Ing. de capital privado" ///
-		_col(30) %7.3fc in y `IngKPrivadoPIB' ///
-		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y `ImpKPrivadoPIB' ///
-		_col(63) %7.3fc in y `ImpKPrivadoPIB'/`IngKPrivadoPIB'*100 " %" "}"
+	noisily _log cuadro fila "Ingreso de capital privado" "`IngKPrivadoPIB'" "(=) Recaudación" "`ImpKPrivadoPIB'" "`ImpKPrivadoPIB'/`IngKPrivadoPIB'*100", sep negrita
+	noisily _log cuadro print, titulo("B. Impuestos al capital, año `anio'") unidad("% del PIB `anio'") ref("CUAD-1 §4; /metodo tasas efectivas")
 	escalar pctpib IngKPrivadoPIB = `IngKPrivadoPIB'
 	escalar pct IngKPrivadoTotTE = `ImpKPrivadoPIB'/`IngKPrivadoPIB'*100
 	escalar pctpib ImpKPrivadoPIB = `ImpKPrivadoPIB'
@@ -196,53 +162,32 @@ quietly {
 	* Los locals PEMEXPIB, CFEPIB, IMSSPIB, ISSSTEPIB, FMPPIB ya fueron convertidos en sección 4
 	local ImpKPublicosPIB = `PEMEXPIB'+`CFEPIB'+`IMSSPIB'+`ISSSTEPIB'
 
-	noisily di _newline(2) in y "{bf: C. " in y "Organismos y empresas" "}"
-	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-		_col(30) %7s in g "% PIB" ///
-		_col(40) "OyE públicas" ///
-		_col(55) %7s in g "% PIB" ///
-		_col(63) in g "  TE (%)" "}"
-	noisily di in g _dup(71) "-"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Base en cuentas nacionales") flex
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Impuesto") ancho(30)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("TE %") fmt(%7.3f)
 
 	** 5.1 Pemex (energía) **
-	noisily di in g "  Ingresos de capital" ///
-		_col(30) %7.3fc in y `CapIncImpPIB' ///
-		_col(40) in g "Pemex" ///
-		_col(55) %7.3fc in y `PEMEXPIB' ///
-		_col(63) %7.3fc in y `PEMEXPIB'/`CapIncImpPIB'*100 " %"
+	noisily _log cuadro fila "Ingresos de capital, neto más impuestos" "`CapIncImpPIB'" "Pemex" "`PEMEXPIB'" "`PEMEXPIB'/`CapIncImpPIB'*100"
 	escalar pct PEMEXTE = `PEMEXPIB'/`CapIncImpPIB'*100
 
 	** 5.2 CFE (energía) **
-	noisily di in g "  Ingresos de capital" ///
-		_col(30) %7.3fc in y `CapIncImpPIB' ///
-		_col(40) in g "CFE" ///
-		_col(55) %7.3fc in y `CFEPIB' ///
-		_col(63) %7.3fc in y `CFEPIB'/`CapIncImpPIB'*100 " %"
+	noisily _log cuadro fila "Ingresos de capital, neto más impuestos" "`CapIncImpPIB'" "CFE" "`CFEPIB'" "`CFEPIB'/`CapIncImpPIB'*100"
 	escalar pct CFETE = `CFEPIB'/`CapIncImpPIB'*100
 
 	** 5.3 IMSS **
-	noisily di in g "  Ingresos de capital" ///
-		_col(30) %7.3fc in y `CapIncImpPIB' ///
-		_col(40) in g "IMSS" ///
-		_col(55) %7.3fc in y `IMSSPIB' ///
-		_col(63) %7.3fc in y `IMSSPIB'/`CapIncImpPIB'*100 " %"
+	noisily _log cuadro fila "Ingresos de capital, neto más impuestos" "`CapIncImpPIB'" "IMSS" "`IMSSPIB'" "`IMSSPIB'/`CapIncImpPIB'*100"
 	escalar pct IMSSTE = `IMSSPIB'/`CapIncImpPIB'*100
 
 	** 5.4 ISSSTE **
-	noisily di in g "  Ingresos de capital" ///
-		_col(30) %7.3fc in y `CapIncImpPIB' ///
-		_col(40) in g "ISSSTE" ///
-		_col(55) %7.3fc in y `ISSSTEPIB' ///
-		_col(63) %7.3fc in y `ISSSTEPIB'/`CapIncImpPIB'*100 " %"
+	noisily _log cuadro fila "Ingresos de capital, neto más impuestos" "`CapIncImpPIB'" "ISSSTE" "`ISSSTEPIB'" "`ISSSTEPIB'/`CapIncImpPIB'*100"
 	escalar pct ISSSTETE = `ISSSTEPIB'/`CapIncImpPIB'*100
 
 	** 5.5 TOTAL INGRESOS DE CAPITAL PUBLICOS **
-	noisily di in g _dup(71) "-"
-	noisily di in g "{bf:  Ingresos de capital" ///
-		_col(30) %7.3fc in y `CapIncImpPIB' ///
-		_col(40) in g "Ing. propios" ///
-		_col(55) %7.3fc in y `ImpKPublicosPIB' ///
-		_col(63) %7.3fc in y `ImpKPublicosPIB'/`CapIncImpPIB'*100 " %" "}"
+	noisily _log cuadro fila "Ingresos de capital, neto más impuestos" "`CapIncImpPIB'" "(=) Ingresos propios" "`ImpKPublicosPIB'" "`ImpKPublicosPIB'/`CapIncImpPIB'*100", sep negrita
+	noisily _log cuadro print, titulo("C. Organismos y empresas públicas, ingresos propios, año `anio'") unidad("% del PIB `anio'") ref("CUAD-1 §4; /metodo tasas efectivas")
 	escalar pctpib IngKPublicosTotPIB = `ImpKPublicosPIB'
 	escalar pct IngKPublicosTotTE = `ImpKPublicosPIB'/`CapIncImpPIB'*100
 	escalar pctpib ImpKPublicosPIB = `ImpKPublicosPIB'
@@ -268,63 +213,38 @@ quietly {
 
 	local AlcTabJuePIB = `BebAPIB'+`TabaPIB'+`Recre7132PIB'
 
-	noisily di _newline(2) in y "{bf: D. " in y "Impuestos al consumo" "}"
-	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-		_col(30) %7s in g "% PIB" ///
-		_col(40) "Al consumo" ///
-		_col(55) %7s in g "% PIB" ///
-		_col(63) in g "  TE (%)" "}"
-	noisily di in g _dup(71) "-"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Base en cuentas nacionales") flex
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Impuesto") ancho(30)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("TE %") fmt(%7.3f)
 
 	** 6.1 IVA **
-	noisily di in g "  Consumo hogares e ISFLSH" ///
-		_col(30) %7.3fc in y `ConHogPIB' ///
-		_col(40) in g "IVA" ///
-		_col(55) %7.3fc in y `IVAPIB' ///
-		_col(63) %7.3fc in y `IVAPIB'/`ConHogPIB'*100 " %"
+	noisily _log cuadro fila "Consumo de hogares e ISFLSH" "`ConHogPIB'" "IVA" "`IVAPIB'" "`IVAPIB'/`ConHogPIB'*100"
 	escalar pct IVATE = `IVAPIB'/`ConHogPIB'*100
 
 	** 6.2 ISAN **
-	noisily di in g "  Compra de veh{c i'}culos" ///
-		_col(30) %7.3fc in y `VehiPIB' ///
-		_col(40) in g "ISAN" ///
-		_col(55) %7.3fc in y `ISANPIB' ///
-		_col(63) %7.3fc in y `ISANPIB'/`VehiPIB'*100 " %"
+	noisily _log cuadro fila "Adquisición de vehículos" "`VehiPIB'" "ISAN" "`ISANPIB'" "`ISANPIB'/`VehiPIB'*100"
 	escalar pct ISANTE = `ISANPIB'/`VehiPIB'*100
 
 	** 6.3 IEPS (no petrolero) **
-	noisily di in g "  Alcohol, tabaco y juegos" ///
-		_col(30) %7.3fc in y `AlcTabJuePIB' ///
-		_col(40) in g "IEPS (No petr.)" ///
-		_col(55) %7.3fc in y `IEPSNPPIB' ///
-		_col(63) %7.3fc in y `IEPSNPPIB'/`AlcTabJuePIB'*100 " %"
+	noisily _log cuadro fila "Alcohol, tabaco y juegos de azar" "`AlcTabJuePIB'" "IEPS no petrolero" "`IEPSNPPIB'" "`IEPSNPPIB'/`AlcTabJuePIB'*100"
 	escalar pct IEPSNPTE = `IEPSNPPIB'/`AlcTabJuePIB'*100
 
 	** 6.4 IEPS (petrolero) **
-	noisily di in g "  Consumo privado minería" ///
-		_col(30) %7.3fc in y `ConsPriv21PIB' ///
-		_col(40) in g "IEPS (Petr.)" ///
-		_col(55) %7.3fc in y `IEPSPPIB' ///
-		_col(63) %7.3fc in y `IEPSPPIB'/`ConsPriv21PIB'*100 " %"
+	noisily _log cuadro fila "Consumo privado de minería" "`ConsPriv21PIB'" "IEPS petrolero" "`IEPSPPIB'" "`IEPSPPIB'/`ConsPriv21PIB'*100"
 	escalar pct IEPSPTE = `IEPSPPIB'/`ConsPriv21PIB'*100
 
 	** 6.5 Importaciones **
-	noisily di in g "  Consumo hogares e ISFLSH" ///
-		_col(30) %7.3fc in y `ConHogPIB' ///
-		_col(40) in g "Importaciones" ///
-		_col(55) %7.3fc in y `IMPORTPIB' ///
-		_col(63) %7.3fc in y `IMPORTPIB'/`ConHogPIB'*100 " %"
+	noisily _log cuadro fila "Consumo de hogares e ISFLSH" "`ConHogPIB'" "Impuesto a las importaciones" "`IMPORTPIB'" "`IMPORTPIB'/`ConHogPIB'*100"
 	escalar pct IMPORTTE = `IMPORTPIB'/`ConHogPIB'*100
 
 	** 6.6 TOTAL CONSUMO **
 	local ingconsumoPIB = `IEPSPPIB'+`IEPSNPPIB'+`IVAPIB'+`ISANPIB'+`IMPORTPIB'
 
-	noisily di in g _dup(71) "-"
-	noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
-		_col(30) %7.3fc in y `ConHogPIB' ///
-		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y `ingconsumoPIB' ///
-		_col(63) %7.3fc in y `ingconsumoPIB'/`ConHogPIB'*100 " %" "}"
+	noisily _log cuadro fila "Consumo de hogares e ISFLSH" "`ConHogPIB'" "(=) Recaudación" "`ingconsumoPIB'" "`ingconsumoPIB'/`ConHogPIB'*100", sep negrita
+	noisily _log cuadro print, titulo("D. Impuestos al consumo, año `anio'") unidad("% del PIB `anio'") ref("CUAD-1 §4; /metodo tasas efectivas")
 	escalar pctpib ingconsumoPIB = `ingconsumoPIB'
 	escalar pct ingconsumoTE = `ingconsumoPIB'/`ConHogPIB'*100
 
@@ -372,6 +292,6 @@ quietly {
 	***********
 	timer off 8
 	timer list 8
-	noisily di _newline in g "Tiempo: " in y round(`=r(t8)/r(nt8)',.1) in g " segs."
+	noisily _log tiempo, timer(8) texto("TasasEfectivas")
 }
 end

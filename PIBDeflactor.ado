@@ -125,15 +125,13 @@ quietly {
 	
 	** 2.2 Display inicial **
 	if "`entidad'" == "" {
-		noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " `aniovp'   }" in g _dup(20) "." _newline
+		noisily _log modulo "PIB y deflactor  ·  valor presente `aniovp'" ref("runbook §9")
 	}
 	else {
-		noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " `aniovp' | `entidad'   }" in g _dup(20) "." _newline
-		noisily di in g " PIBE anual (BIE 750453/753357, {c a'}rea `clave'), ocupados ENOE (BISE 6200093954)"
-		noisily di in g " INPC `ent' (INEGI), poblaci{c o'}n CONAPO `ent'."
+		noisily _log modulo "PIB y deflactor  ·  valor presente `aniovp'  ·  `entidad'" ref("runbook §9.7")
+		noisily _log linea "PIBE anual (BIE 750453/753357, área `clave'), ocupados ENOE (BISE 6200093954); INPC `ent' (INEGI), población CONAPO `ent'"
 	}
-	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" ///
-		_col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
+	noisily _log linea "PIB `aniofinal'q`trim_last' (último reportado): `=strtrim(string(pibQ[`obsfinal']/1e9, "%14.3fc"))' `=currency', miles de millones"
 	sort anio trimestre
 
 	capture confirm variable var_itaee
@@ -331,7 +329,7 @@ quietly {
 	}
 	if "`exceptT'" != "" {
 		local exceptT "`=substr("`exceptT'",1,`=strlen("`exceptT'")-2')'"
-		noisily di in g " Nowcast ITAEE (crecimiento real, mismos trimestres): " in y "`exceptT'"
+		noisily _log aviso, tipo(Nota) texto("nowcast ITAEE (crecimiento real, mismos trimestres): `exceptT'")
 	}
 
 	** 4.2 Lambda (productividad) **
@@ -381,8 +379,7 @@ quietly {
 	*****************
 	** 6 Simulador **
 	*****************
-	noisily di in g " PIB " in y anio[`obslast'] in g " per c{c a'}pita " in y _col(43) %10.0fc pibY[`obslast']/Poblacion[`obslast'] in g " `=currency[`obslast']'"
-	noisily di in g " PIB " in y anio[`obslast'] in g " per c{c a'}pita (edades laborales) " in y _col(43) %10.0fc OutputPerWorker[`obslast'] in g " `=currency[`obslast']' (16-65 a{c n~}os)"
+	noisily _log linea "PIB `=anio[`obslast']' per cápita: `=strtrim(string(pibY[`obslast']/Poblacion[`obslast'], "%10.0fc"))' `=currency[`obslast']'; por persona en edad laboral, 16-65 años: `=strtrim(string(OutputPerWorker[`obslast'], "%10.0fc"))'"
 
 	local crecimientoProm = ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
 	escalar pct crecimientoProm`ent' = `crecimientoProm'
@@ -404,8 +401,7 @@ quietly {
 	local inflacionProm = ((inpc[`obsvp']/inpc[`obsINF'])^(1/(`obsvp'-`obsINF'))-1)*100
 	escalar pct inflacionProm`ent' = `inflacionProm'
 
-	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
-	noisily di in g " Crecimiento productividad " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " % (working age)" 
+	noisily _log linea "Crecimiento promedio `=anio[`obsPIB']'-`=anio[`obs_exo']': `=strtrim(string(((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100, "%8.4f"))' % anual; productividad por persona en edad laboral `=strtrim(string(scalar(llambda), "%8.4f"))' %"
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 	
 	escalar pct llambda`ent' = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100
@@ -982,35 +978,28 @@ quietly {
 	***************
 	*** 4 Texto ***
 	***************
-	noisily di _newline in g _col(10) "Crec." ///
-	    _col(20) "PIB Nominal" ///
-	    _col(42) "Inf." ///
-	    _col(50) "Def. INPC" ///
-	    _col(66) "Precios" ///
-	    _col(75) "Deflactor"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Año") ancho(7)
+	noisily _log cuadro col, titulo("Crec. %") fmt(%7.1f)
+	noisily _log cuadro col, titulo("PIB nominal") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("Infl. %") fmt(%7.1f)
+	noisily _log cuadro col, titulo("Deflactor INPC") fmt(%14.10f)
+	noisily _log cuadro col, titulo("Precios %") fmt(%9.1f)
+	noisily _log cuadro col, titulo("Deflactor") fmt(%14.10f)
 	forvalues k=`=`obsvp'-10'(1)`=`obsvp'+10' {
 	    if anio[`k'] < `aniofinal' | (anio[`k'] == `aniofinal' & trimestre[`k'] == 4) {
 		if "`reportado'" == "" {
 		    local reportado = "done"
 		}
-		noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
-		    _col(18) %20.0fc pibY[`k'] ///
-		    _col(35) %8.1fc in y var_inflY[`k'] " %" ///
-		    _col(45) %14.10fc deflatorpp[`k'] ///
-		    _col(55) %8.1fc var_indiceY[`k'] " %" ///
-		    _col(75) %12.10fc deflator[`k']
+		noisily _log cuadro fila "`=anio[`k']'" "var_pibY[`k']" "pibY[`k']" "var_inflY[`k']" "deflatorpp[`k']" "var_indiceY[`k']" "deflator[`k']"
 	    }
 	    if anio[`k'] <= anio[`obs_exo'] & (anio[`k'] > `aniofinal' | (anio[`k'] == `aniofinal' & trimestre[`k'] < 4)) {
+		local sepest ""
 		if "`estimado'" == "" {
-		    noisily di _col(20) in g "Estimado $paqueteEconomico"
+		    local sepest `"sep nota("de `=anio[`k']' en adelante: estimado $paqueteEconomico (inputs de SIM.do §2.1-§2.3)")"'
 		    local estimado = "done"
 		}
-		noisily di in g "{bf: `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
-		    _col(18) %20.0fc pibY[`k'] ///
-		    _col(35) %8.1fc in y var_inflY[`k'] " %" ///
-		    _col(45) %14.10fc deflatorpp[`k'] ///
-		    _col(55) %8.1fc var_indiceY[`k'] " %" ///
-		    _col(75) %12.10fc deflator[`k'] "}"
+		noisily _log cuadro fila "`=anio[`k']'" "var_pibY[`k']" "pibY[`k']" "var_inflY[`k']" "deflatorpp[`k']" "var_indiceY[`k']" "deflator[`k']", `sepest' negrita
 	    }
 	    /*if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
 		if "`proyectado'" == "" {
@@ -1025,12 +1014,13 @@ quietly {
 		    _col(75) %12.10fc deflator[`k']
 	    }*/
 	}
+	noisily _log cuadro print, titulo("Crecimiento, inflación y deflactores; base del valor presente `aniovp'") unidad("`=currency[`obsvp']', miles de millones")
 	scalar aniolast = `aniofinal'
 
 	if "`textbook'" == "textbook" {
 		capture which scalarlatex
 		if _rc {
-			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+			noisily _log aviso, tipo(Nota) texto("la opción textbook (scalarlatex) es solo-repo; no viaja al endpoint público")
 		}
 		else {
 			noisily scalarlatex, log(pibdeflactor) alt(pib)
@@ -1038,8 +1028,7 @@ quietly {
 	}
 	
 	timer off 3
-	timer list 3
-	noisily di _newline in g "Tiempo: " in y round(`=r(t3)/r(nt3)',.01) in g " segs."
+	noisily _log tiempo, timer(3) texto("PIBDeflactor")
 }
 end
 
@@ -1051,7 +1040,7 @@ end
 program define UpdatePIBDeflactor
 	syntax [, NOGraphs ENTidad(string) CLAve(string) ABRev(string)]
 	if "`clave'" == "" local clave "00"
-	noisily di in g "  Updating PIBDeflactor`abrev'.dta..." _newline
+	noisily _log aviso, tipo(UPDATE) texto("PIBDeflactor`abrev'.dta: se reconstruye desde el BIE") ref("runbook §9")
 
 	**************
 	***        ***
@@ -1103,7 +1092,7 @@ program define UpdatePIBDeflactor
 			merge 1:1 anio trimestre using `pibe', nogen
 		}
 		else {
-			noisily di in y "  ITAEE no disponible para el {c a'}rea `clave'; sin nowcast."
+			noisily _log aviso, tipo(Nota) texto("ITAEE no disponible para el área `clave'; sin nowcast")
 			use `pibe', clear
 		}
 	}

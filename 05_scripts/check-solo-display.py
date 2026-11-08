@@ -4,7 +4,7 @@
 Uso: python3 05_scripts/check-solo-display.py [--ref master] archivo...
 Para cada archivo compara la versión de la referencia (git show) con la del árbol, uniendo las continuaciones `///` en enunciados
 lógicos, y clasifica cada enunciado quitado o añadido (comentarios y líneas en blanco fuera):
-  · impresión: display/di, noisily _log, _tabla_anclas, printf, simci, `local` de texto para _log (lg_*, cuadro_titulo, ifdesc, lgo,
+  · impresión: display/di, noisily _log, _tabla_anclas, printf, simci, `local` de texto para _log (lg_*, cuadro_titulo|nota_fuera, ifdesc, lgo,
     nn, nl, sepest), `capture log on|off`, `run`/`do` del driver del nodo, `timer list`, `syntax` de simci;
   · declaradas (prefijo/opción de impresión sobre un comando de cálculo; se listan aparte): `noisily xi: probit` → `xi: probit`,
     `noisily tabstat …` → `quietly tabstat … save` en Expenditure.do §3.4;
@@ -31,8 +31,8 @@ def join(text):
     return res
 # nta-identidad.txt es un producto de texto del log (no un JSON ni un .dta): sus `file write` son impresión
 IDENT = re.compile(r'^(?:file write `fh\' (?:"(?:Cuadro|Nota|NTA |`raya)|%-\d+s|_n)|local raya = |local lab : label grupoedad|forvalues g = 1/5 \{|if "\$cuotas_por_sector" == "on" & "\$nta_cuotas" == "S14" (?:\{|file write))')
-PRINT = re.compile(r'^(?:(?:noisily|noi|quietly|qui|capture|cap)\s+)*(?:_log\b|_tabla_anclas\b|di\b|display\b|dis\b|printf\b|simci\b|local (?:lg_|cuadro_titulo|ifdesc|lgo|nn |nl |sepest)|capture log (?:on|off)\b|timer list\b|if .*\b(?:_log|di)\b|else .*\b(?:_log|di)\b|foreach k of local deciles \{|foreach p of global LOG_PARAM_FLAGS \{|\}$)')
-DECLARADAS = [('noisily xi: probit', 'xi: probit'), ('noisily tabstat', 'quietly tabstat'), ('noisily tabstat', 'tabstat'), ('noisily do `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"\'', 'noisily run `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"\'')]
+PRINT = re.compile(r'^(?:(?:noisily|noi|quietly|qui|capture|cap)\s+)*(?:_log\b|_tabla_anclas\b|di\b|display\b|dis\b|printf\b|simci\b|local (?:lg_|cuadro_titulo|nota_fuera|ifdesc|lgo|nn |nl |sepest)|capture log (?:on|off)\b|timer list\b|if .*\b(?:_log|di)\b|else .*\b(?:_log|di)\b|foreach k of local deciles \{|foreach p of global LOG_PARAM_FLAGS \{|\}$)')
+DECLARADAS = [('noisily xi: probit', 'xi: probit'), ('noisily tabstat', 'quietly tabstat'), ('noisily tabstat', 'tabstat'), ('noisily do `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"\'', 'noisily run `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"\''), ('quietly log using `sankey\'', 'file open `fsk\' using `sankey\''), ('noisily di in w', 'file write `fsk\''), ('capture quietly log close sankey', 'file close `fsk\''), ('tempname fsk', 'tempname fsk'), ('if `"`meta\'"\' != "" noisily di in w', 'if `"`meta\'"\' != "" file write `fsk\''), ('if _rc == 0 local nota_fuera', 'if _rc == 0 {')]
 SIMCI_SYNTAX = 'syntax varname [if], [POINT(real -1e300) LABel(string) COL(integer 40) FMT(string)'
 total=0; impresion=0; declaradas=[]; calculo=[]
 for f in args:

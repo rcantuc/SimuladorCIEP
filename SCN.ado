@@ -25,7 +25,7 @@ quietly {
 	capture use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	syntax [, ANIO(int `aniovp') ANIOMAX(int 2050) NOGraphs UPDATE TEXTBOOK]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
+	noisily _log modulo "SCN  ·  Sistema de Cuentas Nacionales, año `anio'" ref("CUAD-0 §4 bis; runbook §9")
 
 
 
@@ -34,7 +34,7 @@ quietly {
 	***
 	capture confirm file "${SIMROOT}/master/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
-		noisily di in g "  Updating SCN.dta... Este proceso puede demorar varios minutos." _newline
+		noisily _log aviso, tipo(UPDATE) texto("SCN.dta se reconstruye desde el asset congelado; puede tardar varios minutos") ref("runbook §9")
 		noisily UpdateSCN `update'
 	}
 
@@ -80,7 +80,7 @@ quietly {
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
-			noisily di as err "  FLAG SCN (NTA-1): sin series S.14 hogares (CSI_115.xlsx / CSI_103.xlsx); AhorroHog, AhorroHogB, TransfEspecie y las anclas NTA-1b no se definen."
+			noisily _log aviso, tipo(FLAG) texto("SCN sin series S.14 de hogares (CSI_115/CSI_103): AhorroHog, TransfEspecie y las anclas NTA-1b no se definen") ref("CUAD-0 §4 bis") rojo
 		}
 	}
 
@@ -128,7 +128,6 @@ quietly {
 	forvalues k = 1(1)`=_N' {
 		if anio[`k'] == `anio' {
 			local obs = `k'
-			noisily di in g "`k'"
 			continue, break
 		}
 	}
@@ -137,27 +136,18 @@ quietly {
 	**
 	** A. Generaci{c o'}n de la producci{c o'}n
 	**
-	noisily di _newline in y "{bf: A. Cuenta: de producci{c o'}n (bruta)" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" "}" 
-	noisily di in g "  (+) Producci{c o'}n bruta" ///
-		_col(44) in y %20.0fc ProdT[`obs'] ///
-		_col(66) in y %7.3fc ProdT[`obs']/PIB[`obs']*100
-	noisily di in g "  (-) Consumo intermedio" ///
-		_col(44) in y %20.0fc ConsInt[`obs'] ///
-		_col(66) in y %7.3fc ConsInt[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Valor agregado" ///
-		_col(44) in y %20.0fc (ProdT[`obs']-ConsInt[`obs']) ///
-		_col(66) in y %7.3fc (ProdT[`obs']-ConsInt[`obs'])/PIB[`obs']*100 "}"
-	noisily di in g "  (+) Impuestos a los productos" ///
-		_col(44) in y %20.0fc (ImpNet[`obs']) ///
-		_col(66) in y %7.3fc (ImpNet[`obs'])/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
-		_col(44) in y %20.0fc (PIB[`obs']) ///
-		_col(66) in y %7.3fc (PIB[`obs'])/PIB[`obs']*100 "}"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "A. Cuenta de producción, bruta"
+	noisily _log cuadro fila "(+) Producción bruta" "ProdT[`obs']" "ProdT[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(-) Consumo intermedio" "ConsInt[`obs']" "ConsInt[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Valor agregado" "(ProdT[`obs']-ConsInt[`obs'])" "(ProdT[`obs']-ConsInt[`obs'])/PIB[`obs']*100", sep negrita
+	noisily _log cuadro fila "(+) Impuestos a los productos" "(ImpNet[`obs'])" "(ImpNet[`obs'])/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Producto Interno Bruto" "(PIB[`obs'])" "(PIB[`obs'])/PIB[`obs']*100", sep negrita
 
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 
 	* Returns *
 	escalar mxn ProdBruta = ProdT[`obs']
@@ -264,45 +254,27 @@ quietly {
 	label var CapIncImp "Ingreso de capital (netos con impuestos)"
 
 	** B.8. Producto Interno Neto **
-	noisily di _newline in y "{bf: B.1. Cuenta: distribuc{c o'}n del ingreso" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" "}" 
-	noisily di in g "  (+) Remuneraci{c o'}n de asalariados" ///
-		_col(44) in y %20.0fc RemSal[`obs'] ///
-		_col(66) in y %7.3fc RemSal[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Contribuciones sociales" ///
-		_col(44) in y %20.0fc SSEmpleadores[`obs']+SSImputada[`obs'] ///
-		_col(66) in y %7.3fc (SSEmpleadores[`obs']+SSImputada[`obs'])/PIB[`obs']*100
-	noisily di in g "  (+) Ingreso mixto (laboral)" ///
-		_col(44) in y %20.0fc MixL[`obs']  ///
-		_col(66) in y %7.3fc MixL[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Impuestos a la producci{c o'}n (laboral)" ///
-		_col(44) in y %20.0fc ImpNetProduccionL[`obs']  ///
-		_col(66) in y %7.3fc ImpNetProduccionL[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Ingresos laborales" ///
-		_col(44) in y %20.0fc Yl[`obs'] ///
-		_col(66) in y %7.3fc Yl[`obs']/PIB[`obs']*100 "}"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "B.1 Cuenta de distribución del ingreso"
+	noisily _log cuadro fila "(+) Remuneración de asalariados" "RemSal[`obs']" "RemSal[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Contribuciones sociales" "SSEmpleadores[`obs']+SSImputada[`obs']" "(SSEmpleadores[`obs']+SSImputada[`obs'])/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Ingreso mixto, laboral" "MixL[`obs']" "MixL[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Impuestos a la producción, laboral" "ImpNetProduccionL[`obs']" "ImpNetProduccionL[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Ingresos laborales" "Yl[`obs']" "Yl[`obs']/PIB[`obs']*100", sep negrita
 
-	noisily di in g "  (+) Ingresos de capital (neto + imp.)" ///
-		_col(44) in y %20.0fc CapIncImp[`obs'] ///
-		_col(66) in y %7.3fc CapIncImp[`obs'] /PIB[`obs']*100
+	noisily _log cuadro fila "(+) Ingresos de capital, neto más impuestos" "CapIncImp[`obs']" "CapIncImp[`obs'] /PIB[`obs']*100"
 
 	/* NOTA: Se muestra Yl + CapIncImp como PIN para garantizar consistencia aritmética.
 	   La diferencia con el PIN oficial del BIE (~1.3 mil millones) es discrepancia estadística. */
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Producto Interno Neto" ///
-		_col(44) in y %20.0fc Yl[`obs']+CapIncImp[`obs'] ///
-		_col(66) in y %7.3fc (Yl[`obs']+CapIncImp[`obs'])/PIB[`obs']*100 "}"
-	noisily di in g "  (+) Consumo de capital fijo" ///
-		_col(44) in y %20.0fc CapFij[`obs'] ///
-		_col(66) in y %7.3fc CapFij[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
-		_col(44) in y %20.0fc Yl[`obs']+CapIncImp[`obs']+CapFij[`obs'] ///
-		_col(66) in y %7.3fc (Yl[`obs']+CapIncImp[`obs']+CapFij[`obs'])/PIB[`obs']*100 "}"
+	noisily _log cuadro fila "(=) Producto Interno Neto" "Yl[`obs']+CapIncImp[`obs']" "(Yl[`obs']+CapIncImp[`obs'])/PIB[`obs']*100", sep negrita
+	noisily _log cuadro fila "(+) Consumo de capital fijo" "CapFij[`obs']" "CapFij[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Producto Interno Bruto" "Yl[`obs']+CapIncImp[`obs']+CapFij[`obs']" "(Yl[`obs']+CapIncImp[`obs']+CapFij[`obs'])/PIB[`obs']*100", sep negrita
 
 	** R.4. Returns ***
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 	escalar mxn RemSal = RemSal[`obs']
 	escalar pctpib RemSalPIB = RemSal[`obs']/PIB[`obs']*100
 
@@ -345,37 +317,21 @@ quietly {
 
 
 	* Cuenta de capital *
-	noisily di _newline in y "{bf: B.2. Cuenta: de los ingresos de capital" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" "}" 
-	noisily di in g "  (+) Sociedades e ISFLSH" ///
-		_col(44) in y %20.0fc ExNOpSoc[`obs'] ///
-		_col(66) in y %7.3fc ExNOpSoc[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Ingreso mixto (capital)" ///
-		_col(44) in y %20.0fc MixKN[`obs'] ///
-		_col(66) in y %7.3fc MixKN[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Alquiler imputado" ///
-		_col(44) in y %20.0fc ExNOpHog[`obs'] ///
-		_col(66) in y %7.3fc ExNOpHog[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Gobierno" ///
-		_col(44) in y %20.0fc ExNOpGob[`obs'] ///
-		_col(66) in y %7.3fc ExNOpGob[`obs']
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Ingresos de capital (neto) " ///
-		_col(44) in y %20.0fc Capital[`obs'] ///
-		_col(66) in y %7.3fc Capital[`obs']/PIB[`obs']*100 "}"
-	noisily di in g _dup(72) "-"
-	noisily di in g "  (+) Impuestos a los productos" ///
-		_col(44) in y %20.0fc ImpNet[`obs'] ///
-		_col(66) in y %7.3fc ImpNet[`obs'] /PIB[`obs']*100
-	noisily di in g "  (+) Impuestos a la producci{c o'}n (capital)" ///
-		_col(44) in y %20.0fc ImpNetProduccionK[`obs']  ///
-		_col(66) in y %7.3fc ImpNetProduccionK[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Ingresos de capital (neto + imp.) " ///
-		_col(44) in y %20.0fc CapIncImp[`obs'] ///
-		_col(66) in y %7.3fc CapIncImp[`obs']/PIB[`obs']*100 "}"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "B.2 Cuenta de los ingresos de capital"
+	noisily _log cuadro fila "(+) Sociedades e ISFLSH" "ExNOpSoc[`obs']" "ExNOpSoc[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Ingreso mixto, capital" "MixKN[`obs']" "MixKN[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Alquiler imputado" "ExNOpHog[`obs']" "ExNOpHog[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Gobierno" "ExNOpGob[`obs']" "ExNOpGob[`obs']"
+	noisily _log cuadro fila "(=) Ingresos de capital, neto" "Capital[`obs']" "Capital[`obs']/PIB[`obs']*100", sep negrita
+	noisily _log cuadro fila "(+) Impuestos a los productos" "ImpNet[`obs']" "ImpNet[`obs'] /PIB[`obs']*100", sep
+	noisily _log cuadro fila "(+) Impuestos a la producción, capital" "ImpNetProduccionK[`obs']" "ImpNetProduccionK[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Ingresos de capital, neto más impuestos" "CapIncImp[`obs']" "CapIncImp[`obs']/PIB[`obs']*100", sep negrita
 
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 	* Returns *
 	escalar mxn ExNOpSoc = ExNOpSoc[`obs']
 	escalar pctpib ExNOpSocPIB = ExNOpSoc[`obs']/PIB[`obs']*100
@@ -456,7 +412,7 @@ quietly {
 			_tabla_anclas gate, texto("Σ B.8n por sector = B.8n S.1 (CSI f.171)") a(B8nNoFin[`obs'] + B8nFin[`obs'] + B8nGob[`obs'] + AhorroHogN[`obs'] + B8nISFLSH[`obs']) b(B8nS1[`obs']) tol(1e-6)
 			_tabla_anclas gate, texto("Σ B.9 < 0 (S.11, S.13) = Σ B.9 > 0 (S.12, S.14, S.15) + Mundo (CSI f.265)") a(-B9NoFin[`obs'] - B9Gob[`obs']) b(B9Fin[`obs'] + B9Hog[`obs'] + B9ISFLSH[`obs'] + B9Row[`obs']) tol(1e-6)
 			_tabla_anclas gate, texto("Usos: Σ B.6n = Σ P.3 + Σ B.8n (CSI)") a(B6nS1[`obs']) b(P3S1[`obs'] + B8nS1[`obs']) tol(1e-6)
-			noisily _tabla_anclas print, titulo("Celdas CSI por sector del Sankey de la economía completa (CUAD-2 §6.4), año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage; la CSI redondea a miles: gates a 1e-6") unidad("MXN `anio'") pib(PIB[`obs'])
+			noisily _tabla_anclas print, titulo("Celdas CSI por sector del Sankey de la economía completa, año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage; la CSI redondea a miles: gates a 1e-6") unidad("MXN `anio'") pib(PIB[`obs']) ref("CUAD-2 §6.4")
 		}
 	}
 
@@ -531,35 +487,22 @@ quietly {
 	}
 
 	** R.5 Display (de la producci{c o'}n al ingreso) ***
-	noisily di _newline in y "{bf: C. Distribuci{c o'}n secundaria del ing" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" "}" 
-	noisily di in g "{bf:  (+) Producto Interno Bruto" ///
-		_col(44) in y %20.0fc PIB[`obs'] ///
-		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
-	noisily di in g "  (-) Consumo de capital fijo" ///
-		_col(44) in y %20.0fc CapFij[`obs'] ///
-		_col(66) in y %7.3fc CapFij[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Producto Interno Neto" ///
-		_col(44) in y %20.0fc PIN[`obs'] ///
-		_col(66) in y %7.3fc PIN[`obs']/PIB[`obs']*100 "}"
-	noisily di in g "  (+) Remuneraci{c o'}n a asalaraidos (ROW)" ///
-		_col(44) in y %20.0fc ROWRem[`obs'] ///
-		_col(66) in y %7.3fc ROWRem[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Ingresos a la propiedad (ROW)" ///
-		_col(44) in y %20.0fc ROWProp[`obs'] ///
-		_col(66) in y %7.3fc ROWProp[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Transferencias corrientes (ROW)" ///
-		_col(44) in y %20.0fc ROWTrans[`obs'] ///
-		_col(66) in y %7.3fc ROWTrans[`obs']/PIB[`obs']*100
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "C. Distribución secundaria del ingreso"
+	noisily _log cuadro fila "(+) Producto Interno Bruto" "PIB[`obs']" "PIB[`obs']/PIB[`obs']*100", negrita
+	noisily _log cuadro fila "(-) Consumo de capital fijo" "CapFij[`obs']" "CapFij[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Producto Interno Neto" "PIN[`obs']" "PIN[`obs']/PIB[`obs']*100", sep negrita
+	noisily _log cuadro fila "(+) Remuneración a asalariados, resto del mundo" "ROWRem[`obs']" "ROWRem[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Ingresos a la propiedad, resto del mundo" "ROWProp[`obs']" "ROWProp[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Transferencias corrientes, resto del mundo" "ROWTrans[`obs']" "ROWTrans[`obs']/PIB[`obs']*100"
 	/* NOTA: Se muestra PIN + ROW como Ingreso nacional disponible para garantizar consistencia aritmética.
 	   Con el SCN 2024 congelado la diferencia con IngDisp del BIE es 0 (serie 724037, CONC-1 §6.7);
 	   en vintages anteriores era ~190 mil millones, discrepancia en datos del INEGI. */
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Ingreso nacional disponible" ///
-		_col(44) in y %20.0fc PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs'] ///
-		_col(66) in y %7.3fc (PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs'])/PIB[`obs']*100 "}"
+	noisily _log cuadro fila "(=) Ingreso nacional disponible" "PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs']" "(PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs'])/PIB[`obs']*100", sep negrita
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 
 	* Returns *
 	escalar mxn ROWRem = ROWRem[`obs']
@@ -578,30 +521,19 @@ quietly {
 	escalar pctpib IngDispPIB = (IngDispCalc[`obs']-CapFij[`obs'])/PIB[`obs']*100
 
 	* R.6 Consumo *
-	noisily di _newline in y "{bf: D. Utilizaci{c o'}n del ingreso disp" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) in g %7s "% PIB" "}" 
-	noisily di in g "  (+) Consumo de hogares e ISFLSH" ///
-		_col(44) in y %20.0fc ConHog[`obs'] ///
-		_col(66) in y %7.3fc ConHog[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Consumo de gobierno" ///
-		_col(44) in y %20.0fc ConGob[`obs'] ///
-		_col(66) in y %7.3fc ConGob[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Compras netas" ///
-		_col(44) in y %20.0fc ComprasN[`obs'] ///
-		_col(66) in y %7.3fc ComprasN[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Ahorro bruto" ///
-		_col(44) in y %20.0fc AhorroN[`obs'] ///
-		_col(66) in y %7.3fc AhorroN[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "  (-) Consumo de capital fijo" ///
-		_col(44) in y %20.0fc CapFij[`obs'] ///
-		_col(66) in y %7.3fc CapFij[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Ingreso nacional disponible" ///
-		_col(44) in y %20.0fc IngDispCalc[`obs']-CapFij[`obs'] ///
-		_col(66) in y %7.3fc (IngDispCalc[`obs']-CapFij[`obs'])/PIB[`obs']*100 "}"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "D. Utilización del ingreso disponible"
+	noisily _log cuadro fila "(+) Consumo de hogares e ISFLSH" "ConHog[`obs']" "ConHog[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Consumo de gobierno" "ConGob[`obs']" "ConGob[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Compras netas" "ComprasN[`obs']" "ComprasN[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Ahorro bruto" "AhorroN[`obs']" "AhorroN[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(-) Consumo de capital fijo" "CapFij[`obs']" "CapFij[`obs']/PIB[`obs']*100", sep
+	noisily _log cuadro fila "(=) Ingreso nacional disponible" "IngDispCalc[`obs']-CapFij[`obs']" "(IngDispCalc[`obs']-CapFij[`obs'])/PIB[`obs']*100", sep negrita
 
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 	* Returns *
 	escalar mxn ConHog = ConHog[`obs']
 	escalar pctpib ConHogPIB = ConHog[`obs']/PIB[`obs']*100
@@ -708,7 +640,7 @@ quietly {
 		}
 		capture confirm variable B2nFin
 		if _rc == 0 _tabla_anclas add, codigo(B.2n) sector("S.11+S.12") fuente("CSI_106/109 · f.63 U/A") valor(B2nNoFin[`obs'] + B2nFin[`obs']) variable("B2nNoFin + B2nFin") nota("denominador de ISRPMTE con isrpm_incidencia = propiedad (firma, decisión 7 corregida: B.2n, no B.5n)")
-		noisily _tabla_anclas print, titulo("Celdas CSI del sector hogares que SCN expone a los módulos, año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage") unidad("MXN `anio'")
+		noisily _tabla_anclas print, titulo("Celdas CSI del sector hogares que SCN expone a los módulos, año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage") unidad("MXN `anio'") ref("CUAD-0 §4 bis")
 	}
 	capture confirm variable B5nS1
 	if _rc == 0 {
@@ -809,117 +741,69 @@ quietly {
 
 	* Cuenta de consumo *
 	* --- TABLA DE CONSUMO Y PORCENTAJE SOBRE EL PIB ---
-	noisily di _newline in y "{bf: E. Consumo de hogares e ISFLSH" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) in g %7s "% PIB" "}" 
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "E. Consumo de hogares e ISFLSH por finalidad"
 	* ------------------- CATEGORÍA: ALIMENTOS Y BEBIDAS -------------------
 	* Composite: Alimentos y bebidas
-	noisily di in g "  (+) Alimentos y bebidas" ///
-		_col(44) in y %20.0fc AlimBebT[`obs'] ///
-		_col(66) in y %7.3fc AlimBebT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Alimentos y bebidas" "AlimBebT[`obs']" "AlimBebT[`obs']/PIB[`obs']*100"
 	* Alimentos
-	noisily di in g "      Alimentos" ///
-		_col(44) in y %20.0fc Alim[`obs'] ///
-		_col(66) in y %7.3fc Alim[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Alimentos" "Alim[`obs']" "Alim[`obs']/PIB[`obs']*100"
 	* Bebidas no alcohólicas
-	noisily di in g "      Bebidas no alcohólicas" ///
-		_col(44) in y %20.0fc BebN[`obs'] ///
-		_col(66) in y %7.3fc BebN[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Bebidas no alcohólicas" "BebN[`obs']" "BebN[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: BEBIDAS ALCOHÓLICAS Y TABACO -------------------
 	* Composite: Bebidas alcohólicas y tabaco
-	noisily di in g "  (+) Bebidas alcohólicas y tabaco" ///
-		_col(44) in y %20.0fc BebTabT[`obs'] ///
-		_col(66) in y %7.3fc BebTabT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Bebidas alcohólicas y tabaco" "BebTabT[`obs']" "BebTabT[`obs']/PIB[`obs']*100"
 	* Bebidas alcohólicas
-	noisily di in g "      Bebidas alcohólicas" ///
-		_col(44) in y %20.0fc BebA[`obs'] ///
-		_col(66) in y %7.3fc BebA[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Bebidas alcohólicas" "BebA[`obs']" "BebA[`obs']/PIB[`obs']*100"
 	* Tabaco
-	noisily di in g "      Tabaco" ///
-		_col(44) in y %20.0fc Taba[`obs'] ///
-		_col(66) in y %7.3fc Taba[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Tabaco" "Taba[`obs']" "Taba[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: PRENDAS DE VESTIR Y CALZADO -------------------
 	* Composite: Prendas de vestir y calzado
-	noisily di in g "  (+) Prendas de vestir y calzado" ///
-		_col(44) in y %20.0fc VestCalT[`obs'] ///
-		_col(66) in y %7.3fc VestCalT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Prendas de vestir y calzado" "VestCalT[`obs']" "VestCalT[`obs']/PIB[`obs']*100"
 	* Prendas de vestir
-	noisily di in g "      Prendas de vestir" ///
-		_col(44) in y %20.0fc Vest[`obs'] ///
-		_col(66) in y %7.3fc Vest[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Prendas de vestir" "Vest[`obs']" "Vest[`obs']/PIB[`obs']*100"
 	* Calzado
-	noisily di in g "      Calzado" ///
-		_col(44) in y %20.0fc Calz[`obs'] ///
-		_col(66) in y %7.3fc Calz[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Calzado" "Calz[`obs']" "Calz[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: ALQUILER EFECTIVO Y CONSERVACIÓN DE LA VIVIENDA -------------------
 	* Se deja una sola variable: AlojT = Alojamiento + Nc
-	noisily di in g "  (+) Alquiler efectivo y conservación" ///
-		_col(44) in y %20.0fc AlojT[`obs'] ///
-		_col(66) in y %7.3fc AlojT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Alquiler efectivo y conservación" "AlojT[`obs']" "AlojT[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: AGUA Y ELECTRICIDAD -------------------
 	* Alquier efectivo
-	noisily di in g "      Alquiler efectivo" ///
-		_col(44) in y %20.0fc Alqu[`obs']+CRep[`obs'] ///
-		_col(66) in y %7.3fc (Alqu[`obs']+CRep[`obs'])/PIB[`obs']*100
+	noisily _log cuadro fila "  Alquiler efectivo" "Alqu[`obs']+CRep[`obs']" "(Alqu[`obs']+CRep[`obs'])/PIB[`obs']*100"
 	* Agua
-	noisily di in g "      Agua" ///
-		_col(44) in y %20.0fc Agua[`obs'] ///
-		_col(66) in y %7.3fc Agua[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Agua" "Agua[`obs']" "Agua[`obs']/PIB[`obs']*100"
 	* Electricidad, gas y otros combustibles
-	noisily di in g "      Electricidad, gas, otros combustibles" ///
-		_col(44) in y %20.0fc Elec[`obs'] ///
-		_col(66) in y %7.3fc Elec[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Electricidad, gas, otros combustibles" "Elec[`obs']" "Elec[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: ARTÍCULOS PARA EL HOGAR -------------------
-	noisily di in g "  (+) Artículos para el hogar" ///
-		_col(44) in y %20.0fc HogaT[`obs'] ///
-		_col(66) in y %7.3fc HogaT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Artículos para el hogar" "HogaT[`obs']" "HogaT[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: SALUD -------------------
 	* Se utiliza el valor calculado de Xc como Salud (SaluT)
-	noisily di in g "  (+) Salud" ///
-		_col(44) in y %20.0fc SaluT[`obs'] ///
-		_col(66) in y %7.3fc SaluT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Salud" "SaluT[`obs']" "SaluT[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: TRANSPORTE -------------------
 	* Adquisición de vehículos
 	* Composite: Transporte (suma de Vehi, FTra y STra)
-	noisily di in g "  (+) Transporte" ///
-		_col(44) in y %20.0fc TraT[`obs'] ///
-		_col(66) in y %7.3fc TraT[`obs']/PIB[`obs']*100
-	noisily di in g "      Adquisición de vehículos" ///
-		_col(44) in y %20.0fc Vehi[`obs'] ///
-		_col(66) in y %7.3fc Vehi[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Transporte" "TraT[`obs']" "TraT[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "  Adquisición de vehículos" "Vehi[`obs']" "Vehi[`obs']/PIB[`obs']*100"
 	* Funcionamiento de transporte
-	noisily di in g "      Funcionamiento de transporte" ///
-		_col(44) in y %20.0fc FTra[`obs'] ///
-		_col(66) in y %7.3fc FTra[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Funcionamiento de transporte" "FTra[`obs']" "FTra[`obs']/PIB[`obs']*100"
 	* Servicios de transporte
-	noisily di in g "      Servicios de transporte" ///
-		_col(44) in y %20.0fc STra[`obs'] ///
-		_col(66) in y %7.3fc STra[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "  Servicios de transporte" "STra[`obs']" "STra[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: COMUNICACIONES -------------------
-	noisily di in g "  (+) Comunicaciones" ///
-		_col(44) in y %20.0fc ComuT[`obs'] ///
-		_col(66) in y %7.3fc ComuT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Comunicaciones" "ComuT[`obs']" "ComuT[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: RECREACIÓN Y CULTURA -------------------
-	noisily di in g "  (+) Recreación y cultura" ///
-		_col(44) in y %20.0fc RecrT[`obs'] ///
-		_col(66) in y %7.3fc RecrT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Recreación y cultura" "RecrT[`obs']" "RecrT[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: EDUCACIÓN -------------------
-	noisily di in g "  (+) Educación" ///
-		_col(44) in y %20.0fc EducT[`obs'] ///
-		_col(66) in y %7.3fc EducT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Educación" "EducT[`obs']" "EducT[`obs']/PIB[`obs']*100"
 	* ------------------- CATEGORÍA: RESTAURANTES Y BIENES DIVERSOS -------------------
 	* Restaurantes y hoteles
-	noisily di in g "  (+) Restaurantes y hoteles" ///
-		_col(44) in y %20.0fc RestT[`obs'] ///
-		_col(66) in y %7.3fc RestT[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Restaurantes y hoteles" "RestT[`obs']" "RestT[`obs']/PIB[`obs']*100"
 	* Bienes y servicios diversos
-	noisily di in g "  (+) Bienes y servicios diversos" ///
-		_col(44) in y %20.0fc DiveT[`obs'] ///
-		_col(66) in y %7.3fc DiveT[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "  (=) Consumo de los hogares" ///
-		_col(44) in y %20.0fc ConHog[`obs'] ///
-		_col(66) in y %7.3fc ConHog[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Bienes y servicios diversos" "DiveT[`obs']" "DiveT[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Consumo de los hogares" "ConHog[`obs']" "ConHog[`obs']/PIB[`obs']*100", sep
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 
 
 	* Returns *
@@ -1019,100 +903,58 @@ quietly {
 	escalar pctpib AlojTPIB = AlojT/PIB[`obs']*100
 
 	* Display table header
-	noisily di _newline in y "{bf: F. Consumo (gobierno)" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) in g %7s "% PIB" "}" 
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "F. Consumo de gobierno por actividad"
 
 	* Display de sectores con texto abreviado
-	noisily di in g "  (+) 11 Agric., cría, pesca" ///
-		_col(44) in y %20.0fc GovAgr[`obs'] ///
-		_col(66) in y %7.3fc GovAgr[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 11 Agricultura, cría, aprovechamiento forestal, pesca y caza" "GovAgr[`obs']" "GovAgr[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 21 Minería" ///
-		_col(44) in y %20.0fc GovMin[`obs'] ///
-		_col(66) in y %7.3fc GovMin[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 21 Minería" "GovMin[`obs']" "GovMin[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) Electricidad, gas, otros combustibles" ///
-		_col(44) in y %20.0fc GovEner[`obs'] ///
-		_col(66) in y %7.3fc GovEner[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) Electricidad, gas, otros combustibles" "GovEner[`obs']" "GovEner[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 23 Construcción" ///
-		_col(44) in y %20.0fc GovConstr[`obs'] ///
-		_col(66) in y %7.3fc GovConstr[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 23 Construcción" "GovConstr[`obs']" "GovConstr[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 31-33 Manufacturas" ///
-		_col(44) in y %20.0fc GovManuf[`obs'] ///
-		_col(66) in y %7.3fc GovManuf[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 31-33 Manufacturas" "GovManuf[`obs']" "GovManuf[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 43 Comercio mayor" ///
-		_col(44) in y %20.0fc GovMayor[`obs'] ///
-		_col(66) in y %7.3fc GovMayor[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 43 Comercio mayor" "GovMayor[`obs']" "GovMayor[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 46 Comercio menor" ///
-		_col(44) in y %20.0fc GovMenor[`obs'] ///
-		_col(66) in y %7.3fc GovMenor[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 46 Comercio menor" "GovMenor[`obs']" "GovMenor[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 48-49 Transp. y correos" ///
-		_col(44) in y %20.0fc GovTrans[`obs'] ///
-		_col(66) in y %7.3fc GovTrans[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 48-49 Transportes, correos y almacenamiento" "GovTrans[`obs']" "GovTrans[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 51 Info. medios" ///
-		_col(44) in y %20.0fc GovInfo[`obs'] ///
-		_col(66) in y %7.3fc GovInfo[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 51 Información en medios masivos" "GovInfo[`obs']" "GovInfo[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 52 Finan. y seguros" ///
-		_col(44) in y %20.0fc GovFin[`obs'] ///
-		_col(66) in y %7.3fc GovFin[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 52 Servicios financieros y de seguros" "GovFin[`obs']" "GovFin[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 53 Inmob. y alquiler" ///
-		_col(44) in y %20.0fc GovInmob[`obs'] ///
-		_col(66) in y %7.3fc GovInmob[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 53 Servicios inmobiliarios y de alquiler" "GovInmob[`obs']" "GovInmob[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 54 Prof. y técnicos" ///
-		_col(44) in y %20.0fc GovProf[`obs'] ///
-		_col(66) in y %7.3fc GovProf[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 54 Servicios profesionales, científicos y técnicos" "GovProf[`obs']" "GovProf[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 55 Corporativos" ///
-		_col(44) in y %20.0fc GovCorp[`obs'] ///
-		_col(66) in y %7.3fc GovCorp[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 55 Corporativos" "GovCorp[`obs']" "GovCorp[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 56 Apoyo y residuos" ///
-		_col(44) in y %20.0fc GovApoyo[`obs'] ///
-		_col(66) in y %7.3fc GovApoyo[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 56 Apoyo y residuos" "GovApoyo[`obs']" "GovApoyo[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 61 Educativos" ///
-		_col(44) in y %20.0fc GovEdu[`obs'] ///
-		_col(66) in y %7.3fc GovEdu[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 61 Educativos" "GovEdu[`obs']" "GovEdu[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 62 Salud y asistencia" ///
-		_col(44) in y %20.0fc GovSalud[`obs'] ///
-		_col(66) in y %7.3fc GovSalud[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 62 Salud y asistencia" "GovSalud[`obs']" "GovSalud[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 71 Recrea. y deportivos" ///
-		_col(44) in y %20.0fc GovRecrea[`obs'] ///
-		_col(66) in y %7.3fc GovRecrea[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 71 Servicios de esparcimiento, culturales y deportivos" "GovRecrea[`obs']" "GovRecrea[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 72 Aloj. y alimentos" ///
-		_col(44) in y %20.0fc GovAloj[`obs'] ///
-		_col(66) in y %7.3fc GovAloj[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 72 Alojamiento temporal y preparación de alimentos" "GovAloj[`obs']" "GovAloj[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 81 Otros servicios" ///
-		_col(44) in y %20.0fc GovOtros[`obs'] ///
-		_col(66) in y %7.3fc GovOtros[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 81 Otros servicios" "GovOtros[`obs']" "GovOtros[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) 93 Legisl. y justicia" ///
-		_col(44) in y %20.0fc GovLegis[`obs'] ///
-		_col(66) in y %7.3fc GovLegis[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) 93 Actividades legislativas, gubernamentales y de justicia" "GovLegis[`obs']" "GovLegis[`obs']/PIB[`obs']*100"
 
-	noisily di in g "  (+) P.721 Compras ext." ///
-		_col(44) in y %20.0fc GovCompExt[`obs'] ///
-		_col(66) in y %7.3fc GovCompExt[`obs']/PIB[`obs']*100
+	noisily _log cuadro fila "(+) P.721 Compras directas en el exterior" "GovCompExt[`obs']" "GovCompExt[`obs']/PIB[`obs']*100"
 
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Consumo (gobierno)" ///
-		_col(44) in y %20.0fc ConGob[`obs'] ///
-		_col(66) in y %7.3fc ConGob[`obs']/PIB[`obs']*100 "}"		
+	noisily _log cuadro fila "(=) Consumo de gobierno" "ConGob[`obs']" "ConGob[`obs']/PIB[`obs']*100", sep negrita
 
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 	* Returns (scalar calculations)
 	escalar mxn AgriGob = GovAgr[`obs']
 	escalar pctpib AgriGobPIB = GovAgr[`obs']/PIB[`obs']*100
@@ -1177,80 +1019,35 @@ quietly {
 	escalar mxn CompGob = GovCompExt[`obs']
 	escalar pctpib CompGobPIB = GovCompExt[`obs']/PIB[`obs']*100
 
-	noisily di _newline in g "{bf: G. Cuenta: " in y "actividad econ{c o'}mica" in g ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" "}" 
-	noisily di in g "  (+) Agricultura, cr{c i'}a, etc." ///
-		_col(44) in y %20.0fc Agr_T[`obs'] ///
-		_col(66) in y %7.3fc Agr_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Miner{c i'}a" ///
-		_col(44) in y %20.0fc Min_T[`obs'] ///
-		_col(66) in y %7.3fc Min_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Generaci{c o'}n, ... energ{c i'}a el{c e'}ctrica" ///
-		_col(44) in y %20.0fc Ener_T[`obs'] ///
-		_col(66) in y %7.3fc Ener_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Construcci{c o'}n" ///
-		_col(44) in y %20.0fc Const_T[`obs'] ///
-		_col(66) in y %7.3fc Const_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Industrias manufactureras" ///
-		_col(44) in y %20.0fc Manu_T[`obs'] ///
-		_col(66) in y %7.3fc Manu_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Comercio al por mayor" ///
-		_col(44) in y %20.0fc ComMayor_T[`obs'] ///
-		_col(66) in y %7.3fc ComMayor_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Comercio al por menor" ///
-		_col(44) in y %20.0fc ComMenor_T[`obs'] ///
-		_col(66) in y %7.3fc ComMenor_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Transportes, correos y almacen..." ///
-		_col(44) in y %20.0fc Trans_T[`obs'] ///
-		_col(66) in y %7.3fc Trans_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Informaci{c o'}n en medios masivos" ///
-		_col(44) in y %20.0fc Medios_T[`obs'] ///
-		_col(66) in y %7.3fc Medios_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios financieros y de seguridad" ///
-		_col(44) in y %20.0fc FinSeg_T[`obs'] ///
-		_col(66) in y %7.3fc FinSeg_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios inmobiliarios..." ///
-		_col(44) in y %20.0fc Inmob_T[`obs'] ///
-		_col(66) in y %7.3fc Inmob_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios profesionales..." ///
-		_col(44) in y %20.0fc Prof_T[`obs'] ///
-		_col(66) in y %7.3fc Prof_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Direcci{c o'}n de corporativos y empresas" ///
-		_col(44) in y %20.0fc Corp_T[`obs'] ///
-		_col(66) in y %7.3fc Corp_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios de apoyo a los negocios..." ///
-		_col(44) in y %20.0fc Apoyo_T[`obs'] ///
-		_col(66) in y %7.3fc Apoyo_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios educativos" ///
-		_col(44) in y %20.0fc Edu_T[`obs'] ///
-		_col(66) in y %7.3fc Edu_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios de salud y de asistencia..." ///
-		_col(44) in y %20.0fc Salud_T[`obs'] ///
-		_col(66) in y %7.3fc Salud_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios de espar. culturales..." ///
-		_col(44) in y %20.0fc Recre_T[`obs'] ///
-		_col(66) in y %7.3fc Recre_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Servicios de alojamiento temporal..." ///
-		_col(44) in y %20.0fc AloPrep_T[`obs'] ///
-		_col(66) in y %7.3fc AloPrep_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Otros servicios excepto gobierno" ///
-		_col(44) in y %20.0fc Otros_T[`obs'] ///
-		_col(66) in y %7.3fc Otros_T[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Actividades de gobierno..." ///
-		_col(44) in y %20.0fc Legis_T[`obs'] ///
-		_col(66) in y %7.3fc Legis_T[`obs']/PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Valor Agregado Bruto" ///
-		_col(44) in y %20.0fc ValAg_T[`obs'] ///
-		_col(66) in y %7.3fc ValAg_T[`obs']/PIB[`obs']*100 "}"
-	noisily di in g "  (+) Impuestos a los productos" ///
-		_col(44) in y %20.0fc ImpProd_T[`obs'] ///
-		_col(66) in y %7.3fc ImpProd_T[`obs'] /PIB[`obs']*100
-	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
-		_col(44) in y %20.0fc PIB_T[`obs'] ///
-		_col(66) in y %7.3fc PIB_T[`obs']/PIB[`obs']*100 "}"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Cuenta") flex
+	noisily _log cuadro col, titulo("MXN") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	local cuadro_titulo "G. Cuenta de actividad económica: valor agregado bruto por sector"
+	noisily _log cuadro fila "(+) Agricultura, cría, aprovechamiento forestal, pesca y caza" "Agr_T[`obs']" "Agr_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Minería" "Min_T[`obs']" "Min_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Generación, transmisión y distribución de energía eléctrica" "Ener_T[`obs']" "Ener_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Construcción" "Const_T[`obs']" "Const_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Industrias manufactureras" "Manu_T[`obs']" "Manu_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Comercio al por mayor" "ComMayor_T[`obs']" "ComMayor_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Comercio al por menor" "ComMenor_T[`obs']" "ComMenor_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Transportes, correos y almacenamiento" "Trans_T[`obs']" "Trans_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Información en medios masivos" "Medios_T[`obs']" "Medios_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios financieros y de seguros" "FinSeg_T[`obs']" "FinSeg_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios inmobiliarios y de alquiler" "Inmob_T[`obs']" "Inmob_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios profesionales, científicos y técnicos" "Prof_T[`obs']" "Prof_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Dirección de corporativos y empresas" "Corp_T[`obs']" "Corp_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios de apoyo a los negocios y manejo de residuos" "Apoyo_T[`obs']" "Apoyo_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios educativos" "Edu_T[`obs']" "Edu_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios de salud y de asistencia social" "Salud_T[`obs']" "Salud_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios de esparcimiento, culturales y deportivos" "Recre_T[`obs']" "Recre_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Servicios de alojamiento temporal y de preparación de alimentos" "AloPrep_T[`obs']" "AloPrep_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Otros servicios excepto gobierno" "Otros_T[`obs']" "Otros_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(+) Actividades legislativas, gubernamentales y de justicia" "Legis_T[`obs']" "Legis_T[`obs']/PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Valor Agregado Bruto" "ValAg_T[`obs']" "ValAg_T[`obs']/PIB[`obs']*100", sep negrita
+	noisily _log cuadro fila "(+) Impuestos a los productos" "ImpProd_T[`obs']" "ImpProd_T[`obs'] /PIB[`obs']*100"
+	noisily _log cuadro fila "(=) Producto Interno Bruto" "PIB_T[`obs']" "PIB_T[`obs']/PIB[`obs']*100", sep negrita
+	noisily _log cuadro print, titulo("`cuadro_titulo', año `anio'") unidad("MXN `anio', miles de millones")
 
 	* Returns (scalar calculations)
 	escalar mxn AgrT = Agr_T[`obs']
@@ -1316,7 +1113,7 @@ quietly {
 	if "`textbook'" == "textbook" {
 		capture which scalarlatex
 		if _rc {
-			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+			noisily _log aviso, tipo(Nota) texto("la opción textbook (scalarlatex) es solo-repo; no viaja al endpoint público")
 		}
 		else {
 			noisily scalarlatex, log(scn) alt(scn)
@@ -1324,8 +1121,7 @@ quietly {
 	}
 
 	timer off 33
-	timer list 33
-	noisily di _newline in g "Tiempo: " in y round(`=r(t33)/r(nt33)',.1) in g " segs."
+	noisily _log tiempo, timer(33) texto("SCN")
 }
 end
 
@@ -1338,9 +1134,8 @@ program define UpdateSCN
 	* v8.15.2 (decision de Ricardo, 2026-11-01): UpdateSCN lee SOLO el asset. Sin sello verde (asset ausente o incompleto) aborta con
 	* receta; solo `global rawwip` permite bajar en caliente, y cada serie bajada queda declarada (FLAG al final, sello amarillo). *
 	if "$SCN_CONGELADO_SELLO" != "verde" & "$rawwip" == "" {
-		noisily di as err "UpdateSCN: el asset congelado raw/SCN/ no esta completo (sello $SCN_CONGELADO_SELLO): $SCN_CONGELADO_RES"
-		noisily di as err "  UpdateSCN lee SOLO el asset (CUAD-0 §4 bis). Receta: ensure_asset descarga raw/SCN/scn-congelado-<anio>.zip de la Release;"
-		noisily di as err "  para un asset nuevo: bash 05_scripts/refrescar-scn.sh --congelar --todas (PR de datos). Con global rawwip (modo WIP de raw) se baja en caliente y se declara."
+		noisily _log aviso, tipo(IMPORTANTE) texto("UpdateSCN: el asset congelado raw/SCN/ no está completo (sello $SCN_CONGELADO_SELLO); lee SOLO el asset") ref("CUAD-0 §4 bis; runbook §9") rojo
+		noisily _log aviso, tipo(IMPORTANTE) texto("$SCN_CONGELADO_RES") rojo
 		exit 198
 	}
 	global SCN_SOLO_ASSET "1"
@@ -2843,7 +2638,7 @@ program define UpdateSCN
 	global SCN_SOLO_ASSET ""
 	if "$SCN_CALIENTE" != "" {
 		local ncal : word count $SCN_CALIENTE
-		noisily di as err "  FLAG UpdateSCN (rawwip): `ncal' serie(s) sin asset congelado en raw/SCN/bie/, descargadas en caliente (sello amarillo; congelar con refrescar-scn.sh --congelar --todas): $SCN_CALIENTE"
+		noisily _log aviso, tipo(FLAG) texto("UpdateSCN rawwip: `ncal' serie(s) sin asset congelado en raw/SCN/bie/, descargadas en caliente; sello amarillo") ref("runbook §9: refrescar-scn.sh --congelar") rojo
 		global SCN_CONGELADO_SELLO "amarillo"
 		global scn_sello "amarillo"
 	}
@@ -2901,7 +2696,7 @@ program define SCNHogaresS14
 		local f "`dir'/`cuadro'.xlsx"
 		capture confirm file "`f'"
 		if _rc != 0 {
-			noisily di as err "  FLAG SCNHogaresS14: no existe `f'"
+			noisily _log aviso, tipo(FLAG) texto("SCNHogaresS14: no existe `f'") rojo
 			exit 459
 		}
 		* Encabezado de años: la última columna U/A (AR) debe ser el último año de la serie y la fila 7 debe
@@ -2912,12 +2707,12 @@ program define SCNHogaresS14
 		else local ultimo = string(AR[1])
 		local esperado = 2003 + (c(k) - 1)/2 - 1
 		if "`ultimo'" != "`esperado'" {
-			noisily di as err "  FLAG SCNHogaresS14: en `cuadro' la última columna de años es `ultimo' y se esperaba `esperado'; no se leen las series S.14."
+			noisily _log aviso, tipo(FLAG) texto("SCNHogaresS14: en `cuadro' la última columna de años es `ultimo' y se esperaba `esperado'; no se leen las series S.14") rojo
 			exit 459
 		}
 		import excel using "`f'", cellrange(A7:B7) clear
 		if strpos(trim(B[1]), "U/A") != 1 {
-			noisily di as err "  FLAG SCNHogaresS14: en `cuadro' la primera columna de cada año no es U/A; no se leen las series S.14."
+			noisily _log aviso, tipo(FLAG) texto("SCNHogaresS14: en `cuadro' la primera columna de cada año no es U/A; no se leen las series S.14") rojo
 			exit 459
 		}
 	}
@@ -2933,7 +2728,7 @@ program define SCNHogaresS14
 		import excel using "`dir'/`cuadro'.xlsx", cellrange(A`fila':AS`fila') clear
 		local rotulo = trim(A[1])
 		if strpos("`rotulo'", "`cod' ") != 1 {
-			noisily di as err `"  FLAG SCNHogaresS14: la fila `fila' de `cuadro' dice "`rotulo'" y se esperaba `cod'; no se leen las series S.14."'
+			noisily _log aviso, tipo(FLAG) texto(`"SCNHogaresS14: la fila `fila' de `cuadro' dice "`rotulo'" y se esperaba `cod'; no se leen las series S.14"') rojo
 			exit 459
 		}
 		drop A
@@ -3049,10 +2844,9 @@ program define SCNHogaresS14
 	local u = r(max)
 	local p4p3 = ConEfecHogS14[_N] - ConHogS14[_N]
 	if `d63' != . & reldif(`p4p3', `d63') > 1e-9 {
-		noisily di as err "  FLAG SCNHogaresS14: P.4 - P.3 (`u') = " %20.0fc `p4p3' " difiere de D.63 = " %20.0fc `d63'
+		noisily _log aviso, tipo(FLAG) texto("SCNHogaresS14: P.4 − P.3 (`u') = `: di %14.3fc `p4p3'/1e9' bn difiere de D.63 = `: di %14.3fc `d63'/1e9' bn") rojo
 	}
-	noisily di in g "  S.14 hogares `u': B.8n " in y %20.0fc AhorroHogN[_N] in g "  B.8b " in y %20.0fc AhorroHogB[_N] in g "  P.4-P.3 " in y %20.0fc `p4p3' ///
-		in g "  D.61-D.614 " in y %20.0fc CuotasHogS14[_N]
+	noisily _log linea "S.14 hogares `u' (miles de millones): B.8n `: di %12.3fc AhorroHogN[_N]/1e9'; B.8b `: di %12.3fc AhorroHogB[_N]/1e9'; P.4 − P.3 `: di %12.3fc `p4p3'/1e9'; D.61 − D.614 `: di %12.3fc CuotasHogS14[_N]/1e9'"
 	save "${SIMROOT}/raw/temp/HogaresS14.dta", replace
 end
 
@@ -3112,6 +2906,7 @@ program define SCNCongelado, rclass
 	syntax [, Copiar]
 	global SCN_CONGELADO_ERR ""
 	global SCN_CONGELADO_RES ""
+	global SCN_CONGELADO_DET ""
 	* Asset del manifest (raw/SCN/scn-congelado-2024.zip, refrescar-scn.sh --congelar): en una maquina sin raw/SCN/ se descarga de la
 	* Release (ensure_asset, sha256) y se desempaca; si el asset no esta declarado o la Release no lo trae, se sigue sin el (sello amarillo) *
 	capture confirm file "${SIMROOT}/raw/SCN/bie/724025.csv"
@@ -3121,16 +2916,17 @@ program define SCNCongelado, rclass
 			local cwd0 "`c(pwd)'"
 			cd "${SIMROOT}/raw/SCN"
 			capture noisily unzipfile "scn-congelado-2024.zip", replace
-			if _rc != 0 noisily di as err "  SCNCongelado: no se pudo desempacar raw/SCN/scn-congelado-2024.zip"
+			if _rc != 0 noisily _log aviso, tipo(IMPORTANTE) texto("SCNCongelado: no se pudo desempacar raw/SCN/scn-congelado-2024.zip") rojo
 			cd "`cwd0'"
 		}
 	}
 	python: scn_congelado("`copiar'", "$rawwip")
 	if "$SCN_CONGELADO_ERR" != "" {
-		noisily di as err "SCNCongelado: $SCN_CONGELADO_ERR"
+		noisily _log aviso, tipo(IMPORTANTE) texto("SCNCongelado: $SCN_CONGELADO_ERR") rojo
 		exit 198
 	}
-	noisily di as text "  SCN congelado (raw/SCN, manifest scn_vintage): $SCN_CONGELADO_RES -> sello " as result "$SCN_CONGELADO_SELLO"
+	noisily _log aviso, tipo(Sello) texto("$SCN_CONGELADO_SELLO · SCN congelado en raw/SCN, manifest scn_vintage$SCN_CONGELADO_DET") ref("runbook §9")
+	noisily _log aviso, tipo(Nota) texto("$SCN_CONGELADO_RES")
 	global scn_sello "$SCN_CONGELADO_SELLO"
 	return local sello "$SCN_CONGELADO_SELLO"
 end
@@ -3179,8 +2975,8 @@ def scn_congelado(copiar, rawwip):
         if copiar:
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             shutil.copyfile(src, dst)
-    res = (f"{ok} archivo(s) verificados por sha256 (consulta {sv.get('consulta', '?')}, año de referencia {sv.get('anio_referencia', '?')}, "
-           f"{sv.get('series_congeladas', '?')} series + {len((sv.get('csi') or {}).get('cuadros') or {})} cuadros CSI); {falta} ausente(s); {len(malos)} con sha distinto")
+    res = f"{ok} archivos verificados por sha256, {falta} ausentes, {len(malos)} con sha distinto; consulta {sv.get('consulta', '?')}"
+    Macro.setGlobal('SCN_CONGELADO_DET', f" ({sv.get('series_congeladas', '?')} series + {len((sv.get('csi') or {}).get('cuadros') or {})} cuadros CSI, año de referencia {sv.get('anio_referencia', '?')})")
     if malos:
         msg = 'sha256 distinto al manifest (scn_vintage) en: ' + ', '.join(malos[:5]) + ('…' if len(malos) > 5 else '')
         msg = msg + '. Si no los editaste, borra raw/SCN/ y re-corre refrescar-scn.sh --congelar; si los actualizaste a proposito, declaralo en el manifest (PR de datos).'

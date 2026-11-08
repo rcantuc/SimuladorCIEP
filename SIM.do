@@ -169,7 +169,7 @@ noisily _log param, nombre(bruto_neto) firmado(neto) doc("CUAD-2 §4") lee("NTA 
 noisily _log param, nombre(financiamiento) firmado(un_nodo_4) doc("CUAD-2 §4") lee("NTA §7d")
 noisily _log param, nombre(discrepancia_gasto) firmado(fuera) doc("CUAD-2 §4") lee("NTA §7d")
 noisily _log param, nombre(inter_hogar) firmado(balance) doc("CUAD-2 §4") lee("NTA §4")
-noisily _log cuadro print, titulo("§0.8 Parámetros firmados de la Cuadratura (CUAD-0, CUAD-1) y del Sankey de la economía completa (CUAD-2)") ref("runbook «Cómo leer el log»")
+noisily _log cuadro print, titulo("§0.8 Parámetros firmados: Cuadratura (CUAD-0, CUAD-1) y Sankey de la economía completa (CUAD-2)") ref("runbook §15")
 foreach p of global LOG_PARAM_FLAGS {
 	noisily _log aviso, tipo(FLAG) texto("`p': los números quedan fuera del baseline publicado") ref("manifest baseline") rojo
 }

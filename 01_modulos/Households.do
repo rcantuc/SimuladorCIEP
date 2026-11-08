@@ -8,8 +8,17 @@
 **** Las imputaciones macro-micro de este archivo usan Distribucion.ado (y_i = x_i * MACRO / sum_w x): son per capita
 **** solo cuando el relativo es pob; con relativo(factor) reparten en proporcion al factor de expansion de cada persona.
 ****
+**** §4 Decisiones (sesión log-legible, 2026-11-09): aquí vive la descripción de cada parámetro firmado que este módulo lee; SIM.do
+**** §0.8/§0.8b solo los declara (una línea: valor firmado // documento · quién lo lee) y §0.9 imprime el cuadro Parámetro · Valor ·
+**** Firmado · Documento · Lo lee con FLAG si el valor no es el firmado. Alternativas aceptadas entre «|»; la primera es la firmada.
+****
 **** Parametros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 y §4.0, la firma). Globals que SIM.do §0.8 declara y este
 **** archivo lee en §0.0; sueltos, el default es el valor FIRMADO. Cada valor es un FLAG declarado (tambien en users/$id/NTA/nta-identidad.txt):
+****   (SIM.do §0.8, resumen de alternativas) pensiones_en_yl off | on (v8.14.0); ing_mixto_depurado transf_negocios | off (cap5-cap9 dentro,
+****   v8.14.0); rentas_celda b3n (SNA §7.9, INEGI p. 33/45) | b2n (SNA §24.55; paso 0: B.2b > alquiler imputado CSVM); alq_en_capital off
+****   (único valor); d4_relativo proxy_propiedad (SELLO ROJO) | enigh (cap6 + cap8); yk_ancla b2n_b3n_d4 | actual (ExNOpSoc residuo BIE +
+****   impuestos − OyE); cap4 fuera (enajenaciones con factor 1, fuera de Yl/Yk, siguen en ing_bruto_tax) | dentro; suborrow off (D.1 S.14 ya
+****   incluye el exterior) | on (v8.14.0); cuotas_d614 neto | actual; oye_en_hub off («Empresas públicas → Gobierno» en los Sankeys) | on.
 ****   pensiones_en_yl = off          «pensiones fuera de Yl: D.62» — ing_jubila (P032 de jubilados) sale de ing_t4_cap1 (§2.2) y de exen_t4_cap1 (§3);
 ****                                  no llega a ing_subor ni a Yl. Alternativa on (v8.14.0).
 ****   ing_mixto_depurado = transf_negocios  «base de B.3n = honorarios + negocios propios» — ing_mixto = ing_t4_cap2 (honorarios integros) +
@@ -50,6 +59,12 @@
 ****
 **** Parametros de Cuadratura II (v8.16.0, 2026-11-08; CUAD-1 §4 firmado en §4.0, firma CUAD-1-2 §B). SIM.do §0.8b los declara; sueltos rige el
 **** valor firmado. Cada valor distinto del firmado imprime FLAG (tambien en nta-identidad.txt):
+****   (SIM.do §0.8b, resumen de alternativas) cuotas_por_sector on | off (todo a Gobierno, v8.15.3); isrpm_incidencia propiedad (regla P; TE con
+****   denominador B.2n S.11 + S.12, decisión 7 corregida) | negocios (ing_bruto_tpm × 30 %, FLAG 19, v8.15.3); isr_personas_ancla d51_s14 (en NTA:
+****   ISR asalariados + PF a D.51 S.14, ISR PM a D.51 S.11 + S.12; fila «LIF vs CSI por sector») | lif (v8.15.3); isras_share acotado [0, 1] | libre
+****   (mediana 1.150, v8.15.3); obligacion_isrpf_ancla itan_rangos (ITAN 4T del año ENIGH; AccesoITAN) | enigh (cut-off por probit a la LIF,
+****   v8.15.3); informalidad corte (formal = los de mayor p hasta N) | probabilistica (λ·p·obligación; no implementada en 8.16b); ancla_formales
+****   imss (N = 25,500,447 cotizantes IMSS + ISSSTE al 31-dic-2024; el residuo vs LIF es «ajuste por subreporte de ingresos altos») | lif.
 ****   cuotas_por_sector = on         «D.61 por sector pagador y receptor» — la cuota social y las aportaciones federales (cuotasF) son gasto del gobierno
 ****                                  (S.13 -> IMSS/ISSSTE), no contribucion de las personas: salen de cuotasTPF (§6). cuotasRCV (retiro: Afores, S.12),
 ****                                  cuotasViv (Infonavit/FOVISSSTE, S.12) y cuotasSeg (seguros sociales: S.13) viajan a NTA.do, que reparte D.61 por sector
@@ -180,23 +195,22 @@ foreach p of local cuad_params {
 	if "${`nombre'}" == "" global `nombre' "`firmado'"
 	local ok : list posof "${`nombre'}" in valores
 	if `ok' == 0 {
-		noisily di as err `"Households: `nombre' = "${`nombre'}" no es `=subinstr(trim("`valores'"), " ", " | ", .)'"'
+		noisily _log aviso, tipo(IMPORTANTE) texto(`"Households: `nombre' = "${`nombre'}" no es `=subinstr(trim("`valores'"), " ", " | ", .)'"') ref("CUAD-0 §4.0") rojo
 		exit 198
 	}
 	local cuad_linea "`cuad_linea' `nombre'=${`nombre'}"
 	if "${`nombre'}" != "`firmado'" local cuad_flag = 1
 }
 if "$cap3_particion" != "" {
-	noisily di as err "Households: cap3_particion no existe desde v8.15b (decision 3 de la firma: honorarios y rentas integros, sin particion pf/PM)."
+	noisily _log aviso, tipo(IMPORTANTE) texto("Households: cap3_particion no existe desde v8.15b (decisión 3: honorarios y rentas íntegros, sin partición pf/PM)") ref("CUAD-0 §4.0") rojo
 	exit 198
 }
 global cuad_params "`cuad_linea'"
-noisily di in g "  Parametros CUAD-0 y CUAD-1 (firmas 2026-10-31 y 2026-11-07):" in y "$cuad_params"
 if `cuad_flag' {
-	noisily di as err "  FLAG Households (CUAD-0/CUAD-1): algun parametro esta fuera de su valor firmado; los numeros NO son comparables con el baseline publicado (manifest: baseline)."
+	noisily _log aviso, tipo(FLAG) texto("Households: algún parámetro CUAD-0/CUAD-1 está fuera de su valor firmado; los números no comparan con el baseline") ref("manifest baseline") rojo
 }
 if "$informalidad" == "probabilistica" {
-	noisily di as err "  FLAG Households (informalidad = probabilistica): no implementada en 8.16b; se sigue con corte."
+	noisily _log aviso, tipo(FLAG) texto("Households: informalidad = probabilistica no está implementada en 8.16b; se sigue con corte") ref("CUAD-1 §4.0") rojo
 	global informalidad "corte"
 }
 
@@ -211,7 +225,7 @@ local dir_enigh "${SIMROOT}/raw/`enigh'/`anioenigh'"
 
 
 ** 0.2 Bienvenida
-noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS - `enigh' `anioenigh'  }" in g _dup(20) "." _newline(2)
+noisily _log modulo "Households  ·  ingresos de los hogares, `enigh' `anioenigh'" ref("CUAD-0 §4; CUAD-1 §4; header §4 Decisiones")
 
 
 
@@ -264,7 +278,7 @@ foreach s in D1HogS14 MixNHogS14 ExNOpHogS14 RentaPropHogNeta D442Hog RemesasHog
 	if _rc != 0 local faltan "`faltan' `s'"
 }
 if "`faltan'" != "" {
-	noisily di as err "  FLAG Households (v8.15b): SCN.ado no dejo las celdas CSI`faltan' (faltan los tabulados CSI_1xx.xlsx en raw/temp/SCN, o master/SCN.dta es anterior a v8.15b); sin ellas no hay anclas S.14."
+	noisily _log aviso, tipo(FLAG) texto("Households: SCN.ado no dejó las celdas CSI`faltan' (CSI_1xx.xlsx ausentes o master/SCN.dta anterior a v8.15b); sin anclas S.14") ref("CUAD-0 §4 bis") rojo
 	exit 459
 }
 local D4Hog = `RentaPropHogNeta' - cond("$cuotas_d614" == "neto", `D442Hog', 0)
@@ -279,8 +293,8 @@ _tabla_anclas add, codigo(D.1) sector(S.14) fuente("CSI_115 · f.71 R/P") valor(
 _tabla_anclas add, codigo(B.3n) sector(S.14) fuente("CSI_115 · f.70 R/P") valor(`MixNHogS14') variable(ing_mixto)
 _tabla_anclas add, codigo(B.2n) sector(S.14) fuente("CSI_115 · f.69 R/P") valor(`ExNOpHogS14') variable(ing_estim_alqu) nota("alquiler imputado neto; con rentas_celda = b2n tambien ing_t4_cap3")
 _tabla_anclas add, codigo(D.4) sector(S.14) fuente("CSI_115 · f.95 R/P − U/A") valor(`RentaPropHogNeta') variable(ing_capital) nota("neta = recibida − pagada; la celda que ancla es D.4 neto − D.442 con cuotas_d614 = neto")
-_tabla_anclas add, codigo(D.442) sector(S.14) fuente("CSI_115 · f.103 R/P") valor(`D442Hog') variable("(sale de YA: cuotas_d614=$cuotas_d614)")
-noisily _tabla_anclas print, titulo("Anclas al SCN — sector hogares S.14, año `anioenigh'") sello("$scn_sello") razon("`scn_razon'") unidad("MXN `anioenigh'")
+_tabla_anclas add, codigo(D.442) sector(S.14) fuente("CSI_115 · f.103 R/P") valor(`D442Hog') variable("fuera de YA") nota("sale de YA con cuotas_d614 = $cuotas_d614")
+noisily _tabla_anclas print, titulo("Anclas al SCN, sector hogares S.14, año `anioenigh'") sello("$scn_sello") razon("`scn_razon'") unidad("MXN `anioenigh'") ref("CUAD-0 §4 bis")
 
 
 ** 1.2 Ajustes Rentas y Servicios Profesionales
@@ -394,7 +408,7 @@ if "$obligacion_isrpf_ancla" == "itan_rangos" {
 	if _rc != 0 capture noisily AccesoITAN, nographs
 	capture confirm file "${SIMROOT}/master/itan-isr-rangos.dta"
 	if _rc != 0 | `anioenigh' < 2019 {
-		noisily di as err "  FLAG Households (obligacion_isrpf_ancla = itan_rangos): sin master/itan-isr-rangos.dta o año ENIGH `anioenigh' < 2019 (el ITAN publica la tabla por rango desde 2019-1); se cae a enigh."
+		noisily _log aviso, tipo(FLAG) texto("Households: sin master/itan-isr-rangos.dta o año ENIGH `anioenigh' < 2019 (ITAN por rango desde 2019-1); obligacion_isrpf_ancla cae a enigh") ref("CUAD-1 §8 ter") rojo
 		global obligacion_isrpf_ancla "enigh"
 	}
 	else {
@@ -404,7 +418,7 @@ if "$obligacion_isrpf_ancla" == "itan_rangos" {
 			use if anio == `anioenigh' & trimestre == 4 using "${SIMROOT}/master/itan-isr-rangos.dta", clear
 			count
 			if r(N) == 0 {
-				noisily di as err "  FLAG Households (obligacion_isrpf_ancla = itan_rangos): el ITAN congelado no trae el 4T de `anioenigh'; se cae a enigh."
+				noisily _log aviso, tipo(FLAG) texto("Households: el ITAN congelado no trae el 4T de `anioenigh'; obligacion_isrpf_ancla cae a enigh") ref("CUAD-1 §8 ter") rojo
 				global obligacion_isrpf_ancla "enigh"
 			}
 			else {
@@ -430,8 +444,14 @@ if "$obligacion_isrpf_ancla" == "itan_rangos" {
 	}
 }
 if "$obligacion_isrpf_ancla" == "itan_rangos" {
-	noisily di in g "  ITAN 4T `anioenigh' (sello `itan_sello'): ISR PF con + sin actividad empresarial " in y %21.0fc `ITANPFTot' in g " (LIF ISR PF " in y %21.0fc `ISRFisicas' ///
-		in g "); retenciones por salarios " in y %21.0fc `ITANSalTot' in g " (LIF ISR Asa. " in y %21.0fc `ISRSalarios' in g "); personas morales " in y %21.0fc `ITANPMTot' in g " (LIF ISR PM " in y %21.0fc `ISRMorales' in g ")"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("ISR anual") flex
+	noisily _log cuadro col, titulo("ITAN 4T `anioenigh'") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("LIF `anioenigh'") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro fila "Personas físicas con y sin actividad empresarial" "`ITANPFTot'" "`ISRFisicas'"
+	noisily _log cuadro fila "Retenciones por salarios" "`ITANSalTot'" "`ISRSalarios'"
+	noisily _log cuadro fila "Personas morales" "`ITANPMTot'" "`ISRMorales'"
+	noisily _log cuadro print, titulo("ISR anual del ITAN 4T `anioenigh' vs LIF `anioenigh'") unidad("MXN `anioenigh', miles de millones") sello("`itan_sello'") razon("asset raw/ITAN/itan-congelado.zip") ref("CUAD-1 §8 ter")
 	escalar mxn ITANISRPF = `ITANPFTot'
 	escalar mxn ITANISRSalarios = `ITANSalTot'
 	escalar mxn ITANISRPM = `ITANPMTot'
@@ -599,8 +619,7 @@ egen double ing_t2_cap8 = rsum(ing_agri)
 ** 2.2 Titulo IV De las Personas Fisicas
 * Capitulo I. DE LOS INGRESOS POR SALARIOS Y EN GENERAL POR LA PRESTACION DE UN SERVICIO PERSONAL SUBORDINADO
 * c. Sueldos, Salarios o Jornal *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Los ingresos reportados por el trabajo subordinado son netos de las retenciones de ISR a asalariados.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Los ingresos por trabajo subordinado se reportan netos de las retenciones de ISR a asalariados")
 
 g ing_ss = ing_anual if clave == "P001" | clave == "P011" | clave == "P006" | clave == "P014" | clave == "P018"
 g p001 = ing_anual if clave == "P001"
@@ -655,7 +674,7 @@ else {
 
 ** 2.3 Capitulo II. DE LOS INGRESOS POR ACTIVIDADES EMPRESARIALES Y PROFESIONALES
 * p. Honorarios *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y "Los dem{c a'}s ingresos se reportan de manera bruta.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Los demás ingresos se reportan de manera bruta")
 g ing_honor = 0
 replace ing_honor = ing_anual if clave == "P012" | clave == "P013" ///
 	| clave == "P019" | clave == "P020" | clave == "P021" | clave == "P022" ///
@@ -819,8 +838,7 @@ terminos del septimo parrafo de este articulo y sera aplicable la reduccion a qu
 parrafo de este articulo hasta por los montos en el establecidos.*/
 
 * b. Agricultura *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Se dedican exclusivamente a actividades agr{c i'}colas si es mayor al 90%.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Se dedican exclusivamente a actividades agrícolas si estas superan el 90 %")
 g agri = ing_agri/ing_exclusivo > .9 & ing_agri > 0			// Dummy exclusivamente agricola
 g exen_agri = min(40*`smdf'*360,ing_agri) if agri == 0		// General
 replace exen_agri = min(423*`smdf'*360,ing_agri) if agri == 1		// Exclusivamente agricola
@@ -894,7 +912,7 @@ III. Las indemnizaciones por riesgos de trabajo o enfermedades, que se concedan 
 contratos colectivos de trabajo o por contratos Ley. */
 
 * k. Indemnizaciones *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y "Las indemnizaciones se conceden de acuerdo con las leyes.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Las indemnizaciones se conceden de acuerdo con las leyes")
 g exen_indemn = ing_indemn
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -936,8 +954,7 @@ XXV. Las indemnizaciones por danios que no excedan al valor de mercado del bien 
 se pagara el impuesto en los terminos de este Titulo. */
 
 * m. Indemnizaciones 3 *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Las indemnizaciones por da{c n~}os no se exceden al valor de mercado.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Las indemnizaciones por daños no exceden el valor de mercado")
 g exen_indemn3 = ing_indemn3
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -981,9 +998,7 @@ Articulo 109. Los contribuyentes a que se refiere esta Seccion, deberan calcular
 cargo en los terminos del articulo 152 de esta Ley. (...) */
 
 * s. Honorarios *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Se considera un " %5.2fc 0.634768962*100 ///
-	"% de servicios profesionales (honorarios) como remuneraciones y gastos operativos.}" // Censo Económico 2019
+noisily _log aviso, tipo(SUPUESTO) texto("Se considera un `=strtrim(string(0.634768962*100, "%5.2f"))' % de los honorarios como remuneración y gastos operativos") ref("Censo Económico 2019")
 g exen_honor = min(0.634768962*ing_honor,ing_honor)
 egen double exen_t4_cap2 = rsum(exen_honor)
 
@@ -1002,10 +1017,8 @@ predial de dichos inmuebles correspondiente al anio de calendario o al periodo d
 ingresos en el ejercicio segun corresponda.*/
 
 * t. Rentas de bienes inmuebles *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Todos los ingresos por rentas optan por la opción de deducir el 35%.}"
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Se supone un 2% del predial del total de los ingresos por rentas.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Todos los ingresos por rentas optan por deducir el 35 %")
+noisily _log aviso, tipo(SUPUESTO) texto("Se supone un 2 % de predial sobre el total de los ingresos por rentas")
 g exen_rent = .35*ing_rent+.02*ing_rent
 
 * TOTAL *
@@ -1032,8 +1045,7 @@ excepto las establecidas en las fracciones I, II y III del articulo 151 de la mi
 dividira entre la cantidad a la que se aplico la tarifa y el cociente sera la tasa. */
 
 * u. Enajenacion de bienes *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Se aplica la tarifa que resulte conforme al art{c i'}culo 152 para la enajenación de bienes.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Se aplica la tarifa del artículo 152 de la LISR para la enajenación de bienes")
 g exen_enaje = min(0,ing_enaje)
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -1063,8 +1075,7 @@ del area geografica del contribuyente elevado al anio. Por la utilidad que exced
 terminos de este Titulo. */
 
 * w. Enajenacion de bienes muebles *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Para la enajenación de bienes muebles, nunca se sobrepasa el valor de adquisición de los bienes.}"
+noisily _log aviso, tipo(SUPUESTO) texto("En la enajenación de bienes muebles nunca se sobrepasa el valor de adquisición")
 g exen_enajem = min(3*`smdf'*360,ing_enajem)
 
 * TOTAL *
@@ -1163,8 +1174,7 @@ obtenga el ingreso podra acreditar contra el impuesto que se determine en la del
 impuesto federal que le hubiera efectuado la persona que pago el premio en los terminos de este percepto. */
 
 * z. Loterias *
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Las personas f{c i'}sicas deber{c a'}n acumular los ingreso por premios a sus dem{c a'}s ingresos.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Las personas físicas acumulan los ingresos por premios a sus demás ingresos")
 g exen_loter = min(0,ing_loter)
 
 * TOTAL *
@@ -1344,150 +1354,101 @@ local ing_estim_alqu = r(StatTotal)[1,4]
 local ing_capital = r(StatTotal)[1,5]
 
 * 4.7 ENIGH As Is
-noisily di _newline(2) _col(04) in g "{bf:Paso 0: `enigh' vs. SCN}"
-noisily di _newline _col(04) in g "{bf:Producto Interno Neto" ///
-	_col(44) %7s in g "(Gini)" ///
-	_col(57) %7s in g %7s "`enigh'" ///
-	_col(66) %7s "SCN" in g ///
-	_col(77) %7s "Diferencia" "}"
+noisily _log seccion "3.2.0" "`enigh' vs SCN antes de las anclas" ref("CUAD-0 §3")
+noisily _log cuadro clear
+noisily _log cuadro col, titulo("Código") ancho(9)
+noisily _log cuadro col, titulo("Sector") ancho(6)
+noisily _log cuadro col, titulo("Cuenta") flex
+noisily _log cuadro col, titulo("Gini") fmt(%6.3f)
+noisily _log cuadro col, titulo("`enigh'") fmt(%7.3f)
+noisily _log cuadro col, titulo("SCN") fmt(%7.3f)
+noisily _log cuadro col, titulo("Dif %") fmt(%7.1f)
 
 * Remuneración de asalariados
 escalar pctpib RemSalSCNPIB = `D1HogS14'/`PIBSCN'*100
 escalar pctpib RemSalHHSPIB = `ing_sueldos'/`PIBSCN'*100
 escalar pctpib giniRemSal = `gini_ing_sueldos'
 escalar pct DifRemSal = (`ing_sueldos'/`D1HogS14'-1)*100
-noisily di _col(04) in g "(+) Remuneración de asalariados (D.1 S.14)" ///
-	_col(44) in y "(" %5.3f giniRemSal ")" ///
-	_col(57) in y %7.3f RemSalHHSPIB ///
-	_col(66) in y %7.3f RemSalSCNPIB ///
-	_col(77) in y %7.1f DifRemSal "%"
+noisily _log cuadro fila "D.1" "S.14" "Remuneración de los asalariados" "giniRemSal" "RemSalHHSPIB" "RemSalSCNPIB" "DifRemSal"
 
 * Contribuciones sociales
 escalar pctpib CSSSCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
 escalar pctpib CSSIHHSPIB = 0
 escalar pctpib giniCSSI = 0
 escalar pct DifCSSI = (0/(`SSEmpleadores'+`SSImputada')-1)*100
-noisily di _col(04) in g "(+) Contribuc. sociales" ///
-	_col(44) in y "(" %5.3f giniCSSI ")" ///
-	_col(57) in y %7.3f CSSIHHSPIB ///
-	_col(66) in y %7.3f CSSSCNPIB ///
-	_col(77) in y %7.1f DifCSSI "%"
+noisily _log cuadro fila "D.61" "S.14" "Contribuciones sociales de empleadores e imputadas" "giniCSSI" "CSSIHHSPIB" "CSSSCNPIB" "DifCSSI"
 
 * Ingreso mixto (laboral)
 escalar pctpib MixLSCNPIB = `=`MixNHogS14'*2/3'/`PIBSCN'*100
 escalar pctpib MixLHHSPIB = `ing_mixtoL'/`PIBSCN'*100
 escalar pctpib giniMixL = `gini_ing_mixtoL'
 escalar pct DifMixL = (`ing_mixtoL'/`=`MixNHogS14'*2/3'-1)*100
-noisily di _col(04) in g "(+) Ingreso mixto (laboral; 2/3 B.3n S.14)" ///
-	_col(44) in y "(" %5.3f giniMixL ")" ///
-	_col(57) in y %7.3f MixLHHSPIB ///
-	_col(66) in y %7.3f MixLSCNPIB ///
-	_col(77) in y %7.1f DifMixL "%"
+noisily _log cuadro fila "B.3n" "S.14" "Ingreso mixto neto, 2/3 laboral" "giniMixL" "MixLHHSPIB" "MixLSCNPIB" "DifMixL"
 
 * Impuestos producción (laboral)
 escalar pctpib ImpNetProduccionLSCNPIB = `ImpNetProduccionL'/`PIBSCN'*100
 escalar pctpib ImpNetProduccionLHHSPIB = 0
 escalar pctpib giniImpNetProduccionL = 0
 escalar pct DifImpNetProduccionL = (0/`ImpNetProduccionL'-1)*100
-noisily di _col(04) in g "(+) Impuestos producción (laboral)" ///
-	_col(44) in y "(" %5.3f giniImpNetProduccionL ")" ///
-	_col(57) in y %7.3f ImpNetProduccionLHHSPIB ///
-	_col(66) in y %7.3f ImpNetProduccionLSCNPIB ///
-	_col(77) in y %7.1f DifImpNetProduccionL "%"
+noisily _log cuadro fila "D.29−D.39" "S.1" "Impuestos netos a la producción, laboral" "giniImpNetProduccionL" "ImpNetProduccionLHHSPIB" "ImpNetProduccionLSCNPIB" "DifImpNetProduccionL"
 
 * Ingreso laboral (L)
 escalar pctpib IngLabSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')/`PIBSCN'*100
 escalar pctpib IngLabHHSPIB = (`ing_sueldos'+`ing_mixtoL')/`PIBSCN'*100
 escalar pctpib giniIngLab = `gini_ing_laboral'
 escalar pct DifIngLab = ((`ing_sueldos'+`ing_mixtoL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')-1)*100
-noisily di in g _dup(84) "-"
-noisily di _col(04) in g "{bf:(=) Ingreso laboral (L)" ///
-	_col(44) in y "(" %5.3f giniIngLab ")" ///
-	_col(57) in y %7.3f IngLabHHSPIB ///
-	_col(66) in y %7.3f IngLabSCNPIB ///
-	_col(77) in y %7.1f DifIngLab "%}"
+noisily _log cuadro fila "" "" "(=) Ingreso laboral, L" "giniIngLab" "IngLabHHSPIB" "IngLabSCNPIB" "DifIngLab", sep negrita
 
-noisily di in g _dup(84) "="
 
 * Sociedades e ISFLSH
 escalar pctpib SocSCNPIB = `D4Hog'/`PIBSCN'*100
 escalar pctpib SocHHSPIB = `ing_capital'/`PIBSCN'*100
 escalar pctpib giniSoc = `gini_ing_capital'
 escalar pct DifSoc = (`ing_capital'/`D4Hog'-1)*100
-noisily di _col(04) in g "(+) Renta de la propiedad (D.4 neto S.14; ENIGH: cap6 + cap8)" ///
-	_col(44) in y "(" %5.3f giniSoc ")" ///
-	_col(57) in y %7.3f SocHHSPIB ///
-	_col(66) in y %7.3f SocSCNPIB ///
-	_col(77) in y %7.1f DifSoc "%"
+noisily _log cuadro fila "D.4" "S.14" "Renta de la propiedad, neta" "giniSoc" "SocHHSPIB" "SocSCNPIB" "DifSoc", sep nota("ENIGH: cap6 + cap8 crudos frente a la celda D.4 neto S.14 (d4_relativo = proxy_propiedad, sello rojo)")
 
 * Ingreso mixto (capital)
 escalar pctpib MixKSCNPIB = `=`MixNHogS14'/3'/`PIBSCN'*100
 escalar pctpib MixKHHSPIB = (`ing_mixtoK')/`PIBSCN'*100
 escalar pctpib giniMixK = `gini_ing_mixtoK'
 escalar pct DifMixK = ((`ing_mixtoK')/`=`MixNHogS14'/3'-1)*100
-noisily di _col(04) in g "(+) Ingreso mixto (capital; 1/3 B.3n S.14)" ///
-	_col(44) in y "(" %5.3f giniMixK ")" ///
-	_col(57) in y %7.3f MixKHHSPIB ///
-	_col(66) in y %7.3f MixKSCNPIB ///
-	_col(77) in y %7.1f DifMixK "%"
+noisily _log cuadro fila "B.3n" "S.14" "Ingreso mixto neto, 1/3 capital" "giniMixK" "MixKHHSPIB" "MixKSCNPIB" "DifMixK"
 
 * Alquiler imputado
 escalar pctpib AlqSCNPIB = `ExNOpHogS14'/`PIBSCN'*100
 escalar pctpib AlqHHSPIB = `ing_estim_alqu'/`PIBSCN'*100
 escalar pctpib giniAlq = `gini_ing_estim_alqu'
 escalar pct DifAlq = (`ing_estim_alqu'/`ExNOpHogS14'-1)*100
-noisily di _col(04) in g "(+) Alquiler imputado (B.2n S.14)" ///
-	_col(44) in y "(" %5.3f giniAlq ")" ///
-	_col(57) in y %7.3f AlqHHSPIB ///
-	_col(66) in y %7.3f AlqSCNPIB ///
-	_col(77) in y %7.1f DifAlq "%"
+noisily _log cuadro fila "B.2n" "S.14" "Alquiler imputado de vivienda propia" "giniAlq" "AlqHHSPIB" "AlqSCNPIB" "DifAlq"
 
 * Gobierno
 escalar pctpib GovSCNPIB = `ExNOpGob'/`PIBSCN'*100
 escalar pctpib GovHHSPIB = 0
 escalar pctpib giniGov = 0
 escalar pct DifGov = (0/`ExNOpGob'-1)*100
-noisily di _col(04) in g "(+) Gobierno" ///
-	_col(44) in y "(" %5.3f giniGov ")" ///
-	_col(57) in y %7.3f GovHHSPIB ///
-	_col(66) in y %7.3f GovSCNPIB ///
-	_col(77) in y %7.1f DifGov "%"
+noisily _log cuadro fila "B.2n" "S.13" "Excedente de operación del gobierno" "giniGov" "GovHHSPIB" "GovSCNPIB" "DifGov"
 
 * Impuestos a los productos
 escalar pctpib ImpNetProductosSCNPIB = `ImpNetProductos'/`PIBSCN'*100
 escalar pctpib ImpNetProductosHHSPIB = 0
 escalar pctpib giniImpNetProductos = 0
 escalar pct DifImpNetProductos = (0/`ImpNetProductos'-1)*100
-noisily di _col(04) in g "(+) Impuestos a los productos" ///
-	_col(44) in y "(" %5.3f giniImpNetProductos ")" ///
-	_col(57) in y %7.3f ImpNetProductosHHSPIB ///
-	_col(66) in y %7.3f ImpNetProductosSCNPIB ///
-	_col(77) in y %7.1f DifImpNetProductos "%"
+noisily _log cuadro fila "D.21−D.31" "S.1" "Impuestos netos a los productos" "giniImpNetProductos" "ImpNetProductosHHSPIB" "ImpNetProductosSCNPIB" "DifImpNetProductos"
 
 * Impuestos producción (capital)
 escalar pctpib ImpNetProduccionKSCNPIB = `ImpNetProduccionK'/`PIBSCN'*100
 escalar pctpib ImpNetProduccionKHHSPIB = 0
 escalar pctpib giniImpNetProduccionK = 0
 escalar pct DifImpNetProduccionK = (0/`ImpNetProduccionK'-1)*100
-noisily di _col(04) in g "(+) Impuestos producción (capital)" ///
-	_col(44) in y "(" %5.3f giniImpNetProduccionK ")" ///
-	_col(57) in y %7.3f ImpNetProduccionKHHSPIB ///
-	_col(66) in y %7.3f ImpNetProduccionKSCNPIB ///
-	_col(77) in y %7.1f DifImpNetProduccionK "%"
+noisily _log cuadro fila "D.29−D.39" "S.1" "Impuestos netos a la producción, capital" "giniImpNetProduccionK" "ImpNetProduccionKHHSPIB" "ImpNetProduccionKSCNPIB" "DifImpNetProduccionK"
 
 * Ingreso de capital neto (K)
 escalar pctpib IngCapSCNPIB = `ExNOpSoc'/`PIBSCN'*100
 escalar pctpib IngCapHHSPIB = (`ing_capital'+`ing_mixtoK')/`PIBSCN'*100
 escalar pctpib giniIngCap = `gini_ing_capital'
 escalar pct DifIngCap = ((`ing_capital'+`ing_mixtoK')/`ExNOpSoc'-1)*100
-noisily di in g _dup(84) "-"
-noisily di _col(04) in g "{bf:(=) Ingreso de capital neto (K)" ///
-	_col(44) in y "(" %5.3f giniIngCap ")" ///
-	_col(57) in y %7.3f IngCapHHSPIB ///
-	_col(66) in y %7.3f IngCapSCNPIB ///
-	_col(77) in y %7.1f DifIngCap "%}"
+noisily _log cuadro fila "" "" "(=) Ingreso de capital neto, K" "giniIngCap" "IngCapHHSPIB" "IngCapSCNPIB" "DifIngCap", sep negrita
 
-noisily di in g _dup(84) "="
 
 * Producto Interno Neto (L + K)
 escalar pctpib PINSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL'+`ExNOpSoc'+`ExNOpHog' ///
@@ -1495,24 +1456,15 @@ escalar pctpib PINSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNet
 escalar pctpib PINHHSPIB = `ing_total'/`PIBSCN'*100
 escalar pctpib giniPIN = `gini_ing_total'
 escalar pct DifPIN = (`ing_total'/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL'+`ExNOpSoc'+`ExNOpHog'+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')-1)*100
-noisily di _col(04) in g "{bf:(=) Producto Interno Neto (L + K)" ///
-	_col(44) in y "(" %5.3f giniPIN ")" ///
-	_col(57) in y %7.3f PINHHSPIB ///
-	_col(66) in y %7.3f PINSCNPIB ///
-	_col(77) in y %7.1f DifPIN "%}"
+noisily _log cuadro fila "B.1n" "S.1" "(=) Producto interno neto, L + K" "giniPIN" "PINHHSPIB" "PINSCNPIB" "DifPIN", sep negrita
 
 * Depreciación
 escalar pctpib DEPFSCNPIB = `ConCapFij'/`PIBSCN'*100
 escalar pctpib DEPFHHSPIB = 0
 escalar pctpib giniDEPF = 0
 escalar pct DifDEPF = (0/`ConCapFij'-1)*100
-noisily di _col(04) in g "(+) Depreciación" ///
-	_col(44) in y "(" %5.3f giniDEPF ")" ///
-	_col(57) in y %7.3f DEPFHHSPIB ///
-	_col(66) in y %7.3f DEPFSCNPIB ///
-	_col(77) in y %7.1f DifDEPF "%"
+noisily _log cuadro fila "P.51c" "S.1" "Consumo de capital fijo" "giniDEPF" "DEPFHHSPIB" "DEPFSCNPIB" "DifDEPF"
 
-noisily di in g _dup(84) "-"
 
 * Producto Interno Bruto
 escalar pctpib PIBSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
@@ -1522,11 +1474,8 @@ escalar pctpib giniPIB = `gini_ing_total'
 escalar pct DifPIB = ((`ing_total')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
 	+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')-1)*100
 escalar pct DifPIBSCN = (`ing_total'/(`PIBSCN')-1)*100
-noisily di _col(04) in g "{bf:(+) Producto Interno Bruto" ///
-	_col(44) in y "(" %5.3f giniPIB ")" ///
-	_col(57) in y %7.3f PIBHHSPIB ///
-	_col(66) in y %7.3f PIBSCNPIB ///
-	_col(77) in y %7.1f DifPIB "%}"
+noisily _log cuadro fila "B.1b" "S.1" "(=) Producto interno bruto" "giniPIB" "PIBHHSPIB" "PIBSCNPIB" "DifPIB", sep negrita
+noisily _log cuadro print, titulo("`enigh' `anioenigh' crudos vs SCN, por celda del ingreso; Dif = ENIGH / SCN − 1") unidad("% del PIB `anioenigh'") ref("CUAD-0 §3")
 
 
 
@@ -1585,8 +1534,7 @@ replace tipo_contribuyente = 2 if ((ing_t4_cap2 != 0 & ing_t4_cap2 != .) ///
 label define tipo_contribuyente 1 "Asalariado" 2 "Persona fisica"
 label values tipo_contribuyente tipo_contribuyente
 
-noisily di _newline(2) _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Los derechohabientes del IMSS, ISSSTE, ISSSTE Estatal, Pemex, ISSFAM o con prestaciones laborales son el sector formal.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Formales: derechohabientes IMSS, ISSSTE, ISSSTE estatal, Pemex, ISSFAM o con prestaciones laborales")
 
 * Tamaño de la empresa
 g emp_tam = 1 if tam_emp == 1 | tam_emp == 2 | tam_emp == 3
@@ -1639,8 +1587,7 @@ replace formal = 6 if formal == 0 & `tiene_prestacion'
 replace formal2 = 6 if formal2 == 0 & `tiene_prestacion' & inscr_1 == "1"
 
 * Formal max
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Si se paga impuestos en el trabajo principal, tambi{c e'}n se paga en el trabajo secundario.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Si se pagan impuestos en el trabajo principal, también en el secundario")
 tempvar formal_max
 egen `formal_max' = max(formal), by(folioviv foliohog numren)
 replace formal = `formal_max'
@@ -1851,12 +1798,13 @@ tempname SBCTOTAL
 matrix `SBCTOTAL' = r(StatTotal)
 
 * Seguridad social *
-noisily di _newline(2) _col(04) in g "{bf:Paso 1: Estimar las contribuciones de seguridad social}"
-noisily di _newline _col(04) in g "{bf:1.1. Seguridad Social" ///
-	_col(44) %7s "(Gini)" ///
-	_col(57) %7s "`enigh'" ///
-	_col(66) %7s "Macro" in g ///
-	_col(77) %7s "Diferencia" "}"
+noisily _log seccion "3.2.1" "Contribuciones a la seguridad social" ref("CUAD-0 §4")
+noisily _log cuadro clear
+noisily _log cuadro col, titulo("Concepto") flex
+noisily _log cuadro col, titulo("Gini") fmt(%6.3f)
+noisily _log cuadro col, titulo("`enigh'") fmt(%7.3f)
+noisily _log cuadro col, titulo("Macro") fmt(%7.3f)
+noisily _log cuadro col, titulo("Dif %") fmt(%7.1f)
 
 * IMSS
 Gini cuotasIMSS, hogar(folioviv foliohog) factor(factor)
@@ -1865,11 +1813,7 @@ escalar pctpib IMSSCSSSCNPIB = `CuotasIMSS'/`PIBSCN'*100
 escalar pctpib IMSSCSSHHSPIB = `SBCIMSS'[1,1]/`PIBSCN'*100
 escalar pctpib giniIMSSCSS = `gini_cuotasIMSS'
 escalar pct DifIMSSCSS = (`SBCIMSS'[1,1]/`CuotasIMSS'-1)*100
-noisily di _col(04) in g "(+) IMSS " ///
-	_col(44) in y "(" %5.3f giniIMSSCSS ")" ///
-	_col(57) in y %7.3f IMSSCSSHHSPIB ///
-	_col(66) in y %7.3f IMSSCSSSCNPIB ///
-	_col(77) in y %7.1f DifIMSSCSS "%"
+noisily _log cuadro fila "IMSS" "giniIMSSCSS" "IMSSCSSHHSPIB" "IMSSCSSSCNPIB" "DifIMSSCSS"
 
 * ISSSTE
 Gini cuotasISSSTE, hogar(folioviv foliohog) factor(factor)
@@ -1878,11 +1822,7 @@ escalar pctpib ISSSTECSSSCNPIB = `Cuotas_ISSSTE'/`PIBSCN'*100
 escalar pctpib ISSSTECSSHHSPIB = `SBCISSSTE'[1,1]/`PIBSCN'*100
 escalar pctpib giniISSSTECSS = `gini_cuotasISSSTE'
 escalar pct DifISSSTECSS = (`SBCISSSTE'[1,1]/`Cuotas_ISSSTE'-1)*100
-noisily di _col(04) in g "(+) ISSSTE " ///
-	_col(44) in y "(" %5.3f giniISSSTECSS ")" ///
-	_col(57) in y %7.3f ISSSTECSSHHSPIB ///
-	_col(66) in y %7.3f ISSSTECSSSCNPIB ///
-	_col(77) in y %7.1f DifISSSTECSS "%"
+noisily _log cuadro fila "ISSSTE" "giniISSSTECSS" "ISSSTECSSHHSPIB" "ISSSTECSSSCNPIB" "DifISSSTECSS"
 
 * Federación
 Gini cuotasFED, hogar(folioviv foliohog) factor(factor)
@@ -1891,11 +1831,7 @@ escalar pctpib FEDCSSSCNPIB = `SSFederacion'/`PIBSCN'*100
 escalar pctpib FEDCSSHHSPIB = `SBCFED'[1,1]/`PIBSCN'*100
 escalar pctpib giniFEDCSS = `gini_cuotasFED'
 escalar pct DifFEDCSS = (`SBCFED'[1,1]/`SSFederacion'-1)*100
-noisily di _col(04) in g "(+) Federación " ///
-	_col(44) in y "(" %5.3f giniFEDCSS ")" ///
-	_col(57) in y %7.3f FEDCSSHHSPIB ///
-	_col(66) in y %7.3f FEDCSSSCNPIB ///
-	_col(77) in y %7.1f DifFEDCSS "%"
+noisily _log cuadro fila "Federación, cuota social y aportaciones" "giniFEDCSS" "FEDCSSHHSPIB" "FEDCSSSCNPIB" "DifFEDCSS"
 
 * Otros
 Gini cuotasOTR, hogar(folioviv foliohog) factor(factor)
@@ -1904,11 +1840,7 @@ escalar pctpib OTROCSSSCNPIB = ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`S
 escalar pctpib OTROCSSHHSPIB = (`SBCOTR'[1,1])/`PIBSCN'*100
 escalar pctpib giniOTROCSS = `gini_cuotasOTR'
 escalar pct DifOTROCSS = ((`SBCOTR'[1,1])/((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100
-noisily di _col(04) in g "(+) Otros " ///
-	_col(44) in y "(" %5.3f giniOTROCSS ")" ///
-	_col(57) in y %7.3f OTROCSSHHSPIB ///
-	_col(66) in y %7.3f OTROCSSSCNPIB ///
-	_col(77) in y %7.1f DifOTROCSS "%"
+noisily _log cuadro fila "Otros regímenes" "giniOTROCSS" "OTROCSSHHSPIB" "OTROCSSSCNPIB" "DifOTROCSS"
 
 * Imputada
 Gini cuotasIMP, hogar(folioviv foliohog) factor(factor)
@@ -1917,11 +1849,7 @@ escalar pctpib IMPCSSSCNPIB = `SSImputada'/`PIBSCN'*100
 escalar pctpib IMPCSSHHSPIB = (`SBCIMP'[1,1])/`PIBSCN'*100
 escalar pctpib giniIMPCSS = `gini_cuotasIMP'
 escalar pct DifIMPCSS = ((`SBCIMP'[1,1])/`SSImputada'-1)*100
-noisily di _col(04) in g "(+) Imputada " ///
-	_col(44) in y "(" %5.3f giniIMPCSS ")" ///
-	_col(57) in y %7.3f IMPCSSHHSPIB ///
-	_col(66) in y %7.3f IMPCSSSCNPIB ///
-	_col(77) in y %7.1f DifIMPCSS "%"
+noisily _log cuadro fila "Contribuciones imputadas" "giniIMPCSS" "IMPCSSHHSPIB" "IMPCSSSCNPIB" "DifIMPCSS"
 
 * Cuotas a la Seguridad Social
 Gini cuotasTPF, hogar(folioviv foliohog) factor(factor)
@@ -1930,12 +1858,8 @@ escalar pctpib CSSESCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
 escalar pctpib CSSEHHSPIB = (`SBCTOTAL'[1,1])/`PIBSCN'*100
 escalar pct DifCSSE = ((`SBCTOTAL'[1,1])/(`SSEmpleadores'+`SSImputada')-1)*100
 escalar pctpib giniCSSE = `gini_cuotasTPF'
-noisily di in g _dup(84) "-"
-noisily di _col(04) in g "{bf:(=) Cuotas a la Seguridad Social" ///
-	_col(44) in y "(" %5.3f giniCSSE ")" ///
-	_col(57) in y %7.3f CSSEHHSPIB ///
-	_col(66) in y %7.3f CSSESCNPIB ///
-	_col(77) in y %7.1f DifCSSE "%" "}"
+noisily _log cuadro fila "(=) Cuotas a la seguridad social" "giniCSSE" "CSSEHHSPIB" "CSSESCNPIB" "DifCSSE", sep negrita
+noisily _log cuadro print, titulo("Contribuciones a la seguridad social por institución, `enigh' vs macro; Dif = ENIGH / macro − 1") unidad("% del PIB `anioenigh'") ref("CUAD-0 §4")
 
 
 ********************************************/
@@ -2007,13 +1931,14 @@ matrix `GROSSISR' = r(StatTotal)
 
 *****************
 ** 6.4 Results **
-noisily di _newline(2) _col(04) in g "{bf:Paso 2: Recuperar el ingreso bruto y estimar el ISR retenido por salarios}"
+noisily _log seccion "3.2.2" "Ingreso bruto salarial e ISR retenido por salarios" ref("CUAD-0 §4")
 
-noisily di in g _newline _col(04) in g "{bf:2.1. Ingresos bruto salarial" ///
-	_col(44) %7s "(Gini)" ///
-	_col(57) %7s "`enigh'" ///
-	_col(66) %7s "Macro" in g ///
-	_col(77) %7s "Diferencia" "}"
+noisily _log cuadro clear
+noisily _log cuadro col, titulo("Concepto") flex
+noisily _log cuadro col, titulo("Gini") fmt(%6.3f)
+noisily _log cuadro col, titulo("`enigh'") fmt(%7.3f)
+noisily _log cuadro col, titulo("Macro") fmt(%7.3f)
+noisily _log cuadro col, titulo("Dif %") fmt(%7.1f)
 
 * Remuneración a asalariados
 Gini ing_subor, hogar(folioviv foliohog) factor(factor)
@@ -2022,22 +1947,14 @@ escalar pctpib YBSCNPIB = (`RemSal'/`PIBSCN'*100)
 escalar pctpib YBHHSPIB = ((`GROSS'[1,1]-`GROSS'[1,2])/`PIBSCN'*100)
 escalar pctpib giniYB = `gini_ing_subor'
 escalar pct DifYB = (((`GROSS'[1,1]-`GROSS'[1,2])/`RemSal'-1)*100)
-noisily di _col(04) in g "Remuneración a asalariados" ///
-	_col(44) in y "(" %5.3f giniYB ")" ///
-	_col(57) in y %7.3f YBHHSPIB ///
-	_col(66) in y %7.3f YBSCNPIB ///
-	_col(77) in y %7.1f DifYB "%"
+noisily _log cuadro fila "Remuneración de los asalariados" "giniYB" "YBHHSPIB" "YBSCNPIB" "DifYB"
 
 * CSS
 escalar pctpib CSSCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
 escalar pctpib CSSHHSPIB = (`GROSS'[1,2]/`PIBSCN'*100)
 escalar pctpib giniCSS = `gini_cuotasTPF'
 escalar pct DifCSS = ((`GROSS'[1,2]/(`SSEmpleadores'+`SSImputada'))-1)*100
-noisily di _col(04) in g "CSS" ///
-	_col(44) in y "(" %5.3f giniCSS ")" ///
-	_col(57) in y %7.3f CSSHHSPIB ///
-	_col(66) in y %7.3f CSSCNPIB ///
-	_col(77) in y %7.1f DifCSS "%"
+noisily _log cuadro fila "Contribuciones a la seguridad social" "giniCSS" "CSSHHSPIB" "CSSCNPIB" "DifCSS"
 
 * ISR retenciones a asalariados
 Gini isrE, hogar(folioviv foliohog) factor(factor)
@@ -2046,11 +1963,7 @@ escalar pctpib ISRASSCNPIB = (`ISRSalarios'/`PIBSCN'*100)
 escalar pctpib ISRASHHSPIB = (`GROSSISR'[1,1]/`PIBSCN'*100)
 escalar pctpib giniISRAS = `gini_isrE'
 escalar pct DifISRAS = ((`GROSSISR'[1,1]/`ISRSalarios'-1)*100)
-noisily di _col(04) in g "ISR retenciones a asalariados" ///
-	_col(44) in y "(" %5.3f giniISRAS ")" ///
-	_col(57) in y %7.3f ISRASHHSPIB ///
-	_col(66) in y %7.3f ISRASSCNPIB ///
-	_col(77) in y %7.1f DifISRAS "%"
+noisily _log cuadro fila "ISR retenido a asalariados" "giniISRAS" "ISRASHHSPIB" "ISRASSCNPIB" "DifISRAS"
 
 * Subsidio al empleo
 Gini SE, hogar(folioviv foliohog) factor(factor)
@@ -2059,11 +1972,8 @@ escalar pctpib SESCNPIB = (`SubsidioEmpleo'/`PIBSCN'*100)
 escalar pctpib SEHHSPIB = (`GROSSISR'[1,2]/`PIBSCN'*100)
 escalar pctpib giniSE = `gini_SE'
 escalar pct DifSE = ((`GROSSISR'[1,2]/`SubsidioEmpleo'-1)*100)
-noisily di _col(04) in g "Subsidio al empleo" ///
-	_col(44) in y "(" %5.3f giniSE ")" ///
-	_col(57) in y %7.3f SEHHSPIB ///
-	_col(66) in y %7.3f SESCNPIB ///
-	_col(77) in y %7.1f DifSE "%"
+noisily _log cuadro fila "Subsidio al empleo" "giniSE" "SEHHSPIB" "SESCNPIB" "DifSE"
+noisily _log cuadro print, titulo("Ingreso bruto salarial e ISR retenido, `enigh' vs macro; Dif = ENIGH / macro − 1") unidad("% del PIB `anioenigh'") ref("CUAD-0 §4")
 
 
 
@@ -2260,28 +2170,18 @@ if `betamin' > 1 {
 	Gini isrE, hogar(folioviv foliohog) factor(factor_cola)
 	local gini_isrE_cola = r(gini_isrE)
 
-	noisily di _newline(2) _col(04) in g "{bf:Paso 2-BIS: Estimar la cola derecha (" in y "Beta = `betamin'" in g ")}"
-	noisily di ///
-	_col(04) in g "Hogares en la cola derecha " ///
-		_col(57) in y %7.3fc `percentcola' "% " 
+	noisily _log seccion "3.2.2b" "Cola derecha, beta = `betamin'"
+	noisily _log linea "Hogares en la cola derecha: `=strtrim(string(`percentcola', "%7.3f"))' %"
 
-	noisily di _newline _col(04) in g "{bf:Ingreso bruto salarial" ///
-		_col(44) in g "(Gini)" ///
-		_col(57) in g %7s "`enigh'" ///
-		_col(66) %7s "Macro" in g ///
-		_col(77) %7s "Diferencia" "}"
-	noisily di ///
-	_col(04) in g "Remuneración de asalariados + CSS " ///
-		_col(44) in y "(" %5.3fc `gini_ing_subor_cola' ")" ///
-		_col(57) in y %7.3fc `TOP'[1,1]/`PIBSCN'*100 ///
-		_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada')/`PIBSCN'*100  ///
-		_col(77) in y %7.1fc (`TOP'[1,1]/(`RemSal'+`SSEmpleadores'+`SSImputada')-1)*100 "%"
-	noisily di ///
-	_col(04) in g "ISR retenciones de asalariados " ///
-		_col(44) in y "(" %5.3fc `gini_isrE_cola' ")" ///
-		_col(57) in y %7.3fc `TOP'[1,2]/`PIBSCN'*100 ///
-		_col(66) in y %7.3fc `ISRSalarios'/`PIBSCN'*100 ///
-		_col(77) in y %7.1fc (`TOP'[1,2]/`ISRSalarios'-1)*100 "%"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Concepto") flex
+	noisily _log cuadro col, titulo("Gini") fmt(%6.3f)
+	noisily _log cuadro col, titulo("`enigh'") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Macro") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Dif %") fmt(%7.1f)
+	noisily _log cuadro fila "Remuneración de los asalariados y contribuciones" "`gini_ing_subor_cola'" "`TOP'[1,1]/`PIBSCN'*100" "(`RemSal'+`SSEmpleadores'+`SSImputada')/`PIBSCN'*100" "(`TOP'[1,1]/(`RemSal'+`SSEmpleadores'+`SSImputada')-1)*100"
+	noisily _log cuadro fila "ISR retenido a asalariados" "`gini_isrE_cola'" "`TOP'[1,2]/`PIBSCN'*100" "`ISRSalarios'/`PIBSCN'*100" "(`TOP'[1,2]/`ISRSalarios'-1)*100"
+	noisily _log cuadro print, titulo("Cola derecha, beta = `betamin': ingreso bruto salarial, `enigh' vs macro") unidad("% del PIB `anioenigh'")
 
 	g factor_original = factor
 	replace factor = factor_cola
@@ -2372,7 +2272,7 @@ if "$yk_ancla" == "actual" {
 		+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
 		+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog') ///
 		-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'-`Pemexpropio'-`FMP'-`OtrasEmpresas'
-	noisily di as err "  FLAG Households (yk_ancla = actual): capital anclado al residuo BIE con impuestos embebidos, como v8.14.0; los gates de §9.1 no cierran."
+	noisily _log aviso, tipo(FLAG) texto("Households: yk_ancla = actual ancla el capital al residuo BIE con impuestos embebidos (v8.14.0); los gates de §9.1 no cierran") ref("CUAD-0 §4.0") rojo
 }
 scalar TaltimirCap = `MacroCap'/`ALTIMIR0'[1,6]
 escalar pct D4CoberturaENIGH = `ALTIMIR0'[1,7]/`D4Hog'*100
@@ -2383,10 +2283,10 @@ _tabla_anclas add, codigo(B.3n) sector(S.14) fuente("CSI_115 · f.70 R/P") valor
 _tabla_anclas add, codigo(B.2n) sector(S.14) fuente("CSI_115 · f.69 R/P") valor(`ExNOpHogS14') variable("ing_estim_alqu `cap3b2n'") motor(`=`ALTIMIR0'[1,3] + cond("$rentas_celda" == "b2n", `ALTIMIR0'[1,5], 0)') factor(TaltimirHouse) nota("rentas_celda=$rentas_celda")
 _tabla_anclas add, codigo(D.4) sector(S.14) fuente("CSI_115 · f.95 (− D.442)") valor(`MacroCap') variable(ing_capital) motor(`ALTIMIR0'[1,6]) factor(TaltimirCap) cobertura(D4CoberturaENIGH) nota("d4_relativo=$d4_relativo; Σ motor = relativo ing_d4_rel; cobertura = Σ cap6+cap8 / ancla")
 _tabla_anclas add, codigo(ROWTrans) sector(S.2) fuente("BIE 724034 − 724035") valor(`ROWTrans') variable(ing_remesas) motor(`ALTIMIR0'[1,4]) factor(TaltimirROWTrans) nota("transferencias netas del exterior (BIE); D.752 S.14 se reporta aparte")
-noisily _tabla_anclas print, motor titulo("Factores Altimir — Σ motor antes del ancla, ancla S.14 y cobertura ENIGH, año `anioenigh'") sello("$scn_sello") unidad("MXN `anioenigh'")
+noisily _tabla_anclas print, motor titulo("Factores Altimir: Σ motor antes del ancla, ancla S.14 y cobertura ENIGH, año `anioenigh'") sello("$scn_sello") unidad("MXN `anioenigh'") ref("CUAD-0 §5")
 
 if "`altimir'" == "yes" {
-	noisily di in g "   Altimir: " in y "`altimir'"
+	noisily _log aviso, tipo(Nota) texto("Altimir = `altimir': los factores del cuadro se aplican a las variables del motor") ref("Households §9")
 	replace ing_estim_alqu = ing_estim_alqu*TaltimirHouse
 	replace ing_remesas = ing_remesas*TaltimirROWTrans
 	replace ing_subor = ing_subor*TaltimirSal
@@ -2407,14 +2307,14 @@ if "`altimir'" == "yes" {
 	label var ing_capital "`lab_cap'"
 }
 else {
-	noisily di as err "  FLAG Households: altimir = no (ingresos crudos ENIGH, sin anclas S.14; los gates de §9.1 no cierran)."
+	noisily _log aviso, tipo(FLAG) texto("Households: altimir = no, ingresos crudos ENIGH sin anclas S.14; los gates de §9.1 no cierran") rojo
 }
 
 
 *****************************
 **# 10. Re-calculo de ISR ***
 *****************************
-noisily di _newline(2) _col(04) in g "{bf:Paso 3: Sumar ingresos por individuo y re-calcular ISR}"
+noisily _log seccion "3.2.3" "Suma de ingresos por individuo y recálculo del ISR" ref("CUAD-1 §4")
 egen ing_bruto_tax = rsum(ing_subor ing_t4_cap2 ing_t4_cap3 ing_t4_cap4 ing_t4_cap5 ///
 	ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
 replace ing_bruto_tax = 0 if ing_bruto_tax < 0
@@ -2443,8 +2343,8 @@ g ISR = 0
 label var ISR "ISR (f{c i'}sicas y asalariados)"
 
 * Deducciones personales y gastos profesionales *
-noisily di _newline _col(04) in g "{bf:3.1. Deducciones personales y gastos profesionales}"
-noisily di _col(04) in g "{bf:SUPUESTO: " in y "Las deducciones personales son beneficios para el jefe del hogar.}"
+noisily _log linea "3.2.3.1  Deducciones personales y gastos profesionales"
+noisily _log aviso, tipo(SUPUESTO) texto("Las deducciones personales son beneficios para el jefe del hogar")
 
 * 8.16b (isrpm_incidencia = propiedad; FLAG 19 cerrado): los negocios propios (ing_bruto_tpm, P068-P081) tributan como personas fisicas con actividad
 * empresarial: entran a la base de la tarifa junto con sus exenciones. El ISR de personas morales es de sociedades y se reparte ∝ ing_d4_rel (§11.3). *
@@ -2510,11 +2410,12 @@ replace emp_tam = 0 if emp_tam == .
 
 ***************************************
 ** 10.2 Probit formalidad (salarios) **
-noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Salarios.}"
-noisily xi: probit formal_probit deduc_isr ///
+noisily _log linea "3.2.3.2  Probit de formalidad: salarios"
+xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 i.emp_clasif i.emp_tam ///
 	if ing_t4_cap1 > 0 & edad >= 16 [pw=factor]
 estimates save "${SIMROOT}/master/`anioenigh'/formal_salarios", replace
+noisily _log modelo, nombre("Probit de formalidad, salarios") archivo("master/`anioenigh'/formal_salarios.ster")
 predict double prob_salarios if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2526,13 +2427,14 @@ g prop_salarios = formal_accumSAL/formal_SAL
 
 **************************************
 ** 10.3 Probit formalidad (fisicas) **
-noisily di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Personas f{c i'}sicas.}"
+noisily _log linea "3.2.3.3  Probit de formalidad: personas físicas"
 * 8.16b (isrpm_incidencia = propiedad): los duenos de negocios propios (ing_bruto_tpm > 0) tambien son personas fisicas con obligacion de ISR *
-noisily xi: probit formal_probit deduc_isr ///
+xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 i.emp_clasif i.emp_tam ///
 	if (ing_t4_cap2 + ing_t4_cap3 + ing_t4_cap4 + ing_t4_cap5 ///
 	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 > 0 | ("$isrpm_incidencia" == "propiedad" & ing_bruto_tpm > 0)) & edad >= 16 [pw=factor]
 estimates save "${SIMROOT}/master/`anioenigh'/formal_fisicas", replace
+noisily _log modelo, nombre("Probit de formalidad, personas físicas") archivo("master/`anioenigh'/formal_fisicas.ster")
 predict double prob_formal if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2544,11 +2446,12 @@ g prop_formal = formal_accum/formal_NAC
 
 **************************************
 ** 10.4 Probit formalidad (morales) **
-noisily di _newline _col(04) in g "{bf:3.4. Probit de formalidad: " in y "Personas morales.}"
-noisily xi: probit formal_probit deduc_isr ///
+noisily _log linea "3.2.3.4  Probit de formalidad: personas morales"
+xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 i.emp_clasif i.emp_tam ///
 	if ing_bruto_tpm > 0 & edad >= 16 [pw=factor]
 estimates save "${SIMROOT}/master/`anioenigh'/formal_morales", replace
+noisily _log modelo, nombre("Probit de formalidad, personas morales") archivo("master/`anioenigh'/formal_morales.ster")
 predict double prob_moral if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2593,9 +2496,7 @@ tabstat prop_salarios if formal_asalariados == 1, stat(max) save
 tempname FORAS
 matrix `FORAS' = r(StatTotal)
 
-noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-	"Formales por salarios = los " %14.0fc `n_formales' " de mayor p (ancla_formales = $ancla_formales; base del probit " %14.0fc `n_base' ///
-	"). La informalidad estimada para los asalariados es de " %6.2fc (1-`FORAS'[1,1])*100 in g "%.}"
+noisily _log aviso, tipo(SUPUESTO) texto("Formales: los `=strtrim(string(`n_formales', "%12.0fc"))' de mayor p (ancla $ancla_formales, base `=strtrim(string(`n_base', "%12.0fc"))'); informalidad asalariada `=strtrim(string((1-`FORAS'[1,1])*100, "%6.2f"))' %")
 escalar pct asisFORMALSalarios = (1-`FORAS'[1,1])*100
 escalar mxn ISRSalarios = `ISRSalarios'
 escalar mxn ISRASObligacion = `oblig_total'
@@ -2604,9 +2505,7 @@ escalar personas ISRASFormales = `n_formales'
 escalar mxn ISRASSubreporte = `oblig_formales' - `ISRSalarios'
 escalar pct ISRASSubreportePct = (`oblig_formales'/`ISRSalarios' - 1)*100
 if "$ancla_formales" == "imss" {
-	noisily di as err "  SELLO ROJO — ajuste por subreporte de ingresos altos (FLAG 27): Σ obligación de los " %14.0fc `n_formales' " formales de mayor p = " %21.0fc `oblig_formales' ///
-		" vs LIF ISR por salarios " %21.0fc `ISRSalarios' " MXN `anioenigh': residuo " %21.0fc scalar(ISRASSubreporte) " (" %6.2f scalar(ISRASSubreportePct) " %). " ///
-		"TasasEfectivas y PerfilesSim reparten la LIF ∝ ISR_asalariados de los formales: la diferencia es lo que la ENIGH no ve de los ingresos altos, no una medida de incumplimiento."
+	noisily _log aviso, tipo(FLAG) num(27) texto("subreporte de ingresos altos: Σ obligación formales `=strtrim(string(`oblig_formales'/1e9, "%12.3fc"))' vs LIF `=strtrim(string(`ISRSalarios'/1e9, "%12.3fc"))' bn (`=strtrim(string(scalar(ISRASSubreportePct), "%6.2f"))' %)") ref("CUAD-1 §8") rojo
 }
 
 
@@ -2642,11 +2541,11 @@ if "$obligacion_isrpf_ancla" == "itan_rangos" {
 		if _rc == 0 local S = r(StatTotal)[1,1]
 		if `ITANPF_`r'' >= 0 & `S' > 0 {
 			replace ISR_PF = `pfobl'*`ITANPF_`r''/`S' if rango_itan == `r'
-			_tabla_anclas add, codigo(`r') sector(S.14) rotulo("Ingreso anual declarado de `rg' miles de MXN") fuente("ITAN 4T `anioenigh' · itanfp02") valor(`ITANPF_`r'') motor(`S') variable(ISR_PF)
+			_tabla_anclas add, codigo(`r') sector(S.14) rotulo("Declarado `rg' mil MXN") fuente("ITAN 4T `anioenigh' · itanfp02") valor(`ITANPF_`r'') motor(`S') variable(ISR_PF)
 		}
 		else {
 			local pool = `pool' + `ITANPF_`r''
-			_tabla_anclas add, codigo(`r') sector(S.14) rotulo("Ingreso anual declarado de `rg' miles de MXN") fuente("ITAN 4T `anioenigh' · itanfp02") valor(`ITANPF_`r'') motor(`S') variable("al resto ∝ ENIGH") nota("rango `r': `=cond(`ITANPF_`r'' < 0, "recaudacion negativa (devoluciones netas)", "sin personas de la ENIGH en el rango")'; su monto se reparte con «Resto» ∝ obligacion sobre toda la base de PF")
+			_tabla_anclas add, codigo(`r') sector(S.14) rotulo("Declarado `rg' mil MXN") fuente("ITAN 4T `anioenigh' · itanfp02") valor(`ITANPF_`r'') motor(`S') variable("al resto ∝ ENIGH") nota("rango `r': `=cond(`ITANPF_`r'' < 0, "recaudacion negativa (devoluciones netas)", "sin personas de la ENIGH en el rango")'; su monto se reparte con «Resto» ∝ obligacion sobre toda la base de PF")
 		}
 	}
 	tabstat `pfobl' [aw=factor], stat(sum) save
@@ -2658,13 +2557,12 @@ if "$obligacion_isrpf_ancla" == "itan_rangos" {
 	_tabla_anclas add, codigo(12) sector(S.14) rotulo("Resto sin declaracion anual y rangos negativos") fuente("ITAN 4T `anioenigh' · itanfp02") valor(`pool') motor(`pfobl_tot') variable("∝ ISR_PF (toda la base)") nota("Resto = contribuyentes que no presentaron declaracion anual; se reparte ∝ obligacion estatutaria de toda la base de PF")
 	_tabla_anclas add, codigo(Total) sector(S.14) rotulo("ISR de personas fisicas con y sin actividad empresarial") fuente("ITAN 4T `anioenigh' · itanfp02") valor(`ITANPFTot') motor(`pfobl_tot') variable(ISR_PF) sep nota("Σ ISR_PF anclado = ITAN PF; LIF ISR PF = `: di %21.0fc `ISRFisicas'' (TasasEfectivas y PerfilesSim reescalan a la LIF ∝ ISR_PF); obligacion estatutaria total = Σ motor")
 	_tabla_anclas gate, texto("Σ ISR_PF anclado por rangos = ITAN PF (pfae + pfsae) 4T `anioenigh'") a(`isrpf_tot') b(`ITANPFTot')
-	noisily _tabla_anclas print, motor titulo("Paso 3b: ISR de personas físicas por rango de ingreso anual declarado — ITAN 4T `anioenigh' (obligacion_isrpf_ancla = itan_rangos)") sello("`itan_sello'") razon("asset raw/ITAN/itan-congelado.zip, catálogo itan-catalogo.json `itan_catalogo'") unidad("MXN `anioenigh'")
+	noisily _tabla_anclas print, motor titulo("ISR de personas físicas por rango de ingreso anual declarado, ITAN 4T `anioenigh'") sello("`itan_sello'") razon("asset raw/ITAN/itan-congelado.zip, catálogo itan-catalogo.json `itan_catalogo'") unidad("MXN `anioenigh'") ref("CUAD-1 §8 ter")
 	tabstat factor if formal_fisicas == 1, stat(sum) save
 	local n_pf = r(StatTotal)[1,1]
 	tabstat factor if prob_formal != ., stat(sum) save
 	escalar pct asisFORMALFisicas = (1 - `n_pf'/r(StatTotal)[1,1])*100
-	noisily di _col(04) in g "{bf:SUPUESTO: " in y "la informalidad de las personas físicas no se identifica con itan_rangos: el ITAN fija la recaudación por rango y la ENIGH la distribución dentro de cada uno; " ///
-		%6.2fc scalar(asisFORMALFisicas) " % de la base de PF queda sin ISR de PF (obligación estatutaria 0).}"
+	noisily _log aviso, tipo(SUPUESTO) texto("itan_rangos: ITAN fija la recaudación por rango, ENIGH la distribución; `=strtrim(string(scalar(asisFORMALFisicas), "%6.2f"))' % de la base de PF sin ISR")
 }
 else {
 	* CUT-OFF (enigh, v8.15.3): formal = los de mayor p hasta que Σ obligacion = LIF *
@@ -2676,9 +2574,7 @@ else {
 	tempname FORPF
 	matrix `FORPF' = r(StatTotal)
 
-	noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-		"Se hace el cut-off en " %20.0fc `ISRFisicas' ///
-		". La informalidad estimada para las personas f{c i'}sicas es de " %6.2fc (1-`FORPF'[1,1])*100 in g "%.}"
+	noisily _log aviso, tipo(SUPUESTO) texto("Cut-off de PF en `=strtrim(string(`ISRFisicas'/1e9, "%12.3fc"))' bn; informalidad estimada de personas físicas `=strtrim(string((1-`FORPF'[1,1])*100, "%6.2f"))' %")
 	escalar pct asisFORMALFisicas = (1-`FORPF'[1,1])*100
 }
 escalar mxn ISRFisicas = `ISRFisicas'
@@ -2698,8 +2594,7 @@ if "$isrpm_incidencia" == "propiedad" {
 	label var ISR_PM "ISR (personas morales) ∝ renta de la propiedad ing_d4_rel (regla P; isrpm_incidencia = propiedad)"
 	g formal_morales = ISR_PM > 0
 	escalar pct asisFORMALMorales = 0
-	noisily di _col(04) in g "{bf:SUPUESTO: " in y "ISR de personas morales = LIF " %20.0fc `ISRMorales' " repartido ∝ ing_d4_rel (regla P, sello rojo: d4_relativo = $d4_relativo); " ///
-		"los negocios propios tributan como PF (§10.1); la informalidad de personas morales no aplica a personas.}"
+	noisily _log aviso, tipo(SUPUESTO) texto("ISR PM = LIF `=strtrim(string(`ISRMorales'/1e9, "%12.3fc"))' bn repartido ∝ ing_d4_rel (regla P, sello rojo); negocios propios tributan como PF") ref("CUAD-1 §4.0")
 }
 else {
 	gsort -prob_moral folioviv foliohog numren
@@ -2716,11 +2611,9 @@ else {
 	tempname FORPM
 	matrix `FORPM' = r(StatTotal)
 
-	noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
-		"Se hace el cut-off en " %20.0fc `ISRMorales' ///
-		". La informalidad estimada para las personas morales es de " %6.2fc (1-`FORPM'[1,1])*100 in g "%.}"
+	noisily _log aviso, tipo(SUPUESTO) texto("Cut-off de PM en `=strtrim(string(`ISRMorales'/1e9, "%12.3fc"))' bn; informalidad estimada de personas morales `=strtrim(string((1-`FORPM'[1,1])*100, "%6.2f"))' %")
 	escalar pct asisFORMALMorales = (1-`FORPM'[1,1])*100
-	noisily di as err "  FLAG Households (isrpm_incidencia = negocios): la base del ISR PM son los negocios propios (P068-P081), que tributan como PF; el ISR PM es de sociedades (FLAG 19, v8.15.3)."
+	noisily _log aviso, tipo(FLAG) num(19) texto("isrpm_incidencia = negocios: la base del ISR PM son los negocios propios P068-P081, que tributan como PF; el ISR PM es de sociedades") ref("CUAD-1 §4.0") rojo
 }
 escalar mxn ISRMorales = `ISRMorales'
 
@@ -2787,8 +2680,8 @@ _tabla_anclas add, codigo(ISRPM) sector(S.13) fuente("LIF `anioenigh' · ISR PM"
 _tabla_anclas add, codigo(D.51) sector(S.13) rotulo("Impuestos sobre el ingreso: ISR de la LIF") fuente("LIF `anioenigh'") valor(`ISRSalarios'+`ISRFisicas'+`ISRMorales') motor(`RESTAXS'[1,1]+`RESTAXF'[1,1]+`RESTAX'[1,1]) variable(ISR) gini(`gini_ISR') sep nota("la LIF clasifica por quien entera (retenedor); la CSI por quien soporta: D.51 S.14 y D.51 S.11 + S.12 son las anclas de NTA (isr_personas_ancla = $isr_personas_ancla)")
 if "$isrpm_incidencia" == "propiedad" _tabla_anclas gate, texto("Σ ISR_PM = LIF ISR PM (Distribucion ∝ ing_d4_rel)") a(`RESTAX'[1,1]) b(`ISRMorales')
 if "$obligacion_isrpf_ancla" == "itan_rangos" _tabla_anclas gate, texto("Σ ISR_PF = ITAN PF 4T `anioenigh' (pfae + pfsae)") a(`RESTAXF'[1,1]) b(`ITANPFTot')
-noisily _tabla_anclas print, motor titulo("Paso 3c: ISR anual del motor vs LIF `anioenigh' — asalariados, personas físicas y personas morales") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anioenigh'") pib(`PIBSCN')
-if "$TA_GATES_OK" != "1" noisily di as err "  GATE Households (ISR): alguna ancla del ISR no cierra a 1e-9 (ver el cuadro)."
+noisily _tabla_anclas print, motor titulo("ISR anual del motor vs LIF `anioenigh': asalariados, personas físicas y morales") sello("verde") razon("master/LIF.dta, asset LIFs.xlsx") unidad("MXN `anioenigh'") pib(`PIBSCN') ref("CUAD-1 §4")
+if "$TA_GATES_OK" != "1" noisily _log aviso, tipo(GATE) texto("Households: alguna ancla del ISR no cierra a 1e-9 (ver el cuadro)") rojo
 
 
 
@@ -2926,7 +2819,7 @@ _tabla_anclas gate, texto("Σ ing_capital = D.4 neto S.14 (− D.442)") a(`SumCa
 _tabla_anclas gate, texto("componentes de ing_mixto = agregado") a(`SumMixComp') b(`SumMixto')
 _tabla_anclas gate, texto("YA = ing_capital + 1/3 ing_mixto + B.2n = YAHogS14 (− D.442)") a(`YAmotor') b(`=`YAHogS14' - `D442n'')
 _tabla_anclas gate, texto("PIB BIE = YL + YA + D.442 + B.5n S.11+S.12 + B.5n S.13 + B.5n S.15 + CCF + ROW + vintage") a(`Identidad') b(`PIBSCN')
-noisily _tabla_anclas print, motor titulo("Paso 4: Anclas S.14 (Tabla 1 firmada) y filas de sector de la identidad del PIB BIE, ENIGH `anioenigh'") sello("$scn_sello") razon("asset raw/SCN congelado, manifest scn_vintage; % del PIB BIE `: di %21.0fc `PIBSCN''") unidad("MXN `anioenigh'") pib(`PIBSCN')
+noisily _tabla_anclas print, motor titulo("Anclas S.14, Tabla 1 firmada, y filas de sector de la identidad del PIB BIE, ENIGH `anioenigh'") sello("$scn_sello") razon("asset raw/SCN congelado, manifest scn_vintage; % del PIB BIE `=strtrim(string(`PIBSCN'/1e9, "%14.3fc"))' bn") unidad("MXN `anioenigh'") pib(`PIBSCN') ref("CUAD-0 §5")
 local gates_ok = ("$TA_GATES_OK" == "1")
 
 * Escalares de la identidad (output.txt: CUADRATURA; gate-numeros los conoce) *
@@ -2966,12 +2859,12 @@ foreach k in YL YA D442 S11S12 S13 S15 CCF Row Vintage PIB {
 }
 file write `fcuad' "scalar CuadPIBSCN = " %21x (`PIBSCN') "   // PIB BIE `anioenigh', mxn" _n
 file close `fcuad'
-noisily di in g "  Producto:  " in y "master/`anioenigh'/cuadratura.do" in g " (Cuad*/Cuad*PIB en %21x para Web.Stata.do → output.do CUADRATURA)"
+noisily _log aviso, tipo(Salida) texto("master/`anioenigh'/cuadratura.do: Cuad*/Cuad*PIB en %21x para Web.Stata.do → output.do CUADRATURA") ref("runbook §6")
 
 * Gates (1e-9 relativo): impresos con el cuadro del Paso 4 (8.16b); el resultado viene en $TA_GATES_OK *
 escalar pct CuadGatesOK = `gates_ok'*100
-if !`gates_ok' noisily di as err "  GATE Households: alguna ancla S.14 o la identidad de sectores no cierra a 1e-9 (esperado solo con yk_ancla = actual o altimir = no)."
-noisily di in g "  Remesas: Σ ing_remesas " in y %16.0fc `SumRem' in g " = ROWTrans BIE (factor " in y %8.4f TaltimirROWTrans in g "); D.752 S.14 CSI " in y %16.0fc `RemesasHogS14' in g " (una sola vez: ya no viajan dentro de ing_mixto)"
+if !`gates_ok' noisily _log aviso, tipo(GATE) texto("Households: alguna ancla S.14 o la identidad de sectores no cierra a 1e-9 (esperado solo con yk_ancla = actual o altimir = no)") rojo
+noisily _log linea "Remesas: Σ ing_remesas `=strtrim(string(`SumRem'/1e9, "%12.3fc"))' bn = ROWTrans BIE (factor `=strtrim(string(TaltimirROWTrans, "%8.4f"))'); D.752 S.14 CSI `=strtrim(string(`RemesasHogS14'/1e9, "%12.3fc"))' bn, una sola vez"
 
 
 
@@ -3085,7 +2978,7 @@ local SumYkNeto = r(StatTotal)[1,2] - r(StatTotal)[1,3]
 _tabla_anclas clear
 _tabla_anclas gate, texto("Σ Yl = D.1 S.14 + 2/3 B.3n") a(`SumYl') b(`=`D1Hog' + `MixNHogS14'*2/3')
 _tabla_anclas gate, texto("Σ Yk − CCF = YAHogS14 (− D.442)") a(`SumYkNeto') b(`=`YAHogS14' - `D442n'')
-noisily _tabla_anclas print, titulo("Gates de Yl y Yk contra las celdas S.14 (§9.1)") unidad("MXN `anioenigh'")
+noisily _tabla_anclas print, titulo("3.2.9  Gates de Yl y Yk contra las celdas S.14") unidad("MXN `anioenigh'") ref("CUAD-0 §5")
 if "$TA_GATES_OK" != "1" {
 	local gates_ok = 0
 	escalar pct CuadGatesOK = 0
@@ -3193,7 +3086,7 @@ foreach k in decil sexo grupoedad escol rural {
 
 timer off 6
 timer list 6
-noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t6)/r(nt6)',.1) in g " segs."
+noisily _log tiempo, timer(6) texto("Households")
 log close households
 
 

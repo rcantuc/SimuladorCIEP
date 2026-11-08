@@ -23,7 +23,8 @@ quietly {
 	*** 1 Log file ***
 	******************
 	tempfile sankey
-	quietly log using `sankey', replace text name(sankey)
+	tempname fsk
+	file open `fsk' using `sankey', write text replace
 	*noisily di in g "{"
 
 
@@ -110,12 +111,16 @@ quietly {
 	***************/
 	*** 5 OUTPUT ***
 	****************
-	noisily di in w "$" `"(document).ready(function()_{const_dataSource={chart:{caption:"",subcaption:"",theme:"fusion",orientation:"horizontal",linkalpha:30,linkhoveralpha:60,nodelabelposition:"start",showLegend:0},"'
-	if `"`meta'"' != "" noisily di in w `"`meta',"'
-	noisily di in w `"nodes: [ `=substr(`"`nodes'"',1,`=strlen(`"`nodes'"')'-1)'], "'
-	noisily di in w `"links: [ `=substr(`"`links'"',1,`=strlen(`"`links'"')'-1)']"' "};"
-	noisily di in w `"FusionCharts.ready(function()_{var_myChart=new_FusionCharts({type:"sankey",renderAt:"sankey-`name'",width:"100%",height:"100%",dataFormat:"json",dataSource}).render();});});"'
-	capture quietly log close sankey
+	* log legible: el JSON se escribe con file write en `sankey' (antes log propio + noisily di; en batch `log off' no pausa el log) *
+	file write `fsk' "$" `"(document).ready(function()_{const_dataSource={chart:{caption:"",subcaption:"",theme:"fusion",orientation:"horizontal",linkalpha:30,linkhoveralpha:60,nodelabelposition:"start",showLegend:0},"' _n
+	if `"`meta'"' != "" file write `fsk' `"`meta',"' _n
+	file write `fsk' `"nodes: [ `=substr(`"`nodes'"',1,`=strlen(`"`nodes'"')'-1)'], "' _n
+	file write `fsk' `"links: [ `=substr(`"`links'"',1,`=strlen(`"`links'"')'-1)']"' "};" _n
+	file write `fsk' `"FusionCharts.ready(function()_{var_myChart=new_FusionCharts({type:"sankey",renderAt:"sankey-`name'",width:"100%",height:"100%",dataFormat:"json",dataSource}).render();});});"' _n
+	file close `fsk'
+	local nn = length(`"`nodes'"') - length(subinstr(`"`nodes'"', "{", "", .))
+	local nl = length(`"`links'"') - length(subinstr(`"`links'"', "{", "", .))
+	noisily _log aviso, tipo(Salida) texto("sankey-`name'.json: `nn' nodos, `nl' enlaces, en users/$id/`folder'") ref("runbook §12")
 
 	tempfile sankey1 sankey2 sankey3
 	if "`=c(os)'" == "Windows" {

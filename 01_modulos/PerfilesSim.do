@@ -136,7 +136,8 @@ local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 **************************
 use if anio == `1' using `"${SIMROOT}/master/Poblaciontot.dta"', clear
 local ajustepob = poblacion
-noisily di _newline in g "Población `1': " %12.0fc in y `ajustepob'
+noisily _log modulo "PerfilesSim  ·  perfiles de la política fiscal `1', ENIGH `anioenigh'" ref("CUAD-1 §4; runbook §9")
+noisily _log linea "Población `1' (CONAPO): `=strtrim(string(`ajustepob', "%12.0fc"))' personas; factor de ajuste de la ENIGH a la población del año"
 
 
 
@@ -292,7 +293,7 @@ if "$ieps_relativo" == "" global ieps_relativo "micro"
 if "$ieps_relativo" == "micro" {
 	capture confirm variable IEPS
 	if _rc != 0 {
-		noisily di as err "  FLAG PerfilesSim (ieps_relativo = micro): households.dta sin IEPS/base_iepsp (anterior a 8.16b); se cae a proxy."
+		noisily _log aviso, tipo(FLAG) texto("PerfilesSim: households.dta sin IEPS/base_iepsp (anterior a 8.16b); ieps_relativo cae a proxy") ref("CUAD-1 §4.0") rojo
 		global ieps_relativo "proxy"
 	}
 }
@@ -616,7 +617,7 @@ save "${SIMROOT}/master/perfiles`1'.dta", replace
 * guardan como <var>RECprom.dta en la misma carpeta (un collapse por variable; cero
 * réplicas adicionales). Con B = 1 el promedio es la única pasada. *
 if "$bootstrap" == "" {
-	noisily di as err "PerfilesSim: falta la global bootstrap (SIM.do §0.2, global bootstrap \"250\")."
+	noisily _log aviso, tipo(IMPORTANTE) texto("PerfilesSim: falta la global bootstrap (SIM.do §0.2, global bootstrap 250)") rojo
 	exit 198
 }
 local dirboot `"${SIMROOT}/users/$id/bootstraps/$bootstrap"'
@@ -633,4 +634,4 @@ foreach f of local recs {
 	local ++nprom
 }
 restore
-noisily di _newline in g "Promedio de r{c e'}plicas (B = " in y "$bootstrap" in g "): " in y "`nprom'" in g " archivo(s) *RECprom.dta en users/$id/bootstraps/$bootstrap/"
+noisily _log aviso, tipo(Salida) texto("promedio de réplicas (B = $bootstrap): `nprom' archivos *RECprom.dta en users/$id/bootstraps/$bootstrap/") ref("FiscalGap §4.2")

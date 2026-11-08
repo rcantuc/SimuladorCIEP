@@ -8,7 +8,7 @@ quietly {
 	keep if ingreso != 0 & ingreso != .
 	count if ingreso != 0 & ingreso != .
 	if r(N) == 0 {
-		noisily di in g "Gini de " in y "`varlist'" in g ": " in y "No hay observaciones"
+		noisily _log aviso, tipo(Nota) texto("Gini de `varlist': sin observaciones")
 		return local gini_`varlist' = 0
 		restore
 		exit
@@ -27,7 +27,7 @@ quietly {
 	matrix `sumiy2' = r(StatTotal)
 
 	local gini_`=substr("`varlist'",1,20)' = ((2*`sumiy2'[1,1])/(n[_N]*`sumiy2'[1,2])) - (n[_N]+1)/n[_N]
-	noisily di in g "Gini de " in y "`varlist'" in g ": " in y %5.3fc `gini_`=substr("`varlist'",1,20)''
+	noisily _log linea "Gini de `varlist' por hogar: `=strtrim(string(`gini_`=substr("`varlist'",1,20)'', "%5.3f"))'"
 	return local gini_`=substr("`varlist'",1,20)' = `gini_`=substr("`varlist'",1,20)''
 	restore
 }

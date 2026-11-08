@@ -94,6 +94,26 @@
 *   Flujos financieros de ing_mixto (préstamos, retiros, hipotecas, seguros: cap9) quedan FUERA de la identidad (FLAG motor).
 *   Flujos brutos; año 2024; desahorro como dos nodos en los Sankeys v2 y v3 (grupo que ahorra → Futuro; Desahorro → Activos).
 *
+* §4 DECISIONES (sesión log-legible, 2026-11-09): los diez parámetros del Sankey de la economía completa (SIM.do §0.8c; CUAD-2 §4, firmados en
+*   CUAD-1-2-firma.md §A 16, 19-23 y §B 17-18) se describen aquí; SIM.do solo los declara en una línea y §0.9 imprime el cuadro con FLAG si el
+*   valor no es el firmado. La primera alternativa es la firmada; «no implementado» imprime FLAG y dibuja la firmada:
+*   hub                  inbd (hub = ingreso nacional disponible BIE 724037, 81.561 % PIB 2024; los sectores entran con su B.5n) | ing_nacional
+*                        (lado hogares, v3; el v4 no se emite).
+*   retenido_a_personas  on (B.5n y B.8n de S.11 + S.12 llegan a personas ∝ ing_d4_rel, regla P, sello rojo; «Sociedades» visible en medio) |
+*                        off (nodo de sector sin edad).
+*   deficit_a_personas   per_capita (B.8n S.13, −1,157.268, a todas las personas por igual, C) | tau_menos (∝ τ⁻ de cada persona) | off (solo
+*                        «Financiamiento → Gobierno»).
+*   isflsh_regla         sector (ISFLSH con nodo propio: B.5n al hub, D.751 de hogares, D.63 a categorías, B.8n a personas per cápita) | hogares |
+*                        d63_perfil (no implementados en 8.17).
+*   circuito_d442        neto (D.442 → Hogares como fila de sector y D.614 fuera de las cuotas a Afores) | bruto (cuotas a S.12 con D.614).
+*   vintage_nodo         si (nodo «Vintage BIE vs CSI» al hub, NNI, y sink tras el hub, Σ B.6n CSI vs INBD BIE) | absorbido (se suma a Hogares).
+*   bruto_neto           neto (hub neto de CCF; PIN como origen) | bruto (CCF por sector hasta la formación de capital; no implementado en 8.17).
+*   financiamiento       un_nodo_4 (un solo nodo fuente «Financiamiento deuda y venta de activos»: desahorro de hogares, S.11 + S.12 y S.13) |
+*                        por_sector (un nodo por sector) | un_nodo_2 (= un_nodo_4 con FLAG: sin S.11 + S.12 no conserva).
+*   discrepancia_gasto   fuera (el Sankey es cuenta corriente: INBD = C + B.8n) | nodo (solo con la formación de capital; no implementado en 8.17).
+*   inter_hogar          balance (lo otorgado entre hogares, ENIGH 173416 + 133030, se escala a lo recibido P039 + P040 + P057: D.75 entre
+*                        residentes neto cero, como el SCN; sello rojo) | enigh (sin escalar: el desbalance 193.7 bn queda en la brecha de S).
+*
 * PARÁMETROS (globals nta_*; default entre paréntesis; se declaran en la salida):
 *   nta_anclaS   ("auto") multiplicativo si |Σ S − B.8n|/B.8n ≤ 15 %, si no off | "off" | "aditivo" | "multiplicativo".
 *   nta_YA       ("S14") total de YA a B.2n + 1/3 B.3n + D.4 neto ∝ YA del motor | "motor".
@@ -120,12 +140,12 @@ if "`1'" == "" {
 }
 local anio = `1'
 timer on 14
-noisily di _newline(2) in g _dup(20) "." "{bf:   NTA:" in y " cuenta por individuo `anio'   }" in g _dup(20) "." _newline
+noisily _log modulo "NTA  ·  cuenta de Transferencias Nacionales por individuo, `anio'" ref("CUAD-2 §6; NTA.do header §4")
 
 ** 0 Parámetros declarados **
 if "$nta_anclaS" == "" | "$nta_anclaS" == "AhorroHog" global nta_anclaS "auto"	// NTA-1c: auto = multiplicativo si |Σ S − B.8n|/B.8n ≤ 15 %, si no off; "AhorroHog" (NTA-1) era el aditivo
 if !inlist("$nta_anclaS", "auto", "off", "aditivo", "multiplicativo") {
-	noisily di as err `"NTA: nta_anclaS = "$nta_anclaS" no es auto | off | aditivo | multiplicativo"'
+	noisily _log aviso, tipo(IMPORTANTE) texto(`"NTA: nta_anclaS = "$nta_anclaS" no es auto | off | aditivo | multiplicativo"') rojo
 	exit 198
 }
 global nta_anclaS_param "$nta_anclaS"
@@ -134,14 +154,14 @@ global nta_anclaS_param "$nta_anclaS"
 local brecha_max = 15
 if "$nta_YA" == "" global nta_YA "S14"
 if !inlist("$nta_YA", "motor", "S14") {
-	noisily di as err `"NTA: nta_YA = "$nta_YA" no es motor | S14"'
+	noisily _log aviso, tipo(IMPORTANTE) texto(`"NTA: nta_YA = "$nta_YA" no es motor | S14"') rojo
 	exit 198
 }
 if "$nta_cuotas" == "" global nta_cuotas "S14"
 if "$nta_d8" == "" global nta_d8 "yl_cotizantes"
 if "$nta_anclaTau" == "" global nta_anclaTau "on"
 if !inlist("$nta_d8", "yl_cotizantes", "per_capita_adultos") {
-	noisily di as err `"NTA: nta_d8 = "$nta_d8" no es yl_cotizantes | per_capita_adultos"'
+	noisily _log aviso, tipo(IMPORTANTE) texto(`"NTA: nta_d8 = "$nta_d8" no es yl_cotizantes | per_capita_adultos"') rojo
 	exit 198
 }
 if "$nta_alqu" == "" global nta_alqu "jefe"
@@ -175,7 +195,7 @@ foreach k in ConHog ConGob SerEGob SaluGob ComprasN ROWRem ROWProp ROWTrans CapF
 }
 capture confirm scalar AhorroHog
 if _rc != 0 {
-	noisily di as err "NTA: SCN no definió AhorroHog/TransfEspecie (sin CSI_115.xlsx). Sin ancla S.14 no hay cuenta NTA."
+	noisily _log aviso, tipo(IMPORTANTE) texto("NTA: SCN no definió AhorroHog/TransfEspecie (sin CSI_115.xlsx); sin ancla S.14 no hay cuenta NTA") ref("CUAD-0 §4 bis") rojo
 	exit 459
 }
 local AhorroHog = scalar(AhorroHog)
@@ -183,7 +203,7 @@ local AhorroHogB = scalar(AhorroHogB)
 * NTA-4: PIB nominal del año (SCN.ado: escalar mxn PIB = PIB[anio], BIE); denominador de pctpib en el v3 y en el panel *
 capture confirm scalar PIB
 if _rc != 0 | scalar(PIB) <= 0 {
-	noisily di as err "NTA: SCN no dejó el escalar PIB del año `anio' (denominador de % del PIB). Sin PIB no hay emisión v3/panel."
+	noisily _log aviso, tipo(IMPORTANTE) texto("NTA: SCN no dejó el escalar PIB del año `anio' (denominador de % del PIB); sin PIB no hay v3 ni panel") rojo
 	exit 459
 }
 local PIBY = scalar(PIB)
@@ -270,7 +290,7 @@ foreach k of local sect {
 }
 if `sinsect' & "$hub" == "inbd" {
 	global hub "ing_nacional"
-	noisily di as err "  FLAG NTA: SCN sin las celdas por sector de CUAD-2 §6.4 (`sinsect_k'): hub cae a ing_nacional y el Sankey v4 no se emite"
+	noisily _log aviso, tipo(FLAG) texto("NTA: SCN sin las celdas por sector (`sinsect_k'); hub cae a ing_nacional y el Sankey v4 no se emite") ref("CUAD-2 §6.4") rojo
 	local flags `"`flags' "SCN sin las celdas por sector de CUAD-2 §6.4 (SCNSectores, 8.17:`sinsect_k'): hub cae a ing_nacional y el Sankey v4 no se emite""'
 }
 foreach p in hub retenido_a_personas deficit_a_personas isflsh_regla circuito_d442 vintage_nodo bruto_neto financiamiento discrepancia_gasto inter_hogar {
@@ -285,7 +305,7 @@ foreach p in hub retenido_a_personas deficit_a_personas isflsh_regla circuito_d4
 if !inlist("$hub", "inbd", "ing_nacional") | !inlist("$retenido_a_personas", "on", "off") | !inlist("$deficit_a_personas", "per_capita", "tau_menos", "off") ///
 	| !inlist("$isflsh_regla", "sector", "hogares", "d63_perfil") | !inlist("$circuito_d442", "neto", "bruto") | !inlist("$vintage_nodo", "si", "absorbido") ///
 	| !inlist("$bruto_neto", "neto", "bruto") | !inlist("$financiamiento", "un_nodo_4", "un_nodo_2", "por_sector") | !inlist("$discrepancia_gasto", "fuera", "nodo") | !inlist("$inter_hogar", "balance", "enigh") {
-	noisily di as err "NTA: parametro de CUAD-2 fuera de rango (hub=$hub retenido_a_personas=$retenido_a_personas deficit_a_personas=$deficit_a_personas isflsh_regla=$isflsh_regla circuito_d442=$circuito_d442 vintage_nodo=$vintage_nodo bruto_neto=$bruto_neto financiamiento=$financiamiento discrepancia_gasto=$discrepancia_gasto inter_hogar=$inter_hogar)"
+	noisily _log aviso, tipo(IMPORTANTE) texto("NTA: parámetro de CUAD-2 fuera de rango: hub=$hub retenido=$retenido_a_personas deficit=$deficit_a_personas isflsh=$isflsh_regla d442=$circuito_d442 vintage=$vintage_nodo bruto=$bruto_neto fin=$financiamiento disc=$discrepancia_gasto inter=$inter_hogar") ref("SIM.do §0.9") rojo
 	exit 198
 }
 if "$isflsh_regla" != "sector" local flags `"`flags' "isflsh_regla = $isflsh_regla no implementado en 8.17: se dibuja sector (B.5n al hub, D.751 de hogares, D.63 a categorias, B.8n a personas per capita)""'
@@ -335,7 +355,7 @@ _tabla_anclas add, codigo(P.3) sector(S.14) fuente("CSI_115 · f.166 U/A") valor
 if `D51HogS14' < . _tabla_anclas add, codigo(D.51) sector(S.14) fuente("CSI_115 · f.115 U/A") valor(`D51HogS14') variable("nta_ISRAS + nta_ISRPF") nota("isr_personas_ancla = $isr_personas_ancla: con d51_s14 el ISR de personas de τ⁻ se ancla aqui (la LIF clasifica por quien entera; la CSI por quien soporta)")
 if `D51NoFin' < . _tabla_anclas add, codigo(D.51) sector("S.11+S.12") fuente("CSI_106/109 · f.115 U/A") valor(`D51NoFin' + `D51Fin') variable(nta_ISRPM) nota("ISR de sociedades (informativo, fuera de τ⁻); con d51_s14 anclado a la celda en vez de a la LIF")
 if `CuotasGobR' < . _tabla_anclas add, codigo(D.61) sector("S.13|S.12|S.11|S.15") fuente("CSI f.117 R/P") valor(`CuotasGobR' + `CuotasFinR' + `CuotasNoFinR' + `CuotasISFLSHR') variable("nta_CUOTAS_S13 … S15") nota("cuotas_por_sector = $cuotas_por_sector: D.61 por sector receptor (S.13 `: di %21.0fc `CuotasGobR'', S.12 `: di %21.0fc `CuotasFinR'' con D.614, S.11 `: di %21.0fc `CuotasNoFinR'', S.15 `: di %21.0fc `CuotasISFLSHR'') = D.61 pagado por S.14")
-noisily _tabla_anclas print, titulo("Anclas al SCN — NTA `anio'") sello("$scn_sello") unidad("MXN `anio'")
+noisily _tabla_anclas print, titulo("Anclas al SCN, NTA `anio'") sello("$scn_sello") unidad("MXN `anio'") ref("CUAD-2 §6")
 if "$isr_personas_ancla" == "d51_s14" & `D51HogS14' == . {
 	global isr_personas_ancla "lif"
 	local flags `"`flags' "SCN sin D51HogS14 (CSI_115 f.115, 8.16b): isr_personas_ancla cae a lif""'
@@ -394,7 +414,6 @@ while "`cuad_firma'" != "" {
 	local cuad_linea "`cuad_linea' `p'=${`p'}"
 }
 global cuad_params "`cuad_linea'"
-noisily di in g "  Parametros de Households (CUAD-0 firma):" in y "$cuad_params"
 quietly {
 	merge 1:1 folioviv foliohog numren using `prog', nogen keep(master match)
 	merge m:1 folioviv foliohog using `otor', nogen keep(master match)
@@ -418,7 +437,7 @@ quietly {
 local N = _N
 quietly summarize nta_hhid, meanonly
 local H = r(max)
-noisily di in g "  Personas: " in y %12.0fc `N' in g "; hogares: " in y %12.0fc `H'
+noisily _log linea "Base NTA `anio': `=strtrim(string(`N', "%12.0fc"))' personas en `=strtrim(string(`H', "%12.0fc"))' hogares"
 
 
 
@@ -462,7 +481,7 @@ else {
 }
 escalar pct NTATaltimirSelf = `TSelf'*100
 escalar pct NTATaltimirSal = `TSal'*100
-noisily di in g "  Altimir: TaltimirSelf " in y %6.4f `TSelf' in g "  TaltimirSal " in y %6.4f `TSal'
+noisily _log linea "Altimir: TaltimirSelf `=strtrim(string(`TSelf', "%6.4f"))', TaltimirSal `=strtrim(string(`TSal', "%6.4f"))'"
 
 
 
@@ -965,29 +984,31 @@ escalar pct NTAFactorYA = `fYA'*100
 quietly tabstat YA_base S_ajuste [fw=factor], stat(sum) save
 escalar mxn NTAYABaseNac = r(StatTotal)[1,1]
 escalar mxn NTASAjusteNac = r(StatTotal)[1,2]
-noisily di in g "  YA: motor " in y %16.0fc `YA_motor_tot' in g "  YAHogS14 (B.2n + 1/3 B.3n + D.4 neto) " in y %16.0fc `YAHogS14' in g " (B.2n " in y %16.0fc `ExNOpHogS14' in g ", 1/3 B.3n " in y %16.0fc `MixNHogS14'/3 in g ", D.4 neto " in y %16.0fc `RentaPropHogNeta' in g ")  − D.442 (cuotas_d614=$cuotas_d614) " in y %16.0fc `YAHogS14' - `YAHogS14n' in g " = ancla " in y %16.0fc `YAHogS14n' in g "  factor " in y %8.6f `fYA' in g "  nta_YA=" in y "$nta_YA"
+noisily _log linea "YA (bn): motor `=strtrim(string(`YA_motor_tot'/1e9, "%14.3fc"))'; YAHogS14 `=strtrim(string(`YAHogS14'/1e9, "%14.3fc"))' = B.2n `=strtrim(string(`ExNOpHogS14'/1e9, "%14.3fc"))' + 1/3 B.3n `=strtrim(string(`MixNHogS14'/3e9, "%14.3fc"))' + D.4 neto `=strtrim(string(`RentaPropHogNeta'/1e9, "%14.3fc"))'"
+noisily _log linea "YA (bn): − D.442 `=strtrim(string((`YAHogS14' - `YAHogS14n')/1e9, "%14.3fc"))' (cuotas_d614 $cuotas_d614) = ancla `=strtrim(string(`YAHogS14n'/1e9, "%14.3fc"))'; factor `=strtrim(string(`fYA', "%8.6f"))' (nta_YA $nta_YA)"
 quietly tabstat TmenDir TmenInd TmenFuera nta_CUOTAS [fw=factor], stat(sum) save
 escalar mxn NTATmenFueraNac = r(StatTotal)[1,3]
 escalar mxn NTACuotasNac = r(StatTotal)[1,4]
-noisily di in g "  τ⁻: directos " in y %16.0fc r(StatTotal)[1,1] in g " (cuotas $nta_cuotas " in y %16.0fc r(StatTotal)[1,4] in g ")  indirectos " in y %16.0fc r(StatTotal)[1,2] ///
-	in g "  fuera (ISR_PM + OTROSK) " in y %16.0fc r(StatTotal)[1,3]
+noisily _log linea "τ⁻ (bn): directos `=strtrim(string(r(StatTotal)[1,1]/1e9, "%14.3fc"))' (cuotas $nta_cuotas `=strtrim(string(r(StatTotal)[1,4]/1e9, "%14.3fc"))'); indirectos `=strtrim(string(r(StatTotal)[1,2]/1e9, "%14.3fc"))'"
+noisily _log linea "τ⁻ (bn): fuera de τ⁻, ISR PM + OTROSK `=strtrim(string(r(StatTotal)[1,3]/1e9, "%14.3fc"))'"
 quietly tabstat ImpProd nta_impprod_motor TmenInd nta_impprod_YA nta_impprod_YL [fw=factor], stat(sum) save
 escalar mxn NTAImpProdNac = r(StatTotal)[1,1]
 escalar mxn NTAImpProdMotor = r(StatTotal)[1,2]
 escalar mxn NTAImpProdMotorYA = r(StatTotal)[1,4]
 escalar mxn NTAImpProdMotorYL = r(StatTotal)[1,5]
 escalar pct NTAFactorIndirectos = r(StatTotal)[1,3]/`ImpNetosProd'*100
-noisily di in g "  Impuestos a productos: ImpNetosProd (D.21−D.31 CSI_103) " in y %16.0fc `ImpNetosProd' in g "  ImpNet BIE " in y %16.0fc `ImpNetBIE' ///
-	in g "  embebido por Altimir (sacado) " in y %16.0fc r(StatTotal)[1,2] in g " = de YA " in y %16.0fc r(StatTotal)[1,4] in g " + de YL (⅔ mixK, v8.14) " in y %16.0fc r(StatTotal)[1,5] ///
-	in g "  Σ indirectos micro (τ⁻) " in y %16.0fc r(StatTotal)[1,3] in g "  factor indirectos/ImpNetosProd " in y %7.4f r(StatTotal)[1,3]/`ImpNetosProd'
+noisily _log linea "Impuestos a productos (bn): ImpNetosProd D.21 − D.31 `=strtrim(string(`ImpNetosProd'/1e9, "%14.3fc"))'; ImpNet BIE `=strtrim(string(`ImpNetBIE'/1e9, "%14.3fc"))'"
+noisily _log linea "Impuestos a productos (bn): embebido por Altimir, sacado `=strtrim(string(r(StatTotal)[1,2]/1e9, "%14.3fc"))' = de YA `=strtrim(string(r(StatTotal)[1,4]/1e9, "%14.3fc"))' + de YL `=strtrim(string(r(StatTotal)[1,5]/1e9, "%14.3fc"))'"
+noisily _log linea "Impuestos a productos (bn): Σ indirectos micro τ⁻ `=strtrim(string(r(StatTotal)[1,3]/1e9, "%14.3fc"))'; factor indirectos / ImpNetosProd `=strtrim(string(r(StatTotal)[1,3]/`ImpNetosProd', "%7.4f"))'"
 escalar pct NTAFactorTau = `fTau'*100
 escalar mxn NTATpubEfPre = `TpubEf_pre'
-noisily di in g "  τ⁺ efectivo: PEF/ENIGH " in y %16.0fc `TpubEf_pre' in g "  D.62 + D.759 S.14 " in y %16.0fc `TauPubS14' in g " (D.62 " in y %16.0fc `PrestSocHog' in g ", D.759 " in y %16.0fc `OtrasTransfHog' in g ")  factor " in y %7.4f `fTau' in g "  nta_anclaTau=" in y "$nta_anclaTau"
+noisily _log linea "τ⁺ efectivo (bn): PEF/ENIGH `=strtrim(string(`TpubEf_pre'/1e9, "%14.3fc"))'; D.62 + D.759 S.14 `=strtrim(string(`TauPubS14'/1e9, "%14.3fc"))' (D.62 `=strtrim(string(`PrestSocHog'/1e9, "%14.3fc"))', D.759 `=strtrim(string(`OtrasTransfHog'/1e9, "%14.3fc"))')"
+noisily _log linea "τ⁺ efectivo: factor `=strtrim(string(`fTau', "%7.4f"))' (nta_anclaTau $nta_anclaTau)"
 quietly tabstat YA_d8 [fw=factor], stat(sum) save
 escalar mxn NTAD8Nac = r(StatTotal)[1,1]
-noisily di in g "  D.8 (AjustePension) " in y %16.0fc `AjustePension' in g " → YA_d8 ($nta_d8; " in y `Ncotiz' in g " personas con cuotas > 0 en la base): Σ " in y %16.0fc r(StatTotal)[1,1]
-noisily di in g "  S micro (residual de hogares, sin ajuste): " in y %16.0fc `S_micro' in g "  AhorroHog (B.8n): " in y %16.0fc `AhorroHog' ///
-	in g "  factor implícito " in y %8.4f `fS' in g "  brecha " in y %7.1f scalar(NTABrechaSPct) in g " %  nta_anclaS=" in y "$nta_anclaS" in g " (param " in y "$nta_anclaS_param" in g ")  Σ S_ajuste " in y %16.0fc scalar(NTASAjusteNac)
+noisily _log linea "D.8 AjustePension `=strtrim(string(`AjustePension'/1e9, "%14.3fc"))' bn → YA_d8 ($nta_d8; `Ncotiz' personas con cuotas > 0): Σ `=strtrim(string(r(StatTotal)[1,1]/1e9, "%14.3fc"))' bn"
+noisily _log linea "S micro sin ajuste `=strtrim(string(`S_micro'/1e9, "%14.3fc"))' bn vs B.8n S.14 `=strtrim(string(`AhorroHog'/1e9, "%14.3fc"))'; factor implícito `=strtrim(string(`fS', "%8.4f"))'; brecha `=strtrim(string(scalar(NTABrechaSPct), "%7.1f"))' %"
+noisily _log linea "nta_anclaS = $nta_anclaS (parámetro $nta_anclaS_param); Σ S_ajuste `=strtrim(string(scalar(NTASAjusteNac)/1e9, "%14.3fc"))' bn"
 
 
 
@@ -1037,25 +1058,25 @@ escalar mxn NTABrechaCpriv = `TOT'[1,3] - `ConHogS14'
 local ok = 1
 if `maxres' > `tol'*`Cpc' {
 	local ok = 0
-	noisily di as err "  GATE NTA: residual por persona máximo " %12.4f `maxres' " (relativo al C per cápita " %9.2e `maxres'/`Cpc' ")"
+	noisily _log aviso, tipo(GATE) texto("NTA: residual por persona máximo `=strtrim(string(`maxres', "%12.4f"))' MXN (relativo al C per cápita `=strtrim(string(`maxres'/`Cpc', "%9.2e"))')") rojo
 }
 if abs(`Intra_nac')/`Ctot' > `tol' {
 	local ok = 0
-	noisily di as err "  GATE NTA: Σ intra-hogar nacional " %16.2f `Intra_nac' " (relativo a C " %9.2e abs(`Intra_nac')/`Ctot' ")"
+	noisily _log aviso, tipo(GATE) texto("NTA: Σ intra-hogar nacional `=strtrim(string(`Intra_nac', "%16.2f"))' MXN (relativo a C `=strtrim(string(abs(`Intra_nac')/`Ctot', "%9.2e"))')") rojo
 }
 if "$nta_anclaS" != "off" & reldif(`S_nac', `AhorroHog') > `tol' {
 	local ok = 0
-	noisily di as err "  GATE NTA: Σ S_hh " %16.2f `S_nac' " ≠ AhorroHog " %16.2f `AhorroHog'
+	noisily _log aviso, tipo(GATE) texto("NTA: Σ S_hh `=strtrim(string(`S_nac'/1e9, "%14.3fc"))' bn ≠ AhorroHog B.8n `=strtrim(string(`AhorroHog'/1e9, "%14.3fc"))' bn") rojo
 }
 * 8.17 (prompt Bloque 3): Σ S de las personas = B.8n S.1 con los defaults firmados (retenido on, deficit ≠ off, ISFLSH per capita, ancla ≠ off) *
 local S_pers_esp = .
 if "$retenido_a_personas" == "on" & "$deficit_a_personas" != "off" & "$nta_anclaS" != "off" & `B8nS1' < . local S_pers_esp = `B8nS1'
 if `S_pers_esp' < . & reldif(`S_pers', `S_pers_esp') > `tol' {
 	local ok = 0
-	noisily di as err "  GATE NTA (8.17): Σ S de las personas " %16.2f `S_pers' " ≠ B.8n S.1 " %16.2f `S_pers_esp'
+	noisily _log aviso, tipo(GATE) texto("NTA 8.17: Σ S de las personas `=strtrim(string(`S_pers'/1e9, "%14.3fc"))' bn ≠ B.8n S.1 `=strtrim(string(`S_pers_esp'/1e9, "%14.3fc"))' bn") rojo
 }
-noisily di in g "  Gates: residual por persona máx " in y %9.2e `maxres' in g "; Σ intra por hogar máx " in y %9.2e `maxintra_hog' ///
-	in g "; Σ intra nacional " in y %12.2f `Intra_nac' in g "; Σ S_hh " in y %16.0fc `S_nac' in g "; Σ S personas " in y %16.0fc `S_pers' in g " (B.8n S.1 " in y %16.0fc `B8nS1' in g ") -> " in y cond(`ok', "OK", "ROJO")
+noisily _log aviso, tipo(GATE) texto("NTA: residual por persona máx `=strtrim(string(`maxres', "%9.2e"))'; Σ intra por hogar máx `=strtrim(string(`maxintra_hog', "%9.2e"))'; Σ intra nacional `=strtrim(string(`Intra_nac', "%12.2f"))' → `=cond(`ok', "OK", "ROJO")'")
+noisily _log aviso, tipo(GATE) texto("NTA: Σ S_hh `=strtrim(string(`S_nac'/1e9, "%14.3fc"))' bn; Σ S personas `=strtrim(string(`S_pers'/1e9, "%14.3fc"))' bn vs B.8n S.1 `=strtrim(string(`B8nS1'/1e9, "%14.3fc"))' → `=cond(`ok', "OK", "ROJO")'")
 * 8.16b: gates de Cuadratura II (1e-9 relativo; CUAD-1 §7): Σ Cpriv = P.3 S.14; Σ ISR de personas = D.51 S.14; Σ ISR PM = D.51 S.11 + S.12;
 * Σ cuotas = D.61 por sector receptor; Σ IEPS repartido = LIF por tipo. Al estandar §D (_tabla_anclas.ado v2). *
 quietly tabstat Cpriv nta_ISRAS nta_ISRPF nta_ISRPM nta_CUOTAS nta_IEPSNP nta_IEPSP [fw=factor], stat(sum) save
@@ -1095,13 +1116,13 @@ if "$hub" == "inbd" {
 	if "$deficit_a_personas" != "off" _tabla_anclas gate, texto("Σ S_def = B.8n S.13 (deficit_a_personas = $deficit_a_personas)") a(scalar(NTASDefNac)) b(`B8nGob')
 	_tabla_anclas gate, texto("Σ S_isflsh = B.8n S.15") a(scalar(NTASISFLSHNac)) b(`B8nISFLSH')
 }
-noisily _tabla_anclas print, titulo("Gates de Cuadratura II — NTA `anio' (CUAD-1 §7, CUAD-2 §7)") unidad("MXN `anio'")
+noisily _tabla_anclas print, titulo("Gates de Cuadratura II, NTA `anio'") unidad("MXN `anio'") ref("CUAD-1 §7; CUAD-2 §7")
 if "$TA_GATES_OK" != "1" {
 	local ok = 0
-	noisily di as err "  GATE NTA (Cuadratura II): algun ancla de CUAD-1 no cierra (ver el cuadro)."
+	noisily _log aviso, tipo(GATE) texto("NTA Cuadratura II: algún ancla de CUAD-1 no cierra (ver los gates de arriba)") rojo
 }
-noisily di in g "  ConGob partido: individual (D.63) Σ " in y %16.0fc `TOT'[1,13] in g " vs TransfEspecie " in y %16.0fc `TransfEspecie' ///
-	in g " (reldif " in y %9.2e reldif(`TOT'[1,13], `TransfEspecie') in g "); colectivo (ConGob − D.63) Σ " in y %16.0fc `TOT'[1,14] in g "; Σ Cpub " in y %16.0fc `TOT'[1,4]
+noisily _log linea "ConGob partido (bn): individual D.63 Σ `=strtrim(string(`TOT'[1,13]/1e9, "%14.3fc"))' vs TransfEspecie `=strtrim(string(`TransfEspecie'/1e9, "%14.3fc"))' (reldif `=strtrim(string(reldif(`TOT'[1,13], `TransfEspecie'), "%9.2e"))')"
+noisily _log linea "ConGob partido (bn): colectivo ConGob − D.63 Σ `=strtrim(string(`TOT'[1,14]/1e9, "%14.3fc"))'; Σ Cpub `=strtrim(string(`TOT'[1,4]/1e9, "%14.3fc"))'"
 
 
 
@@ -1175,7 +1196,7 @@ quietly {
 restore
 if `maxres_qs'/`Ctot' > `tol' {
 	local ok = 0
-	noisily di as err "  GATE NTA: residual por quinquenio×sexo máx " %12.2f `maxres_qs'
+	noisily _log aviso, tipo(GATE) texto("NTA: residual por quinquenio × sexo máx `=strtrim(string(`maxres_qs', "%12.2f"))' MXN") rojo
 }
 escalar mxn NTAResidMaxQS = `maxres_qs'
 escalar mxn NTAResidMaxPersona = `maxres'
@@ -1184,7 +1205,7 @@ escalar mxn NTAResidMaxPersona = `maxres'
 * «^n» / «Nota n:» para todo parametro o comentario, gates debajo de cada cuadro). Abre con Σ S micro sin ajuste por grupo vs B.8n. *
 local f1 "%11.1fc"
 local okstr = cond(`ok', "OK", "ROJO")
-local raya = 160*"─"
+local raya = 110*"─"
 tempname fh
 file open `fh' using `"`dirnta'/nta-identidad.txt"', write replace text
 file write `fh' "NTA `anio' — cuenta de Transferencias Nacionales por individuo: identidad, anclas S.14 y descomposición de la brecha de S (miles de millones de MXN corrientes de `anio'; sumas [fw=factor])" _n
@@ -1210,20 +1231,40 @@ file write `fh' "." _n
 file write `fh' "Nota 3: parámetros de Households (CUAD-0 firma 2026-10-31 y CUAD-1 firma 2026-11-07; FLAG si difieren del firmado):$cuad_params." _n
 file write `fh' "Nota 4: parámetros de NTA: nta_anclaS = $nta_anclaS, nta_YA = $nta_YA, nta_cuotas = $nta_cuotas, nta_d8 = $nta_d8, nta_anclaTau = $nta_anclaTau, nta_alqu = $nta_alqu, nta_tauCash = $nta_tauCash, nta_otorgado = $nta_otorgado, nta_mixto = $nta_mixto." _n _n
 file write `fh' "`raya'" _n
-file write `fh' "Cuadro 2. Identidad por grupo de edad sin ancla: C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S sin ancla) − intra = R^5^6" _n
+* log legible (2026-11-09): el cuadro 2 se parte en 2a (consumo e ingreso), 2b (τ⁻) y 2c (τ⁺, transferencias privadas, intra y R) para
+* caber en 110 columnas; mismos escalares, mismos formatos, misma precisión. *
+file write `fh' "Cuadro 2a. Identidad por grupo de edad sin ancla, consumo e ingreso: C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S sin ancla) − intra = R^5^6" _n
 file write `fh' "`raya'" _n
-file write `fh' %-12s ("Grupo") %9s ("Pob (M)") %11s ("Cpriv") %11s ("Cpub") %11s ("C") %11s ("YL") %11s ("ImpProd") %11s ("YA") %11s ("YA D.8") %11s ("S") %11s ("τ⁻ púb.") %11s ("cuotas") %11s ("indirectos") %11s ("fuera τ⁻") %11s ("τ⁺ efect.") %11s ("τ⁺ esp.") %11s ("τ⁺ colec.") %11s ("inter rec.") %11s ("remesas") %11s ("inter otor.") %11s ("intra") %11s ("R") _n
+file write `fh' %-12s ("Grupo") %9s ("Pob (M)") %11s ("Cpriv") %11s ("Cpub") %11s ("C") %11s ("YL") %11s ("ImpProd") %11s ("YA") %11s ("YA D.8") %11s ("S") _n
 forvalues g = 1/5 {
 	local lab : label grupoedad `g'
 	file write `fh' %-12s ("`lab'") %9.1f (scalar(NTAPob`g')/1e6) `f1' (scalar(NTACpriv`g')/1e9) `f1' (scalar(NTACpub`g')/1e9) `f1' (scalar(NTAC`g')/1e9) ///
-		`f1' (scalar(NTAYL`g')/1e9) `f1' (scalar(NTAImpProd`g')/1e9) `f1' (scalar(NTAYA`g')/1e9) `f1' (scalar(NTAYA_d8`g')/1e9) `f1' (scalar(NTAS`g')/1e9) `f1' (scalar(NTATmen`g')/1e9) `f1' (scalar(NTATmenCuotas`g')/1e9) `f1' (scalar(NTATmenInd`g')/1e9) `f1' (scalar(NTATmenFuera`g')/1e9) ///
-		`f1' (scalar(NTATpubEf`g')/1e9) `f1' (scalar(NTATpubEsp`g')/1e9) `f1' (scalar(NTATpubCol`g')/1e9) `f1' (scalar(NTAInterRec`g')/1e9) `f1' (scalar(NTARemesas`g')/1e9) ///
-		`f1' (scalar(NTAInterOtor`g')/1e9) `f1' (scalar(NTAIntra`g')/1e9) %11.6f (scalar(NTAResid`g')/1e9) _n
+		`f1' (scalar(NTAYL`g')/1e9) `f1' (scalar(NTAImpProd`g')/1e9) `f1' (scalar(NTAYA`g')/1e9) `f1' (scalar(NTAYA_d8`g')/1e9) `f1' (scalar(NTAS`g')/1e9) _n
 }
 file write `fh' "`raya'" _n
 file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTACpriv0)/1e9) `f1' (scalar(NTACpub0)/1e9) `f1' (scalar(NTAC0)/1e9) ///
-	`f1' (scalar(NTAYL0)/1e9) `f1' (scalar(NTAImpProd0)/1e9) `f1' (scalar(NTAYA0)/1e9) `f1' (scalar(NTAYA_d80)/1e9) `f1' (scalar(NTAS0)/1e9) `f1' (scalar(NTATmen0)/1e9) `f1' (scalar(NTATmenCuotas0)/1e9) `f1' (scalar(NTATmenInd0)/1e9) `f1' (scalar(NTATmenFuera0)/1e9) ///
-	`f1' (scalar(NTATpubEf0)/1e9) `f1' (scalar(NTATpubEsp0)/1e9) `f1' (scalar(NTATpubCol0)/1e9) `f1' (scalar(NTAInterRec0)/1e9) `f1' (scalar(NTARemesas0)/1e9) ///
+	`f1' (scalar(NTAYL0)/1e9) `f1' (scalar(NTAImpProd0)/1e9) `f1' (scalar(NTAYA0)/1e9) `f1' (scalar(NTAYA_d80)/1e9) `f1' (scalar(NTAS0)/1e9) _n
+file write `fh' "`raya'" _n
+file write `fh' "Cuadro 2b. Identidad por grupo de edad: τ⁻ público y sus partes" _n
+file write `fh' "`raya'" _n
+file write `fh' %-12s ("Grupo") %9s ("Pob (M)") %11s ("τ⁻ púb.") %11s ("cuotas") %11s ("indirectos") %11s ("fuera τ⁻") _n
+forvalues g = 1/5 {
+	local lab : label grupoedad `g'
+	file write `fh' %-12s ("`lab'") %9.1f (scalar(NTAPob`g')/1e6) `f1' (scalar(NTATmen`g')/1e9) `f1' (scalar(NTATmenCuotas`g')/1e9) `f1' (scalar(NTATmenInd`g')/1e9) `f1' (scalar(NTATmenFuera`g')/1e9) _n
+}
+file write `fh' "`raya'" _n
+file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTATmen0)/1e9) `f1' (scalar(NTATmenCuotas0)/1e9) `f1' (scalar(NTATmenInd0)/1e9) `f1' (scalar(NTATmenFuera0)/1e9) _n
+file write `fh' "`raya'" _n
+file write `fh' "Cuadro 2c. Identidad por grupo de edad: τ⁺ público, transferencias privadas, intra-hogar y residual R" _n
+file write `fh' "`raya'" _n
+file write `fh' %-12s ("Grupo") %9s ("Pob (M)") %11s ("τ⁺ efect.") %11s ("τ⁺ esp.") %11s ("τ⁺ colec.") %11s ("inter rec.") %11s ("remesas") %11s ("inter otor.") %11s ("intra") %11s ("R") _n
+forvalues g = 1/5 {
+	local lab : label grupoedad `g'
+	file write `fh' %-12s ("`lab'") %9.1f (scalar(NTAPob`g')/1e6) `f1' (scalar(NTATpubEf`g')/1e9) `f1' (scalar(NTATpubEsp`g')/1e9) `f1' (scalar(NTATpubCol`g')/1e9) `f1' (scalar(NTAInterRec`g')/1e9) `f1' (scalar(NTARemesas`g')/1e9) ///
+		`f1' (scalar(NTAInterOtor`g')/1e9) `f1' (scalar(NTAIntra`g')/1e9) %11.6f (scalar(NTAResid`g')/1e9) _n
+}
+file write `fh' "`raya'" _n
+file write `fh' %-12s ("Total") %9.1f (scalar(NTAPob0)/1e6) `f1' (scalar(NTATpubEf0)/1e9) `f1' (scalar(NTATpubEsp0)/1e9) `f1' (scalar(NTATpubCol0)/1e9) `f1' (scalar(NTAInterRec0)/1e9) `f1' (scalar(NTARemesas0)/1e9) ///
 	`f1' (scalar(NTAInterOtor0)/1e9) `f1' (scalar(NTAIntra0)/1e9) %11.6f (scalar(NTAResid0)/1e9) _n
 file write `fh' "`raya'" _n
 file write `fh' "Nota 5: con el ancla multiplicativa la diferencia S − S sin ancla queda declarada en la columna Ajuste del cuadro 1, no en la identidad. ImpProd = impuestos netos a los productos como ingreso ∝ Cpriv. τ⁺ = público efectivo + público en especie (individual, D.63) + público colectivo (ConGob − D.63) + inter-hogar recibido + remesas; τ⁻ público = ISR de personas (asalariados + PF; ancla $isr_personas_ancla) + cuotas ($nta_cuotas; por sector receptor: cuotas_por_sector = $cuotas_por_sector) + indirectos LIF (IEPS ∝ `rel_iepsnp' / `rel_iepsp'); fuera de τ⁻ (informativo): ISR PM (ancla $isr_personas_ancla) + OTROSK." _n
@@ -1234,7 +1275,12 @@ file write `fh' %-62s ("GATE 1e-9  Σ S − B.8n S.14 con ancla (MXN)") %21.2fc 
 if "$consumo_ancla" == "p3_s14" file write `fh' %-62s ("GATE 1e-9  Σ Cpriv − P.3 S.14 (MXN)") %21.2fc (scalar(NTACprivNac) - `ConHogS14') _n
 if "$isr_personas_ancla" == "d51_s14" file write `fh' %-62s ("GATE 1e-9  Σ ISR de personas − D.51 S.14 (MXN)") %21.2fc (scalar(NTAISRPersonasNac) - `D51HogS14') _n
 if "$isr_personas_ancla" == "d51_s14" file write `fh' %-62s ("GATE 1e-9  Σ ISR PM − D.51 S.11 + S.12 (MXN)") %21.2fc (scalar(NTAISRPMNac) - `D51NoFin' - `D51Fin') _n
-if "$cuotas_por_sector" == "on" & "$nta_cuotas" == "S14" file write `fh' %-62s ("GATE 1e-9  Σ cuotas por sector − D.61 receptor S.13|S.12|S.11|S.15 (MXN)") %21.2fc (scalar(NTACuotasS13Nac) - `CuotasGobR') %21.2fc (scalar(NTACuotasS12Nac) - `CuotasS12n') %21.2fc (scalar(NTACuotasS11Nac) - `CuotasNoFinR') %21.2fc (scalar(NTACuotasS15Nac) - `CuotasISFLSHR') _n
+if "$cuotas_por_sector" == "on" & "$nta_cuotas" == "S14" {
+	file write `fh' %-62s ("GATE 1e-9  Σ cuotas a S.13 − D.61 receptor S.13 (MXN)") %21.2fc (scalar(NTACuotasS13Nac) - `CuotasGobR') _n
+	file write `fh' %-62s ("GATE 1e-9  Σ cuotas a S.12 − D.61 receptor S.12 − D.614 (MXN)") %21.2fc (scalar(NTACuotasS12Nac) - `CuotasS12n') _n
+	file write `fh' %-62s ("GATE 1e-9  Σ cuotas a S.11 − D.61 receptor S.11 (MXN)") %21.2fc (scalar(NTACuotasS11Nac) - `CuotasNoFinR') _n
+	file write `fh' %-62s ("GATE 1e-9  Σ cuotas a S.15 − D.61 receptor S.15 (MXN)") %21.2fc (scalar(NTACuotasS15Nac) - `CuotasISFLSHR') _n
+}
 file write `fh' %-62s ("RESULTADO de los gates") %21s ("`okstr'") _n
 * v8.15b: «De dónde sale la brecha» (CUAD-0 Δ esperado): Σ S sin ancla − B.8n partida por partida, NTA vs S.14 (bn) *
 quietly tabstat YL YA_base YA_d8 ImpProd TmenInd nta_ISRAS nta_ISRPF nta_CUOTAS TpubEf InterRec Remesas InterOtor Cpriv CpubInd CpubCol TpubEsp TpubCol nta_ISRPM TmenD59 OtrosRec OtrosOtor [fw=factor], stat(sum) save
@@ -1256,17 +1302,17 @@ escalar mxn NTABrechaImpProd = `b_impprod'
 file write `fh' _n "`raya'" _n
 file write `fh' "Cuadro 3. De dónde sale la brecha: Σ S sin ancla − B.8n = " %11.1fc ((`S_micro' - `AhorroHog')/1e9) " bn; partida de la cuenta NTA vs celda S.14 y efecto en S^7" _n
 file write `fh' "`raya'" _n
-file write `fh' %-70s ("Partida") %-10s ("Código") %11s ("NTA") %11s ("S.14") %11s ("Efecto en S") _n
-file write `fh' %-70s ("YL + YA base vs D.1 + B.3n + B.2n + D.4 neto − D.442") %-10s ("B.5n") `f1' ((`BR'[1,1] + `BR'[1,2])/1e9) `f1' ((`YAHogS14n' + `D1HogS14' + `MixNHogS14'*2/3)/1e9) `f1' (`b_prim'/1e9) _n
-file write `fh' %-70s ("Ajuste por cambio en los derechos de pensiones: YA D.8 vs celda") %-10s ("D.8") `f1' (`BR'[1,3]/1e9) `f1' (`AjustePension'/1e9) `f1' (`b_d8'/1e9) _n
-file write `fh' %-70s ("Impuestos netos a los productos como ingreso vs τ⁻ indirectos LIF") %-10s ("D.21−D.31") `f1' (`BR'[1,4]/1e9) `f1' (`BR'[1,5]/1e9) `f1' (`b_impprod'/1e9) _n
-file write `fh' %-70s ("ISR de personas + D.59 (ancla $isr_personas_ancla) vs D.5 S.14") %-10s ("D.5") `f1' ((`BR'[1,6] + `BR'[1,7] + `BR'[1,19])/1e9) `f1' (`ImpIngHog'/1e9) `f1' (`b_d5'/1e9) _n
-file write `fh' %-70s ("Contribuciones sociales netas: cuotas vs D.61 − D.614 S.14") %-10s ("D.61") `f1' (`BR'[1,8]/1e9) `f1' (`CuotasHogS14'/1e9) `f1' (`b_d61'/1e9) _n
-file write `fh' %-70s ("Efectivo + inter + D.72 + remesas − otorgado − D.7 pagada vs D.62 + D.7 netas") %-10s ("D.62+D.7") `f1' ((`BR'[1,9] + `BR'[1,10] + `BR'[1,11] + `BR'[1,20] - `BR'[1,12] - `BR'[1,21])/1e9) `f1' ((`TauPubS14' + `OtrasTransfHogR' - `OtrasTransfHog' - `OtrasTransfHogU')/1e9) `f1' (`b_tau'/1e9) _n
-file write `fh' %-70s ("Gasto de consumo final: Cpriv vs P.3 S.14") %-10s ("P.3") `f1' (`BR'[1,13]/1e9) `f1' (`ConHogS14'/1e9) `f1' (`b_cpriv'/1e9) _n
-file write `fh' %-70s ("Consumo público: τ⁺ especie + colectivo vs Cpub (neutro)") %-10s ("D.63+P.32") `f1' ((`BR'[1,16] + `BR'[1,17])/1e9) `f1' ((`BR'[1,14] + `BR'[1,15])/1e9) `f1' (`b_cpub'/1e9) _n
+file write `fh' %-66s ("Partida") %-10s ("Código") %11s ("NTA") %11s ("S.14") %11s ("Efecto en S") _n
+file write `fh' %-66s ("YL + YA base vs D.1 + B.3n + B.2n + D.4 neto − D.442") %-10s ("B.5n") `f1' ((`BR'[1,1] + `BR'[1,2])/1e9) `f1' ((`YAHogS14n' + `D1HogS14' + `MixNHogS14'*2/3)/1e9) `f1' (`b_prim'/1e9) _n
+file write `fh' %-66s ("Ajuste por cambio en los derechos de pensiones: YA D.8 vs celda") %-10s ("D.8") `f1' (`BR'[1,3]/1e9) `f1' (`AjustePension'/1e9) `f1' (`b_d8'/1e9) _n
+file write `fh' %-66s ("Impuestos netos a los productos como ingreso vs τ⁻ indirectos LIF") %-10s ("D.21−D.31") `f1' (`BR'[1,4]/1e9) `f1' (`BR'[1,5]/1e9) `f1' (`b_impprod'/1e9) _n
+file write `fh' %-66s ("ISR de personas + D.59 vs D.5 S.14; ancla $isr_personas_ancla") %-10s ("D.5") `f1' ((`BR'[1,6] + `BR'[1,7] + `BR'[1,19])/1e9) `f1' (`ImpIngHog'/1e9) `f1' (`b_d5'/1e9) _n
+file write `fh' %-66s ("Contribuciones sociales netas: cuotas vs D.61 − D.614 S.14") %-10s ("D.61") `f1' (`BR'[1,8]/1e9) `f1' (`CuotasHogS14'/1e9) `f1' (`b_d61'/1e9) _n
+file write `fh' %-66s ("Transferencias netas recibidas − otorgadas vs D.62 + D.7 netas") %-10s ("D.62+D.7") `f1' ((`BR'[1,9] + `BR'[1,10] + `BR'[1,11] + `BR'[1,20] - `BR'[1,12] - `BR'[1,21])/1e9) `f1' ((`TauPubS14' + `OtrasTransfHogR' - `OtrasTransfHog' - `OtrasTransfHogU')/1e9) `f1' (`b_tau'/1e9) _n
+file write `fh' %-66s ("Gasto de consumo final: Cpriv vs P.3 S.14") %-10s ("P.3") `f1' (`BR'[1,13]/1e9) `f1' (`ConHogS14'/1e9) `f1' (`b_cpriv'/1e9) _n
+file write `fh' %-66s ("Consumo público: τ⁺ especie + colectivo vs Cpub, neutro") %-10s ("D.63+P.32") `f1' ((`BR'[1,16] + `BR'[1,17])/1e9) `f1' ((`BR'[1,14] + `BR'[1,15])/1e9) `f1' (`b_cpub'/1e9) _n
 file write `fh' "`raya'" _n
-file write `fh' %-70s ("Total (debe igualar la brecha)") %-10s ("") %11s ("") %11s ("") `f1' (`b_tot'/1e9) _n
+file write `fh' %-66s ("Total (debe igualar la brecha)") %-10s ("") %11s ("") %11s ("") `f1' (`b_tot'/1e9) _n
 file write `fh' "`raya'" _n
 file write `fh' "Nota 7: brecha observada " %6.1f (`brecha') " % de B.8n; esperada tras 8.17 (CUAD-1 §7, CUAD-2 §7) " %5.1f (`brecha_esp') " %: la fila LIF vs devengado de los impuestos a productos (ImpProd − τ⁻ indirectos) más el vintage de las remesas (D.752 CSI " `f1' (`RemesasHogS14'/1e9) " vs ROWTrans BIE " `f1' (`ROWTrans'/1e9) "). Fila τ cerrada en 8.17 por sector: D.72 recibidas " `f1' (`BR'[1,20]/1e9) "; D.7 pagada a otros sectores " `f1' (`BR'[1,21]/1e9) " = donativos a ISFLSH " `f1' (scalar(NTAOtorISFLSH0)/1e9) " (ENIGH 173417 × factor, FLAG 35) + primas netas " `f1' (scalar(NTAOtorPrimas0)/1e9) " + remesas enviadas " `f1' (scalar(NTAOtorRemEnv0)/1e9) " (FLAG 36) + D.759 " `f1' (scalar(NTAOtorD7590)/1e9) " (receptor por identificar); inter-hogar otorgado × " %7.4f (scalar(NTAFactorInter)/100) " = recibido (inter_hogar = $inter_hogar). LIF vs CSI por sector: ISR de personas LIF (asalariados + PF) " `f1' ((`ISRAS' + `ISRPF')/1e9) " vs D.51 S.14 " `f1' (`D51HogS14'/1e9) " (" `f1' ((`ISRAS' + `ISRPF' - `D51HogS14')/1e9) "); ISR PM LIF " `f1' (`ISRPM'/1e9) " vs D.51 S.11 + S.12 " `f1' ((`D51NoFin' + `D51Fin')/1e9) " (" `f1' ((`ISRPM' - `D51NoFin' - `D51Fin')/1e9) "): la LIF clasifica por quien entera y la CSI por quien soporta; ISR total LIF " `f1' ((`ISRAS' + `ISRPF' + `ISRPM')/1e9) " vs D.51 S.14 + S.11 + S.12 " `f1' ((`D51HogS14' + `D51NoFin' + `D51Fin')/1e9) ". D.5 − D.51 = D.59 (predial y tenencia, fuera del consumo desde 8.16b)." _n
 file close `fh'
@@ -1342,11 +1388,11 @@ file open `fh' using `"`dirnta'/nta-identidad.txt"', write append text
 file write `fh' _n "`raya'" _n
 file write `fh' "Cuadro 4. S e intra-hogar por quinquenio × sexo (S con el ancla salvo nta_anclaS = off)^8" _n
 file write `fh' "`raya'" _n
-file write `fh' %-8s ("Edad") %-9s ("Sexo") %9s ("Pob (M)") %11s ("C") %11s ("YL") %11s ("YA") %11s ("τ⁻ públ.") %11s ("τ⁺ públ.") %11s ("S") %11s ("intra") %11s ("R") _n
+file write `fh' %-6s ("Edad") %-8s ("Sexo") %8s ("Pob (M)") %11s ("C") %11s ("YL") %11s ("YA") %11s ("τ⁻ públ.") %11s ("τ⁺ públ.") %11s ("S") %11s ("intra") %11s ("R") _n
 forvalues i = 1/`=_N' {
 	local ql : label quinq `=quinq[`i']'
 	local sl : label sexo `=sexo[`i']'
-	file write `fh' %-8s ("`ql'") %-9s ("`sl'") %9.1f (pobw[`i']/1e6) `f1' (C[`i']/1e9) `f1' (YL[`i']/1e9) `f1' (YA[`i']/1e9) `f1' (Tmen[`i']/1e9) `f1' (Tpub[`i']/1e9) `f1' (S[`i']/1e9) `f1' (Intra[`i']/1e9) %11.6f (resid_chk[`i']/1e9) _n
+	file write `fh' %-6s ("`ql'") %-8s ("`sl'") %8.1f (pobw[`i']/1e6) `f1' (C[`i']/1e9) `f1' (YL[`i']/1e9) `f1' (YA[`i']/1e9) `f1' (Tmen[`i']/1e9) `f1' (Tpub[`i']/1e9) `f1' (S[`i']/1e9) `f1' (Intra[`i']/1e9) %11.6f (resid_chk[`i']/1e9) _n
 }
 file write `fh' "`raya'" _n
 file write `fh' "Nota 8: residual de la identidad por celda |R| / C máximo " %9.2e (`maxres_qs'/`Ctot') " (gate 1e-9)." _n
@@ -1564,13 +1610,14 @@ quietly {
 }
 if `negs' > 0 {
 	local ok = 0
-	noisily di as err "  GATE NTA Sankey v2: `negs' enlace(s) negativos (un grupo con ingreso propio insuficiente)."
+	noisily _log aviso, tipo(GATE) texto("NTA Sankey v2: `negs' enlaces negativos (un grupo con ingreso propio insuficiente)") rojo
 }
 escalar mxn NTASankeyBalGob = `BG'
 escalar mxn NTASankeyBalFam = `BF'
 noisily SankeySumSim, anio(`anio') name(v2-grupoedad) folder(SankeyNTA) a(`e1') b(`e2') c(`e3') d(`e4') e(`e5')
 quietly use `per2', clear
-noisily di in g "  Sankey v2: balance Gobierno " in y %20.0fc `BG' in g " (τ⁻ + OyE − τ⁺ efectivo − especie); balance Familias " in y %20.0fc `BF' in g " (recibido − otorgado)"
+noisily _log linea "Sankey v2 (bn): balance Gobierno `=strtrim(string(`BG'/1e9, "%14.3fc"))' (τ⁻ + OyE − τ⁺ efectivo − especie)"
+noisily _log linea "Sankey v2 (bn): balance Familias `=strtrim(string(`BF'/1e9, "%14.3fc"))' (recibido − otorgado)"
 
 
 
@@ -1850,7 +1897,7 @@ quietly {
 }
 if `negs3' > 0 {
 	local ok = 0
-	noisily di as err "  GATE NTA Sankey v3: `negs3' enlace(s) negativos (un grupo con ingreso propio insuficiente para su canasta)."
+	noisily _log aviso, tipo(GATE) texto("NTA Sankey v3: `negs3' enlaces negativos (un grupo con ingreso propio insuficiente para su canasta)") rojo
 }
 escalar mxn NTAPIBY = `PIBY'
 escalar pctpib NTAV3IngNacPIB = `IngNac_tot'/`PIBY'*100
@@ -1866,7 +1913,8 @@ escalar mxn NTAV3Recorte = `rec_tot'
 escalar mxn NTAV3Complemento = `comp_tot'
 noisily SankeySumSim, anio(`anio') name(v3-grupoedad) folder(SankeyNTA) a(`f1') b(`f2') c(`f3') d(`f4') e(`f5')
 quietly use `per2', clear
-noisily di in g "  Sankey v3: PIB `anio' " in y %20.0fc `PIBY' in g "; Ing nacional " in y %6.2f scalar(NTAV3IngNacPIB) in g " % del PIB; → Gobierno " in y %20.0fc scalar(NTATmen_hh0) + `OyE' in g " (τ⁻ + OyE; oye_en_hub=$oye_en_hub: con off OyE llega de «Empresas públicas»); → Activos " in y %20.0fc `Spos_tot' + `rec_tot' in g " (S sin ancla de los que ahorran); Transferencias en efectivo " in y %20.0fc scalar(NTATpubEf0) in g "; Desahorro " in y %20.0fc `Sneg_tot' in g "; Futuro " in y %20.0fc `Spos_tot' in g "; ajuste S.14 neto " in y %20.0fc `ajuste_neto' in g " (recorte " in y %20.0fc `rec_tot' in g " − complemento " in y %20.0fc `comp_tot' in g ")"
+noisily _log linea "Sankey v3 (bn): PIB `anio' `=strtrim(string(`PIBY'/1e9, "%14.3fc"))'; Ing nacional `=strtrim(string(scalar(NTAV3IngNacPIB), "%6.2f"))' % del PIB; → Gobierno `=strtrim(string((scalar(NTATmen_hh0) + `OyE')/1e9, "%14.3fc"))' (τ⁻ + OyE, oye_en_hub $oye_en_hub); → Activos `=strtrim(string((`Spos_tot' + `rec_tot')/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v3 (bn): Transferencias en efectivo `=strtrim(string(scalar(NTATpubEf0)/1e9, "%14.3fc"))'; Desahorro `=strtrim(string(`Sneg_tot'/1e9, "%14.3fc"))'; Futuro `=strtrim(string(`Spos_tot'/1e9, "%14.3fc"))'; ajuste S.14 neto `=strtrim(string(`ajuste_neto'/1e9, "%14.3fc"))' = recorte `=strtrim(string(`rec_tot'/1e9, "%14.3fc"))' − complemento `=strtrim(string(`comp_tot'/1e9, "%14.3fc"))'"
 
 
 
@@ -2255,12 +2303,12 @@ quietly {
 }
 if "$NTA_V4_NEG" != "" {
 	local ok = 0
-	noisily di as err "  GATE NTA Sankey v4: enlaces negativos omitidos: $NTA_V4_NEG"
+	noisily _log aviso, tipo(GATE) texto("NTA Sankey v4: enlaces negativos omitidos: $NTA_V4_NEG") rojo
 	local flags `"`flags' "Sankey v4: enlaces negativos omitidos ($NTA_V4_NEG)""'
 }
 if `v4maxrel' > `tol' {
 	local ok = 0
-	noisily di as err "  GATE NTA Sankey v4: algún nodo intermedio no conserva (reldif máx " %9.2e `v4maxrel' ")"
+	noisily _log aviso, tipo(GATE) texto("NTA Sankey v4: algún nodo intermedio no conserva (reldif máx `=strtrim(string(`v4maxrel', "%9.2e"))')") rojo
 }
 local v4hub = `IngDisp'
 local v4hogB5n = `hogB5n'
@@ -2287,8 +2335,11 @@ escalar mxn NTAV4SPersonas = `S_pers'
 escalar mxn NTAV4B8nS1 = `B8nS1'
 noisily SankeySumSim, anio(`anio') name(v4-economia) folder(SankeyNTA) a(`g1') b(`g2') c(`g3') d(`g4') e(`g5')
 quietly use `per2', clear
-noisily di in g "  Sankey v4: hub INBD " in y %20.0fc `IngDisp' in g " = " in y %6.3f scalar(NTAV4HubPIB) in g " % del PIB; Hogares " in y %20.0fc `hogB5n' in g "; Sociedades " in y %20.0fc `B5nSoc' in g "; Gobierno " in y %20.0fc `B5nGob' in g "; ISFLSH " in y %20.0fc `B5nISFLSH' in g "; Remesas " in y %20.0fc `Rem' in g "; vintage al hub " in y %20.0fc `vHub' in g " (NNI " in y %20.0fc `VintageNNI' in g "), en usos " in y %20.0fc `vSink'
-noisily di in g "  Sankey v4: Financiamiento " in y %20.0fc `v4fin' in g " (hogares " in y %20.0fc `Sneg4_tot' in g ", sociedades " in y %20.0fc `finSoc' in g ", gobierno " in y %20.0fc `finGob' in g "); Futuro " in y %20.0fc `v4fut' in g "; Por identificar " in y %20.0fc `v4pid' in g " (intereses de la deuda " in y %20.0fc `D41GobU' in g ", D.759 " in y %20.0fc `d759pid' in g "); ajuste S.14 " in y %20.0fc `ajuste' in g " (B.8n S.14 − S micro); nodos " in y `v4nodos' in g " / enlaces " in y `v4enlaces' in g "; conservación máx " in y %9.2e `v4maxrel'
+noisily _log linea "Sankey v4 (bn): hub INBD `=strtrim(string(`IngDisp'/1e9, "%14.3fc"))' = `=strtrim(string(scalar(NTAV4HubPIB), "%6.3f"))' % del PIB; Hogares `=strtrim(string(`hogB5n'/1e9, "%14.3fc"))'; Sociedades `=strtrim(string(`B5nSoc'/1e9, "%14.3fc"))'; Gobierno `=strtrim(string(`B5nGob'/1e9, "%14.3fc"))'; ISFLSH `=strtrim(string(`B5nISFLSH'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v4 (bn): Remesas `=strtrim(string(`Rem'/1e9, "%14.3fc"))'; vintage al hub `=strtrim(string(`vHub'/1e9, "%14.3fc"))' (NNI `=strtrim(string(`VintageNNI'/1e9, "%14.3fc"))'), en usos `=strtrim(string(`vSink'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v4 (bn): Financiamiento `=strtrim(string(`v4fin'/1e9, "%14.3fc"))' (hogares `=strtrim(string(`Sneg4_tot'/1e9, "%14.3fc"))', sociedades `=strtrim(string(`finSoc'/1e9, "%14.3fc"))', gobierno `=strtrim(string(`finGob'/1e9, "%14.3fc"))'); Futuro `=strtrim(string(`v4fut'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v4 (bn): Por identificar `=strtrim(string(`v4pid'/1e9, "%14.3fc"))' (intereses de la deuda `=strtrim(string(`D41GobU'/1e9, "%14.3fc"))', D.759 `=strtrim(string(`d759pid'/1e9, "%14.3fc"))'); ajuste S.14 `=strtrim(string(`ajuste'/1e9, "%14.3fc"))' (B.8n S.14 − S micro)"
+noisily _log aviso, tipo(GATE) texto("NTA Sankey v4: `v4nodos' nodos, `v4enlaces' enlaces; conservación en nodos intermedios reldif máx `=strtrim(string(`v4maxrel', "%9.2e"))' → `=cond(`v4maxrel' <= `tol' & "$NTA_V4_NEG" == "", "OK", "ROJO")'")
 * cuadro 5 de nta-identidad.txt: nodos, enlaces e identidades por nodo (estándar §D) *
 quietly {
 	use `v4nodes', clear
@@ -2324,7 +2375,7 @@ quietly {
 }
 }
 else {
-	noisily di in g "  Sankey v4: no se emite (hub = $hub)"
+	noisily _log aviso, tipo(Nota) texto("Sankey v4: no se emite (hub = $hub)") ref("CUAD-2 §4")
 }
 
 
@@ -2409,7 +2460,7 @@ quietly {
 local okpan = cond(`balmax' <= `tol', 1, 0)
 if `okpan' == 0 {
 	local ok = 0
-	noisily di as err "  GATE NTA panel: alguna celda grupo × sexo no balancea (|entradas − salidas|/C máx " %9.2e `balmax' ")"
+	noisily _log aviso, tipo(GATE) texto("NTA panel: alguna celda grupo × sexo no balancea (|entradas − salidas|/C máx `=strtrim(string(`balmax', "%9.2e"))')") rojo
 }
 file open `fh' using `"`dirnta'/nta-panel-grupoedad-sexo.json"', write replace text
 file write `fh' `"{"esquema":"nta-panel/v2","anio":`anio',"unidad":"MXN corrientes de `anio', sumas [fw=factor]","corte":"grupoedad x sexo","' _n
@@ -2513,10 +2564,13 @@ file write `fh' `"},"' _n
 file write `fh' `""gates":{"celdas":`ncel',"balance_max_rel":`=trim(string(`balmax', "%12.4e"))',"tolerancia":1e-9,"ok":`okpan'},"' _n
 file write `fh' `""procedencia":{"modulo":"01_modulos/NTA.do v1.4 (NTA-4)","base":"la misma cuenta por persona que users/$id/NTA/nta-persona.dta, agregada por grupoedad x sexo [fw=factor]; pctpib con el escalar PIB de SCN.ado","anclas":"SCN/LIF/PEF `anio' (escalar); S.14 de CSI_115.xlsx y S.1 de CSI_103.xlsx via SCN.ado","stata":"`c(stata_version)' `c(edition_real)'","generado_el":"`fecha' $S_TIME"}}"' _n
 file close `fh'
-noisily di in g "  Panel grupo × sexo: " in y `ncel' in g " celdas; |entradas − salidas|/C máx " in y %9.2e `balmax' in g " -> " in y cond(`okpan', "OK", "ROJO")
+noisily _log aviso, tipo(GATE) texto("NTA panel grupo × sexo: `ncel' celdas; |entradas − salidas|/C máx `=strtrim(string(`balmax', "%9.2e"))' → `=cond(`okpan', "OK", "ROJO")'")
 quietly use `per2', clear
 
 
+
+* log legible (2026-11-09): nta-identidad.txt a 110 columnas; títulos, notas y gates largos se envuelven con sangría; mismos valores *
+noisily _log envuelve, archivo("`dirnta'/nta-identidad.txt")
 
 **********************************
 **# 8. Guardar la cuenta por persona
@@ -2544,10 +2598,11 @@ quietly {
 	compress
 	save `"`dirnta'/nta-persona.dta"', replace
 }
-noisily di in g "  Salidas: " in y "users/$id/NTA/{nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json, nta-identidad.txt, nta-panel-grupoedad-sexo.json}" in g " y " in y "users/$id/SankeyNTA/sankey-{v2,v3}-grupoedad.json, sankey-v4-economia.json"
+noisily _log aviso, tipo(Salida) texto("users/$id/NTA/: nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json, nta-identidad.txt, nta-panel-grupoedad-sexo.json")
+noisily _log aviso, tipo(Salida) texto("users/$id/SankeyNTA/: sankey-v2-grupoedad.json, sankey-v3-grupoedad.json, sankey-v4-economia.json") ref("runbook §12")
 if `ok' == 0 {
-	noisily di as err "  NTA: algún gate interno quedó ROJO (ver arriba); 05_scripts/test-nta-identidad.sh lo confirma."
+	noisily _log aviso, tipo(GATE) texto("NTA: algún gate interno quedó ROJO (ver arriba); 05_scripts/test-nta-identidad.sh lo confirma") rojo
 }
 timer off 14
 timer list 14
-noisily di in g "{bf:Tiempo NTA:} " in y round(`=r(t14)/r(nt14)',.1) in g " segs."
+noisily _log tiempo, timer(14) texto("NTA")

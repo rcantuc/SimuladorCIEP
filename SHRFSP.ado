@@ -43,13 +43,13 @@ quietly {
 		local aniomax = `anio'+5				// default historico: horizonte anio+5
 	}
 	
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
+	noisily _log modulo "SHRFSP  ·  deuda pública`=cond("$pais" != "", " $pais", "")', `anio'" ref("runbook §9")
 
 	** 2.1 PIB + Deflactor (base de precios constantes = aniovp; horizonte de proyección = aniomax, default anio+5) **
 	PIBDeflactor, aniovp(`aniovp') aniomax(`aniomax') nographs nooutput `update'
 	local currency = currency[1]
 	if `aniovp' != `anio' {
-		noisily di in g "  Valores reales expresados en `currency' constantes de " in y `aniovp' in g "."
+		noisily _log linea "Valores reales en `currency' constantes de `aniovp'"
 	}
 	g Poblacion_ajustada = Poblacion*lambda
 	tempfile PIB
@@ -146,12 +146,12 @@ quietly {
 	**# 5 DISPLAY ***
 	***           ***
 	*****************
-	noisily di _newline in g "{bf: " ///
-		_col(33) in g %20s "`currency' `aniovp'" ///
-		_col(55) %7s "% PIB" ///
-		_col(66) %7s "% Tot" ///
-		_col(76) %7s "Per cápita" ///
-		"}"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Concepto") flex
+	noisily _log cuadro col, titulo("`currency' `aniovp'") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("% total") fmt(%7.1f)
+	noisily _log cuadro col, titulo("Per cápita") fmt(%10.0fc)
 
 	egen rfspOtros = rowtotal(rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones)
 
@@ -271,103 +271,24 @@ quietly {
 	escalar pct DeudaLPPorTot = shrfspLP[`obsvp']/shrfsp[`obsvp']*100
 	escalar mxnpc DeudaLPPC = shrfspLP[`obsvp']/deflator[`obsvp']/Poblacion_ajustada[`obsvp']
 
-	noisily di in g "  (+) Balance presupuestario" ///
-		_col(33) in y %20.0fc rfspBalanceMonto ///
-		_col(55) in y %7.3f rfspBalancePIB ///
-		_col(66) in y %7.1f rfspBalancePorTot ///
-		_col(77) in y %9.0fc rfspBalancePC
-	noisily di in g "  (+) PIDIREGAS" ///
-		_col(33) in y %20.0fc rfspPIDIREGASMonto ///
-		_col(55) in y %7.3f rfspPIDIREGASPIB ///
-		_col(66) in y %7.1f rfspPIDIREGASPorTot ///
-		_col(77) in y %9.0fc rfspPIDIREGASPC
-	noisily di in g "  (+) IPAB" ///
-		_col(33) in y %20.0fc rfspIPABMonto ///
-		_col(55) in y %7.3f rfspIPABPIB ///
-		_col(66) in y %7.1f rfspIPABPorTot ///
-		_col(77) in y %9.0fc rfspIPABPC
-	noisily di in g "  (+) FONADIN" ///
-		_col(33) in y %20.0fc rfspFONADINMonto ///
-		_col(55) in y %7.3f rfspFONADINPIB ///
-		_col(66) in y %7.1f rfspFONADINPorTot ///
-		_col(77) in y %9.0fc rfspFONADINPC
-	noisily di in g "  (+) Programa de Deudores" ///
-		_col(33) in y %20.0fc rfspDeudoresMonto ///
-		_col(55) in y %7.3f rfspDeudoresPIB ///
-		_col(66) in y %7.1f rfspDeudoresPorTot ///
-		_col(77) in y %9.0fc rfspDeudoresPC
-	noisily di in g "  (+) Banca de Desarrollo" ///
-		_col(33) in y %20.0fc rfspBancaMonto ///
-		_col(55) in y %7.3f rfspBancaPIB ///
-		_col(66) in y %7.1f rfspBancaPorTot ///
-		_col(77) in y %9.0fc rfspBancaPC
-	noisily di in g "  (+) Adecuaciones" ///
-		_col(33) in y %20.0fc rfspAdecuacionesMonto ///
-		_col(55) in y %7.3f rfspAdecuacionesPIB ///
-		_col(66) in y %7.1f rfspAdecuacionesPorTot ///
-		_col(77) in y %9.0fc rfspAdecuacionesPC
-	noisily di in g _dup(85) "-"
-	noisily di in g "  {bf:(=) RFSP" ///
-		_col(33) in y %20.0fc RFSPMonto ///
-		_col(55) in y %7.3f RFSPPIB ///
-		_col(66) in y %7.1f RFSPPorTot ///
-		_col(77) in y %9.0fc RFSPPC "}"
-	noisily di in g _dup(85) "="
-	noisily di in g "  (+) SHRFSP Interna" ///
-		_col(33) in y %20.0fc SHRFSPInternoMonto ///
-		_col(55) in y %7.3f SHRFSPInternoPIB ///
-		_col(66) in y %7.1f SHRFSPInternoPorTot ///
-		_col(77) in y %9.0fc SHRFSPInternoPC
-	noisily di in g "  (+) SHRFSP Externa" ///
-		_col(33) in y %20.0fc SHRFSPExternoMonto ///
-		_col(55) in y %7.3f SHRFSPExternoPIB ///
-		_col(66) in y %7.1f SHRFSPExternoPorTot ///
-		_col(77) in y %9.0fc SHRFSPExternoPC
-	noisily di in g _dup(85) "-"
-	noisily di in g "  {bf:(=) SHRFSP" ///
-		_col(33) in y %20.0fc SHRFSPMonto ///
-		_col(55) in y %7.3f SHRFSPPIB ///
-		_col(66) in y %7.1f SHRFSPPorTot ///
-		_col(77) in y %9.0fc SHRFSPPC "}"
-	noisily di in g _dup(85) "="
-	noisily di in g "  (+) Deuda Gobierno federal" ///
-		_col(33) in y %20.0fc DeudaGobFedMonto ///
-		_col(55) in y %7.3f DeudaGobFedPIB ///
-		_col(66) in y %7.1f DeudaGobFedPorTot ///
-		_col(77) in y %9.0fc DeudaGobFedPC
-	noisily di in g "  (+) Deuda OyE" ///
-		_col(33) in y %20.0fc DeudaOyEMonto ///
-		_col(55) in y %7.3f DeudaOyEPIB ///
-		_col(66) in y %7.1f DeudaOyEPorTot ///
-		_col(77) in y %9.0fc DeudaOyEPC
-	noisily di in g "  (+) Deuda Banca de desarrollo" ///
-		_col(33) in y %20.0fc DeudaBancaMonto ///
-		_col(55) in y %7.3f DeudaBancaPIB ///
-		_col(66) in y %7.1f DeudaBancaPorTot ///
-		_col(77) in y %9.0fc DeudaBancaPC
-	noisily di in g _dup(85) "-"
-	noisily di in g "  {bf:(=) Deuda bruta" ///
-		_col(33) in y %20.0fc DeudaBrutaMonto ///
-		_col(55) in y %7.3f DeudaBrutaPIB ///
-		_col(66) in y %7.1f DeudaBrutaPorTot ///
-		_col(77) in y %9.0fc DeudaBrutaPC "}"
-	noisily di in g _dup(85) "="
-	noisily di in g "  (+) Deuda corto plazo" ///
-		_col(33) in y %20.0fc DeudaCPMonto ///
-		_col(55) in y %7.3f DeudaCPPIB ///
-		_col(66) in y %7.1f DeudaCPPorTot ///
-		_col(77) in y %9.0fc DeudaCPPC
-	noisily di in g "  (+) Deuda largo plazo" ///
-		_col(33) in y %20.0fc DeudaLPMonto ///
-		_col(55) in y %7.3f DeudaLPPIB ///
-		_col(66) in y %7.1f DeudaLPPorTot ///
-		_col(77) in y %9.0fc DeudaLPPC
-	noisily di in g _dup(85) "-"
-	noisily di in g "  {bf:(=) Deuda bruta" ///
-		_col(33) in y %20.0fc DeudaBrutaMonto ///
-		_col(55) in y %7.3f DeudaBrutaPIB ///
-		_col(66) in y %7.1f DeudaBrutaPorTot ///
-		_col(77) in y %9.0fc DeudaBrutaPC "}"
+	noisily _log cuadro fila "(+) Balance presupuestario" "rfspBalanceMonto" "rfspBalancePIB" "rfspBalancePorTot" "rfspBalancePC"
+	noisily _log cuadro fila "(+) PIDIREGAS" "rfspPIDIREGASMonto" "rfspPIDIREGASPIB" "rfspPIDIREGASPorTot" "rfspPIDIREGASPC"
+	noisily _log cuadro fila "(+) IPAB" "rfspIPABMonto" "rfspIPABPIB" "rfspIPABPorTot" "rfspIPABPC"
+	noisily _log cuadro fila "(+) FONADIN" "rfspFONADINMonto" "rfspFONADINPIB" "rfspFONADINPorTot" "rfspFONADINPC"
+	noisily _log cuadro fila "(+) Programa de Deudores" "rfspDeudoresMonto" "rfspDeudoresPIB" "rfspDeudoresPorTot" "rfspDeudoresPC"
+	noisily _log cuadro fila "(+) Banca de Desarrollo" "rfspBancaMonto" "rfspBancaPIB" "rfspBancaPorTot" "rfspBancaPC"
+	noisily _log cuadro fila "(+) Adecuaciones" "rfspAdecuacionesMonto" "rfspAdecuacionesPIB" "rfspAdecuacionesPorTot" "rfspAdecuacionesPC"
+	noisily _log cuadro fila "(=) RFSP" "RFSPMonto" "RFSPPIB" "RFSPPorTot" "RFSPPC", sep negrita
+	noisily _log cuadro fila "(+) SHRFSP Interna" "SHRFSPInternoMonto" "SHRFSPInternoPIB" "SHRFSPInternoPorTot" "SHRFSPInternoPC", sep
+	noisily _log cuadro fila "(+) SHRFSP Externa" "SHRFSPExternoMonto" "SHRFSPExternoPIB" "SHRFSPExternoPorTot" "SHRFSPExternoPC"
+	noisily _log cuadro fila "(=) SHRFSP" "SHRFSPMonto" "SHRFSPPIB" "SHRFSPPorTot" "SHRFSPPC", sep negrita
+	noisily _log cuadro fila "(+) Deuda Gobierno federal" "DeudaGobFedMonto" "DeudaGobFedPIB" "DeudaGobFedPorTot" "DeudaGobFedPC", sep
+	noisily _log cuadro fila "(+) Deuda OyE" "DeudaOyEMonto" "DeudaOyEPIB" "DeudaOyEPorTot" "DeudaOyEPC"
+	noisily _log cuadro fila "(+) Deuda Banca de desarrollo" "DeudaBancaMonto" "DeudaBancaPIB" "DeudaBancaPorTot" "DeudaBancaPC"
+	noisily _log cuadro fila "(=) Deuda bruta" "DeudaBrutaMonto" "DeudaBrutaPIB" "DeudaBrutaPorTot" "DeudaBrutaPC", sep negrita
+	noisily _log cuadro fila "(+) Deuda corto plazo" "DeudaCPMonto" "DeudaCPPIB" "DeudaCPPorTot" "DeudaCPPC", sep
+	noisily _log cuadro fila "(+) Deuda largo plazo" "DeudaLPMonto" "DeudaLPPIB" "DeudaLPPorTot" "DeudaLPPC"
+	noisily _log cuadro fila "(=) Deuda bruta" "DeudaBrutaMonto" "DeudaBrutaPIB" "DeudaBrutaPorTot" "DeudaBrutaPC", sep negrita
 
 	g costodeudaTot = costofinanciero
 	g tasaEfectiva = costodeudaTot/shrfsp*100
@@ -565,12 +486,8 @@ quietly {
 	escalar pct CostoFinancieroPorTot = costodeudaTot[`obsvp']/costodeudaTot[`obsvp']*100
 	escalar mxnpc CostoFinancieroPC = costodeudaTot[`obsvp']/deflator[`obsvp']/Poblacion_ajustada[`obsvp']
 
-	noisily di in g _dup(85) "="
-	noisily di in g "  {bf:(*) Costo financiero" ///
-		_col(33) in y %20.0fc CostoFinancieroMonto ///
-		_col(55) in y %7.3f CostoFinancieroPIB ///
-		_col(66) in y %7.1f CostoFinancieroPorTot ///
-		_col(77) in y %9.0fc CostoFinancieroPC "}"
+	noisily _log cuadro fila "(*) Costo financiero" "CostoFinancieroMonto" "CostoFinancieroPIB" "CostoFinancieroPorTot" "CostoFinancieroPC", sep negrita
+	noisily _log cuadro print, titulo("Requerimientos financieros, saldo histórico y deuda bruta, `anio'") unidad("`currency' `aniovp', miles de millones; per cápita en `currency'") ref("runbook §9")
 
 
 	** 6.1 Gráfica tasas de interés **
@@ -762,7 +679,7 @@ quietly {
 	if "$output" == "output" {
 		capture which scalarlatex
 		if _rc {
-			noisily di in g "Nota: la opcion output es solo-repo; no viaja al endpoint publico."
+			noisily _log aviso, tipo(Nota) texto("la opción output es solo-repo; no viaja al endpoint público")
 		}
 		else {
 			noisily scalarlatex, log(shrfsp) alt(shrfsp)
@@ -775,19 +692,19 @@ quietly {
 		* Sin cualquiera de los tres, degradacion silenciosa. *
 		capture which scalarjson
 		if _rc {
-			noisily di in g "Nota: la opcion output es solo-repo; no viaja al endpoint publico."
+			noisily _log aviso, tipo(Nota) texto("la opción output es solo-repo; no viaja al endpoint público")
 		}
 		else {
 			capture confirm file `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"'
 			if _rc == 0 {
-				noisily do `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"'
+				noisily run `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"'	// log legible: run, no do (el eco del driver no es log)
 			}
 		}
 	}
 	capture drop __*
 	timer off 5
 	timer list 5
-	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t5)/r(nt5)',.1) in g " segs."
+	noisily _log tiempo, timer(5) texto("SHRFSP")
 
 }
 end
@@ -975,7 +892,7 @@ program define UpdateSHRFSP
 	*************************************************
 
 	** Balance público **
-	noisily di _newline(2) in g "{bf: Endeudamiento público} en millones de pesos"
+	noisily _log seccion "UpdateSHRFSP" "Endeudamiento público, millones de pesos"
 	noisily DatosAbiertos XAA, $nographs reverse
 	rename monto balancepublico
 	tempfile balancepublico
@@ -1045,7 +962,7 @@ program define UpdateSHRFSP
 	***     5 Costo financiero de la deuda     ***
 	***                                        ***
 	**********************************************
-	noisily di _newline(2) in g "{bf: Costo financiero de la deuda} en millones de pesos"
+	noisily _log seccion "UpdateSHRFSP" "Costo financiero de la deuda, millones de pesos"
 	noisily DatosAbiertos XAC21, $nographs desde(2009)
 	rename monto costofinanciero
 	tempfile costofinanciero

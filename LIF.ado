@@ -35,7 +35,7 @@ quietly {
 		ROWS(int 1) COLS(int 5) ///
 		TITle(string)]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS `anio'   }" in g _dup(20) "."
+	noisily _log modulo "LIF  ·  ingresos presupuestarios `anio', por `by'" ref("runbook §9")
 
 	* 1.1 Valor año mínimo *
 	* desde() debe ser < anio(): si viene igual o mayor (p.ej. Graphs_TE.do corre
@@ -176,7 +176,7 @@ quietly {
 	** 4.1 Agregados por `by': anio de referencia y anio base **
 	capture tabstat recaudacion recaudacionPIB recaudacionR recaudacionPC if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
-		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'."
+		noisily _log aviso, tipo(IMPORTANTE) texto("LIF: no hay información para el año `anio'") rojo
 		exit
 	}
 	tempname mattot
@@ -237,12 +237,12 @@ quietly {
 	}
 
 	** 4.2 A. Nivel **
-	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by')}" ///
-		_newline ///
-		_col(30) in g %20s "`currency'" ///
-		_col(52) %7s "% PIB" ///
-		_col(61) %7s "% Tot" ///
-		_col(69) %10s "`currency' PC"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Concepto") flex
+	noisily _log cuadro col, titulo("`currency'") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("% total") fmt(%7.1f)
+	noisily _log cuadro col, titulo("Per cápita") fmt(%10.0fc)
 
 	forvalues k = 1/`ngrp' {
 		* Display text *
@@ -279,11 +279,7 @@ quietly {
 		}
 		local `by' `"``by'' `name'"'
 
-		noisily di in g `"  (+) `disptext'"' ///
-			_col(30) in y %20.0fc `mat`k''[1,1] ///
-			_col(52) in y %7.3fc `mat`k''[1,2] ///
-			_col(61) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100 ///
-			_col(69) in y %10.0fc `mat`k''[1,4]
+		noisily _log cuadro fila `"(+) `disptext'"' "`mat`k''[1,1]" "`mat`k''[1,2]" "`mat`k''[1,1]/`mattot'[1,1]*100" "`mat`k''[1,4]"
 	}
 	return local `by' `"``by''"'
 
@@ -294,12 +290,7 @@ quietly {
 			local crectot = ((`mattot'[1,3]/`pretot'[1,1])^(1/`nyears')-1)*100
 		}
 	}
-	noisily di in g _dup(79) "-"
-	noisily di in g "{bf:  (=) Ingresos totales" ///
-		_col(30) in y %20.0fc `mattot'[1,1] ///
-		_col(52) in y %7.3fc `mattot'[1,2] ///
-		_col(61) in y %7.1fc 100 ///
-		_col(69) in y %10.0fc `mattot'[1,4] "}"
+	noisily _log cuadro fila "(=) Ingresos totales" "`mattot'[1,1]" "`mattot'[1,2]" "100" "`mattot'[1,4]", sep negrita
 	scalar Ingresos_totales = `mattot'[1,1]
 	scalar Ingresos_totalesPIB = `mattot'[1,2]
 	scalar Ingresos_totalesPC = `mattot'[1,4]
@@ -322,25 +313,21 @@ quietly {
 			scalar Ingresos_sin_deudaC = `crecsd'
 		}
 		if `showsindeuda' {
-			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
-				_col(30) in y %20.0fc `sd' ///
-				_col(52) in y %7.3fc `sdpib' ///
-				_col(61) in y %7.1fc `sd'/`mattot'[1,1]*100 ///
-				_col(69) in y %10.0fc `sdpc' "}"
+			noisily _log cuadro fila "(=) Ingresos sin deuda" "`sd'" "`sdpib'" "`sd'/`mattot'[1,1]*100" "`sdpc'", negrita
 		}
 	}
+	noisily _log cuadro print, titulo("A. Ingresos presupuestarios `anio' por `by'") unidad("`currency', miles de millones; per cápita en `currency'") ref("runbook §9")
 
 	** 4.3 B. Crecimiento `desde'-`anio' (solo si hay anio base) **
 	if `haspre' {
 		local gpib = ((`pibYR`anio''/`pibYR`desde'')^(1/`nyears')-1)*100
-		noisily di _newline in g "{bf: B. Crecimiento:" in y " `desde' - `anio'" in g "}" ///
-			_newline ///
-			_col(33) %7s "`desde'" ///
-			_col(42) %7s "`anio'" ///
-			_col(51) %7s "Dif PIB" ///
-			_col(60) %7s "%G real" ///
-			_col(69) %7s "Elastic"
-		noisily di in g _col(33) %7s "% PIB" _col(42) %7s "% PIB" _col(51) %7s "pp" _col(60) %7s "anual" _col(69) %7s "vs PIB"
+		noisily _log cuadro clear
+		noisily _log cuadro col, titulo("Concepto") flex
+		noisily _log cuadro col, titulo("`desde' % PIB") fmt(%7.3f)
+		noisily _log cuadro col, titulo("`anio' % PIB") fmt(%7.3f)
+		noisily _log cuadro col, titulo("Dif pp") fmt(%7.3f)
+		noisily _log cuadro col, titulo("Crec. real %") fmt(%7.3f)
+		noisily _log cuadro col, titulo("Elasticidad") fmt(%7.3f)
 
 		forvalues k = 1/`ngrp' {
 			local key = strtoname(`"`rname`k''"')
@@ -355,34 +342,19 @@ quietly {
 			local g = ((`mat`k''[1,3]/`pre_`key''[1,1])^(1/`nyears')-1)*100
 			local e = `g'/`gpib'
 			scalar E`key' = `e'
-			noisily di in g `"  (+) `disptext'"' ///
-				_col(33) in y %7.3fc `pre_`key''[1,2] ///
-				_col(42) in y %7.3fc `mat`k''[1,2] ///
-				_col(51) in y %7.3fc `mat`k''[1,2]-`pre_`key''[1,2] ///
-				_col(60) in y %7.3fc `g' ///
-				_col(69) in y %7.3fc `e'
+			noisily _log cuadro fila `"(+) `disptext'"' "`pre_`key''[1,2]" "`mat`k''[1,2]" "`mat`k''[1,2]-`pre_`key''[1,2]" "`g'" "`e'"
 		}
 
-		noisily di in g _dup(76) "-"
-		noisily di in g "{bf:  (=) Ingresos totales" ///
-			_col(33) in y %7.3fc `pretot'[1,2] ///
-			_col(42) in y %7.3fc `mattot'[1,2] ///
-			_col(51) in y %7.3fc `mattot'[1,2]-`pretot'[1,2] ///
-			_col(60) in y %7.3fc `crectot' ///
-			_col(69) in y %7.3fc `crectot'/`gpib' "}"
+		noisily _log cuadro fila "(=) Ingresos totales" "`pretot'[1,2]" "`mattot'[1,2]" "`mattot'[1,2]-`pretot'[1,2]" "`crectot'" "`crectot'/`gpib'", sep negrita
 		if `crectot' != . {
 			escalar pctpib EIngresosTotales = `crectot'/`gpib'
 		}
 		if `showsindeuda' & `crecsd' != . {
 			quietly sum recaudacionPIB if anio == `desde' & divLIF != 10
-			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
-				_col(33) in y %7.3fc r(sum) ///
-				_col(42) in y %7.3fc `sdpib' ///
-				_col(51) in y %7.3fc `sdpib'-r(sum) ///
-				_col(60) in y %7.3fc `crecsd' ///
-				_col(69) in y %7.3fc `crecsd'/`gpib' "}"
+			noisily _log cuadro fila "(=) Ingresos sin deuda" "r(sum)" "`sdpib'" "`sdpib'-r(sum)" "`crecsd'" "`crecsd'/`gpib'", negrita
 		}
-		noisily di in g "  PIB real: " in y %5.3fc `gpib' in g " % anual (`desde'-`anio')"
+		noisily _log cuadro nota "PIB real: `=strtrim(string(`gpib', "%5.3f"))' % anual (`desde'-`anio'); crecimiento real anual geométrico de cada concepto y elasticidad = crecimiento / crecimiento del PIB"
+		noisily _log cuadro print, titulo("B. Crecimiento real `desde'-`anio' por concepto") unidad("% del PIB; % anual") ref("runbook §9")
 	}
 
 
@@ -452,8 +424,7 @@ quietly {
 			local n_sinby = r(N)
 			quietly count if anio == `anio' & recaudacionPIB == .
 			local n_sinpib = r(N)
-			noisily di in r "  LIF: sin gr{c a'}fica — `anio' no tiene filas graficables (filas: `n_anio'; sin `by': `n_sinby'; sin % PIB: `n_sinpib')."
-			noisily di in r "       Revisa el mapeo de `by' en master/LIF.dta para `anio' (UpdateLIF) o pibY de PIBDeflactor."
+			noisily _log aviso, tipo(Nota) texto("LIF: sin gráfica, `anio' no tiene filas graficables (filas `n_anio'; sin `by' `n_sinby'; sin % PIB `n_sinpib')") ref("runbook §9") rojo
 		}
 		else {
 
@@ -586,7 +557,7 @@ quietly {
 	capture drop __*
 	timer off 4
 	timer list 4
-	noisily di _newline in g "Tiempo: " in y round(`=r(t4)/r(nt4)',.1) in g " segs."
+	noisily _log tiempo, timer(4) texto("LIF")
 }
 end
 

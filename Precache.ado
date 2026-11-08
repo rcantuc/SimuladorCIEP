@@ -61,7 +61,7 @@ program define Precache, rclass
 	local dirprom `"${SIMROOT}/users/$id/bootstraps/$bootstrap"'
 	capture mkdir `"${SIMROOT}/users/$id"'
 	capture mkdir `"`dir'"'
-	noisily di _newline(2) in g _dup(20) "." "{bf:   PRECACHE de lo invariante (users/$id/cache/)   }" in g _dup(20) "."
+	noisily _log modulo "Precache  ·  lo invariante del flujo web en users/$id/cache/" ref("runbook §12")
 
 	tempname sello
 	tempfile sellotmp
@@ -103,7 +103,7 @@ program define Precache, rclass
 	local it "`r(precache_item)'"
 	_precache_anota `sello' "`it'" "`r(precache_archivo)'" `"`r(precache_insumos)'"'
 	local n_items = `n_items' + 1
-	noisily di in g "  PEF:      " in y "`it'" in g " (master/PEF.dta -> anio x divCIEP x transf_gf, pesos corrientes)"
+	noisily _log linea "PEF: `it' (master/PEF.dta por año, divCIEP y transf_gf; pesos corrientes)"
 
 	** 2. Base de hogares de GastoPC (§1-2: perfiles + households + conteos de población) **
 	quietly GastoPC, aniope(`aniope') aniovp(`aniovp') precachear(`"`dir'"')
@@ -111,7 +111,7 @@ program define Precache, rclass
 	local nv "`r(precache_nvars)'"
 	_precache_anota `sello' "`it'" "`r(precache_archivo)'" `"`r(precache_insumos)'"'
 	local n_items = `n_items' + 1
-	noisily di in g "  GastoPC:  " in y "`it'" in g " (micro tras §2 + matrices de conteos; " in y "`nv'" in g " variables)"
+	noisily _log linea "GastoPC: `it' (micro tras §2 y matrices de conteos; `nv' variables)"
 
 	** 3. Colapsos de los *RECprom (lo que FiscalGap §4.2/§5.2 repetía en cada clic) **
 	local files : dir `"`dirprom'"' files "*RECprom.dta"
@@ -129,17 +129,16 @@ program define Precache, rclass
 		di as err `"Precache: no hay <var>RECprom.dta en `dirprom' (PerfilesSim.do §8 los escribe)."'
 		exit 601
 	}
-	noisily di in g "  RECprom:  " in y "`nrec'" in g " colapsos REC_<var>.dta desde users/$id/bootstraps/$bootstrap/"
+	noisily _log linea "RECprom: `nrec' colapsos REC_<var>.dta desde users/$id/bootstraps/$bootstrap/"
 
 	file close `sello'
 	capture erase `"`dir'/sello.txt"'
 	quietly copy `"`sellotmp'"' `"`dir'/sello.txt"'
-	noisily di in g "  Sello:    " in y "`dir'/sello.txt" in g " (version `version', data_updated `data_updated', commit `commit')"
-	noisily di in g "  Items:    " in y "`n_items'"
+	noisily _log aviso, tipo(Salida) texto("`n_items' items; sello users/$id/cache/sello.txt (`version' · datos `data_updated' · `commit')")
 	return local dir `"`dir'"'
 	return scalar items = `n_items'
 	timer off 12
-	timer list 12
+	noisily _log tiempo, timer(12) texto("Precache")
 end
 
 * anota en el sello un item y sus insumos (rutas relativas a SIMROOT) con bytes y mtime

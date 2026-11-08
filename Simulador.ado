@@ -94,15 +94,12 @@ quietly {
 		local title : variable label `varlist'
 	}
 	local nombre `"`=subinstr("`varlist'","_","",.)'"'
-	noisily di _newline(2) in g "  {bf:Variable label: " in y "`title'}"
-	noisily di in g "  {bf:Variable name: " in y "`varlist'}"
+	local ifdesc = cond(`"`if'"' != "", subinstr(`"`if'"', "if `varlist' != 0", "solo ≠ 0", 1), "todas las observaciones")
+	noisily _log seccion "Simulador" `"`varlist': `title'  ·  `ifdesc'  ·  B = `bootstrap'"' ref("Simulador.ado")
 	if "`if'" != "" {
-		noisily di in g "  {bf:If: " in y `"`if'}"'
 	}
 	else {
-		noisily di in g "  {bf:If: " in y "Sin restricci{c o'}n. Todas las observaciones utilizadas.}"	
 	}
-	noisily di in g "  {bf:Bootstraps: " in y `bootstrap' "}" _newline
 
 
 	** Variable en valor presente **
@@ -198,7 +195,6 @@ quietly {
 			set seed `seed'
 			forvalues k = 1(1)`bootstrap' {
 				if `bootstrap' != 1 {
-					noisily di in y . _cont
 					bsample _N, w(`boot')
 				}
 				else {
@@ -300,7 +296,7 @@ quietly {
 				tempvar decil
 				capture confirm variable decil
 				if _rc != 0 {
-					noisily di _newline in g "{bf:  No hay variable: " in y "decil" in g ". Se cre{c o'} con: " in y "`varlist'" in g ".}"
+					noisily _log aviso, tipo(Nota) texto("Simulador: no hay variable decil; se crea con `varlist'")
 					xtile `decil' = `varlist' [`weight' = `exp'*`boot'], n(10)
 				}
 				else {
@@ -360,7 +356,7 @@ quietly {
 				}
 				capture confirm variable upm est_dis
 				if _rc != 0 {
-					noisily di in g "  {bf:cluster(upm)}: la base no trae upm/est_dis ni hay concentrado.dta; se remuestrea por {bf:hogar}."
+					noisily _log aviso, tipo(Nota) texto("Simulador cluster(upm): la base no trae upm/est_dis ni hay concentrado.dta; se remuestrea por hogar")
 					local cluster hogar
 				}
 			}
@@ -385,10 +381,10 @@ quietly {
 				local clutext "personas (como v1.x)"
 			}
 			else {
-				noisily di as err "Simulador: cluster() debe ser upm, hogar o persona"
+				noisily _log aviso, tipo(IMPORTANTE) texto("Simulador: cluster() debe ser upm, hogar o persona") rojo
 				exit 198
 			}
-			if `bootstrap' > 1 noisily di in g "  {bf:Remuestreo: " in y "`clutext'" in g ". Semilla: " in y "`seed'" in g ".}"
+			if `bootstrap' > 1 noisily _log linea "Remuestreo `clutext', semilla `seed'; puntual = muestra completa, EE e IC95 percentil"
 
 			* Deciles: la variable decil si existe; si no, xtile ponderado por réplica (en Mata)
 			capture confirm variable decil
@@ -397,7 +393,7 @@ quietly {
 				local decilvar `decilv'
 			}
 			else {
-				noisily di _newline in g "{bf:  No hay variable: " in y "decil" in g ". Se cre{c o'} con: " in y "`varlist'" in g " (xtile ponderado, por r{c e'}plica).}"
+				noisily _log aviso, tipo(Nota) texto("Simulador: no hay variable decil; se crea con `varlist' (xtile ponderado, por réplica)")
 				local decilvar ""
 			}
 
@@ -414,10 +410,8 @@ quietly {
 			restore
 
 			* Réplicas en Mata
-			if `bootstrap' != 1 noisily di in y "  bootstrap: " _cont
 			mata: simboot_run("`varlist'", "`exp'", "edad", "`sexon'", "`cond'", "`hhid'", "`cluid'", "`estid'", ///
 				"`decilvar'", "`ingreso'", `bootstrap', `seed', "`HOM'", "`MUJ'", `anio0', `aniope')
-			if `bootstrap' != 1 noisily di
 
 			* Estimadores puntuales (réplica 0) para las secciones 2 y 4
 			tempname REC
@@ -472,7 +466,6 @@ quietly {
 	}
 
 
-	noisily di _newline in y "  Simulador.ado" in g " (post-bootstraps)"
 
 
 	**************************
@@ -486,14 +479,12 @@ quietly {
 	* simci: puntual = muestra completa (réplica 0); EE = sd de las réplicas; IC normal
 	* y percentil. Con bootstrap(1) no hay EE (un solo valor).
 	if `bootstrap' > 1 {
-		noisily di _newline in g "  Estimadores puntuales con la muestra completa; EE e IC 95% (percentil) bootstrap: B = `bootstrap', remuestreo por `clutext'."
-		noisily di in g "  (EE: +/- 1.96·EE relativo al puntual.)"
 	}
 	else {
-		noisily di _newline in g "  Estimadores con la muestra completa (B = 1: sin error est{c a'}ndar; use bootstrap(#) para IC)."
+		noisily _log linea "Estimadores con la muestra completa; B = 1, sin error estándar (bootstrap(#) para IC)"
 	}
 	if `haypt' local pt0 point(`=SIM_PC0[1,1]')
-	noisily simci estimacion, `pt0' label("Monto:") fmt(%20.0fc)
+	noisily simci estimacion, `pt0' label("Monto") fmt(%14.3fc) escala(1e9) unidad("bn")
 	return scalar monto = r(mean)
 	return scalar monto_se = r(se)
 
@@ -504,19 +495,19 @@ quietly {
 	escalar pctpib `varlist'GPIB = `RECT'
 
 	if `haypt' local pt0 point(`=SIM_PC0[1,2]')
-	noisily simci contribuyentes, `pt0' label("Contribuyentes/Beneficiarios:") fmt(%20.0fc)
+	noisily simci contribuyentes, `pt0' label("Contribuyentes o beneficiarios") fmt(%14.0fc) unidad("personas")
 	local POBCONTT = r(mean)*`bootstrap'
 
 	if `haypt' local pt0 point(`=SIM_PC0[1,3]')
-	noisily simci poblacion, `pt0' label("Poblaci{c o'}n potencial:") fmt(%20.0fc)
+	noisily simci poblacion, `pt0' label("Población potencial") fmt(%14.0fc) unidad("personas")
 
 	if `haypt' local pt0 point(`=SIM_PC0[1,4]')
-	noisily simci montopc, `pt0' label("Per c{c a'}pita:") fmt(%20.0fc)
+	noisily simci montopc, `pt0' label("Per cápita") fmt(%14.0fc) unidad("MXN")
 	return scalar montopc = r(mean)
 	return scalar montopc_se = r(se)
 
 	if `haypt' local pt0 point(`=SIM_PC0[1,5]')
-	noisily simci edad40, `pt0' label("Edad 40:") fmt(%20.0fc)
+	noisily simci edad40, `pt0' label("Hombre de 40 años") fmt(%14.0fc) unidad("MXN")
 	local edad40_boot = r(mean)
 
 	* Y label *
@@ -658,12 +649,13 @@ quietly {
 	**********************
 	*** 4.1. Por hogar ***
 	levelsof decil, local(deciles)
-	noisily di _newline in g "  Decil" _column(20) %20s "Por hogar"
 	local j = 2
 	foreach k of local deciles {
 		local pt0
 		if `haypt' local pt0 point(`=SIM_INCI0[`k',2]')
-		noisily simci xhogar if decil == `k', `pt0' label("`: label deciles `k''") col(20) fmt(%20.0fc)
+		noisily simci xhogar if decil == `k', `pt0' label("`: label deciles `k''") col(20) fmt(%20.0fc) quiet
+		local lg_xh`k' = r(mean)					// log legible: las tres medidas por decil salen en un solo cuadro tras 4.3
+		local lg_xhee`k' = cond(r(mean) != 0 & r(se) < ., 1.96*r(se)/abs(r(mean))*100, .)
 		local decil2 : label deciles `k'
 		* pesos por hogar: familia micro del catalogo (mxnpc %10.0fc) *
 		escalar mxnpc `varlist'`decil2' = r(mean)
@@ -677,11 +669,12 @@ quietly {
 
 	*************************
 	*** 4.2. Distribucion ***
-	noisily di _newline in g "  Decil" _column(20) %20s "Distribuci{c o'}n"
 	foreach k of local deciles {
 		local pt0
 		if `haypt' local pt0 point(`=SIM_INCI0[`k',3]')
-		noisily simci distribucion if decil == `k', `pt0' label("`: label deciles `k''") col(20) fmt(%20.1fc)
+		noisily simci distribucion if decil == `k', `pt0' label("`: label deciles `k''") col(20) fmt(%20.1fc) quiet
+		local lg_dis`k' = r(mean)
+		local lg_disee`k' = cond(r(mean) != 0 & r(se) < ., 1.96*r(se)/abs(r(mean))*100, .)
 		local decil2 : label deciles `k'
 		escalar pct dis`varlist'`decil2' = r(mean)
 
@@ -695,11 +688,12 @@ quietly {
 
 	***********************
 	*** 4.3. Incidencia ***
-	noisily di _newline in g "  Decil" _column(20) %20s "Incidencia (% `rellabel')"
 	foreach k of local deciles {
 		local pt0
 		if `haypt' local pt0 point(`=SIM_INCI0[`k',4]')
-		noisily simci incidencia if decil == `k', `pt0' label("`: label deciles `k''") col(20) fmt(%20.1fc)
+		noisily simci incidencia if decil == `k', `pt0' label("`: label deciles `k''") col(20) fmt(%20.1fc) quiet
+		local lg_inc`k' = r(mean)
+		local lg_incee`k' = cond(r(mean) != 0 & r(se) < ., 1.96*r(se)/abs(r(mean))*100, .)
 		if r(mean) == . {
 			continue
 		}
@@ -712,6 +706,19 @@ quietly {
 	}
 
 
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Decil") ancho(6)
+	noisily _log cuadro col, titulo("Por hogar MXN") fmt(%13.0fc)
+	noisily _log cuadro col, titulo("EE %") fmt(%7.2f)
+	noisily _log cuadro col, titulo("Distribución %") fmt(%8.1f)
+	noisily _log cuadro col, titulo("EE %") fmt(%7.2f)
+	noisily _log cuadro col, titulo("Incidencia %") fmt(%8.1f)
+	noisily _log cuadro col, titulo("EE %") fmt(%7.2f)
+	foreach k of local deciles {
+		local lgo = cond("`: label deciles `k''" == "Nac", ", sep negrita", "")
+		noisily _log cuadro fila "`: label deciles `k''" "`lg_xh`k''" "`lg_xhee`k''" "`lg_dis`k''" "`lg_disee`k''" "`lg_inc`k''" "`lg_incee`k''"`lgo'
+	}
+	noisily _log cuadro print, titulo("`varlist' por decil de hogares: monto por hogar, distribución e incidencia sobre `rellabel'") unidad("MXN por hogar; %; EE = ±1.96·EE relativo") ref("Simulador.ado §4")
 	if "$output" != "" & "`nooutput'" == "" {
 		local lengthINCD = strlen("`incd'")
 		local lengthINCD2 = strlen("`incd2'")
@@ -822,7 +829,7 @@ quietly {
 
 	timer off 7
 	timer list 7
-	noisily di _newline in g "  {bf:`title' time}: " in y round(`=r(t7)/r(nt7)',.1) in g " segs."
+	noisily _log tiempo, timer(7) texto("Simulador `varlist'")
 }
 end
 
@@ -1322,7 +1329,7 @@ end
 * sola fila no hay EE. Imprime en el formato de v1.x: valor y "+/- x%" (= 1.96·EE
 * relativo). Devuelve r(mean) r(se) r(lb) r(ub) (percentil 2.5 y 97.5) r(B).
 program define simci, rclass
-	syntax varname [if], [POINT(real -1e300) LABel(string) COL(integer 40) FMT(string)]
+	syntax varname [if], [POINT(real -1e300) LABel(string) COL(integer 40) FMT(string) ESCala(real 1) UNIdad(string) QUIet]
 	if "`fmt'" == "" local fmt %20.0fc
 	qui summ `varlist' `if', detail
 	local B = r(N)
@@ -1332,15 +1339,13 @@ program define simci, rclass
 		_pctile `varlist' `if', p(2.5 97.5)
 		local lb = r(r1)
 		local ub = r(r2)
-		noisily di in g "  `label'" _column(`col') in y `fmt' `mean' ///
-			in g "  EE: " in y "+/-" %7.2fc cond(`mean' != 0, 1.96*`se'/abs(`mean')*100, .) "%" ///
-			in g "  IC95 pct: [" in y `fmt' `lb' in g "," in y `fmt' `ub' in g "]"
+		if "`quiet'" == "" noisily _log linea "`label': `=strtrim(string(`mean'/`escala', "`fmt'"))' `unidad'  EE ±`=strtrim(string(cond(`mean' != 0, 1.96*`se'/abs(`mean')*100, .), "%7.2f"))' %  IC95 percentil [`=strtrim(string(`lb'/`escala', "`fmt'"))', `=strtrim(string(`ub'/`escala', "`fmt'"))']"
 	}
 	else {
 		local se = .
 		local lb = .
 		local ub = .
-		noisily di in g "  `label'" _column(`col') in y `fmt' `mean' in g "  (B = 1: sin EE)"
+		if "`quiet'" == "" noisily _log linea "`label': `=strtrim(string(`mean'/`escala', "`fmt'"))' `unidad'  (B = 1: sin EE)"
 	}
 	return scalar mean = `mean'
 	return scalar se   = `se'

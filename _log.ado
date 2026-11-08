@@ -92,7 +92,7 @@ program define _log_despacha
 		_log_envuelve `0'
 		exit
 	}
-	di as err "_log: subcomando `sub' no reconocido (modulo | seccion | linea | aviso | gate | modelo | tiempo | cuadro | param | anclas | envuelve)"
+	di as err "_log: subcomando `sub' no reconocido (modulo | seccion | linea | aviso | gate | modelo | tiempo | cuadro | param | anclas | envuelve) · llamada: `=usubstr(`"`0'"', 1, 160)'"
 	exit 198
 end
 
@@ -155,8 +155,8 @@ program define _log_modelo
 	}
 	local etiqueta = cond(`"`r2'"' == "" & "`e(r2_p)'" != "", "pseudo-R²", "R²")
 	local texto `"`nombre'"'
-	if `nv' < . local texto `"`texto'  N `: di %12.0fc `nv''"'
-	if `rv' < . local texto `"`texto'  `etiqueta' `: di %6.4f `rv''"'
+	if `nv' < . local texto `"`texto'  N `=strtrim(string(`nv', "%12.0fc"))'"'
+	if `rv' < . local texto `"`texto'  `etiqueta' `=strtrim(string(`rv', "%6.4f"))'"'
 	if `"`ruta'"' != "" {
 		capture estimates save `"`ruta'"', replace
 		if _rc == 0 local ref `"`ruta'.ster"'
@@ -413,7 +413,7 @@ void _lg_aviso(string scalar tipo, string scalar num, string scalar texto, strin
 // unidad: bn (x/1e9 %14.3fc) | mxn (%14.0fc) | pct (%14.3f) | n (%14.0fc) | factor (%14.4f)
 string scalar _lg_gate_str(string scalar texto, real scalar a, real scalar b, real scalar tol, string scalar unidad, real scalar ok)
 {
-	string scalar t, fmt, sa, sb, res
+	string scalar t, fmt, sa, sb, res, suf
 	real scalar d, esc, wt
 	d = (a == b ? 0 : reldif(a, b))
 	ok = (d <= tol)
@@ -426,8 +426,12 @@ string scalar _lg_gate_str(string scalar texto, real scalar a, real scalar b, re
 	else if (unidad == "pct") fmt = "%14.3f"
 	else if (unidad == "factor") fmt = "%14.4f"
 	t = texto
-	if (tol != 1e-9) t = t + " · tol " + strtrim(strofreal(tol, "%9.0e"))
 	wt = 44
+	if (tol != 1e-9) {
+		suf = " · tol " + subinstr(subinstr(strtrim(strofreal(tol, "%9.0e")), ".00", "", 1), "e-0", "e-", 1)
+		if (udstrlen(t) + udstrlen(suf) > wt) t = _lg_trunc(t, wt - udstrlen(suf))
+		t = t + suf
+	}
 	if (udstrlen(t) > wt) t = _lg_trunc(t, wt)
 	else if (udstrlen(t) < wt) t = t + " " + ((wt - udstrlen(t) - 1) * "…")
 	sa = _lg_num(a / esc, fmt, 14)
@@ -755,6 +759,7 @@ void _lg_envuelve(string scalar archivo)
 		W = _lg_wrap(l, Wd, ind)
 		for (k = 1; k <= rows(W); k++) out = out \ W[k]
 	}
+	unlink(archivo)
 	fh = fopen(archivo, "w")
 	for (i = 1; i <= rows(out); i++) fput(fh, out[i])
 	fclose(fh)
@@ -906,7 +911,12 @@ void _ta_print(string scalar titulo, string scalar sello, string scalar razon, r
 		wfue = 0
 		wcta = W - fijo
 		for (i = 1; i <= n; i++) {
-			if (_TA_S[i, 3] != "") fuentes = fuentes + (fuentes != "" ? "; " : "") + _TA_S[i, 1] + " " + _TA_S[i, 3]
+			if (_TA_S[i, 3] == "") continue
+			if (_TA_S[i, 3] == "BIE " + _TA_S[i, 1] + " · asset") {
+				if (strpos(fuentes, "BIE <código> · asset") == 0) fuentes = fuentes + (fuentes != "" ? "; " : "") + "series BIE <código> · asset"
+				continue
+			}
+			fuentes = fuentes + (fuentes != "" ? "; " : "") + _TA_S[i, 1] + " " + _TA_S[i, 3]
 		}
 	}
 	ginis = ""

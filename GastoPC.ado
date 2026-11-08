@@ -40,7 +40,7 @@ quietly {
 	if  "`anything'" == "" local word_count = 1
 	
 	// 0.6 Muestra una cadena formateada
-	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO per cápita " in y `aniope' "   }" in g _dup(20) "."	
+	noisily _log modulo "GastoPC  ·  gasto público per cápita `aniope', MXN `aniovp'" ref("runbook §9; /metodo")
 
 
 
@@ -109,8 +109,7 @@ quietly {
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
 	capture use "${SIMROOT}/master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
-		noisily di _newline in g "Creando base: " in y "/master/perfiles`aniope'.dta" ///
-			in g " con " in y "ENIGH " `anioenigh'
+		noisily _log aviso, tipo(UPDATE) texto("GastoPC: se crea master/perfiles`aniope'.dta con ENIGH `anioenigh' (PerfilesSim)") ref("runbook §9")
 		noisily run `"${SIMROOT}/01_modulos/PerfilesSim.do"' `aniope'
 	}
 	merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/master/`anioenigh'/households.dta", ///
@@ -545,65 +544,24 @@ quietly {
 
 
 			** 3.10 Resultados **
-			noisily di _newline(2) in g "{bf: A. Educaci{c o'}n CIEP}"
-			noisily di _newline in g "{bf:  Gasto por nivel" ///
-				_col(32) %15.0fc in g "Alumnos" ///
-				_col(49) %7.3f "% PIB" ///
-				_col(59) %10s in g "PC (MXN `aniovp')" "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  Inicial y comunitaria" ///
-				_col(32) %15.0fc in y scalar(iniciaAPob) ///
-				_col(49) %7.3f in y scalar(iniciaAPIB) ///
-				_col(57) %15.0fc in y scalar(iniciaAPC)
-			noisily di
-			noisily di in g "  B{c a'}sica" ///
-				_col(32) %15.0fc in y scalar(basicaPob) ///
-				_col(49) %7.3f in y scalar(basicaPIB) ///
-				_col(57) %15.0fc in y scalar(basicaPC)
-			noisily di in g "  Media superior" ///
-				_col(32) %15.0fc in y scalar(medsupPob) ///
-				_col(49) %7.3f in y scalar(medsupPIB) ///
-				_col(57) %15.0fc in y scalar(medsupPC)
-			noisily di in g "  Superior" ///
-				_col(32) %15.0fc in y scalar(superiPob) ///
-				_col(49) %7.3f in y scalar(superiPIB) ///
-				_col(57) %15.0fc in y scalar(superiPC)
-			noisily di in g "  Posgrado" ///
-				_col(32) %15.0fc in y scalar(posgraPob) ///
-				_col(49) %7.3f in y scalar(posgraPIB) ///
-				_col(57) %15.0fc in y scalar(posgraPC)
-			noisily di in g "  Para adultos" ///
-				_col(32) %15.0fc in y scalar(eduaduPob) ///
-				_col(49) %7.3f in y scalar(eduaduPIB) ///
-				_col(57) %15.0fc in y scalar(eduaduPC)
-			noisily di in g "  Otros gastos educativos" ///
-				_col(32) %15.0fc in y scalar(educacPob) ///
-				_col(49) %7.3f in y scalar(otrosePIB) ///
-				_col(57) %15.0fc in y scalar(otrosePC)
-			noisily di
-			noisily di in g "  Inversión en educación" ///
-				_col(32) %15.0fc in y scalar(educacPob) ///
-				_col(49) %7.3f in y scalar(inverePIB) ///
-				_col(57) %15.0fc in y scalar(inverePC)
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gasto p{c u'}blico en educación" ///
-				_col(32) %15.0fc in y scalar(educacPob) ///
-				_col(49) %7.3f in y scalar(educacPIB) ///
-				_col(57) %15.0fc in y scalar(educacPC) "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  Cultura y deportes" ///
-				_col(32) %15.0fc in y scalar(culturPob) ///
-				_col(49) %7.3f in y scalar(culturPIB) ///
-				_col(57) %15.0fc in y scalar(culturPC)
-			noisily di in g "  Ciencia y tecnología" ///
-				_col(32) %15.0fc in y scalar(investPob) ///
-				_col(49) %7.3f in y scalar(investPIB) ///
-				_col(57) %15.0fc in y scalar(investPC)
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y scalar(EducacPob) ///
-				_col(49) %7.3f in y scalar(EducacPIB) ///
-				_col(57) %15.0fc in y scalar(EducacPC) "}"
+			noisily _log cuadro clear
+			noisily _log cuadro col, titulo("Gasto por nivel") flex
+			noisily _log cuadro col, titulo("Alumnos") fmt(%13.0fc)
+			noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+			noisily _log cuadro col, titulo("MXN `aniovp' per cápita") fmt(%11.0fc)
+			noisily _log cuadro fila "Inicial y comunitaria" "scalar(iniciaAPob)" "scalar(iniciaAPIB)" "scalar(iniciaAPC)", sep
+			noisily _log cuadro fila "Básica" "scalar(basicaPob)" "scalar(basicaPIB)" "scalar(basicaPC)"
+			noisily _log cuadro fila "Media superior" "scalar(medsupPob)" "scalar(medsupPIB)" "scalar(medsupPC)"
+			noisily _log cuadro fila "Superior" "scalar(superiPob)" "scalar(superiPIB)" "scalar(superiPC)"
+			noisily _log cuadro fila "Posgrado" "scalar(posgraPob)" "scalar(posgraPIB)" "scalar(posgraPC)"
+			noisily _log cuadro fila "Para adultos" "scalar(eduaduPob)" "scalar(eduaduPIB)" "scalar(eduaduPC)"
+			noisily _log cuadro fila "Otros gastos educativos" "scalar(educacPob)" "scalar(otrosePIB)" "scalar(otrosePC)"
+			noisily _log cuadro fila "Inversión en educación" "scalar(educacPob)" "scalar(inverePIB)" "scalar(inverePC)"
+			noisily _log cuadro fila "Gasto público en educación" "scalar(educacPob)" "scalar(educacPIB)" "scalar(educacPC)", sep negrita
+			noisily _log cuadro fila "Cultura y deportes" "scalar(culturPob)" "scalar(culturPIB)" "scalar(culturPC)", sep
+			noisily _log cuadro fila "Ciencia y tecnología" "scalar(investPob)" "scalar(investPIB)" "scalar(investPC)"
+			noisily _log cuadro fila "Gasto público total" "scalar(EducacPob)" "scalar(EducacPIB)" "scalar(EducacPC)", sep negrita
+			noisily _log cuadro print, titulo("A. Educación: gasto público por nivel, `aniope'") unidad("% del PIB `aniope'; MXN `aniovp' per cápita") ref("runbook §9; /metodo")
 
 
 			** 3.11 Put excel **
@@ -946,46 +904,20 @@ quietly {
 
 
 			** 4.9 Resultados **
-			noisily di _newline(2) in g "{bf: B. Salud CIEP}"
-			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-				_col(32) %15.0fc in g "Derechohabientes" ///
-				_col(49) %7.3f "% PIB" ///
-				_col(59) %10s in g "PC (MXN `aniovp')" "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  SSa" ///
-				_col(32) %15.0fc in y scalar(ssaPob) ///
-				_col(49) %7.3f in y scalar(ssaPIB) ///
-				_col(57) %15.0fc in y scalar(ssaPC)
-			noisily di in g "  IMSS-Bienestar" ///
-				_col(32) %15.0fc in y scalar(imssbienPob) ///
-				_col(49) %7.3f in y scalar(imssbienPIB) ///
-				_col(57) %15.0fc in y scalar(imssbienPC)
-			noisily di in g "  IMSS" ///
-				_col(32) %15.0fc in y scalar(imssPob) ///
-				_col(49) %7.3f in y scalar(imssPIB) ///
-				_col(57) %15.0fc in y scalar(imssPC)
-			noisily di in g "  ISSSTE" ///
-				_col(32) %15.0fc in y scalar(issstePob) ///
-				_col(49) %7.3f in y scalar(issstePIB) ///
-				_col(57) %15.0fc in y scalar(issstePC)
-			noisily di in g "  Pemex" ///
-				_col(32) %15.0fc in y scalar(pemexPob) ///
-				_col(49) %7.3f in y scalar(pemexPIB) ///
-				_col(57) %15.0fc in y scalar(pemexPC)
-			noisily di in g "  ISSFAM" ///
-				_col(32) %15.0fc in y scalar(issfamPob) ///
-				_col(49) %7.3f in y scalar(issfamPIB) ///
-				_col(57) %15.0fc in y scalar(issfamPC)
-			noisily di
-			noisily di in g "  Inversión en salud" ///
-				_col(32) %15.0fc in y scalar(inversPob) ///
-				_col(49) %7.3f in y scalar(inversPIB) ///
-				_col(57) %15.0fc in y scalar(inversPC)
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y scalar(saludPob) ///
-				_col(49) %7.3f in y scalar(saludPIB) ///
-				_col(57) %15.0fc in y scalar(saludPC) "}"
+			noisily _log cuadro clear
+			noisily _log cuadro col, titulo("Gasto por institución") flex
+			noisily _log cuadro col, titulo("Derechohabientes") fmt(%13.0fc)
+			noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+			noisily _log cuadro col, titulo("MXN `aniovp' per cápita") fmt(%11.0fc)
+			noisily _log cuadro fila "SSa" "scalar(ssaPob)" "scalar(ssaPIB)" "scalar(ssaPC)", sep
+			noisily _log cuadro fila "IMSS-Bienestar" "scalar(imssbienPob)" "scalar(imssbienPIB)" "scalar(imssbienPC)"
+			noisily _log cuadro fila "IMSS" "scalar(imssPob)" "scalar(imssPIB)" "scalar(imssPC)"
+			noisily _log cuadro fila "ISSSTE" "scalar(issstePob)" "scalar(issstePIB)" "scalar(issstePC)"
+			noisily _log cuadro fila "Pemex" "scalar(pemexPob)" "scalar(pemexPIB)" "scalar(pemexPC)"
+			noisily _log cuadro fila "ISSFAM" "scalar(issfamPob)" "scalar(issfamPIB)" "scalar(issfamPC)"
+			noisily _log cuadro fila "Inversión en salud" "scalar(inversPob)" "scalar(inversPIB)" "scalar(inversPC)"
+			noisily _log cuadro fila "Gasto público total" "scalar(saludPob)" "scalar(saludPIB)" "scalar(saludPC)", sep negrita
+			noisily _log cuadro print, titulo("B. Salud: gasto público por institución, `aniope'") unidad("% del PIB `aniope'; MXN `aniovp' per cápita") ref("runbook §9; /metodo")
 
 
 			** 4.10 Put excel **
@@ -1141,37 +1073,18 @@ quietly {
 
 
 			** 5.6 Resultados **
-			noisily di _newline(2) in g "{bf: C. Pensiones CIEP}"
-			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-				_col(32) %15.0fc in g "Pensionados" ///
-				_col(49) %7.3f "% PIB" ///
-				_col(59) %10s in g "PC (MXN `aniovp')" "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
-				_col(32) %15.0fc in y scalar(pamPob) ///
-				_col(49) %7.3f in y scalar(pamPIB) ///
-				_col(57) %15.0fc in y scalar(pamPC)
-			noisily di in g "  IMSS" ///
-				_col(32) %15.0fc in y scalar(penimssPob) ///
-				_col(49) %7.3f in y scalar(penimssPIB) ///
-				_col(57) %15.0fc in y scalar(penimssPC)
-			noisily di in g "  ISSSTE" ///
-				_col(32) %15.0fc in y scalar(penisssPob) ///
-				_col(49) %7.3f in y scalar(penisssPIB) ///
-				_col(57) %15.0fc in y scalar(penisssPC)
-			noisily di in g "  Pemex" ///
-				_col(32) %15.0fc in y scalar(penpemePob) ///
-				_col(49) %7.3f in y scalar(penpemePIB) ///
-				_col(57) %15.0fc in y scalar(penpemePC)
-			noisily di in g "  CFE, LFC, Ferro, ISSFAM" ///
-				_col(32) %15.0fc in y scalar(penotroPob) ///
-				_col(49) %7.3f in y scalar(penotroPIB) ///
-				_col(57) %15.0fc in y scalar(penotroPC)
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y scalar(pensionPob) ///
-				_col(49) %7.3f in y scalar(pensionPIB) ///
-				_col(57) %15.0fc in y scalar(pensionPC) "}"
+			noisily _log cuadro clear
+			noisily _log cuadro col, titulo("Gasto por institución") flex
+			noisily _log cuadro col, titulo("Pensionados") fmt(%13.0fc)
+			noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+			noisily _log cuadro col, titulo("MXN `aniovp' per cápita") fmt(%11.0fc)
+			noisily _log cuadro fila "Pensión Adultos Mayores" "scalar(pamPob)" "scalar(pamPIB)" "scalar(pamPC)", sep
+			noisily _log cuadro fila "IMSS" "scalar(penimssPob)" "scalar(penimssPIB)" "scalar(penimssPC)"
+			noisily _log cuadro fila "ISSSTE" "scalar(penisssPob)" "scalar(penisssPIB)" "scalar(penisssPC)"
+			noisily _log cuadro fila "Pemex" "scalar(penpemePob)" "scalar(penpemePIB)" "scalar(penpemePC)"
+			noisily _log cuadro fila "CFE, LFC, Ferro, ISSFAM" "scalar(penotroPob)" "scalar(penotroPIB)" "scalar(penotroPC)"
+			noisily _log cuadro fila "Gasto público total" "scalar(pensionPob)" "scalar(pensionPIB)" "scalar(pensionPC)", sep negrita
+			noisily _log cuadro print, titulo("C. Pensiones: gasto público por institución, `aniope'") unidad("% del PIB `aniope'; MXN `aniovp' per cápita") ref("runbook §9; /metodo")
 
 
 			** 5.7 Put excel **/
@@ -1314,38 +1227,18 @@ quietly {
 
 
 			** 6.6 Resultados **
-			noisily di _newline(2) in g "{bf: D. Energía CIEP}"
-			noisily di _newline in g "{bf:  Gasto por organismo" ///
-				_col(32) %15.0fc in g "Poblacion" ///
-				_col(49) %7.3f "% PIB" ///
-				_col(59) %10s in g "PC (MXN `aniovp')" "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  CFE" ///
-				_col(32) %15.0fc in y scalar(gascfePob) ///
-				_col(49) %7.3f in y scalar(gascfePIB) ///
-				_col(57) %15.0fc in y scalar(gascfePC)
-			noisily di in g "  Pemex" ///
-				_col(32) %15.0fc in y scalar(gaspemexPob) ///
-				_col(49) %7.3f in y scalar(gaspemexPIB) ///
-				_col(57) %15.0fc in y scalar(gaspemexPC)
-			noisily di in g "  SENER y otros" ///
-				_col(32) %15.0fc in y scalar(gassenerPob) ///
-				_col(49) %7.3f in y scalar(gassenerPIB) ///
-				_col(57) %15.0fc in y scalar(gassenerPC)
-			noisily di 
-			noisily di in g "  Inversión en energía" ///
-				_col(32) %15.0fc in y scalar(gasinverfPob) ///
-				_col(49) %7.3f in y scalar(gasinverfPIB) ///
-				_col(57) %15.0fc in y scalar(gasinverfPC)
-			noisily di in g "  Costo de la deuda (energía)" ///
-				_col(32) %15.0fc in y scalar(gascosdeuePob) ///
-				_col(49) %7.3f in y scalar(gascosdeuePIB) ///
-				_col(57) %15.0fc in y scalar(gascosdeuePC)
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gastos público total" ///
-				_col(32) %15.0fc in y scalar(gasenergiaPob) ///
-				_col(49) %7.3f in y scalar(gasenergiaPIB) ///
-				_col(57) %15.0fc in y scalar(gasenergiaPC) "}"
+			noisily _log cuadro clear
+			noisily _log cuadro col, titulo("Gasto por organismo") flex
+			noisily _log cuadro col, titulo("Poblacion") fmt(%13.0fc)
+			noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+			noisily _log cuadro col, titulo("MXN `aniovp' per cápita") fmt(%11.0fc)
+			noisily _log cuadro fila "CFE" "scalar(gascfePob)" "scalar(gascfePIB)" "scalar(gascfePC)", sep
+			noisily _log cuadro fila "Pemex" "scalar(gaspemexPob)" "scalar(gaspemexPIB)" "scalar(gaspemexPC)"
+			noisily _log cuadro fila "SENER y otros" "scalar(gassenerPob)" "scalar(gassenerPIB)" "scalar(gassenerPC)"
+			noisily _log cuadro fila "Inversión en energía" "scalar(gasinverfPob)" "scalar(gasinverfPIB)" "scalar(gasinverfPC)"
+			noisily _log cuadro fila "Costo de la deuda (energía)" "scalar(gascosdeuePob)" "scalar(gascosdeuePIB)" "scalar(gascosdeuePC)"
+			noisily _log cuadro fila "Gastos público total" "scalar(gasenergiaPob)" "scalar(gasenergiaPIB)" "scalar(gasenergiaPC)", sep negrita
+			noisily _log cuadro print, titulo("D. Energía: gasto público por organismo, `aniope'") unidad("% del PIB `aniope'; MXN `aniovp' per cápita") ref("runbook §9; /metodo")
 
 		}
 
@@ -1467,34 +1360,17 @@ quietly {
 			escalar mxnpc otrosgasPob = `Energia'[1,1]
 
 			* Resultados *
-			noisily di _newline(2) in g "{bf: E. Otros gastos CIEP}"
-			noisily di _newline in g "{bf:  Gasto por concepto" ///
-				_col(32) %15.0fc in g "Poblacion" ///
-				_col(49) %7.3f "% PIB" ///
-				_col(59) %10s in g "PC (MXN `aniovp')" "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  Otras inversiones" ///
-				_col(32) %15.0fc in y scalar(gasinfraPob) ///
-				_col(49) %7.3f in y scalar(gasinfraPIB) ///
-				_col(57) %15.0fc in y scalar(gasinfraPC)
-			noisily di in g "  Resto de los gastos" ///
-				_col(32) %15.0fc in y scalar(gasotrosPob) ///
-				_col(49) %7.3f in y scalar(gasotrosPIB) ///
-				_col(57) %15.0fc in y scalar(gasotrosPC)
-			noisily di
-			noisily di in g "  Part y otras Aport" ///
-				_col(32) %15.0fc in y scalar(gasfederPob) ///
-				_col(49) %7.3f in y scalar(gasfederPIB) ///
-				_col(57) %15.0fc in y scalar(gasfederPC)
-			noisily di in g "  Costo de la deuda (gobierno)" ///
-				_col(32) %15.0fc in y scalar(gascostoPob) ///
-				_col(49) %7.3f in y scalar(gascostoPIB) ///
-				_col(57) %15.0fc in y scalar(gascostoPC)
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y scalar(otrosgasPob) ///
-				_col(49) %7.3f in y scalar(otrosgasPIB) ///
-				_col(57) %15.0fc in y scalar(otrosgasPC) "}"
+			noisily _log cuadro clear
+			noisily _log cuadro col, titulo("Gasto por concepto") flex
+			noisily _log cuadro col, titulo("Poblacion") fmt(%13.0fc)
+			noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+			noisily _log cuadro col, titulo("MXN `aniovp' per cápita") fmt(%11.0fc)
+			noisily _log cuadro fila "Otras inversiones" "scalar(gasinfraPob)" "scalar(gasinfraPIB)" "scalar(gasinfraPC)", sep
+			noisily _log cuadro fila "Resto de los gastos" "scalar(gasotrosPob)" "scalar(gasotrosPIB)" "scalar(gasotrosPC)"
+			noisily _log cuadro fila "Part y otras Aport" "scalar(gasfederPob)" "scalar(gasfederPIB)" "scalar(gasfederPC)"
+			noisily _log cuadro fila "Costo de la deuda (gobierno)" "scalar(gascostoPob)" "scalar(gascostoPIB)" "scalar(gascostoPC)"
+			noisily _log cuadro fila "Gasto público total" "scalar(otrosgasPob)" "scalar(otrosgasPIB)" "scalar(otrosgasPC)", sep negrita
+			noisily _log cuadro print, titulo("E. Otros gastos públicos, `aniope'") unidad("% del PIB `aniope'; MXN `aniovp' per cápita") ref("runbook §9; /metodo")
 
 			*capture drop Inversión
 			*Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
@@ -1619,30 +1495,17 @@ quietly {
 			}
 
 			* Resultados *
-			noisily di _newline(2) in g "{bf: F. Transferencias}" 
-			noisily di _newline in g "{bf:  Gasto por concepto" ///
-				_col(32) %15.0fc in g "Población" ///
-				_col(49) %7.3f "% PIB" ///
-				_col(59) %10s in g "PC (MXN `aniovp')" "}"
-			noisily di in g _dup(71) "-"
-			noisily di in g "  `bititle'" ///
-				_col(32) %15.0fc in y scalar(IngBasPob) ///
-				_col(49) %7.3f in y scalar(IngBasPIB) ///
-				_col(57) %15.0fc in y scalar(IngBasPC)
-			noisily di in g "  Apoyo a madres trabajadoras" ///
-				_col(32) %15.0fc in y scalar(gasmadresPob) ///
-				_col(49) %7.3f in y scalar(gasmadresPIB) ///
-				_col(57) %15.0fc in y scalar(gasmadresPC)
-			noisily di in g "  Gasto en cuidados" ///
-				_col(32) %15.0fc in y scalar(gascuidadosPob) ///
-				_col(49) %7.3f in y scalar(gascuidadosPIB) ///
-				_col(57) %15.0fc in y scalar(gascuidadosPC)
+			noisily _log cuadro clear
+			noisily _log cuadro col, titulo("Gasto por concepto") flex
+			noisily _log cuadro col, titulo("Población") fmt(%13.0fc)
+			noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+			noisily _log cuadro col, titulo("MXN `aniovp' per cápita") fmt(%11.0fc)
+			noisily _log cuadro fila "`bititle'" "scalar(IngBasPob)" "scalar(IngBasPIB)" "scalar(IngBasPC)", sep
+			noisily _log cuadro fila "Apoyo a madres trabajadoras" "scalar(gasmadresPob)" "scalar(gasmadresPIB)" "scalar(gasmadresPC)"
+			noisily _log cuadro fila "Gasto en cuidados" "scalar(gascuidadosPob)" "scalar(gascuidadosPIB)" "scalar(gascuidadosPC)"
 
-			noisily di in g _dup(71) "-"
-			noisily di in g "  {bf:Gasto público total" "}" ///
-				_col(32) %15.0fc in y scalar(transfPob) ///
-				_col(49) %7.3f in y scalar(transfPIB) ///
-				_col(57) %15.0fc in y scalar(transfPC)
+			noisily _log cuadro fila "Gasto público total" "scalar(transfPob)" "scalar(transfPIB)" "scalar(transfPC)", sep negrita
+			noisily _log cuadro print, titulo("F. Transferencias, `aniope'") unidad("% del PIB `aniope'; MXN `aniovp' per cápita") ref("runbook §9; /metodo")
 
 			replace IngBasico = IngBasico + scalar(gasmadresPC) if primi2 == 1
 			replace IngBasico = IngBasico + scalar(gascuidadosPC) if cuidados_pot == 1
@@ -1684,7 +1547,7 @@ quietly {
 	***********
 	timer off 9
 	timer list 9
-	noisily di _newline in g "Tiempo: " in y round(`=r(t9)/r(nt9)',.1) in g " segs."
+	noisily _log tiempo, timer(9) texto("GastoPC")
 }
 end
 
