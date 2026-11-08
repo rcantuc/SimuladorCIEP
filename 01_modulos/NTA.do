@@ -115,7 +115,9 @@ if !inlist("$nta_anclaS", "auto", "off", "aditivo", "multiplicativo") {
 	exit 198
 }
 global nta_anclaS_param "$nta_anclaS"
-local brecha_max = 15
+* 8.16b (decision de Ricardo 2026-11-08): brecha_max 15 -> 30 % mientras la fila τ⁺/inter/remesas vs D.62 + D.7 netas (+461.0 bn) se cierra en 8.17;
+* con D.5 (D.51 S.14) y Cpriv (P.3 S.14) ya cerrados la brecha observada es +24.5 % y el ancla multiplicativa sigue DECLARADA (sumidero de 465.1 bn). *
+local brecha_max = 30
 if "$nta_YA" == "" global nta_YA "S14"
 if !inlist("$nta_YA", "motor", "S14") {
 	noisily di as err `"NTA: nta_YA = "$nta_YA" no es motor | S14"'
@@ -707,7 +709,7 @@ local brecha = (`S_micro'/`AhorroHog' - 1)*100
 * privado) es de CUAD-2 (8.17) y sigue abierta en 8.16b, asi que la brecha observada la lleva integra. Si difiere en mas de 2 puntos de la esperada
 * se FLAGuea y la descomposicion de abajo (nta-identidad.txt) dice partida por partida de donde sale. *
 local brecha_esp = -0.9
-if abs(`brecha' - `brecha_esp') > 2 local flags `"`flags' "brecha Σ S vs B.8n = `=string(`brecha', "%6.1f")' % difiere en mas de 2 puntos de la esperada (`=string(`brecha_esp', "%4.1f")' %, CUAD-1 §7): ver la descomposicion (la fila τ⁺ vs D.62 + D.7 netas es de 8.17)""'
+if abs(`brecha' - `brecha_esp') > 2 local flags `"`flags' "brecha Σ S vs B.8n = `=string(`brecha', "%6.1f")' % difiere en mas de 2 puntos de la esperada tras 8.17 (`=string(`brecha_esp', "%4.1f")' %, CUAD-1 §7): la fila τ⁺/inter/remesas vs D.62 + D.7 netas (+461.0 bn) se cierra en 8.17; brecha_max = `brecha_max' % hasta entonces (decision 2026-11-08)""'
 if "$nta_anclaS" == "auto" {
 	if abs(`brecha') <= `brecha_max' global nta_anclaS "multiplicativo"
 	else {

@@ -423,7 +423,12 @@ if csi:
               ('CSI_106', 110, 'B5nNoFin B.5n (U/A)'), ('CSI_109', 110, 'B5nFin B.5n (U/A)'), ('CSI_112', 110, 'B5nGob B.5n (U/A)'), ('CSI_118', 110, 'B5nISFLSH B.5n (U/A)'),
               ('CSI_112', 80, 'ImpProdGobR D.2 (R/P)'), ('CSI_112', 89, 'SubGobR D.3 (R/P)'), ('CSI_112', 95, 'RentaPropGob D.4 (R/P y U/A)'),
               ('CSI_121', 71, 'RemRowU D.1 (U/A)'), ('CSI_121', 95, 'RentaPropRow D.4 (U/A y R/P)'),
-              ('CSI_103', 27, 'PIBCSI B.1b (U/A)'), ('CSI_103', 28, 'CapFijCSI P.51c (U/A)'), ('CSI_103', 110, 'B5nS1 B.5n (U/A)')]
+              ('CSI_103', 27, 'PIBCSI B.1b (U/A)'), ('CSI_103', 28, 'CapFijCSI P.51c (U/A)'), ('CSI_103', 110, 'B5nS1 B.5n (U/A)'),
+              # 8.16b (CUAD-1 firma): D.51 por sector pagador, P.3 de las ISFLSH, D.61 recibido por sector y B.2n de las sociedades (SCNHogaresS14)
+              ('CSI_115', 115, 'D51HogS14 D.51 (U/A)'), ('CSI_106', 115, 'D51NoFin D.51 (U/A)'), ('CSI_109', 115, 'D51Fin D.51 (U/A)'),
+              ('CSI_118', 166, 'ConISFLSH P.3 (U/A)'), ('CSI_112', 117, 'CuotasGobR D.61 (R/P)'), ('CSI_109', 117, 'CuotasFinR D.61 (R/P)'),
+              ('CSI_106', 117, 'CuotasNoFinR D.61 (R/P)'), ('CSI_118', 117, 'CuotasISFLSHR D.61 (R/P)'),
+              ('CSI_106', 63, 'B2nNoFin B.2n (U/A)'), ('CSI_109', 63, 'B2nFin B.2n (U/A)')]
     csi_rep = {'zip': 'https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip', 'cuadros': {}, 'celdas': []}
     try:
         import openpyxl

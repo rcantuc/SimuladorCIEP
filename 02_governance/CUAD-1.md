@@ -128,7 +128,7 @@ Donde la firma difiere de este memo, manda la firma. Los parámetros viven en `S
 | 1 | `consumo_ancla` | **`p3_s14`** | 19 relativos BIE + un factor `TTp3 = (P.3 S.14 − compras netas) / ConHog`; P.3 S.15 y vintage como filas de sector; gate Σ Cpriv = P.3 S.14 |
 | 2 | `consumo_precios` | **`comprador`** | único implementado; `basicos` es de 8.17 |
 | 3 | `cuotas_por_sector` | **`on`** | Tabla 1b: D.61 por pagador y receptor; `cuotasF` (cuota social y aportaciones federales) fuera de `cuotasTPF` |
-| 4 | `isrpm_incidencia` | **`propiedad`** | ISR PM ∝ `ing_d4_rel`; negocios propios a la base de PF; denominador de `ISRPMTE` = B.5n S.11 + S.12 |
+| 4 | `isrpm_incidencia` | **`propiedad`** | ISR PM ∝ `ing_d4_rel`; negocios propios a la base de PF; denominador de `ISRPMTE` = B.2n S.11 + S.12 (excedente neto de operación de las sociedades; corrección de Ricardo 2026-11-08: con B.5n la tasa pasaba de 100 %) |
 | 5 | `isr_personas_ancla` | **`d51_s14`** | NTA: ISR asalariados + PF → D.51 S.14 (1,518.912), ISR PM → D.51 S.11 + S.12 (1,165.676); fila «LIF vs CSI por sector» |
 | 6 | `isras_share` | **`acotado`** | parte salarial del ISR en [0, 1] |
 | 7 | `obligacion_isrpf_ancla` | **`itan_rangos`** | PF por los 11 rangos ≥ 0 del ITAN 4T 2024; «Resto» y rangos negativos ∝ ENIGH; asalariados por total; retiro de `ISRInformesTrimestrales.xlsx` desde 2019-1 (§8 ter), 2013–2018 con sello amarillo |
@@ -280,7 +280,7 @@ Estado en v8.15.3 (`nta-identidad.txt` de `-datos/users/ricardo/NTA/`, 2026-11-0
 | Σ ISR de personas = D.5 S.14 | 1,330.838 (LIF) vs 1,540.050 (**+209.212**) | ancla a D.51 S.14 1,518.912 (D.59 aparte) o a D.5; la diferencia con la LIF se declara como «LIF vs CSI por sector» | 1e-9 | `nta-identidad.txt`, tabla «De dónde sale la brecha» |
 | Σ ISR PM = D.5 S.11 + S.12 | 1,351.427 (LIF) vs 1,188.648 | mismo tratamiento; incidencia P | 1e-9 | ídem |
 | τ⁺ efectivo vs D.62 + D.7 netas | 4,824.887 vs 4,363.876 (**+461.011**) | es de 8.17 (D.62 privado 442.344 fuera de Gobierno; D.759 de S.11 700.204 no va a hogares) | — | CUAD-2 |
-| **Σ S sin ancla vs B.8n S.14** | **2,116.145 vs 1,901.026: +215.119 (+11.3 %)** | tras cerrar 209.212 (D.5) + 461.011 (τ) − 438.069 (Cpriv): 215.119 − 232.154 = **−17.035** = la fila LIF vs devengado de los indirectos (**−0.9 %**) | ≤ 15 % para que `nta_anclaS = auto` siga en multiplicativo; la meta de 8.16 es declarar los −17.035 y apagar el ancla | `NTA.do` §4.11 |
+| **Σ S sin ancla vs B.8n S.14** | **2,116.145 vs 1,901.026: +215.119 (+11.3 %)** | **Tras 8.16 (medido en 8.16b): 2,366.139 vs 1,901.026 = +465.1 (+24.5 %)** = τ⁺/inter/remesas vs D.62 + D.7 netas +461.0 (8.17) + D.59 +21.1 − ImpProd 17.0, con D.5 (→ D.51 S.14) y Cpriv (→ P.3 S.14) en 0. **Tras 8.17** (cerrada la fila τ): ≈ **−17.035 (−0.9 %)**, la fila LIF vs devengado de los indirectos | `brecha_max` = 30 % en 8.16b (decisión de Ricardo 2026-11-08; antes 15) para que `nta_anclaS = auto` siga en multiplicativo declarado hasta 8.17; la meta de 8.17 es declarar los −17.035 y apagar el ancla | `NTA.do` §4.11 |
 | IEPS micro vs macro | 28.3 vs 24.075 (`DifIEPSNP` 15.0 %) | 28.3 vs 224.780 declarado; gasolinas con micro | — | `Expenditure.do` §6.3 |
 | Parte salarial del ISR ∈ [0, 1] | mediana 1.150; extremos ±miles | acotada | — | gate nuevo en `Households.do` §11.1 |
 
@@ -423,10 +423,10 @@ Solo por inferencia de las tablas; nada se corrió. `baseline` pasa a **v8.16.0*
 | Llave / agregado | v8.15.3 | 8.16 (propuesto) | Dirección | Por qué |
 |---|---:|---:|---|---|
 | Σ Cpriv (`nta-identidad.txt`) | 23,819.398 | 23,381.329 | ↓ −438.069 | `consumo_ancla = p3_s14` |
-| Σ S sin ancla vs B.8n | 2,116.145 (+11.3 %) | ≈ 1,883.991 (**−0.9 %**) si cierran D.5 y τ (8.17) y Cpriv | ↓ | §7 |
+| Σ S sin ancla vs B.8n | 2,116.145 (+11.3 %) | **tras 8.16: 2,366.139 (+24.5 %)**, medido en 8.16b (D.5 y Cpriv cierran; la fila τ +461.0 queda para 8.17); tras 8.17 ≈ 1,883.991 (**−0.9 %**) | ↑ en 8.16, ↓ en 8.17 | §7 |
 | `CUADRATURA` (YL, YA, …) | 43.636, 24.435, … | **sin cambio** | = | 8.16 no toca las anclas de `Households` §9 |
 | `INGRESOS` (LIF `anioPE` % PIB, 20 valores) | 3.855, 0.244, 1.782, … | **sin cambio** | = | son la LIF 2027; no dependen del micro |
-| `INGRESOSTEF[4,5,6]` (ISRPMTE, OTROSKTE, IngKPrivadoTotTE) | 12.9, 5.0, 19.5 | cambian si el denominador pasa de `IngKPrivado` (CapIncImp − públicos) a B.5n o B.2n de S.11 + S.12 | ↑ con B.5n (denominador menor) | `isrpm_incidencia` |
+| `INGRESOSTEF[4,5,6]` (ISRPMTE, OTROSKTE, IngKPrivadoTotTE) | 12.9, 5.0, 19.5 | `ISRPMTE` pasa a B.2n S.11 + S.12 como denominador (decisión 7 corregida, 2026-11-08); OTROSKTE e IngKPrivadoTotTE siguen sobre `IngKPrivado` | ↑ ISRPMTE (denominador menor) | `isrpm_incidencia` |
 | `INGRESOSTEF[9]` (IEPSNPTE) | 47.9 | sin cambio (el macro de `TasasEfectivas` ya es `divSIM`) | = | `iepsnp_macro` solo corrige `Expenditure.do` |
 | `INCD`, `INCD2`, `INCD3` (43 bloques: incidencia por decil, nacional y 32 entidades, ISR/IVA/…) | — | **se mueven**: ISR PM ∝ `d4_relativo` concentra en deciles altos; IEPS ∝ gasolinas/alcohol/tabaco reparte distinto; cuotas por sector no cambia quién paga | ISR PM ↑ en X, ↓ en I–VIII | `isrpm_incidencia`, `ieps_relativo` |
 | `GASTOS`, `GASTOSPC`, `GASTOSPOB*`, `PROY*` | — | **sin cambio** | = | PEF, no micro |

@@ -66,7 +66,7 @@ quietly {
 	if "$SCN_CONGELADO_SELLO" == "" noisily SCNCongelado
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -75,7 +75,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR, before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin, before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -681,6 +681,8 @@ quietly {
 			_tabla_anclas add, codigo(D.61) sector(S.11) fuente("CSI_106 · f.117 R/P") valor(CuotasNoFinR[`obs']) variable(CuotasNoFinR)
 			_tabla_anclas add, codigo(D.61) sector(S.15) fuente("CSI_118 · f.117 R/P") valor(CuotasISFLSHR[`obs']) variable(CuotasISFLSHR)
 		}
+		capture confirm variable B2nFin
+		if _rc == 0 _tabla_anclas add, codigo(B.2n) sector("S.11+S.12") fuente("CSI_106/109 · f.63 U/A") valor(B2nNoFin[`obs'] + B2nFin[`obs']) variable("B2nNoFin + B2nFin") nota("denominador de ISRPMTE con isrpm_incidencia = propiedad (firma, decisión 7 corregida: B.2n, no B.5n)")
 		noisily _tabla_anclas print, titulo("Celdas CSI del sector hogares que SCN expone a los módulos, año `anio'") sello("$SCN_CONGELADO_SELLO") razon("asset raw/SCN congelado, manifest scn_vintage") unidad("MXN `anio'")
 	}
 	capture confirm variable B5nS1
@@ -704,6 +706,11 @@ quietly {
 		escalar mxn B5nS1 = B5nS1[`obs']
 	}
 	* 8.16b: celdas de Cuadratura II (CUAD-1 firma): D.51 por sector pagador, P.3 de las ISFLSH y D.61 por sector receptor *
+	capture confirm variable B2nFin
+	if _rc == 0 {
+		escalar mxn B2nNoFin = B2nNoFin[`obs']
+		escalar mxn B2nFin = B2nFin[`obs']
+	}
 	capture confirm variable CuotasISFLSHR
 	if _rc == 0 {
 		escalar mxn D51HogS14 = D51HogS14[`obs']
@@ -2853,6 +2860,8 @@ program define SCNHogaresS14
 * las ISFLSH (fila de sector del consumo con consumo_ancla = p3_s14) y D.61 RECIBIDO por cada sector (f.117 R/P: S.13, S.12, S.11, S.15; cuotas_por_sector). *
 	local specs `"`specs' "CSI_115 115 D51HogS14 D.51 U" "CSI_106 115 D51NoFin D.51 U" "CSI_109 115 D51Fin D.51 U" "CSI_118 166 ConISFLSH P.3 U""'
 	local specs `"`specs' "CSI_112 117 CuotasGobR D.61 R" "CSI_109 117 CuotasFinR D.61 R" "CSI_106 117 CuotasNoFinR D.61 R" "CSI_118 117 CuotasISFLSHR D.61 R""'
+* 8.16b (firma, decision 7 corregida por Ricardo 2026-11-08): excedente neto de operacion de S.11 y S.12 (f.63 U/A), denominador de ISRPMTE *
+	local specs `"`specs' "CSI_106 63 B2nNoFin B.2n U" "CSI_109 63 B2nFin B.2n U""'
 	noisily SCNCongelado, copiar
 	local dir "${SIMROOT}/raw/temp/SCN"
 	foreach cuadro in CSI_115 CSI_103 CSI_106 CSI_109 CSI_112 CSI_118 CSI_121 {
@@ -2997,6 +3006,8 @@ program define SCNHogaresS14
 	label var CuotasFinR "Contribuciones sociales netas recibidas por las sociedades financieras (S.12 D.61, fila 117, R/P; incluye D.614)"
 	label var CuotasNoFinR "Contribuciones sociales netas recibidas por las sociedades no financieras (S.11 D.61, fila 117, R/P)"
 	label var CuotasISFLSHR "Contribuciones sociales netas recibidas por las ISFLSH (S.15 D.61, fila 117, R/P)"
+	label var B2nNoFin "Excedente neto de operacion, sociedades no financieras (S.11 B.2n, fila 63, U/A)"
+	label var B2nFin "Excedente neto de operacion, sociedades financieras (S.12 B.2n, fila 63, U/A)"
 	g double RowPrimNeto = RentaPropRowR - RentaPropRowU - RemRowU
 	format RowPrimNeto %20.0fc
 	label var RowPrimNeto "Renta primaria neta pagada al resto del mundo (S.2: D.4 recibida − D.4 pagada − D.1 pagada; PIB − INB)"

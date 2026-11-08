@@ -1,4 +1,4 @@
-*! version 8.1 CIEP 08nov2026 (8.16b: isrpm_incidencia = propiedad -> denominador de ISRPMTE = B.5n S.11 + S.12; cuadro de anclas al estandar §D)
+*! version 8.1 CIEP 08nov2026 (8.16b: isrpm_incidencia = propiedad -> denominador de ISRPMTE = B.2n S.11 + S.12; cuadro de anclas al estandar §D)
 program define TasasEfectivas, return
 quietly {
 
@@ -126,18 +126,19 @@ quietly {
 
 	local IngKPublicosPIB = `PEMEXPIB'+`CFEPIB'+`IMSSPIB'+`ISSSTEPIB'
 	local IngKPrivadoPIB = `CapIncImpPIB'-`IngKPublicosPIB'
-	* 8.16b (isrpm_incidencia = propiedad; CUAD-1 §4 y Δ esperado): el ISR de personas morales es de sociedades y su tasa efectiva se mide sobre el
-	* saldo de ingresos primarios neto de S.11 + S.12 (CSI f.110; pastcast del SCN para `anio'), no sobre el residuo BIE de capital privado. *
+	* 8.16b (isrpm_incidencia = propiedad; CUAD-1 §4; firma decision 7 corregida por Ricardo 2026-11-08): el ISR de personas morales es de sociedades
+	* y su tasa efectiva se mide sobre el excedente neto de operacion de S.11 + S.12 (B.2n, CSI f.63; pastcast del SCN para `anio'), no sobre el
+	* residuo BIE de capital privado ni sobre B.5n (saldo tras pagar renta de la propiedad, que dejaba la tasa por encima de 100 %). *
 	if "$isrpm_incidencia" == "" global isrpm_incidencia "propiedad"
 	local ISRPMBasePIB = `IngKPrivadoPIB'
 	local ISRPMBaseTxt "Ing. de capital privado"
 	if "$isrpm_incidencia" == "propiedad" {
-		capture confirm scalar B5nNoFin
+		capture confirm scalar B2nNoFin
 		if _rc == 0 {
-			local ISRPMBasePIB = (scalar(B5nNoFin) + scalar(B5nFin))/scalar(PIB)*100
-			local ISRPMBaseTxt "B.5n S.11 + S.12"
+			local ISRPMBasePIB = (scalar(B2nNoFin) + scalar(B2nFin))/scalar(PIB)*100
+			local ISRPMBaseTxt "B.2n S.11 + S.12"
 		}
-		else noisily di as err "  FLAG TasasEfectivas (isrpm_incidencia = propiedad): SCN sin B5nNoFin/B5nFin para `anio'; ISRPMTE sobre el capital privado BIE."
+		else noisily di as err "  FLAG TasasEfectivas (isrpm_incidencia = propiedad): SCN sin B2nNoFin/B2nFin para `anio'; ISRPMTE sobre el capital privado BIE."
 	}
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
@@ -164,7 +165,7 @@ quietly {
 	escalar pct ISRPMTE = `ISRPMPIB'/`ISRPMBasePIB'*100
 	escalar pctpib ISRPMBasePIB = `ISRPMBasePIB'
 	escalar pct OTROSKTE = `OTROSKPIB'/`IngKPrivadoPIB'*100
-	if "$isrpm_incidencia" == "propiedad" & "`ISRPMBaseTxt'" == "B.5n S.11 + S.12" noisily di in g "  (ISRPMTE sobre B.5n S.11 + S.12 = " in y %7.3fc `ISRPMBasePIB' in g " % del PIB; isrpm_incidencia = propiedad, 8.16b)"
+	if "$isrpm_incidencia" == "propiedad" & "`ISRPMBaseTxt'" == "B.2n S.11 + S.12" noisily di in g "  (ISRPMTE sobre B.2n S.11 + S.12 = " in y %7.3fc `ISRPMBasePIB' in g " % del PIB; isrpm_incidencia = propiedad, 8.16b)"
 
 	** 4.3 FMP (energía) **
 	noisily di in g "  Ing. de capital privado" ///

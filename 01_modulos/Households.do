@@ -57,7 +57,8 @@
 ****   isrpm_incidencia = propiedad   «ISR PM ∝ d4_relativo» (FLAG 19 cerrado) — el ISR de personas morales es de sociedades: la LIF fija el total y la
 ****                                  incidencia a personas sigue la regla P (Distribucion ∝ ing_d4_rel, §11.3); los negocios propios (ing_bruto_tpm,
 ****                                  P068-P081) tributan como PF con actividad empresarial: entran a la base de la tarifa (§10.1) y al probit de PF.
-****                                  TasasEfectivas usa B.5n S.11 + S.12 como denominador de ISRPMTE. Alternativa negocios (ing_bruto_tpm × 30 %, v8.15.3).
+****                                  TasasEfectivas usa B.2n S.11 + S.12 (excedente neto de operacion de las sociedades; firma, decision 7 corregida
+****                                  2026-11-08) como denominador de ISRPMTE. Alternativa negocios (ing_bruto_tpm × 30 %, v8.15.3).
 ****   isras_share = acotado          «parte salarial del ISR en [0, 1]» (FLAG 27) — ISR_asalariados = ISR × min(max(ing_subor/(base − cuotasTPF), 0), 1);
 ****                                  con libre (v8.15.3) la mediana era 1.150 (gross-up vs cuotas) con extremos ±miles.
 ****   informalidad = corte           «formal = los de mayor p» — el corte del probit de salarios (§11.1) SE APLICA: ISR_asalariados = 0 para los informales

@@ -96,7 +96,7 @@ global oye_en_hub "off"								// off: OyE no llega a personas; «Empresas públ
 global consumo_ancla "p3_s14"						// p3_s14: Σ Cpriv = P.3 S.14 (CSI_115 f.166); ISFLSH (P.3 S.15) y vintage como filas de sector | conhog (BIE 724600 hogares + ISFLSH, v8.15.3)
 global consumo_precios "comprador"					// comprador: C a precios de comprador e impuestos a productos ∝ gasto como ingreso (único implementado) | basicos (8.17: C − D.21 + D.31 por categoría)
 global cuotas_por_sector "on"						// on: D.61 por sector receptor (S.13, S.12, S.11, S.15) y cuota social federal (cuotasF) fuera de cuotasTPF | off (todo a Gobierno, v8.15.3)
-global isrpm_incidencia "propiedad"					// propiedad: ISR PM ∝ ing_d4_rel (regla P); negocios propios a la base de PF; TE con denominador B.5n S.11 + S.12 | negocios (ing_bruto_tpm × 30 %, FLAG 19, v8.15.3)
+global isrpm_incidencia "propiedad"					// propiedad: ISR PM ∝ ing_d4_rel (regla P); negocios propios a la base de PF; TE con denominador B.2n S.11 + S.12 (decisión 7 corregida) | negocios (ing_bruto_tpm × 30 %, FLAG 19, v8.15.3)
 global isr_personas_ancla "d51_s14"					// d51_s14: en NTA, ISR asalariados + PF anclado a D.51 S.14 e ISR PM a D.51 S.11 + S.12 (fila «LIF vs CSI por sector») | lif (v8.15.3)
 global isras_share "acotado"						// acotado: parte salarial del ISR en [0, 1] | libre (ing_subor/(ing_bruto_tax − cuotasTPF) sin acotar, mediana 1.150, v8.15.3)
 global obligacion_isrpf_ancla "itan_rangos"			// itan_rangos: ISR PF anclado por rango de ingreso declarado (ITAN 4T del año ENIGH; AccesoITAN) | enigh (cut-off por probit a la LIF, v8.15.3)
