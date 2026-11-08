@@ -227,8 +227,18 @@ function panelesIguales(leidos, panel, s) {
     await page.screenshot({ path: png, fullPage: true });
     ok(fs.existsSync(png) && fs.statSync(png).size > 0, `captura de la página completa guardada en ${png}`);
     const base = png.replace(/\.png$/i, '');
+    // el v4 es más ancho que la página (wrap con scroll): para la captura se ensancha el viewport y se quita el recorte del wrap, y luego se restaura
     const wrap = await page.$('#sankey-nta');
-    if (wrap) { await wrap.screenshot({ path: base + '-v4.png' }); ok(fs.existsSync(base + '-v4.png'), `captura del Sankey v4 guardada en ${base}-v4.png`); }
+    if (wrap) {
+      const anchoV4 = await page.evaluate(() => { const c = document.getElementById('sankey-nta'); return c ? c.scrollWidth : 0; });
+      await page.setViewport({ width: Math.max(1440, anchoV4 + 300), height: 1100 });
+      await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = 'visible'; });
+      await sleep(600);
+      await wrap.screenshot({ path: base + '-v4.png' }); ok(fs.existsSync(base + '-v4.png'), `captura del Sankey v4 guardada en ${base}-v4.png (${anchoV4} px de ancho)`);
+      await page.evaluate(() => { const w = document.querySelector('.metodo-sankey-scroll'); if (w) w.style.overflow = ''; });
+      await page.setViewport({ width: 1440, height: 900 });
+      await sleep(400);
+    }
     const wrap3 = await page.$('#sankey-nta-v3');
     if (wrap3) { await wrap3.screenshot({ path: base + '-v3.png' }); ok(fs.existsSync(base + '-v3.png'), `captura del corte v3 guardada en ${base}-v3.png`); }
     const pan = await page.$('.metodo-panel-wrap');
