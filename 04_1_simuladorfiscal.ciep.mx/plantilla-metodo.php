@@ -19,7 +19,7 @@
 
 // Índice de la sección, en el orden en que se leerá. Solo páginas que existen.
 $METODO_PAGINAS = array(
-	'metodo' => array('titulo' => 'Método', 'lang' => 'es'),
+	'metodo' => array('titulo' => 'Capítulos', 'lang' => 'es'),   // /metodo: el rótulo de la sección ya dice «Método»; la entrada es el índice de capítulos
 	'NTA' => array('titulo' => 'Household NTA Sankey', 'lang' => 'en'),
 	'entidades' => array('titulo' => 'States', 'lang' => 'en'),
 );
