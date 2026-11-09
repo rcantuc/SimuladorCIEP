@@ -708,21 +708,18 @@ Síntomas y causa:
 5. **Los números del PR salen de `-datos` o de la carpeta diag de una corrida completa** (10.1, cuarto
    árbol), nunca de una corrida suelta sobre el `households.dta` del clon de Dropbox (difiere del canónico).
 
-### 10.5 Lo que es de un solo clon: `config-local.do` y `simulador.stpr` (8.17 Bloque 0)
+### 10.5 Lo que es de un solo clon: las palancas de `SIM.do` §0.4 y `simulador.stpr`
 
-Dos archivos de la raíz son estado de **un** clon, no del proyecto, y cada uno se trata distinto:
+Dos cosas de la raíz son estado de **un** clon, no del proyecto, y cada una se trata distinto:
 
-- **`config-local.do` (ignorado por git).** `SIM.do` §0.1b lo corre si existe (`capture confirm file` + `run`), tras
-  `macro drop _all` y antes de los defaults de §0.2–§0.8b. Ahí viven las palancas personales: `hasta` (paro temprano
-  al cerrar la sección 1–7), `nographs`, `update`, `id` (carpeta `users/<id>/`; §0.2 solo pone `c(username)` si viene
-  vacío) y las demás que `SIM.do` deja comentadas (`textbook`, `rawwip`, `export`, `entidad`, `output`). Lo que `SIM.do`
-  fija sin condición (`bootstrap`, `seed`, `algebra`, los parámetros firmados de §0.8/§0.8b) pisa lo que diga el archivo:
-  los valores alternos de Cuadratura siguen entrando como globals extra de `correr-sim.sh`. Plantilla versionada:
-  `config-local.do.ejemplo` (`cp config-local.do.ejemplo config-local.do`). Desde 8.17 `SIM.do` versionado no lleva
-  `global hasta` activo: el `global hasta "3"` del hotfix 49f65fb vive en la plantilla. **Los clones de corrida no lo
-  llevan**: `correr-sim.sh` y `contrato-32.sh` abortan (exit 2) si encuentran `config-local.do` en la raíz, porque un
-  `hasta` olvidado cortaría la corrida de 33 min en silencio y el gate lo acusaría al final. Antes del ritual en `-datos`:
-  `ls config-local.do` debe fallar. `verify_gitignore.sh` exige que `config-local.do` esté ignorado y que el `.ejemplo` no.
+- **Las palancas de desarrollo de `SIM.do` §0.4** (`hasta` 1–7 = paro temprano al cerrar la sección, `nographs`, `update` en §0.6, `textbook`,
+  `rawwip`, `export`, `entidad` en §0.5, `output` en §0.7) **se editan localmente, descomentando su línea en §0.4, y no se commitean**:
+  `master` las lleva todas comentadas y los clones de corrida (`-datos`, los worktrees del ritual) llevan el `SIM.do` de `master` sin tocar.
+  Decisión de Ricardo (2026-11-08, ejecutada en la sesión 8.18): el mecanismo `config-local.do` + `SIM.do` §0.1b de 8.17 Bloque 0 (PR #67)
+  se revirtió; `SIM.do` vuelve a ser el único panel y `id` vuelve a `c(username)`. Lo que `SIM.do` fija sin condición (`bootstrap`, `seed`,
+  `algebra`, los parámetros firmados de §0.8–§0.8c) no es palanca: los valores alternos de Cuadratura entran como globals extra de
+  `correr-sim.sh`, que los inserta en su copia `SIM_run.do`. Antes de `git add SIM.do` se revisa el diff: §0.4 debe quedar como en `master`
+  (el hotfix 49f65fb viajó con `global hasta "3"` activo y es el incidente que motivó las dos soluciones).
 - **`simulador.stpr` (versionado).** Sigue en git (decisión 2026-07-04, `arquitectura.md` §2.8): es el mapa del proyecto
   para quien abre Stata. Pero Stata lo reescribe en cada save del Project Manager, así que en un clon personal (el de
   Dropbox, el experimental del manual) conviene decirle a git que ignore los cambios locales sin sacarlo del repo:
