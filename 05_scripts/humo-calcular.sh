@@ -160,6 +160,32 @@ else
     log "$NDEF_OK/$NDEF endpoints del default (manifiesto-default.py, entidades: $ENTIDADES; + jsonSankeyNTA.php sin corte → $nombre_def) responden 200 con su archivo de users/ciepmx/"
 fi
 
+# --- 4c. /metodo (8.18): un GET por página de la sección de método, derivadas de metodo.json (no de una lista a mano) ---
+# El método publicado es el del repo (metodo.py --check en CI); aquí se exige que el deployment lo sirva: el índice, cap0, cada
+# capítulo de metodo.json y el propio metodo.json responden 200 (lección 20: probar los productos nuevos contra el layout del deployment).
+METODO_JSON="$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/metodo/metodo.json"
+if [[ -f "$METODO_JSON" ]]; then
+    NMET=0; NMET_OK=0
+    while IFS= read -r ruta; do
+        [[ -n "$ruta" ]] || continue
+        NMET=$((NMET+1))
+        code=$(curl -sL -o "$W/metodo-$(printf '%s' "$ruta" | tr -c 'A-Za-z0-9._-' '_')" -w '%{http_code}' --max-time 30 "$BASE$ruta" 2>/dev/null || echo 000)
+        if [[ "$code" != "200" ]]; then falla "/metodo: $ruta -> HTTP $code"; continue; fi
+        NMET_OK=$((NMET_OK+1))
+    done < <(python3 -I -c '
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+print("/metodo/"); print("/metodo/metodo.json"); print("/metodo/cap0/")
+for c in d["capitulos"]: print("/metodo/%s/" % c["modulo"])' "$METODO_JSON")
+    if python3 -I -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$W/metodo-_metodo_metodo.json" 2>/dev/null; then
+        log "$NMET_OK/$NMET páginas de /metodo (índice, cap0, capítulos de metodo.json) y metodo.json responden 200"
+    else
+        falla "/metodo/metodo.json servido no es JSON válido"
+    fi
+else
+    log "aviso: sin $METODO_JSON en este checkout; /metodo no se prueba"
+fi
+
 # --- 5. veredicto ---------------------------------------------------------------------------------
 t1=$(date +%s)
 if (( ${#FALLAS[@]} == 0 )); then

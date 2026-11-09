@@ -14,7 +14,7 @@
 #      abrev fuera del catálogo (minúsculas, clave numérica, traversal, %00) → 400, producto o corte fuera de la lista → 400,
 #      idSession con traversal → cae al default ciepmx, entidad del catálogo sin archivos → 404 con la pista del deploy.
 #   3. Cero números: ni la plantilla, ni el índice, ni las 32 páginas generadas, ni el catálogo, ni jsonEntidad.php, ni
-#      js/entidad.js, ni metodo/plantilla.php, ni css/metodo.css traen un literal de 4+ dígitos.
+#      js/entidad.js, ni plantilla-metodo.php, ni css/metodo.css traen un literal de 4+ dígitos.
 #   4. Chrome headless (test-sitio-entidades.js) sobre las entidades de prueba (default NL, Jal y Col: un estado grande,
 #      uno medio y uno chico) y sobre el índice: los cuatro productos se dibujan; los enlaces del Sankey son idénticos como
 #      cadena al JSON del motor (quintil y, tras el selector, grupoedad); las series del ciclo de vida son los pct del JSON;
@@ -74,7 +74,7 @@ if python3 "$REPO_ROOT/05_scripts/generar-entidades.py" paginas --check; then ec
 
 echo "## 1. php -l"
 n_php=0; f_php=0
-for f in "$SITE"/entidades/*.php "$SITE"/entidades/*/index.php "$SITE/jsonEntidad.php" "$SITE/metodo/plantilla.php"; do
+for f in "$SITE"/entidades/*.php "$SITE"/entidades/*/index.php "$SITE/jsonEntidad.php" "$SITE/plantilla-metodo.php"; do
     n_php=$((n_php+1)); php -l "$f" >/dev/null 2>&1 || { f_php=$((f_php+1)); echo "       sintaxis: $f"; }
 done
 aserta '[[ $f_php -eq 0 ]]' "$n_php PHP parsean ($f_php con errores)"
@@ -189,7 +189,7 @@ aserta '[[ "$code_xx" == "404" ]] || ! grep -q "entidadPagina(" "$H/body"' "GET 
 
 echo "## 3. cero números en el sitio (los valores vienen de los JSON del motor y de meta.json)"
 # (se descartan antes las entidades HTML &#NNNN; y los colores CSS #rrggbb, que no son números)
-for f in entidades/_entidad.php entidades/index.php entidades/_catalogo.php jsonEntidad.php js/entidad.js metodo/plantilla.php css/metodo.css; do
+for f in entidades/_entidad.php entidades/index.php entidades/_catalogo.php jsonEntidad.php js/entidad.js plantilla-metodo.php css/metodo.css; do
     aserta '! sed -E "s/&#[0-9]+;//g; s/#[0-9a-fA-F]{3,8}//g" "$SITE/'"$f"'" | grep -qE "[0-9]{4,}"' "$f sin literales de 4+ dígitos"
 done
 n_lit=0

@@ -16,7 +16,7 @@
 #      blanca → 400; idSession con traversal → cae al default ciepmx; el v2 y el v1 sin archivo → 404 con pista de deploy;
 #      ?cuenta=grupoedad y ?cuenta=panel-grupoedad-sexo se sirven byte a byte; ?cuenta=identidad sirve el reporte de texto;
 #      cuenta fuera de la lista → 400; el panel trae 15 celdas balanceadas en ambas unidades, pib.valor y nacional_pctpib.
-#   2. Cero números en la página: ni NTA/index.php, ni js/metodo-sankey.js, ni metodo/plantilla.php, ni
+#   2. Cero números en la página: ni NTA/index.php, ni js/metodo-sankey.js, ni plantilla-metodo.php, ni
 #      css/metodo.css, ni jsonSankeyNTA.php traen un literal de 4+ dígitos (todo valor dibujado o escrito
 #      viene de los JSON del motor).
 #   3. Chrome headless (test-sitio-nta.js): el Sankey v3 se dibuja y cada enlace que recibe el navegador es
@@ -202,7 +202,7 @@ chk 404 "jsonSankeyNTA.php?cuenta=quinquenio-sexo (sin arch.)" "$U/jsonSankeyNTA
 
 echo "## 2. cero números en la página (los valores vienen de los JSON del motor)"
 # (se descartan antes las entidades HTML &#NNNN; y los colores CSS #rrggbb, que no son números)
-for f in NTA/index.php js/metodo-sankey.js metodo/plantilla.php css/metodo.css jsonSankeyNTA.php; do
+for f in NTA/index.php js/metodo-sankey.js plantilla-metodo.php css/metodo.css jsonSankeyNTA.php; do
     aserta '! sed -E "s/&#[0-9]+;//g; s/#[0-9a-fA-F]{3,8}//g" "$SITE/'"$f"'" | grep -qE "[0-9]{4,}"' "$f sin literales de 4+ dígitos"
 done
 
