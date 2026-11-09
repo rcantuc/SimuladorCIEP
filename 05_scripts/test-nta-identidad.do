@@ -40,6 +40,12 @@ if strpos("`params'", "cuotas_d614=neto") > 0 {
 	if _rc local D442 = 0
 	local YAHogS14 = `YAHogS14' - `D442'
 }
+* 8.17.2 (CUAD-3 §4.0, decision 2): con ing_mixto_ancla = b3n_d422 D.422 viaja en la celda de ing_mixto, asi que Σ YA_base = YAHogS14 − D.442 − 2/3 D.422 *
+if strpos("`params'", "ing_mixto_ancla=b3n_d422") > 0 {
+	capture local D422 = scalar(D422Hog)
+	if _rc local D422 = 0
+	local YAHogS14 = `YAHogS14' - `D422'*2/3
+}
 use `"`dta'"', clear
 capture confirm variable ImpProd
 if _rc != 0 quietly g double ImpProd = 0
@@ -124,7 +130,7 @@ quietly tabstat CpubInd ImpProd YA_d8 TpubEf YA_base [fw=factor], stat(sum) save
 tempname A
 matrix `A' = r(StatTotal)
 local j = 0
-foreach par in "CpubInd TransfEspecie D.63" "ImpProd ImpNetosProd D.21-D.31" "YA_d8 AjustePension D.8" "TpubEf TauPubS14 D.62+D.759" "YA_base YAHogS14 B.2n+1/3B.3n+D.4neto" {
+foreach par in "CpubInd TransfEspecie D.63" "ImpProd ImpNetosProd D.21-D.31" "YA_d8 AjustePension D.8" "TpubEf TauPubS14 D.62+D.759" "YA_base YAHogS14 B.2n+1/3B.3n+D.4neto(−D.442−2/3D.422)" {
 	local ++j
 	gettoken v par : par
 	gettoken k cod : par

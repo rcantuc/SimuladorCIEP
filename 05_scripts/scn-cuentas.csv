@@ -14,6 +14,7 @@ D.1;Remuneración de los asalariados;Compensation of employees;S.14;S.2;CSI;CSI_
 D.4;Renta de la propiedad;Property income;S.13;S.14;S.2;CSI;f.95; neta = R/P − U/A
 D.41;Intereses;Interest;S.13;S.14;CSI;f.96; S.13 U/A = intereses de la deuda pública (CUAD-2)
 D.442;Renta de inversión a pagar sobre derechos de pensión;Investment income payable on pension entitlements;S.14;CSI;CSI_115 f.103 (R/P)
+D.422;Retiros de los ingresos de cuasi sociedades;Withdrawals from income of quasi-corporations;S.14;CSI;CSI_115 f.99 (R/P); CUAD-3: con ing_mixto_ancla = b3n_d422 suma a la celda de ing_mixto (B.3n + D.422) y sale de la celda D.4 de ing_capital
 B.5n;Saldo de Ingresos primarios neto / Ingreso nacional neto;Balance of primary incomes, net / National income, net;S.1;S.11;S.12;S.13;S.15;CSI;f.110 (U/A)
 D.5;Impuestos corrientes sobre el ingreso, la riqueza, etc.;Current taxes on income, wealth, etc.;S.1;S.11;S.12;S.14;CSI;f.114 (U/A)
 D.51;Impuestos sobre el ingreso;Taxes on income;S.1;S.14;CSI;f.115 (U/A)

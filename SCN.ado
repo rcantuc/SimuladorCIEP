@@ -67,7 +67,7 @@ quietly {
 	use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	local faltaS14 = 0
 	SCNSectores vars
-	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars' {
+	foreach v in AhorroHogN AhorroHogB ConHogS14 ConEfecHogS14 CuotasHogS14 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog YAHogS14 D1HogS14 D442Hog D422Hog B5nNoFin B5nGob B5nS1 RowPrimNeto ImpIngHog OtrasTransfHogR D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars' {
 		capture confirm variable `v'
 		if _rc != 0 local faltaS14 = 1
 	}
@@ -76,7 +76,7 @@ quietly {
 		if _rc == 0 {
 			use "${SIMROOT}/master/SCN.dta", clear
 			merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen keep(master match) update replace
-			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars', before(IngDisp)
+			order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog D422Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars', before(IngDisp)
 			save "${SIMROOT}/master/SCN.dta", replace
 		}
 		else {
@@ -618,6 +618,8 @@ quietly {
 		_tabla_anclas add, codigo(B.2n) sector(S.14) fuente("CSI_115 · f.69 R/P") valor(ExNOpHogS14[`obs']) variable(ExNOpHogS14) nota("ancla de ing_estim_alqu")
 		_tabla_anclas add, codigo(D.4) sector(S.14) fuente("CSI_115 · f.95 R/P − U/A") valor(RentaPropHogR[`obs'] - RentaPropHogU[`obs']) variable(RentaPropHogNeta) nota("ancla de ing_capital (− D.442)")
 		_tabla_anclas add, codigo(D.442) sector(S.14) fuente("CSI_115 · f.103 R/P") valor(D442Hog[`obs']) variable(D442Hog)
+		capture confirm variable D422Hog
+		if _rc == 0 _tabla_anclas add, codigo(D.422) sector(S.14) fuente("CSI_115 · f.99 R/P") valor(D422Hog[`obs']) variable(D422Hog) nota("retiros de cuasisociedades: suma a la celda de ing_mixto con ing_mixto_ancla = b3n_d422 y sale de la de ing_capital (CUAD-3 §4.0)")
 		_tabla_anclas add, codigo(D.61) sector(S.14) fuente("CSI_115 · f.117 − f.127 U/A") valor(CuotasHogS14[`obs']) variable(CuotasHogS14) nota("D.61 − D.614: ancla de las cuotas en NTA (nta_cuotas = S14)")
 		_tabla_anclas add, codigo(D.21) sector(S.1) fuente("CSI_103 · f.25 − f.26 R/P") valor(ImpNetosProdS1[`obs']) variable(ImpNetosProd) nota("D.21 − D.31: impuestos netos a los productos (NTA ImpProd)")
 		_tabla_anclas add, codigo(D.8) sector(S.14) fuente("CSI_115 · f.169 R/P") valor(AjustePensHog[`obs']) variable(AjustePension)
@@ -646,6 +648,8 @@ quietly {
 	if _rc == 0 {
 		escalar mxn D1HogS14 = D1HogS14[`obs']
 		escalar mxn D442Hog = D442Hog[`obs']
+		capture confirm variable D422Hog
+		if _rc == 0 escalar mxn D422Hog = D422Hog[`obs']
 		escalar mxn RemesasHogS14 = RemesasHogS14[`obs']
 		escalar mxn ImpIngHog = ImpIngHog[`obs']
 		escalar mxn OtrasTransfHogR = OtrasTransfHogR[`obs']
@@ -2630,7 +2634,7 @@ program define UpdateSCN
 	if `hogS14' == 0 {
 		merge 1:1 anio using "${SIMROOT}/raw/temp/HogaresS14.dta", nogen
 		SCNSectores vars
-		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars', before(IngDisp)
+		order AhorroHogB AhorroHogN ConHogS14 ConEfecHogS14 ContribSocHog ContribComplHog CuotasHogS14 ImpProductosS1 SubProductosS1 ImpNetosProdS1 AjustePensHog PrestSocHog OtrasTransfHog ExNOpHogS14 MixNHogS14 RentaPropHogR RentaPropHogU YAHogS14 D1HogS14 D442Hog D422Hog RemesasHogS14 ImpIngHog OtrasTransfHogR OtrasTransfHogU B5nNoFin B5nFin B5nGob B5nISFLSH ImpProdGobR SubGobR RentaPropGobR RentaPropGobU RemRowU RentaPropRowU RentaPropRowR PIBCSI CapFijCSI B5nS1 RowPrimNeto D51HogS14 D51NoFin D51Fin ConISFLSH CuotasGobR CuotasFinR CuotasNoFinR CuotasISFLSHR B2nNoFin B2nFin `scn_sectores_vars', before(IngDisp)
 	}
 	* v8.15.2: la serie NO se corta: el asset trae la serie completa (los periodos posteriores al año de referencia llevan la etiqueta
 	* INEGI, «2025 p1»). Las anclas usan anioenigh (Households, NTA, Expenditure llaman SCN, anio(anioenigh)); el pastcast de SCN §1.2
@@ -2674,7 +2678,7 @@ program define SCNHogaresS14
 * PIB = YL + YA + B.5n S.11 + S.12 + B.5n S.13 + B.5n S.15 + CCF + renta primaria neta pagada al exterior + vintage BIE−CSI
 * (CONC-1 §4.3): B.5n de CSI_106/109/112/118 (f.110 U/A), D.2 y D.3 recibidos por S.13 y su D.4 (CSI_112 f.80, 89, 95), D.1 y D.4 del resto
 * del mundo (CSI_121 f.71, 95: U/A = pagado por el mundo a residentes, R/P = recibido por el mundo), y B.1b, P.51c y B.5n de S.1 (CSI_103). *
-	local specs `"`specs' "CSI_115 71 D1HogS14 D.1 R" "CSI_115 103 D442Hog D.442 R" "CSI_115 150 RemesasHogS14 D.752 R" "CSI_115 114 ImpIngHog D.5 U" "CSI_115 139 OtrasTransfHogR D.7 R" "CSI_115 139 OtrasTransfHogU D.7 U""'
+	local specs `"`specs' "CSI_115 71 D1HogS14 D.1 R" "CSI_115 103 D442Hog D.442 R" "CSI_115 99 D422Hog D.422 R" "CSI_115 150 RemesasHogS14 D.752 R" "CSI_115 114 ImpIngHog D.5 U" "CSI_115 139 OtrasTransfHogR D.7 R" "CSI_115 139 OtrasTransfHogU D.7 U""'
 	local specs `"`specs' "CSI_106 110 B5nNoFin B.5n U" "CSI_109 110 B5nFin B.5n U" "CSI_112 110 B5nGob B.5n U" "CSI_118 110 B5nISFLSH B.5n U""'
 	local specs `"`specs' "CSI_112 80 ImpProdGobR D.2 R" "CSI_112 89 SubGobR D.3 R" "CSI_112 95 RentaPropGobR D.4 R" "CSI_112 95 RentaPropGobU D.4 U""'
 	local specs `"`specs' "CSI_121 71 RemRowU D.1 U" "CSI_121 95 RentaPropRowU D.4 U" "CSI_121 95 RentaPropRowR D.4 R""'
@@ -2808,6 +2812,9 @@ program define SCNHogaresS14
 	* D.1 pagada por el mundo a residentes): PIB − INB = RowPrimNeto (SNA 2008 §7.21) *
 	label var D1HogS14 "Remuneracion de los asalariados recibida por los hogares (S.14 D.1, fila 71, R/P; incluye la del exterior)"
 	label var D442Hog "Renta de inversion a pagar sobre derechos de pension recibida por los hogares (S.14 D.442, fila 103, R/P)"
+	* 8.17.2 (CUAD-3 §4.0, decision 2): D.422 retiros de los ingresos de cuasisociedades recibidos por los hogares (dentro de D.42 y de D.4 f.95):
+	* con ing_mixto_ancla = b3n_d422 suma a la celda de ing_mixto (B.3n + D.422, del Castillo 2023 cuadro 69) y sale de la celda D.4 de ing_capital *
+	label var D422Hog "Retiros de los ingresos de cuasi sociedades recibidos por los hogares (S.14 D.422, fila 99, R/P)"
 	label var RemesasHogS14 "Transferencias corrientes entre hogares residentes y no residentes recibidas (S.14 D.752, fila 150, R/P)"
 	label var ImpIngHog "Impuestos corrientes sobre el ingreso y la riqueza pagados por los hogares (S.14 D.5, fila 114, U/A)"
 	label var OtrasTransfHogR "Otras transferencias corrientes recibidas por los hogares (S.14 D.7, fila 139, R/P)"

@@ -95,9 +95,11 @@ if "$output" != "" {
 **     baseline publicado: manifest baseline). Cuadratura I (v8.15b, 2026-10-31; CUAD-0 §4, firmado en §4.0):
 global pensiones_en_yl "off"						// CUAD-0 §4.0 · lee: Households §2.2, §3; NTA §4
 global ing_mixto_depurado "transf_negocios"			// CUAD-0 §4.0 · lee: Households §2, §9; NTA §4
-global rentas_celda "b3n"							// CUAD-0 §4.0 · lee: Households §2, §9
+global rentas_celda "b2n"							// CUAD-3 §4.0 (CUAD-0 §4.0 decía b3n) · lee: Households §2, §9
 global alq_en_capital "off"							// CUAD-0 §4.0 · único valor; lee: Households §9
 global d4_relativo "proxy_propiedad"				// CUAD-0 §4.0 · lee: Households §9, §11.3
+global ing_mixto_ancla "b3n_d422"					// CUAD-3 §4.0 · lee: Households §9, §9.1; NTA §4
+global altimir_elasticidad "1.75"					// CUAD-3 §4.0 · lee: Households §9 (ε de la brecha ∝ Y^ε en D.1 y B.3n; 1 = Altimir)
 global yk_ancla "b2n_b3n_d4"						// CUAD-0 §4.0 · lee: Households §9.1; NTA §4
 global cap4 "fuera"									// CUAD-0 §4.0 · lee: Households §9
 global suborrow "off"								// CUAD-0 §4.0 · lee: Households §9; Sankey
@@ -140,9 +142,11 @@ noisily _log cuadro col, titulo("Documento") ancho(12)
 noisily _log cuadro col, titulo("Lo lee") flex
 noisily _log param, nombre(pensiones_en_yl) firmado(off) doc("CUAD-0 §4.0") lee("Households §2.2, §3; NTA §4")
 noisily _log param, nombre(ing_mixto_depurado) firmado(transf_negocios) doc("CUAD-0 §4.0") lee("Households §2, §9; NTA §4")
-noisily _log param, nombre(rentas_celda) firmado(b3n) doc("CUAD-0 §4.0") lee("Households §2, §9")
+noisily _log param, nombre(rentas_celda) firmado(b2n) doc("CUAD-3 §4.0") lee("Households §2, §9")
 noisily _log param, nombre(alq_en_capital) firmado(off) doc("CUAD-0 §4.0") lee("Households §9 (único valor)")
 noisily _log param, nombre(d4_relativo) firmado(proxy_propiedad) doc("CUAD-0 §4.0") lee("Households §9, §11.3")
+noisily _log param, nombre(ing_mixto_ancla) firmado(b3n_d422) doc("CUAD-3 §4.0") lee("Households §9, §9.1; NTA §4")
+noisily _log param, nombre(altimir_elasticidad) firmado(1.75) doc("CUAD-3 §4.0") lee("Households §9")
 noisily _log param, nombre(yk_ancla) firmado(b2n_b3n_d4) doc("CUAD-0 §4.0") lee("Households §9.1; NTA §4")
 noisily _log param, nombre(cap4) firmado(fuera) doc("CUAD-0 §4.0") lee("Households §9")
 noisily _log param, nombre(suborrow) firmado(off) doc("CUAD-0 §4.0") lee("Households §9; Sankey")
@@ -169,7 +173,7 @@ noisily _log param, nombre(bruto_neto) firmado(neto) doc("CUAD-2 §4") lee("NTA 
 noisily _log param, nombre(financiamiento) firmado(un_nodo_4) doc("CUAD-2 §4") lee("NTA §7d")
 noisily _log param, nombre(discrepancia_gasto) firmado(fuera) doc("CUAD-2 §4") lee("NTA §7d")
 noisily _log param, nombre(inter_hogar) firmado(balance) doc("CUAD-2 §4") lee("NTA §4")
-noisily _log cuadro print, titulo("§0.8 Parámetros firmados: Cuadratura (CUAD-0, CUAD-1) y Sankey de la economía completa (CUAD-2)") ref("runbook §15")
+noisily _log cuadro print, titulo("§0.8 Parámetros firmados: Cuadratura (CUAD-0, CUAD-1, CUAD-3) y Sankey de la economía completa (CUAD-2)") ref("runbook §15")
 foreach p of global LOG_PARAM_FLAGS {
 	noisily _log aviso, tipo(FLAG) texto("`p': los números quedan fuera del baseline publicado") ref("manifest baseline") rojo
 }
