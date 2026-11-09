@@ -3,7 +3,7 @@
 //
 // Cada entidades/<ABREV>/index.php (GENERADO por 05_scripts/generar-entidades.py desde SIMentidad.ado) fija
 // $ENTIDAD_ABREV y carga este archivo: las 32 páginas son iguales por construcción (decisión de Ricardo, 29-oct:
-// las 32 iguales, con sellos). Página estática de lectura sobre metodo/plantilla.php (misma cabecera, notas
+// las 32 iguales, con sellos). Página estática de lectura sobre plantilla-metodo.php (misma cabecera, notas
 // numeradas y pie que /NTA). Orden: encabezado (nombre, clave, n ENIGH, vintage) → párrafo de método (qué es
 // por entidad, qué es federal, qué está anclado a qué) → los cuatro productos, cada uno con su gráfica y su
 // lectura de dos líneas: (i) los cinco Sankeys de aportación con selector de corte (FusionCharts, como la
@@ -38,7 +38,7 @@ $cortes = array(
 	'rural' => 'Rural / urban / indigenous',
 	'escol' => 'Schooling',
 );
-require_once dirname(__DIR__) . '/metodo/plantilla.php';
+require_once dirname(__DIR__) . '/plantilla-metodo.php';
 
 metodo_cabecera(array(
 	'slug' => 'entidades',

@@ -1,6 +1,6 @@
 # `/metodo` — Plantilla de capítulo por módulo
 
-*Borrador para 8.18. Un capítulo por módulo, en el orden de `SIM.do`. El capítulo se **genera** del repo (headers de los `.do`, `02_governance/*.md`, FLAGs, fixtures); nada de aquí se redacta a mano en el sitio. Regla: ninguna frase del método nace fuera del repo.*
+*Vigente desde v8.18.0 (sesión 8.18). Un capítulo por módulo, en el orden de `SIM.do`. El capítulo se **genera** del repo por `05_scripts/metodo.py` (headers de los `.do`/`.ado`, `SIM.do` §0.8, memos `CUAD-*`, `scn-celdas.md`, manifest, fixtures); nada se redacta a mano en el sitio. Regla: ninguna frase del método nace fuera del repo. Los títulos de las secciones 1–10 de esta plantilla son los que la página muestra (el generador los lee de aquí).*
 
 ---
 
@@ -102,9 +102,19 @@ Lista de archivos y rangos de línea de donde se generó cada sección (header d
 }
 ```
 
+## Convención de headers (lo que el generador lee de cada módulo)
+
+El header es el bloque de comentarios anterior al primer comando del archivo (`.do`: antes del primer `if`/`timer`/`capture`; `.ado`: antes de `program define`). Dentro de él:
+
+- Una sección empieza en una línea de comentario que, tras el prefijo (`*`, `****`, `*!`, `//`), dice `§N Título` o `N. Título`, con N = 1–9 y el título de esta plantilla (basta la palabra clave: Propósito, Entradas, Procedimiento, Decisiones, Anclas, Salidas, Identidad(es), Límites/FLAGs, Específico). Lo que sigue al título y a los dos puntos es el primer párrafo; la sección corre hasta el siguiente marcador. Un mismo `§N` puede aparecer dos veces (se acumula).
+- `(procedencia: …)` o `(…texto de CUAD-n §9, fecha…)` en la línea del marcador alimenta la sección 10; en el cuerpo, `procedencia: …` también.
+- Tablas: filas `| a | b | c |` (la primera es la cabecera; la fila `|---|` es opcional); una fila con la primera celda vacía continúa la anterior (tablas partidas en varias líneas de comentario). Los nombres de columna son los de esta plantilla; «Sello» (verde / amarillo / rojo) decide el sello del capítulo.
+- §4: una entrada por parámetro, `nombre = valor «título del FLAG» — descripción` (continuación con sangría ≥ 20); los `nta_*` como `nta_x ("default") …`; las líneas `FLAG n (…) texto` van a §8. El valor firmado, el documento y quién lo lee se toman de `SIM.do` §0.8–§0.8c; las alternativas, de las tablas §4 de los memos.
+- Lo que el generador deriva del código, sin header: §3 (secciones numeradas `** N.N Título **` del cuerpo, con programa y líneas), §2 (`ensure_asset` y `use master/`, con el manifest), §6 (`save`/`file open`/`scalarjson`/`SankeySumSim`, con las páginas de `manifiesto-default.py --tsv` que piden cada archivo y los scripts de `05_scripts/` que lo nombran), §7 (fixtures `nta-identidad.txt` y `gate-numeros.txt`).
+
 ## Reglas de generación
 
-1. Un script (`05_scripts/metodo.py`, propuesto) lee headers, memos y FLAGs y emite `metodo.json` + *N* páginas HTML, una por módulo, más `/metodo/index`.
-2. Check de CI: `/metodo` regenerado desde el repo == el publicado (mismo patrón que `/NTA` y `/entidades`).
-3. Si un `.do` cambia y su header no, el check falla: el header es la fuente del capítulo.
-4. Sin literales numéricos a mano en el HTML; todo número es `span` del motor (misma regla que el factor 1.1628 en `/NTA`).
+1. `05_scripts/metodo.py` lee headers, `SIM.do` §0.8, memos, inventarios y fixtures y emite `04_1_simuladorfiscal.ciep.mx/metodo/metodo.json` (un objeto por capítulo con el esquema de arriba, más `cap0` y `bibliografia`) y un cascarón PHP por página (`index.php`, `cap0/index.php`, `<Modulo>/index.php`); `js/metodo-capitulo.js` pinta todo desde el JSON.
+2. Check de CI (`test-sitio-metodo.sh`, job `/metodo: capítulos generados del repo = publicados`): regenera y exige bytes idénticos a lo commiteado; cada página carga y pinta; cero literales de 4+ dígitos en PHP/JS/CSS; enlaces internos resuelven. Mismo patrón que `/NTA` y `/entidades`.
+3. Si un header, un memo, este documento, `cap0-requerimientos.md`, `fuentes/README.md`, `scn-celdas.md`, `manifest.json` o un fixture cambian, el check falla hasta regenerar y commitear `metodo/` en el mismo PR: **todo header nuevo pasa por el generador** (runbook §16). El generador registra el sha256 de cada archivo fuente del capítulo en el encabezado (`archivo`), así que un cambio del código del módulo también exige regenerar.
+4. Sin literales numéricos a mano en el HTML/JS; todo número viene de `metodo.json` (misma regla que `/NTA`). Una sección que no existe en ningún documento se publica vacía con FLAG «header incompleto»: no se inventa texto. Sello del capítulo: rojo con FLAG; si no, el peor de §2 y §5; «sin sello» si ninguna fila lo declara.
