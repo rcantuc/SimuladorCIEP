@@ -354,7 +354,7 @@ _tabla_anclas add, codigo(D.63) sector(S.14) fuente("CSI_115 · f.176 − f.166 
 _tabla_anclas add, codigo(P.3) sector(S.14) fuente("CSI_115 · f.166 U/A") valor(`ConHogS14') variable(Cpriv) nota("consumo_ancla = $consumo_ancla: con p3_s14 Σ Cpriv = P.3 S.14 (gate 1e-9); ISFLSH y vintage del consumo son filas de sector")
 if `D51HogS14' < . _tabla_anclas add, codigo(D.51) sector(S.14) fuente("CSI_115 · f.115 U/A") valor(`D51HogS14') variable("nta_ISRAS + nta_ISRPF") nota("isr_personas_ancla = $isr_personas_ancla: con d51_s14 el ISR de personas de τ⁻ se ancla aqui (la LIF clasifica por quien entera; la CSI por quien soporta)")
 if `D51NoFin' < . _tabla_anclas add, codigo(D.51) sector("S.11+S.12") fuente("CSI_106/109 · f.115 U/A") valor(`D51NoFin' + `D51Fin') variable(nta_ISRPM) nota("ISR de sociedades (informativo, fuera de τ⁻); con d51_s14 anclado a la celda en vez de a la LIF")
-if `CuotasGobR' < . _tabla_anclas add, codigo(D.61) sector("S.13|S.12|S.11|S.15") fuente("CSI f.117 R/P") valor(`CuotasGobR' + `CuotasFinR' + `CuotasNoFinR' + `CuotasISFLSHR') variable("nta_CUOTAS_S13 … S15") nota("cuotas_por_sector = $cuotas_por_sector: D.61 por sector receptor (S.13 `: di %21.0fc `CuotasGobR'', S.12 `: di %21.0fc `CuotasFinR'' con D.614, S.11 `: di %21.0fc `CuotasNoFinR'', S.15 `: di %21.0fc `CuotasISFLSHR'') = D.61 pagado por S.14")
+if `CuotasGobR' < . _tabla_anclas add, codigo(D.61) sector("S.13|S.12|S.11|S.15") fuente("CSI f.117 R/P") valor(`CuotasGobR' + `CuotasFinR' + `CuotasNoFinR' + `CuotasISFLSHR') variable("nta_CUOTAS_S13 … S15") nota("cuotas_por_sector = $cuotas_por_sector: D.61 por sector receptor (S.13 `: di %14.3fc `CuotasGobR'/1e9', S.12 `: di %14.3fc `CuotasFinR'/1e9' con D.614, S.11 `: di %14.3fc `CuotasNoFinR'/1e9', S.15 `: di %14.3fc `CuotasISFLSHR'/1e9' bn) = D.61 pagado por S.14")
 noisily _tabla_anclas print, titulo("Anclas al SCN, NTA `anio'") sello("$scn_sello") unidad("MXN `anio'") ref("CUAD-2 §6")
 if "$isr_personas_ancla" == "d51_s14" & `D51HogS14' == . {
 	global isr_personas_ancla "lif"
@@ -1913,8 +1913,10 @@ escalar mxn NTAV3Recorte = `rec_tot'
 escalar mxn NTAV3Complemento = `comp_tot'
 noisily SankeySumSim, anio(`anio') name(v3-grupoedad) folder(SankeyNTA) a(`f1') b(`f2') c(`f3') d(`f4') e(`f5')
 quietly use `per2', clear
-noisily _log linea "Sankey v3 (bn): PIB `anio' `=strtrim(string(`PIBY'/1e9, "%14.3fc"))'; Ing nacional `=strtrim(string(scalar(NTAV3IngNacPIB), "%6.2f"))' % del PIB; → Gobierno `=strtrim(string((scalar(NTATmen_hh0) + `OyE')/1e9, "%14.3fc"))' (τ⁻ + OyE, oye_en_hub $oye_en_hub); → Activos `=strtrim(string((`Spos_tot' + `rec_tot')/1e9, "%14.3fc"))'"
-noisily _log linea "Sankey v3 (bn): Transferencias en efectivo `=strtrim(string(scalar(NTATpubEf0)/1e9, "%14.3fc"))'; Desahorro `=strtrim(string(`Sneg_tot'/1e9, "%14.3fc"))'; Futuro `=strtrim(string(`Spos_tot'/1e9, "%14.3fc"))'; ajuste S.14 neto `=strtrim(string(`ajuste_neto'/1e9, "%14.3fc"))' = recorte `=strtrim(string(`rec_tot'/1e9, "%14.3fc"))' − complemento `=strtrim(string(`comp_tot'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v3 (bn): PIB `anio' `=strtrim(string(`PIBY'/1e9, "%14.3fc"))'; Ing nacional `=strtrim(string(scalar(NTAV3IngNacPIB), "%6.2f"))' % del PIB"
+noisily _log linea "Sankey v3 (bn): → Gobierno `=strtrim(string((scalar(NTATmen_hh0) + `OyE')/1e9, "%14.3fc"))' (τ⁻ + OyE, oye_en_hub $oye_en_hub); → Activos `=strtrim(string((`Spos_tot' + `rec_tot')/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v3 (bn): Transferencias en efectivo `=strtrim(string(scalar(NTATpubEf0)/1e9, "%14.3fc"))'; Desahorro `=strtrim(string(`Sneg_tot'/1e9, "%14.3fc"))'; Futuro `=strtrim(string(`Spos_tot'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v3 (bn): ajuste S.14 neto `=strtrim(string(`ajuste_neto'/1e9, "%14.3fc"))' = recorte `=strtrim(string(`rec_tot'/1e9, "%14.3fc"))' − complemento `=strtrim(string(`comp_tot'/1e9, "%14.3fc"))'"
 
 
 
@@ -2335,10 +2337,13 @@ escalar mxn NTAV4SPersonas = `S_pers'
 escalar mxn NTAV4B8nS1 = `B8nS1'
 noisily SankeySumSim, anio(`anio') name(v4-economia) folder(SankeyNTA) a(`g1') b(`g2') c(`g3') d(`g4') e(`g5')
 quietly use `per2', clear
-noisily _log linea "Sankey v4 (bn): hub INBD `=strtrim(string(`IngDisp'/1e9, "%14.3fc"))' = `=strtrim(string(scalar(NTAV4HubPIB), "%6.3f"))' % del PIB; Hogares `=strtrim(string(`hogB5n'/1e9, "%14.3fc"))'; Sociedades `=strtrim(string(`B5nSoc'/1e9, "%14.3fc"))'; Gobierno `=strtrim(string(`B5nGob'/1e9, "%14.3fc"))'; ISFLSH `=strtrim(string(`B5nISFLSH'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v4 (bn): hub INBD `=strtrim(string(`IngDisp'/1e9, "%14.3fc"))' = `=strtrim(string(scalar(NTAV4HubPIB), "%6.3f"))' % del PIB; Hogares `=strtrim(string(`hogB5n'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v4 (bn): Sociedades `=strtrim(string(`B5nSoc'/1e9, "%14.3fc"))'; Gobierno `=strtrim(string(`B5nGob'/1e9, "%14.3fc"))'; ISFLSH `=strtrim(string(`B5nISFLSH'/1e9, "%14.3fc"))'"
 noisily _log linea "Sankey v4 (bn): Remesas `=strtrim(string(`Rem'/1e9, "%14.3fc"))'; vintage al hub `=strtrim(string(`vHub'/1e9, "%14.3fc"))' (NNI `=strtrim(string(`VintageNNI'/1e9, "%14.3fc"))'), en usos `=strtrim(string(`vSink'/1e9, "%14.3fc"))'"
-noisily _log linea "Sankey v4 (bn): Financiamiento `=strtrim(string(`v4fin'/1e9, "%14.3fc"))' (hogares `=strtrim(string(`Sneg4_tot'/1e9, "%14.3fc"))', sociedades `=strtrim(string(`finSoc'/1e9, "%14.3fc"))', gobierno `=strtrim(string(`finGob'/1e9, "%14.3fc"))'); Futuro `=strtrim(string(`v4fut'/1e9, "%14.3fc"))'"
-noisily _log linea "Sankey v4 (bn): Por identificar `=strtrim(string(`v4pid'/1e9, "%14.3fc"))' (intereses de la deuda `=strtrim(string(`D41GobU'/1e9, "%14.3fc"))', D.759 `=strtrim(string(`d759pid'/1e9, "%14.3fc"))'); ajuste S.14 `=strtrim(string(`ajuste'/1e9, "%14.3fc"))' (B.8n S.14 − S micro)"
+noisily _log linea "Sankey v4 (bn): Financiamiento `=strtrim(string(`v4fin'/1e9, "%14.3fc"))' (hogares `=strtrim(string(`Sneg4_tot'/1e9, "%14.3fc"))', sociedades `=strtrim(string(`finSoc'/1e9, "%14.3fc"))', gobierno `=strtrim(string(`finGob'/1e9, "%14.3fc"))')"
+noisily _log linea "Sankey v4 (bn): Futuro `=strtrim(string(`v4fut'/1e9, "%14.3fc"))'"
+noisily _log linea "Sankey v4 (bn): Por identificar `=strtrim(string(`v4pid'/1e9, "%14.3fc"))' (intereses de la deuda `=strtrim(string(`D41GobU'/1e9, "%14.3fc"))', D.759 `=strtrim(string(`d759pid'/1e9, "%14.3fc"))')"
+noisily _log linea "Sankey v4 (bn): ajuste S.14 `=strtrim(string(`ajuste'/1e9, "%14.3fc"))' (B.8n S.14 − S micro)"
 noisily _log aviso, tipo(GATE) texto("NTA Sankey v4: `v4nodos' nodos, `v4enlaces' enlaces; conservación en nodos intermedios reldif máx `=strtrim(string(`v4maxrel', "%9.2e"))' → `=cond(`v4maxrel' <= `tol' & "$NTA_V4_NEG" == "", "OK", "ROJO")'")
 * cuadro 5 de nta-identidad.txt: nodos, enlaces e identidades por nodo (estándar §D) *
 quietly {
