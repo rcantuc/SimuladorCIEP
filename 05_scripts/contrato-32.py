@@ -45,11 +45,18 @@ def main():
     a = ap.parse_args()
     U = os.path.join(a.root, 'users', a.id)
     md = []; fallas = []; flags = []
-    P = lambda s='': md.append(s)
-    P('# Contrato de entidad para las 32 (contrato-32.py, v8.13a)'); P()
+    import textwrap
+    def P(s=''):
+        # log legible (2026-11-09): la prosa (viñetas y párrafos) se envuelve a 110 columnas con sangría de continuación; las
+        # filas de tabla (| … |) y los encabezados no se parten. Mismos valores, misma precisión.
+        if s.startswith('|') or s.startswith('#') or len(s) <= 110:
+            md.append(s); return
+        ind = '  ' if s.startswith('- ') else ''
+        md.extend(textwrap.wrap(s, width=110, subsequent_indent=ind, break_long_words=False, break_on_hyphens=False))
+    P('# Contrato de entidad para las 32 (contrato-32.py, v8.13a; forma al estándar del log, 2026-11-09)'); P()
 
     # ---------------- (a) paridad ----------------
-    P('## 1 Paridad: el flujo nacional no cambia un byte')
+    P('## 1 Paridad: el flujo nacional no cambia un byte (sha256 de los productos de la sesión vs la referencia)')
     prods = ['output.txt'] + [f'sankey-{k}.json' for k in ('decil', 'grupoedad', 'sexo', 'rural', 'escol')]
     if a.refs:
         # v8.15a: --refs acepta los dos layouts: plano (sankey-*.json junto a output.txt) o el de correr-sim.sh (SankeySF/; SankeyNTA/ trae los mismos nombres y no se compara aquí)
@@ -159,7 +166,7 @@ def main():
     P()
 
     # ---------------- (d)+(e) tabla de las 32 ----------------
-    P('## 4 Tabla de las 32 (insumo de v8.13b; aquí solo se mide y se declara)')
+    P('## 4 Tabla de las 32 (insumo de v8.13b; solo se mide y se declara; s = segundos, n = personas, % = porcentaje)')
     P(); P('Sellos: n < 100 o top-1 > 25 % (regla P5). «top-1 (n ≥ 100)» = mayor concentración en una celda NO delgada: el patrón del 47.9 % de NL (ISRPM) — una sola persona pone esa fracción del numerador. Las celdas con n = 1 valen 100 % por construcción y ya cuentan como selladas.')
     P(); P('| # | entidad | corrió | s | sankeys | ciclo | tasas ef. | población | PIB/Defl. | n (TE) | selladas: sankeys micro / ciclo / TE | top-1 TE (impuesto) | top-1 (n ≥ 100) dónde | notas |')
     P('|---:|---|---|---:|---|---|---|---|---|---:|---|---|---|---|')

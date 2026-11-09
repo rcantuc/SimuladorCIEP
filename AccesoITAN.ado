@@ -30,7 +30,7 @@ program define AccesoITAN, rclass
 	* 1. Asset: si falta algun .xlsx del catalogo, ensure_asset baja el zip de la Release (sha256) y se desempaca *
 	python: itan_faltan("`cat'")
 	if `itan_faltan' > 0 {
-		noisily di as text "  AccesoITAN: faltan `itan_faltan' archivo(s) del catalogo en raw/ITAN/; se pide el asset itan-congelado.zip"
+		noisily _log aviso, tipo(UPDATE) texto("AccesoITAN: faltan `itan_faltan' archivos del catálogo en raw/ITAN/; se pide el asset itan-congelado.zip") ref("runbook §9")
 		capture noisily ensure_asset "itan-congelado.zip"
 		if _rc == 0 {
 			local cwd0 "`c(pwd)'"
@@ -47,7 +47,7 @@ program define AccesoITAN, rclass
 		di as err "  Si no editaste raw/ITAN/, borra la carpeta y vuelve a correr (se re-descarga del Release); si la actualizaste a proposito: refrescar-scn.sh --itan --congelar (PR de datos)."
 		exit 198
 	}
-	noisily di as text "  ITAN congelado (raw/ITAN, catalogo `itan_cat_fecha'): `itan_res' -> sello " as result "`itan_sello'"
+	noisily _log aviso, tipo(Sello) texto("`itan_sello' · ITAN congelado en raw/ITAN, catálogo `itan_cat_fecha': `itan_res'") ref("CUAD-1 §8 ter")
 
 	* 3. Extraccion celda a celda, con verificacion de rotulos *
 	quietly {
@@ -69,14 +69,14 @@ program define AccesoITAN, rclass
 			replace rango = ustrregexra(ustrtrim(rango), "\s*[0-9]+_?/\s*$", "")
 			replace rango = ustrregexra(rango, "\s+", " ")
 			if rango[1] != "Total" {
-				noisily di as err `"  FLAG AccesoITAN: `itan_`i'_archivo' fila `itan_`i'_rt' dice "`=rango[1]'" y se esperaba Total; la tabla se movio: regenera el catalogo (itan-catalogo.py)."'
+				noisily _log aviso, tipo(FLAG) texto(`"AccesoITAN: `itan_`i'_archivo' fila `itan_`i'_rt' dice "`=rango[1]'" y se esperaba Total; la tabla se movió, regenera el catálogo"') ref("itan-catalogo.py") rojo
 				exit 459
 			}
 			local nr = _N
 			forvalues r = 2/`nr' {
 				local esperado : word `=`r'-1' of `itan_rangos'
 				if "`=rango[`r']'" != "`esperado'" {
-					noisily di as err `"  FLAG AccesoITAN: `itan_`i'_archivo' fila `=`itan_`i'_rt'+`r'-1' dice "`=rango[`r']'" y se esperaba "`esperado'"; regenera el catalogo."'
+					noisily _log aviso, tipo(FLAG) texto(`"AccesoITAN: `itan_`i'_archivo' fila `=`itan_`i'_rt'+`r'-1' dice "`=rango[`r']'" y se esperaba "`esperado'"; regenera el catálogo"') rojo
 					exit 459
 				}
 			}
@@ -98,7 +98,7 @@ program define AccesoITAN, rclass
 			forvalues r = 1/`=_N' {
 				local esperado : word `r' of `itan_`i'_cet'
 				if "`=etiqueta[`r']'" != "`esperado'" {
-					noisily di as err `"  FLAG AccesoITAN: `itan_`i'_archivo' concepto fila `=`itan_`i'_c0'+`r'-1' dice "`=etiqueta[`r']'" y se esperaba "`esperado'"; regenera el catalogo."'
+					noisily _log aviso, tipo(FLAG) texto(`"AccesoITAN: `itan_`i'_archivo' concepto fila `=`itan_`i'_c0'+`r'-1' dice "`=etiqueta[`r']'" y se esperaba "`esperado'"; regenera el catálogo"') rojo
 					exit 459
 				}
 				replace tipo = "`: word `r' of `itan_`i'_ctipos''" in `r'
@@ -121,7 +121,7 @@ program define AccesoITAN, rclass
 			forvalues r = 1/`=_N' {
 				local esperado : word `r' of `itan_`i'_ket'
 				if "`=etiqueta[`r']'" != "`esperado'" {
-					noisily di as err `"  FLAG AccesoITAN: `itan_`i'_archivo' contribuyentes fila `=`itan_`i'_k0'+`r'-1' dice "`=etiqueta[`r']'" y se esperaba "`esperado'"; regenera el catalogo."'
+					noisily _log aviso, tipo(FLAG) texto(`"AccesoITAN: `itan_`i'_archivo' contribuyentes fila `=`itan_`i'_k0'+`r'-1' dice "`=etiqueta[`r']'" y se esperaba "`esperado'"; regenera el catálogo"') rojo
 					exit 459
 				}
 				replace tipo = "`: word `r' of `itan_`i'_ktipos''" in `r'
@@ -163,7 +163,7 @@ program define AccesoITAN, rclass
 		count if rango != "Concepto" & rango != "Contribuyentes"
 		local nrangos = r(N)
 	}
-	noisily di as text "  AccesoITAN: master/itan-isr-rangos.dta — `itan_n' trimestres (`itan_primero' … `itan_ultimo'), `nrangos' celdas rango × tipo; sello " as result "`itan_sello'"
+	noisily _log aviso, tipo(Salida) texto("master/itan-isr-rangos.dta: `itan_n' trimestres (`itan_primero' … `itan_ultimo'), `nrangos' celdas rango × tipo; sello `itan_sello'")
 	return local sello "`itan_sello'"
 	return local ultimo "`itan_ultimo'"
 	return scalar n_archivos = `itan_n'
@@ -196,14 +196,22 @@ program define AccesoITAN, rclass
 			}
 			sort anio trimestre
 		}
-		noisily di _newline as text "  Validación ISRInformesTrimestrales.xlsx (capturado) vs ITAN (extraído), mdp acumulados; Δ = ITAN − captura"
-		noisily di as text "  " _dup(128) "-"
-		noisily di as text "  anio tri " _col(14) %14s "SyS captura" %14s "SyS ITAN" %10s "Δ" _col(54) %13s "PF captura" %13s "PF ITAN" %10s "Δ" _col(92) %14s "PM+aux capt." %14s "PM+aux ITAN" %10s "Δ"
+		noisily _log cuadro clear
+		noisily _log cuadro col, titulo("Año") ancho(4)
+		noisily _log cuadro col, titulo("Tri") ancho(3)
+		noisily _log cuadro col, titulo("SyS captura") fmt(%12.1fc)
+		noisily _log cuadro col, titulo("SyS ITAN") fmt(%12.1fc)
+		noisily _log cuadro col, titulo("Δ") fmt(%9.1fc)
+		noisily _log cuadro col, titulo("PF captura") fmt(%11.1fc)
+		noisily _log cuadro col, titulo("PF ITAN") fmt(%11.1fc)
+		noisily _log cuadro col, titulo("Δ") fmt(%9.1fc)
+		noisily _log cuadro col, titulo("PM+aux capt.") fmt(%12.1fc)
+		noisily _log cuadro col, titulo("PM+aux ITAN") fmt(%12.1fc)
+		noisily _log cuadro col, titulo("Δ") fmt(%9.1fc)
 		forvalues r = 1/`=_N' {
-			noisily di as text "  " %4.0f anio[`r'] " " %2.0f trimestre[`r'] "  " as result _col(14) %14.1fc cap_ss[`r'] %14.1fc itan_ss[`r'] %10.1fc itan_ss[`r']-cap_ss[`r'] _col(54) %13.1fc cap_pf[`r'] %13.1fc itan_pf[`r'] %10.1fc itan_pf[`r']-cap_pf[`r'] _col(92) %14.1fc cap_pmaux[`r'] %14.1fc itan_pmaux[`r'] %10.1fc itan_pmaux[`r']-cap_pmaux[`r']
+			noisily _log cuadro fila "`=anio[`r']'" "`=trimestre[`r']'" "cap_ss[`r']" "itan_ss[`r']" "itan_ss[`r']-cap_ss[`r']" "cap_pf[`r']" "itan_pf[`r']" "itan_pf[`r']-cap_pf[`r']" "cap_pmaux[`r']" "itan_pmaux[`r']" "itan_pmaux[`r']-cap_pmaux[`r']"
 		}
-		noisily di as text "  " _dup(128) "-"
-		noisily di as text "  max |Δ| en las 7 columnas capturadas (total pm pfae pfsae ret_ss_pm ret_ss_pf aux): " as result %12.3fc `maxd' as text " mdp en `=_N' trimestres comunes"
+		noisily _log cuadro print, titulo("Validación: ISRInformesTrimestrales.xlsx capturado vs ITAN extraído; Δ = ITAN − captura") unidad("mdp acumulados") nota("máximo |Δ| en las 7 columnas capturadas (total pm pfae pfsae ret_ss_pm ret_ss_pf aux): `=strtrim(string(`maxd', "%12.3fc"))' mdp en `=_N' trimestres comunes")
 		return scalar maxdelta = `maxd'
 		return scalar n_validados = _N
 	}

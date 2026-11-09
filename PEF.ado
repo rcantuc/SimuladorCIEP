@@ -46,7 +46,7 @@ quietly {
 	* La clave sale de by() e if: la misma llamada produce y consume. Sin ninguna de
 	* las dos opciones, PEF calcula como siempre. La clave se forma en 1.4b (by ya resuelto).
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS " in y `anio' "  }" in g _dup(20) "."
+	noisily _log modulo "PEF  ·  gasto público `anio', por `by'" ref("runbook §9")
 
 	* 1.1 Valor año mínimo *
 	* desde() debe ser < anio() (mismo guard que LIF, 2026-09-12): con desde >= anio
@@ -147,7 +147,7 @@ quietly {
 	replace gastoTOT = gastoTOT + CuoTOT
 	capture collapse (sum) gasto (max) gastoTOT CuoTOT `if', by(anio `by' transf_gf) fast
 	if _rc != 0 {
-		noisily di in g `" No hay informaci{c o'}n para el a{c n~}o `if'."'
+		noisily _log aviso, tipo(IMPORTANTE) texto(`"PEF: no hay información para `if'"') rojo
 		return local rc = "NoData"
 		exit
 	}
@@ -218,16 +218,16 @@ quietly {
 	*******************************************************************
 
 	** 5.1 A. Nivel por `by' **
-	noisily di _newline in g "{bf: A. Gasto bruto (`by')}" ///
-		_newline ///
-		_col(37) in g %18s "`currency'" ///
-		_col(56) %7s "% PIB" ///
-		_col(64) %6s "% Tot" ///
-		_col(71) %8s "`currency' PC"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Concepto") flex
+	noisily _log cuadro col, titulo("`currency'") fmt(%13.3fc) escala(1e9)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("% total") fmt(%7.1f)
+	noisily _log cuadro col, titulo("Per cápita") fmt(%10.0fc)
 
 	capture tabstat gasto gastoPIB gastoPC if anio == `anio' & lower(`by') != "cuotas issste", by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
-		noisily di in g " No hay informaci{c o'}n para el a{c n~}o `anio'."
+		noisily _log aviso, tipo(IMPORTANTE) texto("PEF: no hay información para el año `anio'") rojo
 		return local rc = "NoData"
 		exit
 	}
@@ -253,21 +253,12 @@ quietly {
 		*return scalar `name' = `mat`k''[1,1]
 		local `by' `"``by'' `name'"'
 
-		noisily di in g `"  (+) `=substr(`"`disptext'"',1,30)'"' ///
-			_col(37) in y %18.0fc `mat`k''[1,1] ///
-			_col(56) in y %7.3fc `mat`k''[1,2] ///
-			_col(64) in y %6.1fc `mat`k''[1,1]/`mattot'[1,1]*100 ///
-			_col(71) in y %8.0fc `mat`k''[1,3]
+		noisily _log cuadro fila `"(+) `disptext'"' "`mat`k''[1,1]" "`mat`k''[1,2]" "`mat`k''[1,1]/`mattot'[1,1]*100" "`mat`k''[1,3]"
 		local ++k
 	}
 	return local `by' `"``by''"'
 
-	noisily di in g _dup(78) "-"
-	noisily di in g "{bf:  (=) Gasto bruto" ///
-		_col(37) in y %18.0fc `mattot'[1,1] ///
-		_col(56) in y %7.3fc `mattot'[1,2] ///
-		_col(64) in y %6.1fc 100 ///
-		_col(71) in y %8.0fc `mattot'[1,3] "}"
+	noisily _log cuadro fila "(=) Gasto bruto" "`mattot'[1,1]" "`mattot'[1,2]" "100" "`mattot'[1,3]", sep negrita
 	
 	return scalar Gasto_bruto = `mattot'[1,1]
 	return scalar Gasto_brutoPIB = `mattot'[1,2]
@@ -323,27 +314,15 @@ quietly {
 
 	* Conciliacion bruto -> neto (solo las lineas con monto) *
 	if `Cuotas_ISSSTE'[1,1] != 0 {
-		noisily di in g "  (-) Cuotas ISSSTE" ///
-			_col(37) in y %18.0fc `Cuotas_ISSSTE'[1,1] ///
-			_col(56) in y %7.3fc `Cuotas_ISSSTE'[1,2] ///
-			_col(64) in y %6.1fc `Cuotas_ISSSTE'[1,1]/`mattot'[1,1]*100 ///
-			_col(71) in y %8.0fc `Cuotas_ISSSTE'[1,3]
+		noisily _log cuadro fila "(-) Cuotas ISSSTE" "`Cuotas_ISSSTE'[1,1]" "`Cuotas_ISSSTE'[1,2]" "`Cuotas_ISSSTE'[1,1]/`mattot'[1,1]*100" "`Cuotas_ISSSTE'[1,3]"
 	}
 	if `Aportaciones_Federacion'[1,1] != 0 {
-		noisily di in g "  (-) Aportaciones a la seg. social" ///
-			_col(37) in y %18.0fc `Aportaciones_Federacion'[1,1] ///
-			_col(56) in y %7.3fc `Aportaciones_Federacion'[1,2] ///
-			_col(64) in y %6.1fc `Aportaciones_Federacion'[1,1]/`mattot'[1,1]*100 ///
-			_col(71) in y %8.0fc `Aportaciones_Federacion'[1,3]
+		noisily _log cuadro fila "(-) Aportaciones a la seguridad social" "`Aportaciones_Federacion'[1,1]" "`Aportaciones_Federacion'[1,2]" "`Aportaciones_Federacion'[1,1]/`mattot'[1,1]*100" "`Aportaciones_Federacion'[1,3]"
 	}
 	if `Cuotas_ISSSTE'[1,1] != 0 | `Aportaciones_Federacion'[1,1] != 0 {
-		noisily di in g _dup(78) "-"
-		noisily di in g "{bf:  (=) Gasto neto" ///
-			_col(37) in y %18.0fc `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1] ///
-			_col(56) in y %7.3fc  `mattot'[1,2]-`Cuotas_ISSSTE'[1,2]-`Aportaciones_Federacion'[1,2] ///
-			_col(64) in y %6.1fc (`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100 ///
-			_col(71) in y %8.0fc `mattot'[1,3]-`Cuotas_ISSSTE'[1,3]-`Aportaciones_Federacion'[1,3] "}"
+		noisily _log cuadro fila "(=) Gasto neto" "`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1]" "`mattot'[1,2]-`Cuotas_ISSSTE'[1,2]-`Aportaciones_Federacion'[1,2]" "(`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100" "`mattot'[1,3]-`Cuotas_ISSSTE'[1,3]-`Aportaciones_Federacion'[1,3]", sep negrita
 	}
+	noisily _log cuadro print, titulo("A. Gasto bruto `anio' por `by' y conciliación a gasto neto") unidad("`currency', miles de millones; per cápita en `currency'") ref("runbook §9")
 
 
 	**********************************************************************
@@ -399,14 +378,13 @@ quietly {
 	}
 
 	if `haspre' {
-		noisily di _newline in g "{bf: B. Crecimiento:" in y " `desde' - `anio'" in g " (gasto neto, grupos resumidos)}" ///
-			_newline ///
-			_col(35) %7s "`desde'" ///
-			_col(44) %7s "`anio'" ///
-			_col(53) %7s "Dif PIB" ///
-			_col(62) %7s "%G real" ///
-			_col(71) %7s "Elastic"
-		noisily di in g _col(35) %7s "% PIB" _col(44) %7s "% PIB" _col(53) %7s "pp" _col(62) %7s "anual" _col(71) %7s "vs PIB"
+		noisily _log cuadro clear
+		noisily _log cuadro col, titulo("Concepto") flex
+		noisily _log cuadro col, titulo("`desde' % PIB") fmt(%7.3f)
+		noisily _log cuadro col, titulo("`anio' % PIB") fmt(%7.3f)
+		noisily _log cuadro col, titulo("Dif pp") fmt(%7.3f)
+		noisily _log cuadro col, titulo("Crec. real %") fmt(%7.3f)
+		noisily _log cuadro col, titulo("Elasticidad") fmt(%7.3f)
 	}
 
 	local k = 1
@@ -450,12 +428,7 @@ quietly {
 			if `gpib' != 0 {
 				return scalar E`name' = `g'/`gpib'
 			}
-			noisily di in g `"  (+) `=substr("`disptext'",1,28)'"' ///
-				_col(35) in y %7.3fc `pre`k''[1,2] ///
-				_col(44) in y %7.3fc `mat`k''[1,2] ///
-				_col(53) in y %7.3fc `mat`k''[1,2]-`pre`k''[1,2] ///
-				_col(62) in y %7.3fc `g' ///
-				_col(71) in y %7.3fc cond(`gpib' != 0, `g'/`gpib', .)
+			noisily _log cuadro fila `"(+) `disptext'"' "`pre`k''[1,2]" "`mat`k''[1,2]" "`mat`k''[1,2]-`pre`k''[1,2]" "`g'" "cond(`gpib' != 0, `g'/`gpib', .)"
 		}
 		local ++k
 	}
@@ -470,14 +443,9 @@ quietly {
 		if `gpib' != 0 {
 			return scalar EGasto_neto = `gtot'/`gpib'
 		}
-		noisily di in g _dup(78) "-"
-		noisily di in g "{bf:  (=) Gasto neto" ///
-			_col(35) in y %7.3fc `pregastot'[1,2] ///
-			_col(44) in y %7.3fc `mattot'[1,2] ///
-			_col(53) in y %7.3fc `mattot'[1,2]-`pregastot'[1,2] ///
-			_col(62) in y %7.3fc `gtot' ///
-			_col(71) in y %7.3fc cond(`gpib' != 0, `gtot'/`gpib', .) "}"
-		noisily di in g "  PIB real: " in y %5.3fc `gpib' in g " % anual (`desde'-`anio'). Crecimientos sobre gasto real (deflactor `aniovp')."
+		noisily _log cuadro fila "(=) Gasto neto" "`pregastot'[1,2]" "`mattot'[1,2]" "`mattot'[1,2]-`pregastot'[1,2]" "`gtot'" "cond(`gpib' != 0, `gtot'/`gpib', .)", sep negrita
+		noisily _log cuadro nota "PIB real: `=strtrim(string(`gpib', "%5.3f"))' % anual (`desde'-`anio'); crecimientos sobre el gasto real (deflactor `aniovp'); elasticidad = crecimiento / crecimiento del PIB"
+		noisily _log cuadro print, titulo("B. Crecimiento real `desde'-`anio' del gasto neto, grupos resumidos") unidad("% del PIB; % anual") ref("runbook §9")
 	}
 
 	tempname Resumido_total
@@ -654,7 +622,7 @@ quietly {
 	capture drop __*
 	timer off 5
 	timer list 5
-	noisily di _newline in g "Tiempo: " in y round(`=r(t5)/r(nt5)',.1) in g " segs."
+	noisily _log tiempo, timer(5) texto("PEF")
 }
 end
 

@@ -18,6 +18,14 @@
 ****   | Valor agregado del ultimo        | Proporcion del precio final que es valor agregado del        | Censo Economico (VACB/PBT por clase SCIAN, §2.7): base del IVA        |
 ****   | eslabon (Censo Economico)        | vendedor, para la base del IVA micro                         | micro; la «informalidad» 23.1 % (IVAT[13]) es el cociente micro/LIF   |
 ****
+**** §4 Decisiones (sesión log-legible, 2026-11-09): los parámetros firmados del consumo y del IEPS se describen aquí; SIM.do §0.8b solo los
+**** declara en una línea y §0.9 imprime el cuadro con FLAG si el valor no es el firmado. La primera alternativa es la firmada.
+****   (SIM.do §0.8b, resumen de alternativas) consumo_ancla p3_s14 (Σ Cpriv = P.3 S.14, CSI_115 f.166; ISFLSH P.3 S.15 y vintage como filas de
+****   sector) | conhog (BIE 724600 hogares + ISFLSH, v8.15.3); consumo_precios comprador (C a precios de comprador e impuestos a productos ∝
+****   gasto como ingreso; único implementado) | basicos (8.17: C − D.21 + D.31 por categoría); iepsnp_macro divsim (IEPSNP de divSIM 224.780 =
+****   no petrolero + salud) | divciep (24.075, v8.15.3); ieps_relativo micro (IEPSP ∝ gas_pc_Gasolinas + gas_pc_Combustibles; IEPSNP ∝ IEPS micro
+****   por categoría; lo leen PerfilesSim.do §6 y NTA.do §4) | proxy (gas_pc_Vehi / gas_pc_BebA, v8.15.3).
+****
 **** Parametros de Cuadratura II (v8.16.0, 2026-11-08; CUAD-1 §4 firmado en §4.0, firma CUAD-1-2 §B). SIM.do §0.8b los declara; sueltos rige el
 **** valor firmado. Cada valor distinto del firmado imprime FLAG:
 ****   consumo_ancla = p3_s14      «Σ Cpriv = P.3 S.14» — los 19 rubros se anclan a su serie BIE (hogares + ISFLSH en territorio) y el total se
@@ -112,19 +120,19 @@ if "$consumo_ancla" == "" global consumo_ancla "p3_s14"
 if "$consumo_precios" == "" global consumo_precios "comprador"
 if "$iepsnp_macro" == "" global iepsnp_macro "divsim"
 if !inlist("$consumo_ancla", "p3_s14", "conhog") {
-	noisily di as err `"Expenditure: consumo_ancla = "$consumo_ancla" no es p3_s14 | conhog"'
+	noisily _log aviso, tipo(IMPORTANTE) texto(`"Expenditure: consumo_ancla = "$consumo_ancla" no es p3_s14 | conhog"') ref("CUAD-1 §4.0") rojo
 	exit 198
 }
 if !inlist("$iepsnp_macro", "divsim", "divciep") {
-	noisily di as err `"Expenditure: iepsnp_macro = "$iepsnp_macro" no es divsim | divciep"'
+	noisily _log aviso, tipo(IMPORTANTE) texto(`"Expenditure: iepsnp_macro = "$iepsnp_macro" no es divsim | divciep"') ref("CUAD-1 §4.0") rojo
 	exit 198
 }
 if "$consumo_precios" != "comprador" {
-	noisily di as err "  FLAG Expenditure (consumo_precios = $consumo_precios): solo comprador esta implementado en 8.16b (basicos es de 8.17); se sigue con comprador."
+	noisily _log aviso, tipo(FLAG) texto("Expenditure: consumo_precios = $consumo_precios; solo comprador está implementado en 8.16b (basicos es de 8.17), se sigue con comprador") ref("CUAD-1 §4.0") rojo
 	global consumo_precios "comprador"
 }
-if "$consumo_ancla" != "p3_s14" noisily di as err "  FLAG Expenditure (consumo_ancla = $consumo_ancla): el consumo queda anclado a ConHog BIE (hogares + ISFLSH), no a P.3 S.14; los numeros no comparan con el baseline v8.16.0."
-if "$iepsnp_macro" != "divsim" noisily di as err "  FLAG Expenditure (iepsnp_macro = $iepsnp_macro): el IEPS micro se compara contra IEPS (no petrolero) de divCIEP, sin IEPS (salud)."
+if "$consumo_ancla" != "p3_s14" noisily _log aviso, tipo(FLAG) texto("Expenditure: consumo_ancla = $consumo_ancla ancla el consumo a ConHog BIE (hogares + ISFLSH), no a P.3 S.14; no compara con el baseline") ref("CUAD-1 §4.0") rojo
+if "$iepsnp_macro" != "divsim" noisily _log aviso, tipo(FLAG) texto("Expenditure: iepsnp_macro = $iepsnp_macro compara el IEPS micro contra IEPS no petrolero de divCIEP, sin IEPS salud") ref("CUAD-1 §4.0") rojo
 
 ** 0.1 Directorios y log files **
 capture log close expenditures
@@ -133,7 +141,7 @@ log using "${SIMROOT}/raw/temp/`anioenigh'/expenditures.smcl", replace name(expe
 
 
 ** 0.2 Texto introductorio **
-noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "GASTOS - ENIGH `anioenigh'  }" in g _dup(20) "."
+noisily _log modulo "Expenditure  ·  gasto de los hogares, ENIGH `anioenigh'" ref("CUAD-1 §4; header §4 Decisiones")
 
 
 
@@ -336,8 +344,8 @@ if _rc != 0 {
 	restore
 	escalar mxn ExpTarjetas = `exp_tarjetas'
 	escalar mxn ExpRegalosG2 = `exp_g2'
-	noisily di in g "  Fuera de la base del consumo (8.16b): gasto con tarjeta (TB01-TB16, flujo financiero; FLAG 33) " in y %21.0fc `exp_tarjetas' ///
-		in g "; regalos otorgados G2 (el consumo se cuenta en quien recibe, G5) " in y %21.0fc `exp_g2' in g " MXN `anioenigh'"
+	noisily _log aviso, tipo(FLAG) num(33) texto("gasto con tarjeta TB01-TB16 fuera de la base del consumo: `=strtrim(string(`exp_tarjetas'/1e9, "%12.3fc"))' bn MXN `anioenigh', flujo financiero") ref("CUAD-1 §8 bis")
+	noisily _log aviso, tipo(Nota) texto("regalos otorgados G2 fuera de la base: `=strtrim(string(`exp_g2'/1e9, "%12.3fc"))' bn; el consumo se cuenta en quien lo recibe, G5") ref("CUAD-1 ficha 5")
 	drop if exp_tarjeta | exp_g2
 	drop exp_tarjeta exp_g2
 
@@ -347,7 +355,7 @@ if _rc != 0 {
 	replace proporcion = r(mean) if missing(proporcion)
 
 	* Mostrar proporción promedio ponderada
-	noisily di in g "Proporción valor agregado último eslabón (VACB/PBT): " in y r(mean)
+	noisily _log linea "Proporción de valor agregado del último eslabón (VACB/PBT, Censo Económico): `=strtrim(string(r(mean), "%8.4f"))'"
 
 	** 2.9. Estado y ubicación geográfica ***
 	g estado = substr(folioviv,1,2)
@@ -456,7 +464,7 @@ if _rc != 0 {
 	local exp_tenencia = r(StatTotal)[1,1]
 	escalar mxn ExpPredialD59 = `exp_predial'
 	escalar mxn ExpTenenciaD59 = `exp_tenencia'
-	noisily di in g "  Fuera de la base del consumo (8.16b, D.59): predial R004 " in y %21.0fc `exp_predial' in g "; tenencia R012 " in y %21.0fc `exp_tenencia' in g " MXN `anioenigh'"
+	noisily _log aviso, tipo(Nota) texto("predial R004 `=strtrim(string(`exp_predial'/1e9, "%12.3fc"))' y tenencia R012 `=strtrim(string(`exp_tenencia'/1e9, "%12.3fc"))' bn fuera del consumo: D.59, viven en OTROSK de la LIF") ref("CUAD-1 ficha 6")
 	drop if exp_d59
 	drop exp_d59
 
@@ -691,7 +699,7 @@ foreach categ in categ categ_iva categ_ieps {
 		}
 
 		** 3.4 Gasto per cápita **
-		noisily di in g `"`categs'"'
+		noisily _log linea "Categorías del consumo: `categs'"
 		local convlog				// bitácora de convergencia de perfilpc: variable, iteraciones, convergió, criterio
 		foreach k of local categs {
 			foreach vars in cant_ gas_ {
@@ -841,7 +849,8 @@ foreach categ in categ categ_iva categ_ieps {
 				if _rc != 0 {
 					g `vars'hog`k' = 0
 				}
-				noisily tabstat `vars'hog`k' [fw=factor], stat(sum) f(%20.0fc)
+				quietly tabstat `vars'hog`k' [fw=factor], stat(sum) f(%20.0fc) save
+				noisily _log linea "`vars'hog`k': Σ `=strtrim(string(r(StatTotal)[1,1]/1e9, "%14.3fc"))' bn"
 
 				* Outliers *
 				capture tabstat `vars'hog`k' if `vars'hog`k' != 0, stat(p99 p95) save
@@ -857,7 +866,8 @@ foreach categ in categ categ_iva categ_ieps {
 				if _rc != 0 {
 					g `vars'ind`k' = 0
 				}
-				noisily tabstat `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
+				quietly tabstat `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc) save
+				noisily _log linea "`vars'ind`k': Σ `=strtrim(string(r(StatTotal)[1,1]/1e9, "%14.3fc"))' bn"
 
 				* Outliers *
 				capture tabstat `vars'ind`k' if `vars'ind`k' != 0, stat(p99 p95) save
@@ -916,8 +926,8 @@ foreach categ in categ categ_iva categ_ieps {
 				capture g preci`k' = gas_pc_`k'/cant_pc_`k'
 				capture drop *outlier
 			}
-			noisily di
-			noisily tabstat preci`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)
+			quietly tabstat preci`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc) save
+			noisily _log linea "`k': precio medio `=strtrim(string(r(StatTotal)[1,1], "%10.2fc"))', gasto per cápita `=strtrim(string(r(StatTotal)[1,2], "%10.2fc"))', cantidad per cápita `=strtrim(string(r(StatTotal)[1,3], "%10.2fc"))'"
 		}
 
 		** 3.4.1 Resumen de convergencia del reparto intra-hogar (una gráfica por grupo) **
@@ -1057,7 +1067,7 @@ local ComprasN = scalar(ComprasN)
 scalar TTp3 = 1
 if "$consumo_ancla" == "p3_s14" {
 	if `ConHogS14' == . {
-		noisily di as err "  FLAG Expenditure (consumo_ancla = p3_s14): SCN no dejo ConHogS14 (P.3 S.14 de CSI_115); el consumo queda anclado a ConHog BIE (conhog)."
+		noisily _log aviso, tipo(FLAG) texto("Expenditure: SCN no dejó ConHogS14 (P.3 S.14 de CSI_115); el consumo queda anclado a ConHog BIE (conhog)") ref("CUAD-1 §4.0") rojo
 		global consumo_ancla "conhog"
 	}
 	else scalar TTp3 = (`ConHogS14' - `ComprasN')/`ConHog'
@@ -1089,7 +1099,10 @@ if "$consumo_ancla" == "p3_s14" {
 ** 4.2 Cuadro de anclas (estandar §D) y gates **
 local nota_fuera ""
 capture confirm scalar ExpTarjetas
-if _rc == 0 local nota_fuera "Fuera de la base del consumo (8.16b): gasto con tarjeta TB01-TB16 `: di %21.0fc scalar(ExpTarjetas)' (flujo financiero, FLAG 33); regalos otorgados G2 `: di %21.0fc scalar(ExpRegalosG2)' (el consumo se cuenta en quien recibe, G5); predial R004 `: di %21.0fc scalar(ExpPredialD59)' y tenencia R012 `: di %21.0fc scalar(ExpTenenciaD59)' (D.59, en OTROSK de la LIF). MXN `anioenigh' crudos"
+* log legible: la expansión `: di scalar(Exp*)' ocurre antes de evaluar el if de la misma línea e imprimía «ExpTarjetas not found» (x4) en la ruta con cache; con llaves solo se expande si existen *
+if _rc == 0 {
+	local nota_fuera "Fuera de la base del consumo (8.16b): gasto con tarjeta TB01-TB16 `: di %14.3fc scalar(ExpTarjetas)/1e9' (flujo financiero, FLAG 33); regalos otorgados G2 `: di %14.3fc scalar(ExpRegalosG2)/1e9' (el consumo se cuenta en quien recibe, G5); predial R004 `: di %14.3fc scalar(ExpPredialD59)/1e9' y tenencia R012 `: di %14.3fc scalar(ExpTenenciaD59)/1e9' (D.59, en OTROSK de la LIF). MXN `anioenigh', miles de millones"
+}
 else local nota_fuera "Base del consumo con la cache consumption_*_pc.dta ya construida: gasto con tarjeta (FLAG 33), regalos G2 y predial/tenencia (D.59) fuera desde 8.16b; los montos se imprimen al reconstruir preconsumption.dta"
 _tabla_anclas clear
 foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec HogaT SaluT Vehi FTra STra ComuT RecrT EducT RestT DiveT {
@@ -1104,8 +1117,8 @@ if "$consumo_ancla" == "p3_s14" {
 	_tabla_anclas gate, texto("Σ Cpriv = Σ gas_pc_* anclado + compras netas = P.3 S.14") a(scalar(ExpCprivS14)) b(`ConHogS14')
 }
 _tabla_anclas gate, texto("Σ gas_pc_* anclado = ConHog × TTp3") a(MMTot) b(`ConHog'*scalar(TTp3))
-noisily _tabla_anclas print, motor titulo("Anclas del consumo — BIE por finalidad (hogares + ISFLSH) y P.3 S.14, ENIGH `anioenigh'") sello("$scn_sello") unidad("MXN `anioenigh'") nota(`"`nota_fuera'"')
-if "$TA_GATES_OK" != "1" noisily di as err "  GATE Expenditure: el consumo anclado no cierra a 1e-9 (ver el cuadro)."
+noisily _tabla_anclas print, motor titulo("Anclas del consumo: BIE por finalidad, hogares + ISFLSH, y P.3 S.14, ENIGH `anioenigh'") sello("$scn_sello") unidad("MXN `anioenigh'") nota(`"`nota_fuera'"') ref("CUAD-1 §4.0")
+if "$TA_GATES_OK" != "1" noisily _log aviso, tipo(GATE) texto("Expenditure: el consumo anclado no cierra a 1e-9 (ver el cuadro)") rojo
 
 
 ** 4.3. Guardar base **
@@ -1184,16 +1197,14 @@ escalar pctpib giniIVA = `gini_IVA'
 
 
 ** 5.3. Display de resultados **
-noisily di _newline in g "{bf: C. IVA" ///
-	_col(44) in g "(Gini)" ///
-	_col(55) in g %7s "ENIGH" ///
-	_col(66) %7s "Macro" in g ///
-	_col(77) %6s  "Informalidad %}"
-noisily di in g "  Total " ///
-	_col(44) in y "(" %5.3fc giniIVA ")" ///
-	_col(55) in y %7.3fc scalar(IVAHHSPIB) ///
-	_col(66) %7.3fc scalar(IVASCNPIB) ///
-	_col(77) %6.1fc scalar(DifIVA) "%"
+noisily _log cuadro clear
+noisily _log cuadro col, titulo("Impuesto") flex
+noisily _log cuadro col, titulo("Gini") fmt(%6.3f)
+noisily _log cuadro col, titulo("ENIGH") fmt(%7.3f)
+noisily _log cuadro col, titulo("Macro") fmt(%7.3f)
+noisily _log cuadro col, titulo("Informalidad %") fmt(%7.1f)
+noisily _log cuadro fila "IVA micro, Σ por categoría" "giniIVA" "scalar(IVAHHSPIB)" "scalar(IVASCNPIB)" "scalar(DifIVA)"
+noisily _log cuadro print, titulo("C. IVA: base micro ENIGH vs recaudación LIF; informalidad = (ENIGH − macro) / ENIGH") unidad("% del PIB `anioenigh'") ref("runbook §9.6")
 
 save "${SIMROOT}/master/`anioenigh'/categ_iva.dta", replace
 collapse (sum) IVA, by(folioviv foliohog numren)
@@ -1285,30 +1296,22 @@ local giniIEPS = r(gini_IEPS)
 escalar pctpib giniIEPS = `giniIEPS'
 
 ** 6.3. Display de resultados (8.16b: la columna es la diferencia micro vs macro, no «informalidad»: el micro esta incompleto) **
-noisily di _newline in g "{bf: D. IEPS" ///
-	_col(44) in g "(Gini)" ///
-	_col(55) in g %7s "ENIGH" ///
-	_col(66) %7s "Macro" in g ///
-	_col(77) %6s  "Dif. vs macro %}"
+noisily _log cuadro clear
+noisily _log cuadro col, titulo("Categoría") flex
+noisily _log cuadro col, titulo("Gini") fmt(%6.3f)
+noisily _log cuadro col, titulo("ENIGH") fmt(%7.3f)
+noisily _log cuadro col, titulo("Macro") fmt(%7.3f)
+noisily _log cuadro col, titulo("Dif vs macro %") fmt(%7.1f)
 foreach k of local categs {
 	if "`k'" != "Sin_IEPS" {
 		local ieps_enigh = IEPS`k'[1,1]/`PIB'*100
-		noisily di in g "  (+) `name`k''" ///
-			_col(44) in y "(" %5.3fc gini_ieps`k' ")" ///
-			_col(55) in y %7.3fc `ieps_enigh' ///
-			_col(66) in y "-" ///
-			_col(77) in y "-"
+		noisily _log cuadro fila "`name`k''" "gini_ieps`k'" "`ieps_enigh'" "—" "—"
 	}
 }
-noisily di in g _dup(84) "-"
-noisily di in g "  Total " ///
-	_col(44) in y "(" %5.3fc giniIEPS ")" ///
-	_col(55) in y %7.3fc scalar(IEPSNPHHSPIB) ///
-	_col(66) %7.3fc scalar(IEPSNPSCNPIB) ///
-	_col(77) %6.1fc scalar(DifIEPSNP) "%"
+noisily _log cuadro fila "(=) IEPS micro, sin gasolinas" "giniIEPS" "scalar(IEPSNPHHSPIB)" "scalar(IEPSNPSCNPIB)" "scalar(DifIEPSNP)", sep negrita
+noisily _log cuadro print, titulo("D. IEPS: base micro ENIGH por categoría vs IEPS no petrolero macro") unidad("% del PIB `anioenigh'") ref("CUAD-1 §4.0")
 escalar pct IEPSNPCobertura = scalar(IEPSNPHHSPIB)/scalar(IEPSNPSCNPIB)*100
-noisily di as err "  FLAG Expenditure (IEPS micro incompleto): gasolinas fuera de Expenditure.do (§6.2 salta Gasolinas y Sin_IEPS); el IEPS micro cubre " ///
-	%5.1f scalar(IEPSNPCobertura) " % del IEPS no petrolero macro (iepsnp_macro = $iepsnp_macro: " %21.0fc `IEPSNP' " MXN); el ancla LIF manda (TasasEfectivas) y el reparto va ∝ IEPS micro (ieps_relativo = micro)."
+noisily _log aviso, tipo(FLAG) texto("IEPS micro sin gasolinas cubre `=strtrim(string(scalar(IEPSNPCobertura), "%5.1f"))' % del IEPSNP macro (`=strtrim(string(`IEPSNP'/1e9, "%12.3fc"))' bn); el ancla LIF manda, reparto ∝ micro") ref("CUAD-1 §4.0")
 
 collapse (sum) IEPS, by(folioviv foliohog numren)
 save "${SIMROOT}/master/`anioenigh'/consumption_categ_ieps.dta", replace
@@ -1317,5 +1320,5 @@ save "${SIMROOT}/master/`anioenigh'/consumption_categ_ieps.dta", replace
 *** TOUCH DOWN ***/
 timer off 15
 timer list 15
-noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t15)/r(nt15)',.1) in g " segs."
+noisily _log tiempo, timer(15) texto("Expenditure")
 log close expenditures

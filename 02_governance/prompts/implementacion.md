@@ -33,7 +33,7 @@
 
 **Los tres árboles (firma CUAD-1-2 §C, 8.16b).** El clon de Dropbox es **intocable**: nada de `stash`, `reset`, `checkout`, `switch`, `pull` ni `merge` ahí, ni archivos escritos ahí; lo que tenga es de Ricardo. Trabajas en tu worktree y, si la sesión termina en ritual, en `-datos`; el paso `baile` de `ritual.sh` solo actualiza `-datos`.
 
-**Cuadros del log (firma CUAD-1-2 §D).** Todo cuadro nuevo o tocado sale con `_tabla_anclas.ado` v2: rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, columnas de ancho fijo alineadas, separador de miles y los gates debajo, una línea cada uno. Adjunta en el reporte el cuadro principal tal como sale.
+**El log (firma CUAD-1-2 §D ampliado; runbook §15).** Toda impresión pasa por `_log.ado` (`modulo`, `seccion`, `linea`, `aviso`, `gate`, `modelo`, `cuadro`, `anclas`): 110 columnas máximo, una unidad por cuadro declarada en el encabezado (miles de millones; nunca MXN completos), rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, gates debajo en una línea, avisos de una línea con prefijo fijo y referencia al documento. `test-log-ancho.sh` es gate de `correr-sim.sh`; `check-solo-display.py` separa impresión de cálculo. Adjunta en el reporte el cuadro principal tal como sale.
 
 ## Evidencia
 

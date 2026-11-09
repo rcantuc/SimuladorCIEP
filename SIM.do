@@ -19,8 +19,7 @@ set scheme ciep
 ** 0.1 Token del BIE/INEGI
 capture run "${SIMROOT}/set_token.do"
 if _rc != 0 {
-	noisily di _newline in r "Archivo set_token.do no encontrado. " ///
-		"Copia set_token.template.do como set_token.do y configúralo."
+	noisily _log aviso, tipo(IMPORTANTE) texto("set_token.do no encontrado: copia set_token.template.do como set_token.do y configúralo") ref("runbook §1") rojo
 	exit
 }
 
@@ -33,7 +32,7 @@ if _rc != 0 {
 capture confirm file "${SIMROOT}/config-local.do"
 if _rc == 0 {
 	run "${SIMROOT}/config-local.do"
-	noisily di _newline in g "config-local.do cargado (§0.1b): " in y `"hasta="$hasta" nographs="$nographs" update="$update" id="$id" entidad="$entidad" output="$output""'
+	noisily _log aviso, tipo(Nota) texto(`"config-local.do cargado: hasta="$hasta" nographs="$nographs" update="$update" id="$id" entidad="$entidad" output="$output""') ref("SIM.do §0.1b")
 }
 
 ** 0.2 Parámetros
@@ -68,7 +67,7 @@ if "$entidad" != "" {
 	global entidad "`r(nombre)'"
 	capture mkdir "${SIMROOT}/users/$id/`r(abrev)'"
 	local ifentidad `"if entidad == "$entidad""'
-	noisily di _newline in g "Entidad federativa: " in y "`r(nombre)'" in g " (clave INEGI " in y "`r(clave)'" in g ", abreviatura " in y "`r(abrev)'" in g ")"
+	noisily _log aviso, tipo(Nota) texto("Entidad federativa: `r(nombre)', clave INEGI `r(clave)', abreviatura `r(abrev)'") ref("runbook §9.7")
 }
 
 ** 0.6 Update datasets
@@ -90,48 +89,91 @@ if "$output" != "" {
 	}
 }
 
-** 0.8 Parámetros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4, firmado: §4.0). Default = valor FIRMADO
-**     (baseline v8.15.0); cualquier otro valor es un FLAG declarado en el header de Households.do (y en nta-identidad.txt) y deja los
-**     números fuera del baseline publicado (manifest: baseline). Alternativas entre paréntesis; v8.14.0 = on/actual/dentro/off/on/actual/on.
-global pensiones_en_yl "off"						// off: ing_jubila fuera de ing_t4_cap1 -> ing_subor -> Yl (D.62) | on (v8.14.0)
-global ing_mixto_depurado "transf_negocios"			// transf_negocios: ing_mixto = honorarios + negocios propios -> B.3n S.14 | off (cap5-cap9 dentro, v8.14.0)
-global rentas_celda "b3n"							// b3n: rentas efectivas (cap3) en ing_mixto -> B.3n S.14 (firma D: SNA §7.9, INEGI p. 33/45) | b2n (SNA §24.55; paso 0: B.2b > alquiler imputado CSVM)
-global alq_en_capital "off"							// off: alquiler imputado solo en ing_estim_alqu (único valor)
-global d4_relativo "proxy_propiedad"				// proxy_propiedad: D.4 neto S.14 ∝ cap6+cap8+cap3+alqu+negocios crudos (SELLO ROJO) | enigh (cap6+cap8)
-global yk_ancla "b2n_b3n_d4"						// b2n_b3n_d4: Yk = D.4 neto + 1/3 B.3n + B.2n (+ CCF) | actual (ExNOpSoc residuo BIE + impuestos − OyE)
-global cap4 "fuera"									// fuera: enajenaciones con factor 1, fuera de Yl/Yk (siguen en ing_bruto_tax) | dentro
-global suborrow "off"								// off: D.1 S.14 ya incluye el exterior; sin ing_suborROW/ing_capitalROW | on (v8.14.0)
-global cuotas_d614 "neto"							// neto: D.442 fuera de la celda de ing_capital y de YA (D.614 ya fuera de cuotas) | actual
-global oye_en_hub "off"								// off: OyE no llega a personas; «Empresas públicas → Gobierno» en los Sankeys | on (v8.14.0)
+** 0.8 Parámetros firmados (una línea por parámetro: valor firmado // documento · quién lo lee). Qué hace cada uno y qué mueve
+**     si cambia: header §4 «Decisiones» de Households.do (CUAD-0 y los de ingreso/ISR de CUAD-1), Expenditure.do (consumo e IEPS)
+**     y NTA.do (CUAD-2). El cuadro de §0.9 los imprime y marca FLAG cuando el valor no es el firmado (los números quedan fuera del
+**     baseline publicado: manifest baseline). Cuadratura I (v8.15b, 2026-10-31; CUAD-0 §4, firmado en §4.0):
+global pensiones_en_yl "off"						// CUAD-0 §4.0 · lee: Households §2.2, §3; NTA §4
+global ing_mixto_depurado "transf_negocios"			// CUAD-0 §4.0 · lee: Households §2, §9; NTA §4
+global rentas_celda "b3n"							// CUAD-0 §4.0 · lee: Households §2, §9
+global alq_en_capital "off"							// CUAD-0 §4.0 · único valor; lee: Households §9
+global d4_relativo "proxy_propiedad"				// CUAD-0 §4.0 · lee: Households §9, §11.3
+global yk_ancla "b2n_b3n_d4"						// CUAD-0 §4.0 · lee: Households §9.1; NTA §4
+global cap4 "fuera"									// CUAD-0 §4.0 · lee: Households §9
+global suborrow "off"								// CUAD-0 §4.0 · lee: Households §9; Sankey
+global cuotas_d614 "neto"							// CUAD-0 §4.0 · lee: Households §9; NTA §4; Sankey
+global oye_en_hub "off"								// CUAD-0 §4.0 · lee: Households §9; NTA §7; Sankey
 
-** 0.8b Parámetros de Cuadratura II (v8.16.0, 2026-11-08; CUAD-1 §4, firmado: CUAD-1-2-firma.md §B, fundida en CUAD-1 §4.0). Default = valor
-**      FIRMADO (baseline v8.16.0); cualquier otro valor es un FLAG declarado en el header del módulo que lo lee y en nta-identidad.txt.
-**      v8.15.3 = conhog/comprador/off/negocios/lif/libre/enigh/corte/lif/divciep/proxy.
-global consumo_ancla "p3_s14"						// p3_s14: Σ Cpriv = P.3 S.14 (CSI_115 f.166); ISFLSH (P.3 S.15) y vintage como filas de sector | conhog (BIE 724600 hogares + ISFLSH, v8.15.3)
-global consumo_precios "comprador"					// comprador: C a precios de comprador e impuestos a productos ∝ gasto como ingreso (único implementado) | basicos (8.17: C − D.21 + D.31 por categoría)
-global cuotas_por_sector "on"						// on: D.61 por sector receptor (S.13, S.12, S.11, S.15) y cuota social federal (cuotasF) fuera de cuotasTPF | off (todo a Gobierno, v8.15.3)
-global isrpm_incidencia "propiedad"					// propiedad: ISR PM ∝ ing_d4_rel (regla P); negocios propios a la base de PF; TE con denominador B.2n S.11 + S.12 (decisión 7 corregida) | negocios (ing_bruto_tpm × 30 %, FLAG 19, v8.15.3)
-global isr_personas_ancla "d51_s14"					// d51_s14: en NTA, ISR asalariados + PF anclado a D.51 S.14 e ISR PM a D.51 S.11 + S.12 (fila «LIF vs CSI por sector») | lif (v8.15.3)
-global isras_share "acotado"						// acotado: parte salarial del ISR en [0, 1] | libre (ing_subor/(ing_bruto_tax − cuotasTPF) sin acotar, mediana 1.150, v8.15.3)
-global obligacion_isrpf_ancla "itan_rangos"			// itan_rangos: ISR PF anclado por rango de ingreso declarado (ITAN 4T del año ENIGH; AccesoITAN) | enigh (cut-off por probit a la LIF, v8.15.3)
-global informalidad "corte"							// corte: formal = los de mayor p hasta N (ancla_formales) | probabilistica (λ·p·obligación; no implementada en 8.16b)
-global ancla_formales "imss"						// imss: N = 25,500,447 cotizantes IMSS + ISSSTE (31-dic-2024); el residuo vs LIF es «ajuste por subreporte de ingresos altos» | lif (el corte cierra la recaudación, v8.15.3)
-global iepsnp_macro "divsim"						// divsim: IEPS no petrolero macro = IEPSNP de divSIM (224.780: no petrolero + salud) | divciep (24.075, v8.15.3)
-global ieps_relativo "micro"						// micro: IEPSP ∝ gas_pc_Gasolinas + gas_pc_Combustibles e IEPSNP ∝ IEPS micro por categoría | proxy (gas_pc_Vehi / gas_pc_BebA, v8.15.3)
+** 0.8b Cuadratura II (v8.16.0, 2026-11-08; CUAD-1 §4, firmado en CUAD-1-2-firma.md §B):
+global consumo_ancla "p3_s14"						// CUAD-1 §4.0 · lee: Expenditure §4; NTA §4; Sankey
+global consumo_precios "comprador"					// CUAD-1 §4.0 · lee: Expenditure §0
+global cuotas_por_sector "on"						// CUAD-1 §4.0 · lee: Households §6; NTA §4; ISR_Mod
+global isrpm_incidencia "propiedad"					// CUAD-1 §4.0 · lee: Households §10-§11; TasasEfectivas §4
+global isr_personas_ancla "d51_s14"					// CUAD-1 §4.0 · lee: NTA §4; Households §11
+global isras_share "acotado"						// CUAD-1 §4.0 · lee: Households §11
+global obligacion_isrpf_ancla "itan_rangos"			// CUAD-1 §4.0 · lee: Households §11.2
+global informalidad "corte"							// CUAD-1 §4.0 · lee: Households §11.1
+global ancla_formales "imss"						// CUAD-1 §4.0 · lee: Households §11.1
+global iepsnp_macro "divsim"						// CUAD-1 §4.0 · lee: Expenditure §1.2, §6
+global ieps_relativo "micro"						// CUAD-1 §4.0 · lee: PerfilesSim §6; NTA §4
 
-** 0.8c Parámetros del Sankey de la economía completa (v8.17.0, 2026-11-08; CUAD-2 §4, firmado: CUAD-1-2-firma.md §A 16, 19–23 y §B 17–18).
-**      Default = valor FIRMADO (baseline v8.17.0); cualquier otro valor es un FLAG declarado en el header de NTA.do y en nta-identidad.txt.
-**      v8.16.0 = ing_nacional (el v3 era el Sankey principal; los demás no existían).
-global hub "inbd"									// inbd: hub = ingreso nacional disponible BIE 724037 (81.561 % PIB 2024); los sectores entran con su B.5n | ing_nacional (lado hogares, v3; el v4 no se emite)
-global retenido_a_personas "on"						// on: B.5n y B.8n de S.11 + S.12 llegan a personas ∝ ing_d4_rel (regla P, sello rojo); «Sociedades» visible en medio | off (nodo de sector sin edad)
-global deficit_a_personas "per_capita"				// per_capita: B.8n S.13 (−1,157.268) a todas las personas por igual (C) | tau_menos (∝ τ⁻ de cada persona) | off (solo «Financiamiento → Gobierno»)
-global isflsh_regla "sector"						// sector: ISFLSH con nodo propio (B.5n al hub, D.751 de hogares, D.63 a categorías, B.8n a personas per cápita) | hogares | d63_perfil (no implementados en 8.17: FLAG, se dibuja sector)
-global circuito_d442 "neto"							// neto: D.442 → Hogares como fila de sector y D.614 fuera de las cuotas a Afores | bruto (cuotas a S.12 con D.614; D.442 igual)
-global vintage_nodo "si"							// si: nodo «Vintage BIE vs CSI» al hub (NNI) y sink tras el hub (Σ B.6n CSI vs INBD BIE) | absorbido (se suma a Hogares, el sector mayor)
-global bruto_neto "neto"							// neto: hub neto de CCF (PIN como origen) | bruto (CCF por sector hasta la formación de capital; no implementado en 8.17: FLAG)
-global financiamiento "un_nodo_4"					// un_nodo_4: un solo nodo fuente «Financiamiento deuda y venta de activos» (desahorro de hogares, S.11 + S.12 y S.13) | por_sector (un nodo por sector) | un_nodo_2 (= un_nodo_4 con FLAG: sin S.11 + S.12 no conserva)
-global discrepancia_gasto "fuera"					// fuera: el Sankey es cuenta corriente (INBD = C + B.8n) | nodo (solo con la formación de capital; no implementado en 8.17: FLAG)
-global inter_hogar "balance"						// balance: lo otorgado entre hogares (ENIGH 173416 + 133030) se escala a lo recibido (P039 + P040 + P057): D.75 entre residentes neto cero, como el SCN (sello rojo) | enigh (sin escalar: el desbalance 193.7 bn queda en la brecha de S)
+** 0.8c Sankey de la economía completa (v8.17.0, 2026-11-08; CUAD-2 §4, firmado en CUAD-1-2-firma.md §A 16, 19-23 y §B 17-18):
+global hub "inbd"									// CUAD-2 §4 · lee: NTA §7d
+global retenido_a_personas "on"						// CUAD-2 §4 · lee: NTA §4, §7d
+global deficit_a_personas "per_capita"				// CUAD-2 §4 · lee: NTA §4, §7d
+global isflsh_regla "sector"						// CUAD-2 §4 · lee: NTA §7d (solo sector implementado)
+global circuito_d442 "neto"							// CUAD-2 §4 · lee: NTA §4, §7d
+global vintage_nodo "si"							// CUAD-2 §4 · lee: NTA §7d
+global bruto_neto "neto"							// CUAD-2 §4 · lee: NTA §7d (solo neto implementado)
+global financiamiento "un_nodo_4"					// CUAD-2 §4 · lee: NTA §7d
+global discrepancia_gasto "fuera"					// CUAD-2 §4 · lee: NTA §7d (solo fuera implementado)
+global inter_hogar "balance"						// CUAD-2 §4 · lee: NTA §4
+
+** 0.9 Cuadro de parámetros al arranque (solo log; sesión log-legible). Parámetro · Valor · Firmado · Documento · Lo lee; una línea
+**     FLAG por parámetro cuyo valor no sea el firmado (correr-sim.sh inserta los globals alternos antes de este bloque).
+noisily _log modulo "Simulador Fiscal CIEP  ·  SIM.do `=aniovp'  ·  id $id  ·  ENIGH `=anioenigh'  ·  bootstrap $bootstrap"
+noisily _log cuadro clear
+noisily _log cuadro col, titulo("Parámetro") ancho(22)
+noisily _log cuadro col, titulo("Valor") ancho(15)
+noisily _log cuadro col, titulo("Firmado") ancho(15)
+noisily _log cuadro col, titulo("Documento") ancho(12)
+noisily _log cuadro col, titulo("Lo lee") flex
+noisily _log param, nombre(pensiones_en_yl) firmado(off) doc("CUAD-0 §4.0") lee("Households §2.2, §3; NTA §4")
+noisily _log param, nombre(ing_mixto_depurado) firmado(transf_negocios) doc("CUAD-0 §4.0") lee("Households §2, §9; NTA §4")
+noisily _log param, nombre(rentas_celda) firmado(b3n) doc("CUAD-0 §4.0") lee("Households §2, §9")
+noisily _log param, nombre(alq_en_capital) firmado(off) doc("CUAD-0 §4.0") lee("Households §9 (único valor)")
+noisily _log param, nombre(d4_relativo) firmado(proxy_propiedad) doc("CUAD-0 §4.0") lee("Households §9, §11.3")
+noisily _log param, nombre(yk_ancla) firmado(b2n_b3n_d4) doc("CUAD-0 §4.0") lee("Households §9.1; NTA §4")
+noisily _log param, nombre(cap4) firmado(fuera) doc("CUAD-0 §4.0") lee("Households §9")
+noisily _log param, nombre(suborrow) firmado(off) doc("CUAD-0 §4.0") lee("Households §9; Sankey")
+noisily _log param, nombre(cuotas_d614) firmado(neto) doc("CUAD-0 §4.0") lee("Households §9; NTA §4; Sankey")
+noisily _log param, nombre(oye_en_hub) firmado(off) doc("CUAD-0 §4.0") lee("Households §9; NTA §7; Sankey")
+noisily _log param, nombre(consumo_ancla) firmado(p3_s14) doc("CUAD-1 §4.0") lee("Expenditure §4; NTA §4; Sankey")
+noisily _log param, nombre(consumo_precios) firmado(comprador) doc("CUAD-1 §4.0") lee("Expenditure §0")
+noisily _log param, nombre(cuotas_por_sector) firmado(on) doc("CUAD-1 §4.0") lee("Households §6; NTA §4; ISR_Mod")
+noisily _log param, nombre(isrpm_incidencia) firmado(propiedad) doc("CUAD-1 §4.0") lee("Households §10-§11; TasasEfectivas §4")
+noisily _log param, nombre(isr_personas_ancla) firmado(d51_s14) doc("CUAD-1 §4.0") lee("NTA §4; Households §11")
+noisily _log param, nombre(isras_share) firmado(acotado) doc("CUAD-1 §4.0") lee("Households §11")
+noisily _log param, nombre(obligacion_isrpf_ancla) firmado(itan_rangos) doc("CUAD-1 §4.0") lee("Households §11.2")
+noisily _log param, nombre(informalidad) firmado(corte) doc("CUAD-1 §4.0") lee("Households §11.1")
+noisily _log param, nombre(ancla_formales) firmado(imss) doc("CUAD-1 §4.0") lee("Households §11.1")
+noisily _log param, nombre(iepsnp_macro) firmado(divsim) doc("CUAD-1 §4.0") lee("Expenditure §1.2, §6")
+noisily _log param, nombre(ieps_relativo) firmado(micro) doc("CUAD-1 §4.0") lee("PerfilesSim §6; NTA §4")
+noisily _log param, nombre(hub) firmado(inbd) doc("CUAD-2 §4") lee("NTA §7d")
+noisily _log param, nombre(retenido_a_personas) firmado(on) doc("CUAD-2 §4") lee("NTA §4, §7d")
+noisily _log param, nombre(deficit_a_personas) firmado(per_capita) doc("CUAD-2 §4") lee("NTA §4, §7d")
+noisily _log param, nombre(isflsh_regla) firmado(sector) doc("CUAD-2 §4") lee("NTA §7d")
+noisily _log param, nombre(circuito_d442) firmado(neto) doc("CUAD-2 §4") lee("NTA §4, §7d")
+noisily _log param, nombre(vintage_nodo) firmado(si) doc("CUAD-2 §4") lee("NTA §7d")
+noisily _log param, nombre(bruto_neto) firmado(neto) doc("CUAD-2 §4") lee("NTA §7d")
+noisily _log param, nombre(financiamiento) firmado(un_nodo_4) doc("CUAD-2 §4") lee("NTA §7d")
+noisily _log param, nombre(discrepancia_gasto) firmado(fuera) doc("CUAD-2 §4") lee("NTA §7d")
+noisily _log param, nombre(inter_hogar) firmado(balance) doc("CUAD-2 §4") lee("NTA §4")
+noisily _log cuadro print, titulo("§0.8 Parámetros firmados: Cuadratura (CUAD-0, CUAD-1) y Sankey de la economía completa (CUAD-2)") ref("runbook §15")
+foreach p of global LOG_PARAM_FLAGS {
+	noisily _log aviso, tipo(FLAG) texto("`p': los números quedan fuera del baseline publicado") ref("manifest baseline") rojo
+}
+if "$hasta" != "" noisily _log aviso, tipo(Nota) texto("hasta = $hasta: la corrida se detiene al cerrar la sección $hasta") ref("SIM.do §0.4")
 
 
 ***
@@ -187,18 +229,15 @@ if "$hasta" == "2" exit
 ***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-noisily di _newline in g "Actualizando: " in y "expenditures.dta"
 noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
-noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
 
 ** 3.2b Cuenta de Transferencias Nacionales por individuo (NTA-1; año ENIGH, anclas SCN/LIF/PEF de ese año)
 noisily run "${SIMROOT}/01_modulos/NTA.do" `=anioenigh'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
-noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
 if "$hasta" == "3" exit
 
@@ -587,6 +626,6 @@ if "$entidad" != "" {
 **** Touchdown!!!
 ****
 timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+noisily _log modulo "TOUCH-DOWN  ·  SIM.do completo"
+noisily _log tiempo, timer(1) texto("SIM.do")
 if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"

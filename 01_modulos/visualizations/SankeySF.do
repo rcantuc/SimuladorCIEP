@@ -214,7 +214,7 @@ if `"`entidad'"' != "" {
 	summarize factor, meanonly
 	local pobent = r(sum)
 	local eshare = `pobent'/`pobnac'								// renglones % PIB × pibY se reparten por población (S-P3); los per cápita ya usan pobtot de la entidad
-	noisily di _newline in g "  Sankey de entidad: " in y "`enombre'" in g " (`eabrev', clave `eclave') {c -} corte " in y "`1'" in g ", población ENIGH " in y %12.0fc `pobent' in g " (" in y %5.2f `eshare'*100 in g " % del nacional), banda ENIGH: " in y "`=cond("`vint_usados'" == "", "sin banda", trim("`vint_usados'"))'" in g ", sellos n<`sello_n' | top1>`sello_top1' %."
+	noisily _log aviso, tipo(Nota) texto("Sankey de entidad `enombre' (`eabrev', clave `eclave'), corte `1'; población ENIGH `=strtrim(string(`pobent', "%12.0fc"))' (`=strtrim(string(`eshare'*100, "%5.2f"))' % de la nacional)") ref("runbook §13")
 }
 keep `1' folioviv foliohog numren factor AlTrabajo AlConsumo AlCapital	// v8.12: solo lo que suma el collapse (lo demás se descarta igual); el sort de abajo mueve 8 columnas, no 152
 sort `1' folioviv foliohog numren	// v8.12 (FLAG-7): orden determinista antes del collapse — la suma ponderada acumula en el orden de las filas y el de los empates del sort depende del historial de la sesión (c(sortrngstate)); con clave única el JSON no cambia al cambiar el pipeline
@@ -496,4 +496,4 @@ noisily SankeySumSim, anio(`2') name(`1') a(`eje1') b(`eje2') c(`eje3') d(`eje4'
 
 timer off 9
 timer list 9
-noisily di _newline in g "Tiempo: " in y round(`=r(t9)/r(nt9)',.1) in g " segs."
+noisily _log tiempo, timer(9) texto("SankeySF `1'")

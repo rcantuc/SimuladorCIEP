@@ -30,7 +30,7 @@ if "`2'" >= "2022" {
 	local 2 = 2024
 }
 timer on 7
-noisily di _newline(2) in g "{bf: Sankey}: " in y "`1' `2'"
+noisily _log seccion "Sankey NTA" "corte `1', año `2'"
 
 
 
@@ -68,12 +68,12 @@ foreach p in oye_en_hub suborrow cuotas_d614 consumo_ancla {
 }
 if "$consumo_ancla" == "" global consumo_ancla "p3_s14"
 
-noisily tabstat Yl Yk ing_estim_alqu [fw=factor], stat(sum) format(%20.0fc) by(`1')
+tabstat Yl Yk ing_estim_alqu [fw=factor], stat(sum) format(%20.0fc) by(`1')
 
 replace Yk = Yk - ing_estim_alqu
 collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Alquiler_propio=ing_estim_alqu [fw=factor], by(`1')
 
-noisily tabstat ing_Ing_Laboral ing_Ing_Capital ing_Alquiler_propio, stat(sum) format(%20.0fc) by(`1')
+tabstat ing_Ing_Laboral ing_Ing_Capital ing_Alquiler_propio, stat(sum) format(%20.0fc) by(`1')
 
 * to *
 tempvar to
@@ -221,7 +221,7 @@ if "$consumo_ancla" == "p3_s14" {
 		replace profile = `vcons' in -1
 		label define from 96 "_Vintage consumo BIE vs CSI", add
 	}
-	else noisily di as err "  FLAG Sankey (consumo_ancla = p3_s14): SCN sin ConISFLSH; los usos no llevan las filas de ISFLSH y vintage del consumo."
+	else noisily _log aviso, tipo(FLAG) texto("Sankey: SCN sin ConISFLSH; los usos no llevan las filas de ISFLSH y vintage del consumo (consumo_ancla = p3_s14)") ref("CUAD-2 §6") rojo
 }
 
 
@@ -271,5 +271,5 @@ noisily SankeySumSim, anio(`2') name(`1') folder(`3') a(`eje1') b(`eje2') c(`eje
 
 timer off 7
 timer list 7
-noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t7)/r(nt7)',.1) in g " segs."
+noisily _log tiempo, timer(7) texto("Sankey `1'")
 

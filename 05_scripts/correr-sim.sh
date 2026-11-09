@@ -10,7 +10,10 @@
 #   1. SIM_run.do = SIM.do con `global SIMROOT` = <root>; `global nographs`/`global output` tras
 #      `macro drop _all` (antes de §0.7, que abre el log output) y los globals extra tras los defaults
 #      de §0.8 (así `global cap4 "fuera"` manda; `global hasta "3"` corta tras PerfilesSim);
-#   2. wrap.do: set processors 1, SITE = <root>, y `do SIM_run.do` en batch (StataNow SE);
+#   2. wrap.do: set processors 1, SITE = <root>, y `run SIM_run.do` en batch (StataNow SE). Desde la sesión log-legible es
+#      `run`, no `do`: el eco de los comandos de SIM.do (comentarios de 150 columnas, matrices con ///) se partía con «>»
+#      y era la mitad de las líneas largas del wrap.log; lo que SIM.do quiere que se vea lo imprime con `noisily _log`
+#      (§0.9: cuadro de parámetros firmados). test-log-ancho.sh exige ≤ 110 columnas y ningún «> » de continuación;
 #   3. copia a la evidencia output.txt, aportaciones-nacional.json, SankeySF/ (5), SankeyNTA/ (5), NTA/, sha256.txt, commit.txt
 #      (hash corto + `git status --short`), tiempo.txt, households-sumas.txt (Σ expandidas, para el Δ);
 #   4. gate-numeros.sh sobre users/ricardo → gate-numeros.txt (no decide: ritual.sh lo re-corre y lee el exit).
@@ -67,7 +70,7 @@ j = t.index('\n', j + 1) + 1
 t = t[:j] + "".join(g + "\n" for g in extra) + t[j:]
 open(dst, "w", encoding="utf-8").write(t)
 PYEOF
-printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\ndo "%s/SIM_run.do"\n' "$ROOT" "$ROOT" "$EVID" > "$EVID/wrap.do"
+printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\nrun "%s/SIM_run.do"\n' "$ROOT" "$ROOT" "$EVID" > "$EVID/wrap.do"
 T0=$(date +%s)
 ( cd "$EVID" && "$STATA" -b "do" "$EVID/wrap.do" < /dev/null )
 echo "Stata: $((($(date +%s)-T0)/60)) min" | tee "$EVID/tiempo.txt"
@@ -92,4 +95,6 @@ with open(out, 'w') as f:
 print(open(out).read())
 PYEOF
 if [[ -f "$U/output.txt" ]]; then bash "$ROOT/05_scripts/gate-numeros.sh" "$U" | tee "$EVID/gate-numeros.txt"; fi
+# log legible: ninguna línea del wrap.log > 110 columnas ni «> » de continuación (las 47 llaves de output.txt quedan exentas)
+bash "$ROOT/05_scripts/test-log-ancho.sh" "$EVID/wrap.log" | tee "$EVID/test-log-ancho.txt"
 cat "$EVID/tiempo.txt"

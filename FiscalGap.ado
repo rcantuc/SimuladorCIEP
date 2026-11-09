@@ -7,7 +7,7 @@ quietly {
 
 	syntax [, NOGraphs Anio(int `=aniovp') Update END(int 2100) ///
 		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`=aniovp'-1')]
-	noisily di _newline(2) in g "{bf: FISCAL GAP:" in y " $pais `anio' }"
+	noisily _log modulo "FiscalGap  ·  brecha fiscal $pais `anio'-`end', tasa de descuento `discount' %" ref("runbook §9; /metodo")
 
 	* Escenario base (4.2 y 5.2): el PROMEDIO de las réplicas de Simulador que escribe
 	* PerfilesSim.do §8, users/<idbase>/bootstraps/<bootstrap>/<var>RECprom.dta. Hasta
@@ -16,7 +16,7 @@ quietly {
 	* (SIM.do §0.2; Web.Stata.do lo fija en el escenario publicado); vacío = el id de
 	* la sesión. *
 	if "$bootstrap" == "" {
-		noisily di as err `"FiscalGap: falta la global bootstrap (réplicas de Simulador). Defínela en SIM.do §0.2 (global bootstrap "250") y corre SIM.do desde §3 (PerfilesSim.do)."'
+		noisily _log aviso, tipo(IMPORTANTE) texto("FiscalGap: falta la global bootstrap (SIM.do §0.2); corre SIM.do desde §3 (PerfilesSim)") rojo
 		exit 198
 	}
 	local idbase = cond("$idbase" != "", "$idbase", "$id")
@@ -127,7 +127,7 @@ quietly {
 	**# 4 Fiscal Gap: Ingresos ***
 	***                        ***
 	******************************
-	noisily di _newline in g "  INGRESOS " in y "`desde'-`anio'"
+	noisily _log seccion "FiscalGap §4" "Ingresos `desde'-`anio'"
 
 	** 4.1 Información histórica de los ingresos **
 	LIF if divLIF != 10 | divCIEP == 8, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //eofp //ilif
@@ -233,16 +233,15 @@ quietly {
 	* la LIF si no se simulo nada, distinta si el usuario movio parametros. Las
 	* tasas son las de 4.2: total (LIF `desde'-`anio'), demografica (contribuyentes)
 	* y economica (residuo, acotado a +-5). *
-	noisily di _newline in g "{bf: A. Ingresos `anio': LIF vs simulaci{c o'}n}" ///
-		_newline ///
-		_col(12) in g %13s "LIF" ///
-		_col(27) %13s "Simulaci{c o'}n" ///
-		_col(42) %6s "Dif %" ///
-		_col(50) %7s "% PIB" ///
-		_col(59) %6s "Total" ///
-		_col(66) %6s "Demog" ///
-		_col(73) %6s "Econ"
-	noisily di in g _col(12) %13s "mill. `currency'" _col(27) %13s "mill. `currency'" _col(59) %6s "tasa %" _col(66) %6s "tasa %" _col(73) %6s "tasa %"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Impuesto") flex
+	noisily _log cuadro col, titulo("LIF") fmt(%13.0fc) escala(1e6)
+	noisily _log cuadro col, titulo("Simulación") fmt(%13.0fc) escala(1e6)
+	noisily _log cuadro col, titulo("Dif %") fmt(%6.1f)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Tasa total %") fmt(%8.2f)
+	noisily _log cuadro col, titulo("Demográfica %") fmt(%8.2f)
+	noisily _log cuadro col, titulo("Económica %") fmt(%8.2f)
 	tempname tLIF tSIM
 	scalar `tLIF' = 0
 	scalar `tSIM' = 0
@@ -264,28 +263,17 @@ quietly {
 			local `t' = .
 			capture local `t' = scalar(`t'`k')
 		}
-		noisily di in g "  `k'" ///
-			_col(12) in y %13.0fc `lif'/1e6 ///
-			_col(27) in y %13.0fc `sim'/1e6 ///
-			_col(42) in y %6.1fc `dif' ///
-			_col(50) in y %7.3fc `simpib' ///
-			_col(59) in y %6.2f `tt' ///
-			_col(66) in y %6.2f `td' ///
-			_col(73) in y %6.2f `tn'
+		noisily _log cuadro fila "`k'" "`lif'" "`sim'" "`dif'" "`simpib'" "`tt'" "`td'" "`tn'"
 	}
 	sum estimacionRecaudacion_pib if anio == `anio', meanonly
 	local totpib = r(sum)
-	noisily di in g _dup(79) "-"
-	noisily di in g "{bf:  (=) Total" ///
-		_col(12) in y %13.0fc `tLIF'/1e6 ///
-		_col(27) in y %13.0fc `tSIM'/1e6 ///
-		_col(42) in y %6.1fc (`tSIM'/`tLIF'-1)*100 ///
-		_col(50) in y %7.3fc `totpib' "}"
-	noisily di in g "  Dif % = simulaci{c o'}n vs LIF. Econ acotada a +-5 (5.00 o -5.00 = tope activo)."
+	noisily _log cuadro fila "(=) Total" "`tLIF'" "`tSIM'" "(`tSIM'/`tLIF'-1)*100" "`totpib'" "—" "—" "—", sep negrita
+	noisily _log cuadro nota "Dif % = simulación vs LIF; la tasa económica está acotada a ±5 (5.00 o −5.00 = tope activo)"
 	sum diferimientos if anio == `anio', meanonly
 	if r(sum) != 0 {
-		noisily di in g "  Memo: diferimiento de pagos (LIF divCIEP 8) " in y %12.0fc r(sum)/1e6 in g " mill. — no es ingreso; se resta al gasto pagado (5.9b)."
+		noisily _log cuadro nota "diferimiento de pagos (LIF divCIEP 8): `=strtrim(string(r(sum)/1e6, "%12.0fc"))' millones; no es ingreso, se resta al gasto pagado (§5.9b)"
 	}
+	noisily _log cuadro print, titulo("A. Ingresos `anio': LIF vs simulación y tasas de crecimiento") unidad("millones de `currency'; % del PIB; % anual") ref("runbook §9")
 	escalar custom(%20.0fc) IngresosLIF`anio' = `tLIF'
 	escalar custom(%20.0fc) IngresosSim`anio' = `tSIM'
 	escalar pct IngresosSimDif`anio' = (`tSIM'/`tLIF'-1)*100
@@ -429,7 +417,7 @@ quietly {
 	**# 5 Fiscal Gap: Gastos ***
 	***                      ***
 	****************************
-	noisily di _newline in g "  GASTOS " in y "`desde'-`anio'"
+	noisily _log seccion "FiscalGap §5" "Gastos `desde'-`anio'"
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
@@ -542,16 +530,15 @@ quietly {
 	* hogares (GastoPC/perfiles, matriz HH<k>); igual al PEF solo si la
 	* armonizacion macro-micro cierra. Cuotas_ISSSTE no se simula (= PEF) y el
 	* costo de la deuda se proyecta en 5.9 con la tasa efectiva, no aqui. *
-	noisily di _newline in g "{bf: A. Gasto `anio': PEF vs simulaci{c o'}n}" ///
-		_newline ///
-		_col(17) in g %12s "PEF" ///
-		_col(30) %12s "Simulaci{c o'}n" ///
-		_col(43) %6s "Dif %" ///
-		_col(50) %6s "% PIB" ///
-		_col(57) %5s "Total" ///
-		_col(63) %5s "Demog" ///
-		_col(69) %5s "Econ"
-	noisily di in g _col(17) %12s "mill. `currency'" _col(30) %12s "mill. `currency'" _col(57) %5s "tasa" _col(63) %5s "tasa" _col(69) %5s "tasa"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Rubro") flex
+	noisily _log cuadro col, titulo("PEF") fmt(%13.0fc) escala(1e6)
+	noisily _log cuadro col, titulo("Simulación") fmt(%13.0fc) escala(1e6)
+	noisily _log cuadro col, titulo("Dif %") fmt(%6.1f)
+	noisily _log cuadro col, titulo("% PIB") fmt(%7.3f)
+	noisily _log cuadro col, titulo("Tasa total %") fmt(%8.2f)
+	noisily _log cuadro col, titulo("Demográfica %") fmt(%8.2f)
+	noisily _log cuadro col, titulo("Económica %") fmt(%8.2f)
 	tempname tPEF tSIM
 	scalar `tPEF' = 0
 	scalar `tSIM' = 0
@@ -588,28 +575,16 @@ quietly {
 			local `t' = .
 			capture local `t' = scalar(`t'`kk')
 		}
-		noisily di in g "  " %-14s substr("`rot'",1,14) ///
-			_col(17) in y %12.0fc `pef'/1e6 ///
-			_col(30) in y %12.0fc `sim'/1e6 ///
-			_col(43) in y %6.1fc `dif' ///
-			_col(50) in y %6.3fc `simpib' ///
-			_col(57) in y %5.2f `tt' ///
-			_col(63) in y %5.2f `td' ///
-			_col(69) in y %5.2f `tn'
+		noisily _log cuadro fila `"`rot'"' "`pef'" "`sim'" "`dif'" "`simpib'" "`tt'" "`td'" "`tn'"
 	}
 	sum estimacionGasto_pib if anio == `anio', meanonly
 	local totpib = r(sum)
-	noisily di in g _dup(74) "-"
-	noisily di in g "{bf:  (=) Total" ///
-		_col(17) in y %12.0fc `tPEF'/1e6 ///
-		_col(30) in y %12.0fc `tSIM'/1e6 ///
-		_col(43) in y %6.1fc (`tSIM'/`tPEF'-1)*100 ///
-		_col(50) in y %6.3fc `totpib' "}"
-	noisily di in g "  Dif % = simulaci{c o'}n (hogares) vs PEF. Econ acotada a +-5 (+-5.00 = tope activo)."
-	noisily di in g "  Costo de la deuda = PEF (no se simula por hogares; se proyecta en 5.9)."
+	noisily _log cuadro fila "(=) Total" "`tPEF'" "`tSIM'" "(`tSIM'/`tPEF'-1)*100" "`totpib'" "—" "—" "—", sep negrita
+	noisily _log cuadro nota "Dif % = simulación por hogares vs PEF; la tasa económica está acotada a ±5 (±5.00 = tope activo)"
+	noisily _log cuadro nota "Costo de la deuda = PEF: no se simula por hogares, se proyecta en §5.9"
 	sum estimacionGasto if anio == `anio' & divCIEP == "IngBasico", meanonly
-	noisily di in g "  * Otros gastos simulados incluyen Transferencias (cuidados/madres/IB, var. IngBasico: " in y %8.0fc r(sum)/1e6 in g " mill.),"
-	noisily di in g "    que GastoPC separa y el PEF clasifica dentro de Otros gastos. Cuotas ISSSTE = PEF (macro, no se simula)."
+	noisily _log cuadro nota "Otros gastos simulados incluyen Transferencias (cuidados, madres, ingreso básico; IngBasico `=strtrim(string(r(sum)/1e6, "%8.0fc"))' millones), que GastoPC separa y el PEF clasifica dentro de Otros gastos; Cuotas ISSSTE = PEF, macro"
+	noisily _log cuadro print, titulo("A. Gasto `anio': PEF vs simulación por hogares y tasas de crecimiento") unidad("millones de `currency'; % del PIB; % anual") ref("runbook §9")
 	escalar custom(%20.0fc) GastoPEF`anio' = `tPEF'
 	escalar custom(%20.0fc) GastoSim`anio' = `tSIM'
 	escalar pct GastoSimDif`anio' = (`tSIM'/`tPEF'-1)*100
@@ -842,7 +817,7 @@ quietly {
 	}
 	else {
 		local actualizacion_geo = 0
-		noisily di in r "      {bf:WARNING}: Denominador cero en actualización geométrica. Usando 0%."
+		noisily _log aviso, tipo(IMPORTANTE) texto("FiscalGap: denominador cero en la actualización geométrica; se usa 0 %") rojo
 	}
 	g actualizacion = `actualizacion_geo'
 
@@ -982,18 +957,19 @@ quietly {
 	matrix rownames Proy_fiscal   = `filas'
 
 	local rotulos `" "(+) Ingresos presupuestarios" "(-) Gasto neto devengado" "      Gasto primario" "      Costo financiero" "(+) Diferimiento de pagos" "(=) Gasto neto pagado" "(=) Balance presupuestario" "(+) Req. fin. extrapresup." "(=) RFSP" "      Superavit econ. primario" "SHRFSP" "'
-	noisily di _newline in g "{bf: B. Estimaci{c o'}n de las finanzas p{c u'}blicas `anio'-`end'}"
-	noisily di in g "  Millones de `currency' (signos SHCP: negativo = d{c e'}ficit)"
+	noisily _log seccion "FiscalGap §5.9" "Estimación de las finanzas públicas `anio'-`end'"
+	noisily _log linea "Millones de `currency' (signos SHCP: negativo = déficit)"
 	noisily _fg_matdisplay Proy_finanzas, cols(`nanios') fmt(%12.0fc) rotulos(`rotulos')
-	noisily di _newline in g "  % del PIB"
+	noisily _log linea "% del PIB"
 	noisily _fg_matdisplay Proy_fiscal, cols(`nanios') fmt(%8.2f) rotulos(`rotulos')
-	noisily di in g "  Balance = Ingresos - Gasto pagado; Gasto pagado = Devengado - Diferimientos; RFSP = Balance + Req. extrapresup.; Super{c a'}vit primario = Balance + Costo financiero."
-	noisily di in g "  Diferimientos > `anio': razon diferimientos/gasto devengado de `anio' (" in y %5.2f `difratio'*100 in g " %)."
+	noisily _log aviso, tipo(Nota) texto("Balance = ingresos − gasto pagado; gasto pagado = devengado − diferimientos; RFSP = balance + requerimientos extrapresupuestarios")
+	noisily _log aviso, tipo(Nota) texto("Superávit primario = balance + costo financiero")
+	noisily _log aviso, tipo(Nota) texto("Diferimientos después de `anio': razón diferimientos / gasto devengado de `anio' (`=strtrim(string(`difratio'*100, "%5.2f"))' %)")
 	if `brecha_anio' != . & abs(`brecha_anio') > 1 {
-		noisily di in g "  Memo `anio': balance del motor vs rfspBalance ex{c o'}geno (CGPE/SHRFSP): brecha " in y %12.0fc `brecha_anio'/1e6 in g " mill."
+		noisily _log aviso, tipo(Nota) texto("Memo `anio': balance del motor vs rfspBalance exógeno (CGPE/SHRFSP), brecha `=strtrim(string(`brecha_anio'/1e6, "%12.0fc"))' millones")
 	}
 	if anio[_N] < `end' {
-		noisily di in g "  Horizonte efectivo: " in y anio[_N] in g " (end(`end') rebasa la proyecci{c o'}n disponible; columnas posteriores en .)."
+		noisily _log aviso, tipo(Nota) texto("Horizonte efectivo `=anio[_N]': end(`end') rebasa la proyección disponible; columnas posteriores en .")
 	}
 
 	****************
@@ -1120,42 +1096,22 @@ quietly {
 	***                       ***
 	****************************
 	if "`estimacionINF'" == "" {
-		noisily di in g "  " _dup(61) "-"
-		noisily di in g "  Balance en VP: desactivado (ingresos VP retirados en 4.6; pendiente de la reestructura)."
+		noisily _log aviso, tipo(Nota) texto("Balance en valor presente desactivado: ingresos VP retirados en §4.6, pendiente de la reestructura")
 	}
 	else {
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Balance futuro en VP:" ///
-		in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
-		in g " `currency'"	
+	noisily _log linea "(=) Balance futuro en VP: `=strtrim(string((`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/1e9, "%16.3fc"))' bn `currency'"
 
-	noisily di in g "  (+) Deuda (" in y `=`anio'' in g "):" ///
-		in y _col(35) %25.0fc -`shrfsp'[1,1] ///
-		in g " `currency'"	
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Finan. wealth futuro en VP:" ///
-		in y _col(35) %25.0fc -`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
-		in g " `currency'"	
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Wealth/Ingresos futuros:" ///
-		in y _col(35) %25.1fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`estimacionINF'+`estimacionVP'[1,1])*100 ///
-		in g " %"	
-	noisily di in g "  (=) Wealth/Gastos futuros:" ///
-		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`gastoINF'+`gastoVP'[1,1])*100 ///
-		in g " %"	
-	noisily di in g "  (=) Wealth/PIB futuro:" ///
-		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/scalar(pibVPINF)*100 ///
-		in g " %"
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Deuda (" in y `end' in g ") :" ///
-		in y _col(35) %25.0fc shrfsp_pib[_N] ///
-		in g " % PIB"
+	noisily _log linea "(+) Deuda `anio': `=strtrim(string(-`shrfsp'[1,1]/1e9, "%16.3fc"))' bn `currency'"
+	noisily _log linea "(=) Riqueza financiera futura en VP: `=strtrim(string((-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/1e9, "%16.3fc"))' bn `currency'"
+	noisily _log linea "(=) Riqueza / ingresos futuros: `=strtrim(string(-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`estimacionINF'+`estimacionVP'[1,1])*100, "%12.1f"))' %"
+	noisily _log linea "(=) Riqueza / gastos futuros: `=strtrim(string((-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`gastoINF'+`gastoVP'[1,1])*100, "%12.1f"))' %"
+	noisily _log linea "(=) Riqueza / PIB futuro: `=strtrim(string((-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/scalar(pibVPINF)*100, "%12.1f"))' %"
+	noisily _log linea "(=) Deuda `end': `=strtrim(string(shrfsp_pib[_N], "%12.1f"))' % del PIB"
 	scalar shrfspgeneINI = string(`shrfsp'[1,3],"%5.1fc")
 	scalar shrfspgeneFIN = string(shrfsp_pib[_N],"%5.1fc")
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc scalar(tasaEfectiva) in g " %"
-	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
-	noisily di in g "  (*) Actualización deuda:" in y _col(35) %25.4fc `actualizacion_geo' in g " %"
+	noisily _log linea "(*) Tasa efectiva promedio: `=strtrim(string(scalar(tasaEfectiva), "%12.4f"))' %"
+	noisily _log linea "(*) Tasa de descuento: `=strtrim(string(`discount', "%12.4f"))' %"
+	noisily _log linea "(*) Actualización de la deuda: `=strtrim(string(`actualizacion_geo', "%12.4f"))' %"
 	}
 
 
@@ -1194,42 +1150,34 @@ quietly {
 	}
 	else {
 		local grow_rate_LR_pob = 1.0
-		noisily di in r "      {bf:WARNING}: Usando tasa de crecimiento por defecto (`grow_rate_LR_pob'%) para población"
+		noisily _log aviso, tipo(IMPORTANTE) texto("FiscalGap: tasa de crecimiento de población por defecto `grow_rate_LR_pob' %") rojo
 	}
 
 	* Validar que grow_rate < discount para perpetuidad *
 	if `grow_rate_LR_pob' >= `discount' {
-		noisily di in r "      {bf:ERROR}: Tasa crecimiento población (`grow_rate_LR_pob'%) >= tasa de descuento (`discount'%)"
-		noisily di in r "      Ajustando tasa de crecimiento a `=`discount'-0.5'%"
+		noisily _log aviso, tipo(IMPORTANTE) texto("FiscalGap: tasa de crecimiento de población `grow_rate_LR_pob' % ≥ tasa de descuento `discount' %; se ajusta a `=`discount'-0.5' %") rojo
 		local grow_rate_LR_pob = `discount' - 0.5
 	}
 	local poblacionINF = poblacionVP[_N]/(1-((1+`grow_rate_LR_pob'/100)/(1+`discount'/100)))
 
-	noisily di _newline(2) in g "{bf: INEQUIDAD INTERGENERACIONAL:" in y " $pais `anio' }"
+	noisily _log seccion "FiscalGap §6" "Inequidad intergeneracional $pais `anio'"
 	*noisily di in g "  (*) Poblaci{c o'}n futura VP: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
 	*noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
 	*noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (*) Deuda generaciones " in y "`anio'" in g ":" in y _col(35) %25.0fc (`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]) in g " `currency' por persona"
-	noisily di in g "  (*) Deuda generaciones " in y "`endef'" in g ":" in y _col(35) %25.0fc (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]) in g " `currency' por persona"
+	noisily _log linea "(*) Deuda por persona `anio': `=strtrim(string((`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]), "%14.0fc"))' `currency'"
+	noisily _log linea "(*) Deuda por persona `endef': `=strtrim(string((shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]), "%14.0fc"))' `currency'"
 	local deudagenlast = (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2])
 	scalar deudageneINI = string((`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]),"%10.1fc")
 	scalar deudageneFIN = string((shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]),"%10.1fc")
 
 	* Inequidad intergeneracional (requiere ingresos VP; ver 4.6) *
 	if "`estimacionINF'" != "" {
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (*) Deuda generaci{c o'}n futura:" ///
-		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF' + `estimacionVP'[1,1] - `gastoINF' - `gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
-		in g " `currency' por persona"
+	noisily _log linea "(*) Deuda de la generación futura: `=strtrim(string(-(-`shrfsp'[1,1] + `estimacionINF' + `estimacionVP'[1,1] - `gastoINF' - `gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'), "%14.0fc"))' `currency' por persona"
 	local deudageninf = -(-`shrfsp'[1,1] + `estimacionINF' + `estimacionVP'[1,1] - `gastoINF' - `gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF')
-	noisily di in g "  (*) Inequidad intergeneracional:" ///
-		in y _col(35) %25.0fc (`deudageninf'/`deudagenlast'-1)*100 ///
-		in g " %"
+	noisily _log linea "(*) Inequidad intergeneracional: `=strtrim(string((`deudageninf'/`deudagenlast'-1)*100, "%12.0fc"))' %"
 	capture confirm matrix GA
 	if _rc == 0 {
-		noisily di in g "  (*) Inequidad GA:" ///
-			in y _col(35) %25.0fc ((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
-			in g " %"
+		noisily _log linea "(*) Inequidad GA: `=strtrim(string(((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100, "%12.0fc"))' %"
 	}
 	}
 
@@ -1275,7 +1223,7 @@ quietly {
 	*************************
 	timer off 11
 	timer list 11
-	noisily di _newline(2) in g _dup(20) "." "  " in y round(`=r(t11)/r(nt11)',.1) in g " segs  " _dup(20) "."
+	noisily _log tiempo, timer(11) texto("FiscalGap")
 }
 end
 
@@ -1335,9 +1283,9 @@ program define _FGrecprom
 	args dirprom var bootstrap idbase
 	capture confirm file `"`dirprom'/`var'RECprom.dta"'
 	if _rc {
-		noisily di as err `"FiscalGap: no existe `dirprom'/`var'RECprom.dta"'
-		noisily di as err `"  Es el promedio de las `bootstrap' r{c e'}plicas de Simulador `var' que escribe PerfilesSim.do §8 para el id `idbase'."'
-		noisily di as err `"  Corre SIM.do con global bootstrap "`bootstrap'" e id `idbase' desde §3 (noisily run 01_modulos/PerfilesSim.do <anioPE>), o ajusta global idbase / global bootstrap en SIM.do §0.2."'
+		noisily _log aviso, tipo(IMPORTANTE) texto(`"FiscalGap: no existe `dirprom'/`var'RECprom.dta"') rojo
+		noisily _log aviso, tipo(IMPORTANTE) texto("es el promedio de las `bootstrap' réplicas de Simulador `var' que escribe PerfilesSim.do §8 para el id `idbase'") rojo
+		noisily _log aviso, tipo(IMPORTANTE) texto("corre SIM.do con global bootstrap `bootstrap' e id `idbase' desde §3 (PerfilesSim.do), o ajusta global idbase") rojo
 		exit 601
 	}
 	use `"`dirprom'/`var'RECprom.dta"', clear

@@ -231,6 +231,9 @@ Plantilla de `config-local.do` (ignorado por git): las palancas de cada clon (`h
 #### `SIM.do` 
 Plantilla maestra (template) para hacer simulaciones fiscales. Configura el entorno, define opciones globales, establece el directorio de trabajo basado en el usuario y ejecuta varios comandos de forma secuencial. Es el flujo **canónico**: el «Calcular» del sitio (`01_modulos/Web.Stata.do`) debe reproducir con los valores default exactamente su `output.txt` (gate `05_scripts/test-web-batch.sh`, 46/46 llaves).
 
+#### `_log.ado` y el estándar del log (sesión log-legible, 2026-11-09)
+Toda impresión del motor pasa por `_log` (`modulo`, `seccion`, `linea`, `aviso`, `gate`, `modelo`, `tiempo`, `cuadro`, `anclas`; `_tabla_anclas.ado` v3 es un alias de `_log anclas`): 110 columnas máximo, una unidad por cuadro declarada en el encabezado (miles de millones), rótulo INEGI sin paréntesis, notas al pie y gates en una línea. `05_scripts/test-log-ancho.sh <wrap.log>` lo mide (gate de `correr-sim.sh`) y `05_scripts/check-solo-display.py` separa impresión de cálculo. Cómo leer el log: runbook §15.
+
 #### `01_modulos/NTA.do`
 La cuenta NTA por individuo (§3.2b de `SIM.do`, solo para el año ENIGH anclado al SCN): identidad `C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S)` por persona, anclas S.14, Sankeys v2/v3 y panel grupo × sexo que dibuja `/NTA`. Parámetros declarados (`nta_anclaS`, `nta_YA`, `nta_cuotas`, `nta_d8`, …) en su encabezado.
 

@@ -57,8 +57,7 @@ quietly {
 		keep if entidad == "Nacional"
 	}
 	
-	noisily di _newline(2) in g _dup(30) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(30) "." ///
-		_newline
+	noisily _log modulo "Población  ·  `=entidad[1]', CONAPO a mitad de año" ref("runbook §9")
 
 	* Obtiene el año inicial de la base *
 	local aniofirst = anio in 1
@@ -84,7 +83,14 @@ quietly {
 	scalar aniofinal = `aniofinal'
 
 	** 2.1 Display inicial **
-	noisily di in g _col(14) "Total" _col(25) "Hombres" _col(38) "Mujeres" _col(54) "0-17" _col(66) "18-65" _col(81) "65+"
+	noisily _log cuadro clear
+	noisily _log cuadro col, titulo("Año") ancho(5)
+	noisily _log cuadro col, titulo("Total") fmt(%13.0fc)
+	noisily _log cuadro col, titulo("Hombres") fmt(%13.0fc)
+	noisily _log cuadro col, titulo("Mujeres") fmt(%13.0fc)
+	noisily _log cuadro col, titulo("0-17") fmt(%13.0fc)
+	noisily _log cuadro col, titulo("18-65") fmt(%13.0fc)
+	noisily _log cuadro col, titulo("65+") fmt(%13.0fc)
 	forvalues k=`anioinicial'(1)`aniofinal' {
 		tabstat poblacion if anio == `k', f(%20.0fc) stat(sum) save
 		tempname POBTOT
@@ -186,8 +192,9 @@ quietly {
 			escalar pct pobMayorespropF`entidadGName' = `POB65'[1,1]/`POBTOT'[1,1]*100
 		}
 
-		noisily di in g " " `k' _col(8) in y %12.0fc `POBTOT'[1,1] _col(21) in y %12.0fc `POBHOM'[1,1] _col(34) in y %12.0fc `POBMUJ'[1,1] _col(47) in y %12.0fc `POB017'[1,1] _col(60) in y %12.0fc `POB1864'[1,1] _col(73) in y %12.0fc `POB65'[1,1]
+		noisily _log cuadro fila "`k'" "`POBTOT'[1,1]" "`POBHOM'[1,1]" "`POBMUJ'[1,1]" "`POB017'[1,1]" "`POB1864'[1,1]" "`POB65'[1,1]"
 	}
+	noisily _log cuadro print, titulo("Población a mitad de año por sexo y grupo de edad, `anioinicial'-`aniofinal'") unidad("personas")
 
 
 
@@ -559,8 +566,7 @@ quietly {
 			}
 		}
 
-		noisily di _newline in g " Año con mayor tasa de dependencia: " in y aniotdmax
-		noisily di in g " Año con menor tasa de dependencia: " in y aniotdmin
+		noisily _log linea "Tasa de dependencia: máxima en `=aniotdmax', mínima en `=aniotdmin'"
 
 		twoway (connected tasaDependencia anio if anio >= 1950 & anio <= `anioinicial') ///
 			(connected tasaDependencia anio if anio > `anioinicial' & anio <= `aniofinal'), ///
@@ -621,7 +627,7 @@ quietly {
 	if "`textbook'" == "textbook" {
 		capture which scalarlatex
 		if _rc {
-			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+			noisily _log aviso, tipo(Nota) texto("la opción textbook (scalarlatex) es solo-repo; no viaja al endpoint público")
 		}
 		else {
 			noisily scalarlatex, log(poblacion) alt(pob)
@@ -630,8 +636,7 @@ quietly {
 
 	** END **
 	timer off 2
-	timer list 2
-	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs  "
+	noisily _log tiempo, timer(2) texto("Poblacion")
 }
 end
 
@@ -645,7 +650,7 @@ end
 ****                                                                                ****
 ****************************************************************************************
 program define UpdatePoblacion
-	noisily di in g "  Updating Poblacion.dta..." _newline
+	noisily _log aviso, tipo(UPDATE) texto("Poblacion.dta: se reconstruye desde CONAPO (DGIS)") ref("runbook §9")
 
 	* FUENTE (v8.4.1). CONAPO, Conciliación Demográfica de México 1970-2019 y
 	* Proyecciones de la población de México y de las entidades federativas

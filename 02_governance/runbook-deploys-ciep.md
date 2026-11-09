@@ -1001,9 +1001,55 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las d
 19. **Un gate que compara contra texto redondeado se queda sin tolerancia** (8.16b): `contrato-32.py` §2 comparaba Σ32 `pct_nac` contra los `APORT*` de `output.txt` a `%8.3f` con tolerancia 0.0005, que es exactamente el error máximo de ese redondeo; cinco corridas en 0.000499 y la de 8.16b en 0.000501 sin que la aditividad cambiara. Desde v8.16.0 `Simulador.ado` escribe `users/<id>/aportaciones-nacional.json` (los mismos vectores sin redondear) y el gate lee ese archivo; `output.txt` no cambia. Regla: el comparando de un gate es el escalar, no el texto formateado. (`c32`)
 20. **Una lista a mano de lo que viaja al VPS envejece en silencio; el manifiesto se deriva de lo que las páginas piden** (v8.17.1, 2026-11-08). La Fase 3b-ter de `publicar-vps.sh` embarcaba `users/ricardo/` → `users/ciepmx/` con `DEFAULT_MANIFEST` escrito a mano; v8.17.0 cambió el default de `/NTA` al v4 (`SankeyNTA/sankey-v4-economia.json`) y la lista no se tocó: el ritual (11/11), `test-sitio-nta.sh` y `test-sitio-seguridad.sh` estaban verdes porque prueban el sitio con sus propios archivos, no el layout del deployment, y el deploy habría dejado `/NTA` en 404 (tercera vez: v8.10 sitio sin css/js, v8.12 motor sin `manifest.json`, v8.17 el v4). Desde v8.17.1 la lista vive en un solo lugar, `05_scripts/manifiesto-default.py`, que la deriva del código del sitio (qué endpoint pide cada página y a qué `users/ciepmx/<archivo>` cae cada endpoint) y la leen la Fase 3b-ter, el Gate 5-remoto y `humo-calcular.sh` (un GET por endpoint tras el swap, entidades solo NL; rojo → rollback). `test-manifiesto-default.sh` (CI) prueba que es derivación: una página que pide un corte más lo mete sola, una URL en un comentario no cuenta, un corte que el endpoint rechaza aborta. Regla: todo producto nuevo que una página pida se prueba contra el layout del deployment (`manifiesto-default.py --tsv` lo lista; `humo-calcular.sh http://localhost:8000` contra `php -S` del docroot con `users/ciepmx/` armado como la Fase 3b-ter), no solo contra el harness. Consecuencia declarada: lo que ninguna página pide deja de viajar (v2 y v1 del Sankey NTA, `nta-quinquenio-sexo.json`). (`publicar-vps.sh`)
 
+21. **El log se lee en 110 columnas y toda impresión pasa por `_log.ado`** (sesión log-legible, 2026-11-09; §15). El `wrap.log` de v8.17.1 tenía 2,743 líneas de más de 110 columnas y 463 continuaciones «>»: la mitad eran el eco de `SIM.do` (comentarios de 150 columnas, matrices con `///`) y la otra mitad cuadros de 130-180 columnas, regresiones volcadas y los JSON de los Sankeys. Desde esta sesión `correr-sim.sh` corre `SIM_run.do` con `run` (sin eco), `SIM.do` imprime el cuadro de parámetros firmados (§0.9) y `test-log-ancho.sh` es gate de `correr-sim.sh`: ninguna línea > 110, ningún «> » (exentas solo las 47 llaves del contrato `output.txt`).
+
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 
 Para depurar un paso o si el script no está disponible en el clon (versiones anteriores a 8.18a-1): merge del PR → `-datos` al hash del merge (`git checkout master && git pull --ff-only`; el clon de Dropbox no se toca: firma §C) → `bash 05_scripts/correr-sim.sh <-datos> diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0; `commit.txt` = hash) → **`test-web-batch.sh --root -datos`** (N/N llaves, web = batch byte a byte) → `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/01-ritual` → PASÓ → `Precache` suelto solo si el sello difiere del manifest → `publicar.sh vX.Y.Z --empaquetar-datos` → release commit verificado (CHANGELOG, manifest, CITATION) → `git tag -a vX.Y.Z <hash literal>` + `git push origin vX.Y.Z` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
+
+---
+
+## 15. Cómo leer el log (sesión log-legible, 2026-11-09)
+
+El `wrap.log` de `correr-sim.sh` se lee en una terminal de 110 columnas con fuente normal: nada se corta ni se parte. Lo que el motor
+imprime pasa por `_log.ado`; lo que no cabe en una línea no es log, es documentación (memos CUAD-*, `/metodo`, headers de los módulos).
+
+**Jerarquía.** `══ Módulo · qué es ══` por programa (Población, PIB y deflactor, SCN, Expenditure, Households, NTA, PerfilesSim, LIF,
+TasasEfectivas, PEF, Precache, GastoPC, SHRFSP, Simulador por variable, FiscalGap, SankeySF); `── §n  Sección · documento ──` dentro del
+módulo (numerada como `SIM.do`: `3.2.4` = sección 3.2 de `SIM.do`, paso 4 de Households); nada para subsección (solo el número).
+
+**Cuadros.** Una unidad por cuadro, declarada a la derecha del título: «MXN 2024, miles de millones» (`%13.3fc`), «% del PIB 2024»
+(`%7.3f`), factores `%7.4f`, conteos `%13.0fc`. Nunca MXN completos. Rótulo = nombre INEGI sin paréntesis; código y sector en columnas
+propias; todo comentario o parámetro es nota `^n` / `Nota n:` debajo (las notas se envuelven con sangría). Los gates van al pie, una
+línea cada uno: `GATE  texto ………  a  vs  b   reldif d   OK|ROJO` (valores en miles de millones; `reldif` es la prueba al peso).
+
+**Avisos.** Una línea, prefijo fijo de 10 caracteres y referencia al documento: `FLAG 27   … → CUAD-1 §8`, `SELLO ROJO …`, `IMPORTANTE …`,
+`UPDATE …`, `Nota …`, `SUPUESTO …`, `GATE …`, `Salida …` (archivo escrito), `MODELO …` (una línea por regresión: N, pseudo-R², dónde está la
+tabla completa: `master/<año>/formal_*.ster`), `Tiempo …`.
+
+**Mapa § del log ↔ documento.**
+
+| Dónde en el log | Qué cuadro | Documento |
+|---|---|---|
+| `SIM.do` §0.9 | Parámetro · Valor · Firmado · Documento · Lo lee (FLAG si valor ≠ firmado) | CUAD-0 §4.0, CUAD-1 §4.0, CUAD-2 §4; header §4 «Decisiones» de Households, Expenditure y NTA |
+| SCN | Cuentas A–G; celdas CSI del sector hogares; celdas CSI por sector del Sankey v4 | CUAD-0 §4 bis; CUAD-2 §6.4 |
+| Expenditure | Anclas del consumo BIE por finalidad y P.3 S.14; IVA y IEPS micro vs macro | CUAD-1 §4.0, §8 bis, fichas 5-6 |
+| Households 3.2.0–3.2.2 | ENIGH crudos vs SCN; contribuciones; ingreso bruto salarial | CUAD-0 §3-§4 |
+| Households 3.2.3 | Probits de formalidad (una línea por modelo), ITAN por rango, ISR vs LIF | CUAD-1 §4, §8, §8 ter |
+| Households 3.2.4 | Anclas S.14, Tabla 1 firmada, y filas de sector de la identidad del PIB | CUAD-0 §5 (CUADRATURA de `output.txt`) |
+| Households 3.2.9 | Gates de Yl y Yk contra las celdas S.14 | CUAD-0 §5 |
+| NTA | Anclas al SCN; gates de Cuadratura II; Sankeys v2/v3/v4 y panel (una línea por gate) | CUAD-1 §7, CUAD-2 §6-§7; `nta-identidad.txt` (cuadros 1-5 a 110 columnas) |
+| Simulador | por variable: resumen (monto, contribuyentes, per cápita) y un cuadro por decil con EE | `Simulador.ado` header |
+| LIF, PEF, GastoPC, SHRFSP, FiscalGap, TasasEfectivas | sus cuadros, misma forma | runbook §9; `/metodo` |
+
+**Regla de gobernanza.** Toda impresión nueva del motor pasa por `_log` (`modulo`, `seccion`, `linea`, `aviso`, `gate`, `modelo`, `tiempo`,
+`cuadro`, `anclas`); un `noisily di` nuevo es un defecto de revisión. `05_scripts/test-log-ancho.sh <wrap.log>` lo mide (gate de
+`correr-sim.sh`); `05_scripts/check-solo-display.py` verifica que un cambio al log no toque una línea de cálculo. Las 47 llaves del
+contrato web (`INCD`, `APORT*`, `PROY*`, `GASTOS`…) son la única excepción al ancho: su forma la fija `cargaDefault.php` y la vigila
+`gate-numeros.sh`. Los JSON de los Sankeys (`SankeySumSim`, `SankeySumLoop`) se escriben con `file write` (hasta v8.17.1 nacían de un log propio
+con `noisily di`, que en batch volcaba el JSON al log con «>»: `log off` no pausa el log batch); los bytes del JSON son los mismos.
+Stata lee los do-files por tramos: no se edita un `.do`/`.ado` mientras una corrida del mismo árbol lo está ejecutando (una
+edición a medias produjo un `_log cug` y un «' invalid name» irreproducibles en los humos de esta sesión).
 
 ---
 
