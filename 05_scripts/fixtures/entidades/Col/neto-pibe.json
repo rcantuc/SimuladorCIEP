@@ -6,7 +6,7 @@
   "anio_referencia": 2027,
   "piso_serie": 2027,
   "procedencia": {
-    "version_simulador": "v8.16.0",
+    "version_simulador": "v8.17.2",
     "corte_datos": "2026-11-08",
     "corte_serie": {
       "anio": 2027,
@@ -16,7 +16,7 @@
     "log": "",
     "origen": "simulador",
     "dataset_serie": "users/ricardo/Col/ciclo-vida.json + PIBDeflactor Colima",
-    "generado_en": "7-Nov-2026T22:09:30"
+    "generado_en": "8-Nov-2026T23:25:19"
   },
   "unidades": {
     "saldo_nominal": {"unidad": "pesos corrientes de anio_vp (neto del ciclo de vida de la entidad: aporta - recibe)", "formato_sugerido": "%14.1fc", "divisor_sugerido": 1000000},
@@ -54,27 +54,27 @@
   "capas_declaradas": [
   ],
   "escalares": {
-    "NetoCicloCol": {"valor": 8561598000.3547297, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
-    "AportaCicloCol": {"valor": 45642012304.236183, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "NetoCicloCol": {"valor": 8649987234.819355, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
+    "AportaCicloCol": {"valor": 45730401538.700813, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
     "RecibeCicloCol": {"valor": 37080414303.881447, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
     "PobCicloCol": {"valor": 755998, "tipo": "personas", "formato_sugerido": "%15.0fc", "divisor_sugerido": 1},
     "pibYCol": {"valor": 257334843776.51132, "tipo": "mxn", "formato_sugerido": "%12.1fc", "divisor_sugerido": 1000000},
-    "NetoCicloPIBECol": {"valor": 3.3270263267535807, "tipo": "pctpib", "formato_sugerido": "%7.3fc", "divisor_sugerido": 1}
+    "NetoCicloPIBECol": {"valor": 3.361374273252963, "tipo": "pctpib", "formato_sugerido": "%7.3fc", "divisor_sugerido": 1}
   },
   "titular": {
     "anio": 2027,
     "procedencia": {"origen": "serie_observada", "dataset": "users/ricardo/Col/ciclo-vida.json + PIBDeflactor Colima", "tipo_dato": "observado"},
-    "saldo_nominal": 8561598000.3547297,
+    "saldo_nominal": 8649987234.819355,
     "saldo_real": null,
     "poblacion": 755998,
     "indice_precios": null,
     "saldo_pc_nominal": null,
     "saldo_pc_real": null,
-    "saldo_pib": 3.3270263267535807
+    "saldo_pib": 3.361374273252963
   },
   "cobertura": {"anio_min": 2027, "anio_max": 2027, "n_anios": 1, "n_esperados": 1, "anios_faltantes": []},
   "series": [
-    {"anio": 2027, "saldo_nominal": 8561598000.3547297, "saldo_real": null, "poblacion": 755998, "indice_precios": null, "saldo_pc_nominal": null, "saldo_pc_real": null, "saldo_pib": 3.3270263267535807}
+    {"anio": 2027, "saldo_nominal": 8649987234.819355, "saldo_real": null, "poblacion": 755998, "indice_precios": null, "saldo_pc_nominal": null, "saldo_pc_real": null, "saldo_pib": 3.361374273252963}
   ],
   "faltantes": [
     "procedencia.log",
