@@ -101,6 +101,24 @@
 ****   isr_personas_ancla, consumo_ancla, iepsnp_macro, ieps_relativo, consumo_precios: los leen NTA.do, Expenditure.do, PerfilesSim.do y TasasEfectivas.ado.
 ****   Gates nuevos (§11.5, 1e-9): Σ ISR_PF = Σ ITAN PF (pfae + pfsae) con itan_rangos; Σ ISR_PM = LIF ISR PM.
 ****
+**** Supuestos de la clasificación LISR (sesión 8.18: hasta v8.17.2 eran avisos SUPUESTO en el log, uno por sección; viven aquí y los lee el
+**** generador de /metodo. Texto de los avisos tal cual; procedencia: Households.do §2.2–§3.11 y §10.1. Los avisos SUPUESTO que imprimen
+**** resultados de la corrida (§11.1–§11.3: N formales, cut-off de PF y PM) siguen en el log):
+****   §2.2: Los ingresos por trabajo subordinado se reportan netos de las retenciones de ISR a asalariados
+****   §2.3: Los demás ingresos se reportan de manera bruta
+****   §3.1: Se dedican exclusivamente a actividades agrícolas si estas superan el 90 %
+****   §3.2: Las indemnizaciones se conceden de acuerdo con las leyes
+****   §3.2: Las indemnizaciones por daños no exceden el valor de mercado
+****   §3.3: Se considera un 63.48 % de los honorarios como remuneración y gastos operativos (Censo Económico 2019)
+****   §3.4: Todos los ingresos por rentas optan por deducir el 35 %
+****   §3.4: Se supone un 2 % de predial sobre el total de los ingresos por rentas
+****   §3.5: Se aplica la tarifa del artículo 152 de la LISR para la enajenación de bienes
+****   §3.5: En la enajenación de bienes muebles nunca se sobrepasa el valor de adquisición
+****   §3.8: Las personas físicas acumulan los ingresos por premios a sus demás ingresos
+****   §3.10: Formales: derechohabientes IMSS, ISSSTE, ISSSTE estatal, Pemex, ISSFAM o con prestaciones laborales
+****   §3.10: Si se pagan impuestos en el trabajo principal, también en el secundario
+****   §10.1: Las deducciones personales son beneficios para el jefe del hogar
+****
 **** 9. Especifico de Mexico (plantilla de capitulo §9; alimenta cap0; texto de CUAD-0 §9, 2026-10-30):
 ****   | Elemento                    | Que requiere genericamente                                  | Por que Mexico lo resuelve asi                                  |
 ****   | ENIGH bienal                | Encuesta con ingreso y gasto por persona, factor de         | Unica fuente con ingreso por fuente y gasto en el mismo hogar;  |
@@ -664,7 +682,6 @@ egen double ing_t2_cap8 = rsum(ing_agri)
 ** 2.2 Titulo IV De las Personas Fisicas
 * Capitulo I. DE LOS INGRESOS POR SALARIOS Y EN GENERAL POR LA PRESTACION DE UN SERVICIO PERSONAL SUBORDINADO
 * c. Sueldos, Salarios o Jornal *
-noisily _log aviso, tipo(SUPUESTO) texto("Los ingresos por trabajo subordinado se reportan netos de las retenciones de ISR a asalariados")
 
 g ing_ss = ing_anual if clave == "P001" | clave == "P011" | clave == "P006" | clave == "P014" | clave == "P018"
 g p001 = ing_anual if clave == "P001"
@@ -719,7 +736,6 @@ else {
 
 ** 2.3 Capitulo II. DE LOS INGRESOS POR ACTIVIDADES EMPRESARIALES Y PROFESIONALES
 * p. Honorarios *
-noisily _log aviso, tipo(SUPUESTO) texto("Los demás ingresos se reportan de manera bruta")
 g ing_honor = 0
 replace ing_honor = ing_anual if clave == "P012" | clave == "P013" ///
 	| clave == "P019" | clave == "P020" | clave == "P021" | clave == "P022" ///
@@ -883,7 +899,6 @@ terminos del septimo parrafo de este articulo y sera aplicable la reduccion a qu
 parrafo de este articulo hasta por los montos en el establecidos.*/
 
 * b. Agricultura *
-noisily _log aviso, tipo(SUPUESTO) texto("Se dedican exclusivamente a actividades agrícolas si estas superan el 90 %")
 g agri = ing_agri/ing_exclusivo > .9 & ing_agri > 0			// Dummy exclusivamente agricola
 g exen_agri = min(40*`smdf'*360,ing_agri) if agri == 0		// General
 replace exen_agri = min(423*`smdf'*360,ing_agri) if agri == 1		// Exclusivamente agricola
@@ -957,7 +972,6 @@ III. Las indemnizaciones por riesgos de trabajo o enfermedades, que se concedan 
 contratos colectivos de trabajo o por contratos Ley. */
 
 * k. Indemnizaciones *
-noisily _log aviso, tipo(SUPUESTO) texto("Las indemnizaciones se conceden de acuerdo con las leyes")
 g exen_indemn = ing_indemn
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -999,7 +1013,6 @@ XXV. Las indemnizaciones por danios que no excedan al valor de mercado del bien 
 se pagara el impuesto en los terminos de este Titulo. */
 
 * m. Indemnizaciones 3 *
-noisily _log aviso, tipo(SUPUESTO) texto("Las indemnizaciones por daños no exceden el valor de mercado")
 g exen_indemn3 = ing_indemn3
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -1043,7 +1056,6 @@ Articulo 109. Los contribuyentes a que se refiere esta Seccion, deberan calcular
 cargo en los terminos del articulo 152 de esta Ley. (...) */
 
 * s. Honorarios *
-noisily _log aviso, tipo(SUPUESTO) texto("Se considera un `=strtrim(string(0.634768962*100, "%5.2f"))' % de los honorarios como remuneración y gastos operativos") ref("Censo Económico 2019")
 g exen_honor = min(0.634768962*ing_honor,ing_honor)
 egen double exen_t4_cap2 = rsum(exen_honor)
 
@@ -1062,8 +1074,6 @@ predial de dichos inmuebles correspondiente al anio de calendario o al periodo d
 ingresos en el ejercicio segun corresponda.*/
 
 * t. Rentas de bienes inmuebles *
-noisily _log aviso, tipo(SUPUESTO) texto("Todos los ingresos por rentas optan por deducir el 35 %")
-noisily _log aviso, tipo(SUPUESTO) texto("Se supone un 2 % de predial sobre el total de los ingresos por rentas")
 g exen_rent = .35*ing_rent+.02*ing_rent
 
 * TOTAL *
@@ -1090,7 +1100,6 @@ excepto las establecidas en las fracciones I, II y III del articulo 151 de la mi
 dividira entre la cantidad a la que se aplico la tarifa y el cociente sera la tasa. */
 
 * u. Enajenacion de bienes *
-noisily _log aviso, tipo(SUPUESTO) texto("Se aplica la tarifa del artículo 152 de la LISR para la enajenación de bienes")
 g exen_enaje = min(0,ing_enaje)
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -1120,7 +1129,6 @@ del area geografica del contribuyente elevado al anio. Por la utilidad que exced
 terminos de este Titulo. */
 
 * w. Enajenacion de bienes muebles *
-noisily _log aviso, tipo(SUPUESTO) texto("En la enajenación de bienes muebles nunca se sobrepasa el valor de adquisición")
 g exen_enajem = min(3*`smdf'*360,ing_enajem)
 
 * TOTAL *
@@ -1219,7 +1227,6 @@ obtenga el ingreso podra acreditar contra el impuesto que se determine en la del
 impuesto federal que le hubiera efectuado la persona que pago el premio en los terminos de este percepto. */
 
 * z. Loterias *
-noisily _log aviso, tipo(SUPUESTO) texto("Las personas físicas acumulan los ingresos por premios a sus demás ingresos")
 g exen_loter = min(0,ing_loter)
 
 * TOTAL *
@@ -1579,7 +1586,6 @@ replace tipo_contribuyente = 2 if ((ing_t4_cap2 != 0 & ing_t4_cap2 != .) ///
 label define tipo_contribuyente 1 "Asalariado" 2 "Persona fisica"
 label values tipo_contribuyente tipo_contribuyente
 
-noisily _log aviso, tipo(SUPUESTO) texto("Formales: derechohabientes IMSS, ISSSTE, ISSSTE estatal, Pemex, ISSFAM o con prestaciones laborales")
 
 * Tamaño de la empresa
 g emp_tam = 1 if tam_emp == 1 | tam_emp == 2 | tam_emp == 3
@@ -1632,7 +1638,6 @@ replace formal = 6 if formal == 0 & `tiene_prestacion'
 replace formal2 = 6 if formal2 == 0 & `tiene_prestacion' & inscr_1 == "1"
 
 * Formal max
-noisily _log aviso, tipo(SUPUESTO) texto("Si se pagan impuestos en el trabajo principal, también en el secundario")
 tempvar formal_max
 egen `formal_max' = max(formal), by(folioviv foliohog numren)
 replace formal = `formal_max'
@@ -2459,7 +2464,6 @@ label var ISR "ISR (f{c i'}sicas y asalariados)"
 
 * Deducciones personales y gastos profesionales *
 noisily _log linea "3.2.3.1  Deducciones personales y gastos profesionales"
-noisily _log aviso, tipo(SUPUESTO) texto("Las deducciones personales son beneficios para el jefe del hogar")
 
 * 8.16b (isrpm_incidencia = propiedad; FLAG 19 cerrado): los negocios propios (ing_bruto_tpm, P068-P081) tributan como personas fisicas con actividad
 * empresarial: entran a la base de la tarifa junto con sus exenciones. El ISR de personas morales es de sociedades y se reparte ∝ ing_d4_rel (§11.3). *

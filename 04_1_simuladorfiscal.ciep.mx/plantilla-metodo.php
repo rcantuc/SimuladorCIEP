@@ -1,13 +1,13 @@
 <?php
-// metodo/plantilla.php — cabecera y pie de las páginas de MÉTODO del sitio
-// (/NTA es la primera; /entidades y sus 32 páginas /entidades/<ABREV> desde v8.13.0; las hermanas
-// previstas: Población → PIB/Deflactor → Cuentas Nacionales → Expenditures → Households). Páginas estáticas de lectura:
+// plantilla-metodo.php — cabecera y pie de las páginas de MÉTODO del sitio (hasta 8.18 vivía en metodo/plantilla.php;
+// se movió a la raíz porque /metodo es ahora la sección generada por 05_scripts/metodo.py: índice, cap0 y un capítulo por
+// módulo, en español). /NTA fue la primera; /entidades y sus 32 páginas /entidades/<ABREV> desde v8.13.0. Páginas estáticas de lectura:
 // sin «Calcular», sin selector, sin sesión; los datos los sirve un PHP de solo
 // lectura que lee en runtime lo que el motor ya exporta (jsonSankeyNTA.php, …).
 //
 // Cómo se agrega una hermana sin reescribir nada:
 //   1. carpeta <Slug>/index.php en el docroot (la ruta es /<Slug>), con
-//        require_once dirname(__DIR__) . '/metodo/plantilla.php';
+//        require_once dirname(__DIR__) . '/plantilla-metodo.php';
 //        metodo_cabecera(array('slug' => '<Slug>', 'titulo' => '…', 'lang' => 'en'));
 //        … contenido …
 //        metodo_pie(array('sankeys' => array(array('renderAt' => '…', 'url' => '/json….php?…'))));
@@ -19,6 +19,7 @@
 
 // Índice de la sección, en el orden en que se leerá. Solo páginas que existen.
 $METODO_PAGINAS = array(
+	'metodo' => array('titulo' => 'Capítulos', 'lang' => 'es'),   // /metodo: el rótulo de la sección ya dice «Método»; la entrada es el índice de capítulos
 	'NTA' => array('titulo' => 'Household NTA Sankey', 'lang' => 'en'),
 	'entidades' => array('titulo' => 'States', 'lang' => 'en'),
 );
@@ -56,6 +57,7 @@ function metodo_cabecera(array $p) {
 	$descripcion = $p['descripcion'] ?? $titulo;
 	$t = htmlspecialchars($titulo);
 	$d = htmlspecialchars($descripcion);
+	$rotulo = ($lang === 'es') ? 'Método' : 'Method';
 	echo <<<HTML
 <!DOCTYPE html>
 <html lang="{$lang}">
@@ -77,10 +79,10 @@ function metodo_cabecera(array $p) {
 	<header class="metodo-header">
 		<div class="container">
 			<a href="/" class="metodo-logo"><img src="/images/logo-sim-fiscal-ciep-b.png" width="69" height="73" alt="Simulador Fiscal CIEP"></a>
-			<nav class="metodo-nav" aria-label="Method">
+			<nav class="metodo-nav" aria-label="{$rotulo}">
 				<a href="/">Simulador Fiscal CIEP</a>
 				<span class="sep">›</span>
-				<span class="metodo-seccion">Method</span>
+				<span class="metodo-seccion">{$rotulo}</span>
 HTML;
 	// $p['migas'] (v8.13.0, entidades): migas extra debajo de la página de la sección (p. ej. la entidad bajo
 	// /entidades); cada una array('href' => …, 'texto' => …). La última es la página actual (activa); la

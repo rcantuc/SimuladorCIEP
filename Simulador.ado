@@ -2,7 +2,10 @@
 *! Simulador — perfil, incidencia, ciclo de vida y proyección de una variable per cápita,
 *! con bootstrap por diseño muestral (UPM dentro de estrato) en Mata.
 *
-* NOTA METODOLÓGICA (bootstrap, v2.0)
+* §1 Propósito (procedencia: líneas 2–3 de este header): perfil, incidencia, ciclo de vida y proyección de una variable per cápita, con bootstrap por
+*   diseño muestral (UPM dentro de estrato) en Mata; los cinco archivos de salida (PC, PERF, INCI, CICLO, REC) los leen Perfiles.ado, FiscalGap.ado y
+*   CuentasGeneracionales.ado.
+* §3 Procedimiento — NOTA METODOLÓGICA (bootstrap, v2.0)
 * -----------------------------------
 * Qué calcula por réplica: el total (REC), contribuyentes (FOR), población (POB) y
 * per cápita del hombre de 40 años; el perfil por edad y sexo (PERF); la incidencia
@@ -32,6 +35,9 @@
 * (ancho ∝ sd/√B), que se encoge con B y tiende a cero —subestimaba el intervalo
 * por un factor √B (3.2× con B=10, 10× con B=100).
 *
+* §9 Específico de México (procedencia: párrafo «Unidad de remuestreo» de este header; 02_governance/metodo/cap0-requerimientos.md fila 2, columna genérica):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Diseño muestral de la encuesta (UPM y estratos) | Encuesta de hogares con factor de expansión e identificador hogar-persona (y, para la varianza, los identificadores de conglomerado y estrato de diseño) | La ENIGH muestrea viviendas en UPM dentro de estratos de diseño (upm, est_dis en concentrado.dta): cada réplica sortea con reemplazo tantas UPM como tiene cada estrato y multiplica el peso por las veces que salió la UPM (bsample, strata(est_dis) cluster(upm)) |
 * Con bootstrap(1) no hay remuestreo: una sola pasada con los pesos originales, y
 * los archivos salen idénticos a los de v1.x (test dorado). Es el modo del sitio
 * en producción. legacy corre el bloque v1.x completo (lento) para comparaciones.

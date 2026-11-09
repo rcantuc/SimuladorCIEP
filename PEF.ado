@@ -1,4 +1,14 @@
 *! version 8.1 CIEP 19jul2026
+* §1 Propósito (procedencia: 03_help/Stata/PEF.sthlp «Descripción»): `PEF` descarga y analiza el gasto público federal combinando, con una jerarquía
+*   automática de prioridad, la Cuenta Pública (gasto ejercido), el PEF aprobado y el PPEF (proyecto), más el BIE para expresar valores como % del
+*   PIB. Permite consultar el gasto histórico desde 2013, comparar su evolución entre años, analizar la composición del gasto por función (salud,
+*   educación, pensiones, seguridad, etc.) y evaluar su relación con el PIB.
+* §2 Entradas (procedencia: 03_help/Stata/PEF.sthlp «Descripción»; CUAD-0 §2 fila «LIF / PEF»; manifest.json assets raw/PEFs/):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | CP <año>.xlsx (Cuenta Pública), PEF <año>.xlsx, PPEF <año>.xlsx, Diccionario.csv, CuotasISSSTE.xlsx | SHCP, Paquete Económico y Cuenta Pública | vintage del asset (manifest) | gasto por ramo, función y capítulo (divCIEP, divSIM) | anio + división | verde |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 6):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Gasto público funcional | Gasto ejecutado (no aprobado) por función y por nivel de gobierno, con clasificación que permita separar consumo individual (salud, educación, pensiones) de colectivo | Cuenta Pública (SHCP), clasificación funcional y económica CONAC, Transparencia Presupuestaria; ramos 28 y 33 para lo estatal |
 program define PEF, return
 	capture mkdir `"${SIMROOT}/users/"'
 	capture mkdir `"${SIMROOT}/users/$id/"'

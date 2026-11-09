@@ -11,7 +11,7 @@
 // Sin números en este archivo: todo valor viene de esos JSON (<span data-nta>, <span data-pib>); test-sitio-nta.sh lo exige.
 // Historia: v8.12.5 (NTA-2) retiró el v1; v8.12.6 (NTA-3) el v2; v8.13.0 (NTA-4) dibujó el v3 en % del PIB con un solo Desahorro / Futuro / ajuste;
 // v8.17.0 (8.17) dibuja la economía completa y deja el v3 como corte.
-require_once dirname(__DIR__) . '/metodo/plantilla.php';
+require_once dirname(__DIR__) . '/plantilla-metodo.php';
 
 metodo_cabecera(array(
 	'slug' => 'NTA',

@@ -1,6 +1,14 @@
 **************
 *** SANKEY ***
 **************
+* §1 Propósito (procedencia: SIM.do §8.2 «Sankey del sistema fiscal»; runbook §9.7 fila «SIM.do §8.2 → SankeySF.do»): Sankey del sistema fiscal:
+*   para cada corte (decil, grupoedad, sexo, rural, escol) dibuja de users/<id>/aportaciones.dta los flujos de los hogares hacia los impuestos (eje 1)
+*   y del gasto público hacia las familias (eje 4), con los renglones macro de la LIF y el PEF; con global entidad, los mismos cortes de la entidad
+*   (quintil estatal en vez de decil) con banda de vintages ENIGH y sellos de muestra.
+* §6 Salidas (procedencia: runbook §9.7; 05_scripts/manifiesto-default.py (portada); 05_scripts/fixtures/sankeys-default/SankeySF):
+*   | Archivo / JSON / figura | Qué contiene | Quién lo consume | Check de CI que lo protege |
+*   | users/<id>/sankey-<corte>.json (decil, grupoedad, sexo, rural, escol) | nodos y enlaces del Sankey fiscal nacional (SankeySumSim) | portada del sitio (jsonSankey*.php); sidecar | gate-numeros.sh: 5 sankeys dentro de 1e-9 contra fixtures/sankeys-default/SankeySF (sesión) |
+*   | users/<id>/<ABREV>/sankey-<corte>.json (quintil, grupoedad, sexo, rural, escol) | Sankey de la entidad con banda de vintages (bmin, bmax, v<t>) y sellos n/top1 por enlace | /entidades/<ABREV> (jsonEntidad.php) | contrato-32.sh (paridad, aditividad Σ32, testigo NL); test-sitio-entidades.sh (fixtures NL, Jal, Col) |
 timer on 9
 if "`1'" == "" {
 	local 1 = "decil"

@@ -1,8 +1,9 @@
 *! contrato-32.do  v1.0 (v8.13a, 2026-10-19) — el contrato de entidad para las 32 entidades federativas
 *
-* QUÉ HACE (corre DENTRO de la sesión de SIM.do, con sus escalares y users/$id/aportaciones.dta
+* §1 Propósito — QUÉ HACE (corre DENTRO de la sesión de SIM.do, con sus escalares y users/$id/aportaciones.dta
 * vivos, después de §8.2; lo invoca 05_scripts/contrato-32.sh). Recorre el catálogo SIMentidad y,
 * para cada entidad, produce en users/$id/<ABREV>/ lo que el motor produce para $entidad:
+* §6 Salidas (procedencia: este header; runbook §13; 05_scripts/generar-entidades.py meta): por entidad, en users/$id/<ABREV>/:
 *   §1  Poblacion if entidad == "<nombre>"          (escalares pobtot<ABREV>…; pirámide)
 *   §2  PIBDeflactor if entidad == "<nombre>"       SOLO si existe master/PIBDeflactor<ABREV>.dta
 *                                                   (construirla baja series del BISE con token:
@@ -18,6 +19,12 @@
 *        nacional) y NetoCicloPIBNac (neto nacional / PIB nacional). Es lo que la pagina /entidades/<ABREV>
 *        muestra como producto 4 y la nota de la discrepancia: generar-entidades.py meta solo lo transcribe
 *        (regla: ningun numero de la pagina nace fuera de Stata).
+* §2 Entradas (procedencia: 05_scripts/contrato-32.sh «Bases precedentes (runbook §13)»; runbook §13.1): users/$id/aportaciones.dta y los escalares de la
+*   sesión nacional de SIM.do; las 5 bases de vintages users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta (banda bmin/bmax; sin ellas aborta);
+*   master/PIBDeflactor<ABREV>.dta de las 32 (pibe-32.sh, sello pibe-32 en master/PIBDeflactor<ABREV>.meta); el catálogo SIMentidad.ado.
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 14):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Unidad subnacional | Lista cerrada de unidades con representatividad muestral en la encuesta, PIB propio, transferencias recibidas e ingresos propios | 32 entidades; contrato-32: celdas n<100 selladas, participaciones, PIBE, Ley de Ingresos estatal (9.x) |
 * Tolerante a fallos: cada paso va en `capture noisily`; el rc, el tiempo y la nota se registran
 * por entidad en <evidencia>/contrato-32.tsv y el recorrido sigue con la siguiente. Un reporte
 * parcial vale más que nada. El log de cada entidad queda en <evidencia>/entidades/<ABREV>.log.

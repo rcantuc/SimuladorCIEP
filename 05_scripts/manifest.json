@@ -1,13 +1,13 @@
 {
-  "version": "v8.17.2",
+  "version": "v8.18.0",
   "data_updated": "2026-11-08",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
   "enigh_vintage": "2024",
   "enigh_vintage_regla": "Año de la ENIGH con la que corrió el motor (scalar anioenigh de SIM.do y Web.Stata.do). La Fase 4 de publicar-vps.sh la escribe como 'EnighVintage:' en DEPLOYED_COMMIT y la sección de método del sitio (/NTA) la cita en su línea de fuente. Se bumpea al cambiar de ENIGH.",
   "baseline": "v8.17.2",
   "baseline_regla": "Tag desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión: la última corrección de datos o cambio metodológico declarado en el CHANGELOG. v8.14.0 y anteriores: v8.12.4; v8.15.0-v8.15.3: v8.15.0 (Cuadratura I, CUAD-0 firmado); v8.16.0: v8.16.0 (Cuadratura II, sesión 8.16b: CUAD-1 firmado en CUAD-1-2-firma.md §B; consumo anclado a P.3 S.14, cuotas por sector, ISR PM por propiedad, parte salarial acotada, obligación de PF por rangos del ITAN, formales anclados a IMSS+ISSSTE, IEPS por bien gravado; output.txt, los 10 sankeys y las 32 entidades NO comparan con <= v8.15.3, CHANGELOG [v8.16.0]); desde v8.17.0: v8.17.0 (Sankey de la economía completa, sesión 8.17: CUAD-2 firmado en CUAD-1-2-firma.md §A 16, 19-23 y §B 17-18; hub = INBD, fila τ por sector, retenido de las sociedades y déficit público a personas, consumo colectivo = P.32 S.13; cambian los productos de NTA.do que /NTA publica (sankey-v4-economia.json nuevo, sankey-v3-grupoedad.json, nta-*.json, nta-identidad.txt); output.txt, los 10 sankeys de gate-numeros y las 32 entidades no se mueven por 8.17, CHANGELOG [v8.17.0]); desde v8.17.2: v8.17.2 (CUAD-3, sesión cuad-3: rentas efectivas de hogares en B.2n (rentas_celda = b2n), celda de negocios B.3n + D.422 (ing_mixto_ancla = b3n_d422) y brecha ENIGH-SCN de D.1 y B.3n repartida ∝ Y^ε (altimir_elasticidad calibrada contra el ITAN 4T 2024); cambian CUADRATURA (YL/YA), INCD*, APORT*, PROY*, los Sankeys y las 32 entidades; output.txt, los 10 sankeys y las 32 entidades NO comparan con <= v8.17.1, CHANGELOG [v8.17.2]). Se mueve SOLO en una corrección de datos o un cambio metodológico que re-ancle el baseline de gate-numeros.sh (commit baseline: vX.Y.Z); el Gate 11 de publicar.sh exige que exista y que sea un tag desde v8.15.0. La Fase 4 de publicar-vps.sh lo escribe como Baseline: en DEPLOYED_COMMIT (health.php) y el sidecar lo copia a manifest-datos.json.",
-  "release_tag": "v8.17.2",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.17.2/",
+  "release_tag": "v8.18.0",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.18.0/",
   "generated_at": "2026-10-06T23:20:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "scn_vintage": {

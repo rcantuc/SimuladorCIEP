@@ -1,6 +1,6 @@
 # `/metodo` — Capítulo 0: Requerimientos para replicar el simulador
 
-*Borrador para 8.18 y para el equipo de Colombia. Cada fila nace de la sección 9 de un capítulo de módulo. Tres columnas: cómo lo resuelve México → qué se necesita genéricamente → candidato colombiano. La columna Colombia es un punto de partida: **todo lo marcado ⚠ debe verificarlo el equipo local** (nombres, periodicidad, acceso a microdatos, nivel departamental).*
+*Publicado en `/metodo/cap0` desde v8.18.0 (sesión 8.18); la página muestra la columna «Otro país» vacía y la candidata colombiana se queda en este documento. Antecedente mexicano del ajuste encuesta–SCN: del Castillo Negrete (CEPAL, 2023), §0.7. Borrador para el equipo de Colombia. Cada fila nace de la sección 9 de un capítulo de módulo. Tres columnas: cómo lo resuelve México → qué se necesita genéricamente → candidato colombiano. La columna Colombia es un punto de partida: **todo lo marcado ⚠ debe verificarlo el equipo local** (nombres, periodicidad, acceso a microdatos, nivel departamental).*
 
 ## 0.1 Criterio de viabilidad
 
@@ -54,3 +54,16 @@ Un módulo se replica si **todas** sus filas tienen equivalente con el mismo niv
 ## 0.6 Siguiente paso para el equipo de Colombia
 
 Llenar la columna Colombia sin ⚠: para cada fila, nombre exacto de la fuente, año más reciente con microdatos accesibles, nivel de desagregación real (edad simple sí/no, departamento sí/no), y enlace. Con esa tabla llena se decide qué módulos entran en la primera versión y cuáles esperan.
+
+## 0.7 Bibliografía del método
+
+Fuentes externas que los memos citan; los PDF congelados, con sha256, viven en `metodo/fuentes/` (`fuentes/README.md`, la tabla que la página publica).
+
+| Referencia | Qué sostiene en el método | Dónde se cita |
+|---|---|---|
+| Naciones Unidas et al. (2009), *System of National Accounts 2008*, texto final, https://unstats.un.org/unsd/nationalaccount/docs/SNA2008.pdf | Celdas del sector hogares: §7.9 y §7.19(c) (ingreso mixto y excedente de los ocupantes-propietarios), §24.55 (el arrendamiento de viviendas es excedente de operación, no ingreso mixto: `rentas_celda = b2n`), §7.21 (PIB vs INB), cap. 8 (D.442/D.614, D.8, D.752) | CUAD-0 §10 bis; CUAD-3 §10 bis |
+| INEGI (2014), *Sistema de Cuentas Nacionales de México. Cuentas por sectores institucionales 2003-2013. Año base 2008. Fuentes y metodología. Primera versión*, 117 pp. (`fuentes/702825068479.pdf`) | Cuasisociedades (p. 12), hogares productores e ingreso mixto (p. 33, 45), D.442 y contribuciones complementarias (p. 46–47), D.8 (p. 49), remesas D.752 (p. 48) | CUAD-0 §10 bis |
+| del Castillo Negrete, M. (2023), *La distribución del ingreso y la riqueza: nuevas aproximaciones conceptuales y metodológicas*, Documentos de Proyectos LC/TS.2023/44 – LC/MEX/TS.2023/8, CEPAL, Ciudad de México, 606 pp. (`fuentes/S2300345_es.pdf`) | Equivalencias ENIGH ↔ S.14 clave por clave (cuadro 69, p. 233); rentas efectivas de inmuebles en B.2b (p. 232); celda de negocios = B.3b + D.422 (p. 232); brecha encuesta–SCN repartida ∝ Y^ε con ε = 1.75 (p. 238, ecs. 3–4) y su validación (p. 241); la ENIGH no está truncada, el problema es subreporte (pp. 268–273) | CUAD-3 §4, §4.4, §10 bis; `CEPAL-delCastillo-2023-lecciones.md`; filas 17 y §0.3 de este capítulo |
+| INEGI (2025), *Cuenta Satélite de Vivienda de México 2024*, reporte de resultados 47/25, https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2025/viviendasat/CSVM2024_RR.pdf | Alquiler imputado bruto 2024 (p. 7–8), la verificación al peso de B.2b S.14 (FLAG 18) | CUAD-0 §10 bis 7 |
+| Lee, R. y A. Mason (eds.) (2011), *Population Aging and the Generational Economy: A Global Perspective*, Edward Elgar / IDRC; manual NTA de Naciones Unidas (2013), *National Transfer Accounts Manual: Measuring and Analysing the Generational Economy* | Identidad del ciclo de vida C − YL = (τ⁺ − τ⁻) + (YA − S) y la escala de equivalencia 0.4 → 1 que `/NTA` contrasta | header de `NTA.do` («Lee–Mason»); `/NTA` nota 1 |
+

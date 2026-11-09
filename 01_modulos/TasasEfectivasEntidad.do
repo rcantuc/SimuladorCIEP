@@ -9,7 +9,7 @@
 * Con el global vacío SIM.do no llega a esta línea: cero efecto en la corrida nacional.
 * También lo llama 05_scripts/contrato-32.do para cada una de las 32.
 *
-* QUÉ HACE (unificación, no invención — la metodología es la de TasasEfectivasMicro.ado):
+* §3 Procedimiento — QUÉ HACE (unificación, no invención — la metodología es la de TasasEfectivasMicro.ado):
 *   1. Si no existe el espejo nacional micro/micro (escalares *TEnac), lo calcula una vez
 *      (TasasEfectivasMicro sin entidad()): es la referencia de Rel<IMP>TE<suf>.
 *   2. TasasEfectivasMicro, anio(<anio>) entidad(<clave INEGI>) sufijo(<abrev en minúsculas>)
@@ -27,7 +27,7 @@
 * sobre la misma base post-ajuste. De ahí la propuesta de gate de consistencia (FLAG v8.13a):
 * la tasa nacional se reproduce como promedio de las 32 ponderado por su base.
 *
-* FLAGs (decisiones de Ricardo; aquí solo parámetros): sello_n, sello_top1 (heredados de P5);
+* §8 Límites conocidos — FLAGs (decisiones de Ricardo; aquí solo parámetros): sello_n, sello_top1 (heredados de P5);
 * qué impuestos se publican por entidad (todos se escriben; nada se oculta ni se suaviza).
 timer on 13
 local anio = `1'

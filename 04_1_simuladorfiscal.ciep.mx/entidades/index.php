@@ -5,9 +5,9 @@
 // top-1, neto del ciclo / PIBE) las llena js/entidad.js en runtime desde /jsonEntidad.php?producto=indice
 // (users/<id>/entidades.json, esquema entidades-indice/v1, que escribe generar-entidades.py meta a partir de
 // los JSON del motor y de la tabla de las 32). Cero números en este archivo. Página de la sección de método
-// (metodo/plantilla.php), hermana de /NTA; cada fila enlaza a /entidades/<ABREV>.
+// (plantilla-metodo.php), hermana de /NTA; cada fila enlaza a /entidades/<ABREV>.
 $catalogo = require __DIR__ . '/_catalogo.php';
-require_once dirname(__DIR__) . '/metodo/plantilla.php';
+require_once dirname(__DIR__) . '/plantilla-metodo.php';
 
 metodo_cabecera(array(
 	'slug' => 'entidades',

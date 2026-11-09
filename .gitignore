@@ -131,11 +131,6 @@ wp-salt.php
 # Cada usuario copia set_token.template.do como set_token.do y pone su token.
 set_token.do
 
-# Configuración local por clon (8.17 Bloque 0): palancas de SIM.do §0 (hasta, nographs, update, id, …).
-# Cada quien copia config-local.do.ejemplo como config-local.do y SIM.do §0.1b lo corre si existe. No
-# es secreto, pero es estado de UN clon: versionarlo propagaría el `hasta` de uno a las corridas de todos.
-config-local.do
-
 # Credenciales del endpoint Stata `net from` — valores reales del servidor.
 # Cada operador copia endpoint-credentials.template.sh como endpoint-credentials.sh
 # y rellena SSH_ALIAS, REMOTE_PATH, ENDPOINT_URL. Consumido por publicar-endpoint.sh.

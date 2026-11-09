@@ -51,13 +51,6 @@ done
 [[ -x "$STATA" ]] || { echo "no encuentro Stata en $STATA (usa --stata)" >&2; exit 2; }
 mkdir -p "$EVID"
 ID="$(whoami)"
-# 8.17 Bloque 0: SIM.do §0.1b corre ${SIMROOT}/config-local.do si existe (palancas personales: hasta, nographs, update, id);
-# un `hasta` olvidado cortaría la sesión nacional en silencio. Con --sin-sim SIM.do no corre y el archivo no importa.
-if [[ "$SIN_SIM" != "true" && -e "$REPO_ROOT/config-local.do" ]]; then
-    echo "contrato-32: ABORTA, hay $REPO_ROOT/config-local.do y SIM.do §0.1b lo cargaría. Los clones de corrida no llevan configuración local: muévelo o bórralo." >&2
-    exit 2
-fi
-
 # --- bases precedentes: se validan; sin las 5 bases de vintages ABORTA (8.16b: antes seguía sin banda) ---
 echo "== Bases precedentes (runbook §13)"
 FALTAN_V=()

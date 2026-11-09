@@ -1,4 +1,18 @@
 *! version 8.0 CIEP 03jul2026
+* §1 Propósito (procedencia: 03_help/Stata/GastoPC.sthlp «Descripción»; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` calcula el gasto público per
+*   cápita por función (educación, salud, pensiones, energía, infraestructura y otros), distribuyéndolo entre los individuos de la ENIGH según sus
+*   características socioeconómicas: el gasto total de cada función se divide entre el número de beneficiarios identificados en la ENIGH, asignando a
+*   cada individuo el monto per cápita según su condición (si asiste a la escuela, si tiene seguro médico, si recibe pensión).
+* §2 Entradas (procedencia: 03_help/Stata/GastoPC.sthlp «Descripción»):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | master/PEF.dta (vía PEF, cache de Precache) | SHCP | vintage del asset | montos presupuestados por ramo y función | anio divCIEP | verde |
+*   | master/perfiles<anioPE>.dta y master/<anioenigh>/households.dta (ENIGH armonizada) | INEGI vía PerfilesSim / Households | ENIGH anioenigh | alumnos, asegurados, pensionados, población | folioviv foliohog numren | según Households §2 |
+*   | PIBDeflactor | INEGI (BIE) | en vivo | deflactor para pesos constantes | anio | amarillo |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md filas 9, 10 y 11):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Pensiones | Pensiones contributivas y no contributivas con perfil por edad y sexo de beneficiarios y de cotizantes | IMSS, ISSSTE, Pensión Bienestar: beneficiarios y monto por edad y sexo; Ley 73/97 |
+*   | Salud | Gasto público en salud por edad y sexo (o perfil de uso) y población cubierta por régimen | IMSS, ISSSTE, IMSS-Bienestar: gasto y derechohabiencia; perfil de gasto por edad |
+*   | Educación | Matrícula por nivel y edad y gasto público por nivel, nacional y subnacional | SEP matrícula por nivel y edad; gasto por nivel |
 program define GastoPC, return
 quietly {
 	// 0.1 Inicia un temporizador para medir el rendimiento

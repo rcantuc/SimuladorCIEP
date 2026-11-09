@@ -1,4 +1,15 @@
 *! version 8.1 CIEP 12sep2026
+* §1 Propósito (procedencia: 03_help/Stata/LIF.sthlp «Descripción»): `LIF` descarga y analiza los ingresos presupuestarios del gobierno federal
+*   combinando tres fuentes oficiales: la Ley de Ingresos de la Federación (montos aprobados por el Congreso), las Estadísticas Oportunas de la SHCP
+*   (recaudación observada mensual) y el BIE (PIB y deflactor para expresar valores como % del PIB). Permite consultar la recaudación histórica desde
+*   1993, comparar su evolución entre años, analizar la elasticidad de cada impuesto respecto al PIB y proyectar el cierre del año en curso.
+* §2 Entradas (procedencia: 03_help/Stata/LIF.sthlp «Descripción»; CUAD-0 §2 fila «LIF / PEF»; manifest.json assets):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | LIFs.xlsx (Ley de Ingresos aprobada, por año) | SHCP, Paquete Económico | vintage del asset (manifest) | recaudación aprobada por divLIF / divCIEP / divSIM | anio + división | verde |
+*   | Estadísticas Oportunas de Finanzas Públicas (recaudación observada mensual, vía DatosAbiertos) | SHCP | en vivo (runbook §9) | recaudación observada por impuesto | anio mes | verde |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 7):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Ingresos públicos | Recaudación efectiva por impuesto y, para lo subnacional, ingresos propios por unidad | LIF, recaudación SAT por impuesto (ISR PF/PM, IVA, IEPS, ISAN, importaciones), Cuenta Pública |
 program define LIF, return
 quietly {
 	capture mkdir `"${SIMROOT}/users/"'

@@ -10,7 +10,7 @@
 *   run CicloEntidad.do <anioPE> "<entidad>"
 * Con el global vacío SIM.do no llega a esta línea: cero efecto en la corrida nacional.
 *
-* DEFINICIÓN HEREDADA (SIM.do §7.1–7.3; Simulador.ado):
+* §3 Procedimiento — DEFINICIÓN HEREDADA (SIM.do §7.1–7.3; Simulador.ado):
 *   neto   = AportacionesNetas = ImpuestosAportaciones − Transferencias, por persona, [fw=factor]
 *   aporta = ImpuestosAportaciones = ISRPM + ISRAS + ISRPF + CUOTAS + IVA + IEPSNP + IEPSP + ISAN + IMPORT
 *            (variables *_Sim; NO entran FMP_Sim ni OTROSK_Sim)
@@ -26,7 +26,7 @@
 *            anioVP = anioPE el deflactor es 1). aporta y recibe se deflactan aquí con el mismo
 *            cociente para que neto = aporta − recibe se cumpla también cuando anioVP != anioPE.
 *
-* SALIDA: users/$id/<ABREV>/ciclo-vida.json (JSON plano, no script FusionCharts), con:
+* §6 Salidas — SALIDA: users/$id/<ABREV>/ciclo-vida.json (JSON plano, no script FusionCharts), con:
 *   totales (entidad y nacional), parámetros, procedencia y, por celda quinquenio × sexo:
 *     n      personas de la MUESTRA de la entidad en la celda (sin ponderar)
 *     pob    población expandida (Σ factor)
@@ -43,7 +43,7 @@
 * Series: grupos de deciles NACIONALES I-V / VI-IX / X, como el nacional (local grupos = "decil";
 * el código conserva "quintil" = quintil ESTATAL y "ninguno" = una sola serie por si se decide
 * cambiar). Sellos: n < 100 personas por celda quinquenio × sexo, top1 > 25 %.
-* FLAGs abiertos (CHANGELOG Unreleased): definición de n, nombre del archivo.
+* §8 Límites conocidos — FLAGs abiertos (CHANGELOG Unreleased): definición de n, nombre del archivo.
 
 timer on 12
 local anio = `1'

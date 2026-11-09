@@ -3,6 +3,19 @@
 ***    4.2 MODULO IVA    ***
 ***                      ***
 ****************************
+** §1 Propósito (procedencia: SIM.do §4.5 «Submódulo IVA (web)» y el bloque `if "`cambioiva'" == "1"` (NUEVA ESTIMACIÓN IVA); runbook §9.6 «Brecha simulación vs.
+**   proyección LIF (IVA_Mod.do)»): submódulo IVA (web): cuando el formulario del sitio cambia la matriz IVAT (tasa general, tratamiento por rubro:
+**   tasa cero / exento / gravado, y evasión e informalidad), recalcula el IVA por persona sobre master/<anioenigh>/categ_iva.dta y escribe
+**   users/<id>/iva_mod.dta, que SIM.do §7 funde en el ciclo de vida. El IVA simulado del año del Paquete (potencial ENIGH a precios del Paquete
+**   × (1 − informalidad)) no se fuerza a la recaudación proyectada de la LIF: la diferencia se declara como residuo documentado («brecha … pp»).
+** §4 Decisiones (procedencia: SIM.do §4.5 matriz IVAT; runbook §9.6):
+**   | Parámetro | Default | Alternativas | FLAG | Memo | Qué cambia si se mueve |
+**   | IVAT[1] tasa general | 16 | la que fije el formulario | — | SIM.do §4.5 | base × tasa |
+**   | IVAT[2..12] tratamiento por rubro (1 tasa cero, 2 exento, 3 gravado) | alimentos 1, alquiler 2, canasta básica 1, educación 2, consumo fuera del hogar 3, mascotas 3, medicinas 1, toallas sanitarias 1, otros 3, transporte local 2, transporte foráneo 3 | 1 / 2 / 3 por rubro | — | SIM.do §4.5 | qué rubros gravan |
+**   | IVAT[13] evasión e informalidad (%) | 23.1 | input [0–100] | se recalibra y documenta cada vez que cambie lo que mueve el cierre (perfiles, PIB del SCN, recaudación); nunca se hereda a ciegas | runbook §9.6; Expenditure.do §5 «Informalidad %» (recalibrado 2026-10-06: 22.96 → 23.14 por la revisión del PIB 2024) | IVA potencial × (1 − informalidad) |
+** §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 8):
+**   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+**   | Legislación fiscal parametrizable | Tarifas, umbrales, tasas y exenciones en forma de parámetros (tabla por año), no texto | LISR tarifas y subsidio al empleo; LIVA tasas y exenciones por bien; cuotas IMSS/ISSSTE/INFONAVIT por rango salarial |
 timer on 93
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY

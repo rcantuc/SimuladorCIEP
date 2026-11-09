@@ -38,12 +38,15 @@
 * la del v3 y el panel; la identidad por persona se exige con los dos juegos. (iii) El consumo colectivo es P.32 S.13 (CSI), no ConGob − D.63.
 * (iv) §7d emite el Sankey v4 (sankey-v4-economia.json): personas por edad en los extremos, sectores en medio conservando, hub = INBD BIE al peso.
 *
-* IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):
+* §1 Propósito (procedencia: este header l. 3–4 y 41–44; CUAD-2 §1): NTA.do — Cuenta de Transferencias Nacionales por individuo (Lee–Mason), cerrada por
+*   grupo de edad y por quinquenio×sexo; cumple por persona, por grupo y a nivel nacional la identidad C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S) y emite la
+*   cuenta, el Sankey de la economía completa (v4) y el panel grupo × sexo que publica /NTA.
+* §7 Identidades verificadas — IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):
 *     C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S)     con   τ⁺ − τ⁻ = τ⁺púb(efectivo + especie + colectivo) − τ⁻púb + τ⁺inter − τ⁻inter + intra
 *   y en la forma que exige el gate:  C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0.
 *   YL + YA + ImpProd es ingreso a PRECIOS DE MERCADO (ImpProd = impuestos netos a los productos como ingreso), C a precios de comprador.
 *
-* QUÉ LEE (nada se construye por persona que no exista ya en el motor; lo que falta es parámetro + FLAG):
+* §2 Entradas — QUÉ LEE (nada se construye por persona que no exista ya en el motor; lo que falta es parámetro + FLAG):
 *   master/<anio>/households.dta  (Households.do + Expenditure.do: Yl, Yk, gas_pc_*, ISR_*, cuotas*, infonavit, IVA, IEPS,
 *                                  ISAN, Importaciones, ImpNetProductos_*, ing_* finas, ing_estim_alqu, gasto_anualDepreciacion,
 *                                  gasto_anualComprasN, ing_capitalROW, ing_suborROW, edad, sexo, factor, folioviv foliohog numren)
@@ -54,7 +57,7 @@
 *   TransfEspecie (D.63), CuotasHogS14 (D.61 − D.614), ImpNetosProd (D.21 − D.31 de S.1), AjustePension (D.8), TauPubS14 (D.62 + D.759),
 *   YAHogS14 (B.2n + 1/3 B.3n + D.4 neto: filas 69, 70 y 95 de CSI_115).
 *
-* CONVENCIONES (decisiones firmadas NTA-1 y NTA-1b; no se reabren aquí):
+* §3 Procedimiento — CONVENCIONES (decisiones firmadas NTA-1 y NTA-1b; no se reabren aquí): cómo se construye cada término de la identidad:
 *   C          = consumo privado a PRECIOS DE COMPRADOR (gas_pc_*, anclado a ConHog) + gasto_anualComprasN (la corrección del
 *                motor por compras netas de no residentes: C es el de los residentes) + consumo público INDIVIDUAL = D.63
 *                (SerEGob con el perfil de matrícula de PerfilesSim.do l. 365-443, SaluGob ∝ gas_pc_SaluT, resto individual per
@@ -114,7 +117,7 @@
 *   inter_hogar          balance (lo otorgado entre hogares, ENIGH 173416 + 133030, se escala a lo recibido P039 + P040 + P057: D.75 entre
 *                        residentes neto cero, como el SCN; sello rojo) | enigh (sin escalar: el desbalance 193.7 bn queda en la brecha de S).
 *
-* PARÁMETROS (globals nta_*; default entre paréntesis; se declaran en la salida):
+* §4 Decisiones (continuación) — PARÁMETROS (globals nta_*; default entre paréntesis; se declaran en la salida):
 *   nta_anclaS   ("auto") multiplicativo si |Σ S − B.8n|/B.8n ≤ 15 %, si no off | "off" | "aditivo" | "multiplicativo".
 *   nta_YA       ("S14") total de YA a B.2n + 1/3 B.3n + D.4 neto ∝ YA del motor | "motor".
 *   nta_cuotas   ("S14") D.61 − D.614 | "LIF" CUOTAS IMSS como PerfilesSim.
@@ -130,10 +133,13 @@
 *                de verdad viaja en Yl/Yk; deja un hueco de Σ YL+YA frente al PIN del tamaño del FLAG); "reancla": se restan escalados
 *                y el ingreso mixto restante se re-ancla al mismo total (lo que debería hacer el motor, v9.x). Las tres se reportan.
 *
-* SALIDAS: users/$id/NTA/nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json (obligatorio: 36 celdas), nta-identidad.txt,
+* §6 Salidas — SALIDAS: users/$id/NTA/nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json (obligatorio: 36 celdas), nta-identidad.txt,
 *          nta-panel-grupoedad-sexo.json (NTA-3: panel grupo × sexo, §7c); users/$id/SankeyNTA/sankey-v2-grupoedad.json (contrato
 *          v2.1, §7) y sankey-v3-grupoedad.json (NTA-3: contrato v3, edades solo al inicio y al final, §7b; NTA-4: value + pctpib por enlace; el 31/79 de v1 no se toca).
 * Nada de literales: todo número que sale viene de escalar/SCN/LIF/PEF o de la base.
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 16; CUAD-2 §9 lo completa):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | NTA de referencia | Un NTA nacional publicado contra el cual validar perfiles por edad (no es insumo, es gate humano) | NTA México (perfiles publicados) para contraste |
 *********************************************************************
 if "`1'" == "" {
 	local 1 = 2024
