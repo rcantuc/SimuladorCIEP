@@ -166,6 +166,18 @@ Estructura pedida: Potencial de referencia → − gasto fiscal (ELUSIÓN) = obl
 | `imss` (IMSS 22,238,379 + ISSSTE 3,262,068 al 31-dic-2024) | 25,500,447 | 1,129.737 | 294.590 | **−124.048** | 0.5365 | 0.9011 |
 | `enoe` (asalariados con acceso a salud, 3T 2024) | 23,500,000 | 1,084.635 | 339.692 | **−169.150** | 0.6240 | 0.8651 |
 
+**Tabla 4c-c — Los cuatro componentes con la base de 8.17.2 (CUAD-3: `rentas_celda = b2n`, `ing_mixto_ancla = b3n_d422`, `altimir_elasticidad = ε\*`; bn 2024; corrida completa de la sesión cuad-3).** La brecha ENIGH–SCN de D.1 y B.3n se reparte ∝ Y^ε, así que la obligación de los de mayor *p* (los formales del corte `imss`) sube y el residuo Σ obligación(formales) − LIF cambia de tamaño: CUAD-3 §4 lo reescribe como **evasión identificable** si sale ≥ 0 (FLAG 27 cerrado) y como subreporte residual, sello rojo, si sigue < 0.
+
+| Componente | v8.17.1 (ε = 1, `L`) | 8.17.2 (ε\* = 1.45) | Fuente |
+|---|---:|---:|---|
+| (a) Obligación estatutaria de asalariados, toda la base (share acotado) | 1,282.675 | 1,300.546 | cuadro «Validación del ajuste por subreporte», `Households` §11.1 |
+| Formales (`ancla_formales = imss`) | 25,499,904 | 25,499,904 | ídem |
+| INFORMALIDAD (extensivo) = Σ obligación de los que quedan abajo del corte | 266.091 | 259.085 | (a) − Σ obligación formales |
+| Σ obligación de los formales | 1,016.584 | 1,041.461 | ídem |
+| (c) Recaudado: LIF ISR retenciones por salarios | 1,253.785 | 1,253.785 | LIF 2024 |
+| Residuo Σ obligación(formales) − LIF | −237.200 (−18.92 %) | −212.324 (−16.93 %) | FLAG 27 |
+| Lectura del residuo | ajuste por subreporte de ingresos altos (sello rojo) | subreporte residual con ε\* (sello rojo); sería «evasión identificable» solo si saliera ≥ 0 | CUAD-3 §4, §8 |
+
 Lectura mecánica, sin interpretar: (i) con `imss`/`enoe` el corte deja a 25.5/23.5 M y su obligación (1,129.7/1,084.6) no alcanza la LIF: el motor subestima la obligación de los más probables (CUAD-0 §4.0 C: «la obligación estatutaria sobre ingreso con Altimir uniforme sale baja»), y el residual sale negativo; (ii) con `sat` la base entera cabe en el padrón y toda la brecha es intensiva; (iii) ningún ancla cierra las cuatro cuentas con el ISR por rango, porque la fila (0)–(0a) depende de un share no acotado y de un gasto fiscal del motor que no se mide contra el `DRR` por concepto (aguinaldo, prima vacacional, PTU, horas extra, previsión social, cajas de ahorro están en `exen_t4_cap1`: Σ 450.064 en la base; `exen_tot` Σ 1,406.243). Lo que falta para cerrar: `isras_share = acotado`, el gasto fiscal por concepto del `DRR` como contraste del motor, y el SAT por rango **(no publicado para 2024)**.
 
 Comparables de la base v8.15.3 (`D`): `cuotasTPF > 0` 43,074,483; `formal2 ∈ {1,3,4,6}` (IMSS) 26,390,703; `formal2 ∈ {2,5}` (ISSSTE) 4,820,969; `ing_t4_cap1 > 0` 51,028,544.
@@ -295,7 +307,7 @@ Estado en v8.15.3 (`nta-identidad.txt` de `-datos/users/ricardo/NTA/`, 2026-11-0
 | 24 | Predial y tenencia (R004, R012) dentro del consumo | 53.444 | 8.16: → D.59 (`OTROSK`) |
 | 25 | Gas LP y combustibles (G009–G016) en «Artículos para el hogar», no en 724614 | 120.278 | 8.16: reclasificar |
 | 26 | IEPS no petrolero comparado contra 24.075 en vez de 224.780; IEPS petrolero sin micro; NTA reparte IEPS ∝ vehículos / ∝ alcohol | 628.364 | 8.16: `iepsnp_macro`, `ieps_relativo` |
-| 27 | Parte salarial del ISR no acotada (`H l.2433`) | Σ obligación 1,424.327 depende de ella | 8.16: `isras_share = acotado` |
+| 27 | Parte salarial del ISR no acotada (`H l.2433`); desde 8.16b, residuo Σ obligación(formales) − LIF < 0 con `ancla_formales = imss` | Σ obligación 1,424.327 dependía de ella; residuo −237.200 (−18.92 %) en v8.17.1 | 8.16: `isras_share = acotado`. **8.17.2 (CUAD-3):** con la brecha ∝ Y^ε (ε\* = 1.45) el residuo es −212.324 (−16.93 %): sigue < 0 → subreporte residual, sello rojo (no hay evasión identificable) |
 | 19 | ISR PM sobre negocios propios (CUAD-0) | 1,351.427 | 8.16: `isrpm_incidencia = propiedad` |
 | 13 | Cuotas todas a Gobierno (CUAD-0) | 1,045.130 | 8.16: `cuotas_por_sector = on` (destinos); 8.17: nodos |
 | 28 | Cuota social federal (`cuotasF`) sumada como cuota de personas | 0.569 % PIB ≈ 191.6 | 8.16: fuera de `cuotasTPF`; es gasto S.13 |
@@ -307,7 +319,7 @@ Estado en v8.15.3 (`nta-identidad.txt` de `-datos/users/ricardo/NTA/`, 2026-11-0
 | 32 | Anclas de informalidad externas no cierran la LIF (`imss`/`enoe` dan evasión negativa) | −124.048 / −169.150 | 8.16: primero FLAG 27 y gasto fiscal por concepto; después decidir ancla |
 | 35 | IEPS micro incompleto: gasolinas fuera de `Expenditure.do` §6 (`Gasolinas` y `Sin_IEPS` se saltan); el micro cubre una fracción del IEPSNP macro (`IEPSNPCobertura`) | 224.780 vs micro ≈ 28 | declarado en 8.16b (FLAG en el log); el ancla LIF manda y el reparto va ∝ micro |
 
-**Estado en 8.16b (v8.16.0; firma `CUAD-1-2-firma.md`).** Cerrados: 20 (`Simulador.ado` restaura la variable; cachés regeneradas), 21 (`consumo_ancla = p3_s14`), 22 (G5 cuenta; G2 fuera), 24 (R004/R012 fuera → D.59), 25 (G009–G016 y R003 → 724614), 26 y 34 (`iepsnp_macro = divsim`, `ieps_relativo = micro` en los dos módulos), 19 (`isrpm_incidencia = propiedad`), 13 en su parte de 8.16 (`cuotas_por_sector = on`: destinos por sector receptor; los nodos son de 8.17), 28 (`cuotasF` fuera de `cuotasTPF`), 30 (`obligacion_isrpf_ancla = itan_rangos`), 33 (`gastotarjetas` fuera; el monto se declara). Declarados con sello: 27 (`isras_share = acotado`; con `ancla_formales = imss` el residuo Σ obligación(formales) − LIF se imprime como **ajuste por subreporte de ingresos altos**, sello rojo: la ENIGH no ve los ingresos altos), 31 (tablas de cuotas 2021 con UMA 2024), 32 (el ancla `imss` elegida; el residuo no es evasión), 35 (IEPS micro incompleto). Abiertos: 23 (G6 es D.63: 8.17), 29 (factores de empalme de `ISR_Mod.do`), la fila τ⁺ vs D.62 + D.7 netas (+461.0 bn; CUAD-2, 8.17) y, con ella, la brecha de Σ S sin ancla (ver §7).
+**Estado en 8.16b (v8.16.0; firma `CUAD-1-2-firma.md`).** Cerrados: 20 (`Simulador.ado` restaura la variable; cachés regeneradas), 21 (`consumo_ancla = p3_s14`), 22 (G5 cuenta; G2 fuera), 24 (R004/R012 fuera → D.59), 25 (G009–G016 y R003 → 724614), 26 y 34 (`iepsnp_macro = divsim`, `ieps_relativo = micro` en los dos módulos), 19 (`isrpm_incidencia = propiedad`), 13 en su parte de 8.16 (`cuotas_por_sector = on`: destinos por sector receptor; los nodos son de 8.17), 28 (`cuotasF` fuera de `cuotasTPF`), 30 (`obligacion_isrpf_ancla = itan_rangos`), 33 (`gastotarjetas` fuera; el monto se declara). Declarados con sello: 27 (`isras_share = acotado`; con `ancla_formales = imss` el residuo Σ obligación(formales) − LIF se imprime como **ajuste por subreporte de ingresos altos**, sello rojo: la ENIGH no ve los ingresos altos; **8.17.2, CUAD-3:** la brecha de D.1 y B.3n se reparte ∝ Y^ε y el residuo pasa a −212.324 bn, sigue < 0 → subreporte residual, sello rojo (no hay evasión identificable)), 31 (tablas de cuotas 2021 con UMA 2024), 32 (el ancla `imss` elegida; el residuo no es evasión), 35 (IEPS micro incompleto). Abiertos: 23 (G6 es D.63: 8.17), 29 (factores de empalme de `ISR_Mod.do`), la fila τ⁺ vs D.62 + D.7 netas (+461.0 bn; CUAD-2, 8.17) y, con ella, la brecha de Σ S sin ancla (ver §7).
 
 ### §8 bis — Diagnóstico de los hallazgos (sesión 8.16a, 2026-11-07)
 
