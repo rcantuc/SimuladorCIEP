@@ -170,12 +170,16 @@ if "$nta_otorgado" == "" global nta_otorgado "efectivo"
 if "$nta_mixto" == "" global nta_mixto "crudo"
 * v8.15b (CUAD-0 firma): parametros de Households.do. En la sesion de SIM.do llegan como globals; sueltos se leen del char cuad_params de
 * households.dta (§2.4); si tampoco estan, rige el valor firmado. Se declaran en nta-identidad.txt y en el JSON. *
-local cuad_firma "pensiones_en_yl off ing_mixto_depurado transf_negocios rentas_celda b3n d4_relativo proxy_propiedad yk_ancla b2n_b3n_d4 cap4 fuera suborrow off cuotas_d614 neto oye_en_hub off"
+local cuad_firma "pensiones_en_yl off ing_mixto_depurado transf_negocios rentas_celda b2n d4_relativo proxy_propiedad yk_ancla b2n_b3n_d4 cap4 fuera suborrow off cuotas_d614 neto oye_en_hub off"
 * 8.16b (CUAD-1 §4 firmado; firma CUAD-1-2 §B): parametros de Cuadratura II. Los que NTA.do aplica: isr_personas_ancla (D.51 S.14 y D.51 S.11 + S.12 como
 * anclas de τ⁻ directo e ISR PM), cuotas_por_sector (D.61 por sector receptor), ieps_relativo (IEPS ∝ bien gravado), consumo_ancla (gate Σ Cpriv = P.3 S.14). *
 local cuad_firma "`cuad_firma' consumo_ancla p3_s14 consumo_precios comprador cuotas_por_sector on isrpm_incidencia propiedad isr_personas_ancla d51_s14 isras_share acotado obligacion_isrpf_ancla itan_rangos informalidad corte ancla_formales imss iepsnp_macro divsim ieps_relativo micro"
 * 8.17 (CUAD-2 §4 firmado; SIM.do §0.8c): parametros del Sankey de la economia completa. Los lee este modulo (§4.6c, §4.5, §7d). *
 local cuad_firma "`cuad_firma' hub inbd retenido_a_personas on deficit_a_personas per_capita isflsh_regla sector circuito_d442 neto vintage_nodo si bruto_neto neto financiamiento un_nodo_4 discrepancia_gasto fuera inter_hogar balance"
+* 8.17.2 (CUAD-3 §4.0): rentas efectivas en B.2n (rentas_celda b2n), celda de negocios B.3n + D.422 (ing_mixto_ancla) y la brecha ENIGH-SCN repartida ∝ Y^ε
+* (altimir_elasticidad; 1 = Altimir uniforme). Con ε ≠ 1 los chars TaltimirSal/TaltimirSelf son factores MEDIOS: las reconstrucciones de §3-§4 que los usan
+* (pensiones_en_yl = on, ing_mixto_depurado = off: alternativas, 0 con la firma) son aproximadas y lo declaran (FLAG). *
+local cuad_firma "`cuad_firma' ing_mixto_ancla b3n_d422 altimir_elasticidad 1.45"
 local adulto = 18
 local tol = 1e-9
 capture mkdir "${SIMROOT}/users/$id"
@@ -414,6 +418,17 @@ while "`cuad_firma'" != "" {
 	local cuad_linea "`cuad_linea' `p'=${`p'}"
 }
 global cuad_params "`cuad_linea'"
+* 8.17.2 (CUAD-3 §4.0, decision 2): con ing_mixto_ancla = b3n_d422, D.422 (CSI_115 f.99) esta en la celda de ing_mixto y fuera de la de D.4: la ancla de YL
+* es D.1 + 2/3 (B.3n + D.422) y la de YA baja 2/3 D.422 (YAHogS14 − D.442 − 2/3 D.422); YL + YA = B.5n S.14 − D.442 no cambia. *
+capture local D422Hog = scalar(D422Hog)
+if _rc != 0 {
+	local D422Hog = 0
+	if "$ing_mixto_ancla" == "b3n_d422" local flags `"`flags' "SCN sin D422Hog (CSI_115 f.99): la ancla de YA/YL no descuenta D.422 aunque ing_mixto_ancla = b3n_d422""'
+}
+local D422m = cond("$ing_mixto_ancla" == "b3n_d422", `D422Hog', 0)
+if "$altimir_elasticidad" != "" & "$altimir_elasticidad" != "1" & ("$pensiones_en_yl" == "on" | "$ing_mixto_depurado" == "off") {
+	local flags `"`flags' "altimir_elasticidad = $altimir_elasticidad: las reconstrucciones con TaltimirSal/TaltimirSelf (pensiones_en_yl = on, ing_mixto_depurado = off) usan el factor medio; aproximadas""'
+}
 quietly {
 	merge 1:1 folioviv foliohog numren using `prog', nogen keep(master match)
 	merge m:1 folioviv foliohog using `otor', nogen keep(master match)
@@ -556,10 +571,10 @@ label var YA_motor "Ingreso de activos del motor (neto de depreciación, sin el 
 tabstat YA_motor [fw=factor], stat(sum) save
 local YA_motor_tot = r(StatTotal)[1,1]
 * v8.15b (firma 11): con cuotas_d614 = neto la ancla de YA es YAHogS14 − D.442 (el circuito D.442/D.614 es neutral en el hogar) *
-local YAHogS14n = `YAHogS14' - cond("$cuotas_d614" == "neto", `D442Hog', 0)
+local YAHogS14n = `YAHogS14' - cond("$cuotas_d614" == "neto", `D442Hog', 0) - `D422m'*2/3
 local fYA = cond("$nta_YA" == "S14", `YAHogS14n'/`YA_motor_tot', 1)
 if "$nta_YA" == "S14" & "$yk_ancla" == "b2n_b3n_d4" & reldif(`fYA', 1) > 1e-9 {
-	local flags `"`flags' "factor YA = `=string(`fYA', "%8.6f")' ≠ 1: el motor (yk_ancla = b2n_b3n_d4) debia traer Yk − CCF = YAHogS14 − D.442 al peso""'
+	local flags `"`flags' "factor YA = `=string(`fYA', "%8.6f")' ≠ 1: el motor (yk_ancla = b2n_b3n_d4) debia traer Yk − CCF = YAHogS14 − D.442 − 2/3 D.422 al peso""'
 }
 g double YA_base = YA_motor*`fYA'
 replace ALQ = ALQ*`fYA'
@@ -985,7 +1000,7 @@ quietly tabstat YA_base S_ajuste [fw=factor], stat(sum) save
 escalar mxn NTAYABaseNac = r(StatTotal)[1,1]
 escalar mxn NTASAjusteNac = r(StatTotal)[1,2]
 noisily _log linea "YA (bn): motor `=strtrim(string(`YA_motor_tot'/1e9, "%14.3fc"))'; YAHogS14 `=strtrim(string(`YAHogS14'/1e9, "%14.3fc"))' = B.2n `=strtrim(string(`ExNOpHogS14'/1e9, "%14.3fc"))' + 1/3 B.3n `=strtrim(string(`MixNHogS14'/3e9, "%14.3fc"))' + D.4 neto `=strtrim(string(`RentaPropHogNeta'/1e9, "%14.3fc"))'"
-noisily _log linea "YA (bn): − D.442 `=strtrim(string((`YAHogS14' - `YAHogS14n')/1e9, "%14.3fc"))' (cuotas_d614 $cuotas_d614) = ancla `=strtrim(string(`YAHogS14n'/1e9, "%14.3fc"))'; factor `=strtrim(string(`fYA', "%8.6f"))' (nta_YA $nta_YA)"
+noisily _log linea "YA (bn): − D.442 − 2/3 D.422 `=strtrim(string((`YAHogS14' - `YAHogS14n')/1e9, "%14.3fc"))' (cuotas_d614 $cuotas_d614; ing_mixto_ancla $ing_mixto_ancla) = ancla `=strtrim(string(`YAHogS14n'/1e9, "%14.3fc"))'; factor `=strtrim(string(`fYA', "%8.6f"))' (nta_YA $nta_YA)"
 quietly tabstat TmenDir TmenInd TmenFuera nta_CUOTAS [fw=factor], stat(sum) save
 escalar mxn NTATmenFueraNac = r(StatTotal)[1,3]
 escalar mxn NTACuotasNac = r(StatTotal)[1,4]
@@ -1223,7 +1238,7 @@ file write `fh' %-12s ("CSI") %9s ("") %11s ("") `f1' (`AhorroHog'/1e9) %11s (""
 file write `fh' %-12s ("Celda") %9s ("") %11s ("") %11s ("B.8n S.14") %11s ("") %11s ("B.8n S11S12") %11s ("B.8n S.13") %11s ("B.8n S.15") %11s ("B.8n S.1") %11s ("B.8n S.13") _n
 file write `fh' "`raya'" _n
 file write `fh' "Nota 1: factor implícito B.8n S.14 / Σ S sin ajuste " %8.4f (`fS') "; brecha (Σ S − B.8n) / B.8n " %7.1f (scalar(NTABrechaSPct)) " % (esperada tras 8.17 " %5.1f (`brecha_esp') " %); ajuste aditivo que exigiría el ancla " `f1' (`D'/1e9) " bn; nta_anclaS = $nta_anclaS (parámetro $nta_anclaS_param; auto = multiplicativo si |brecha| ≤ `brecha_max' %). S persona = S hogar + retenido (B.5n − TmenRet de S.11 + S.12 ∝ ing_d4_rel; retenido_a_personas = $retenido_a_personas, regla P, sello rojo) + déficit (−B.8n S.13 por igual a cada persona; deficit_a_personas = $deficit_a_personas) + ISFLSH (B.8n S.15 per cápita); Σ S persona " `f1' (scalar(NTASPersonasNac)/1e9) " vs B.8n S.1 " `f1' (`B8nS1'/1e9) " (con retenido y déficit en off sería B.8n S.14 " `f1' (`AhorroHog'/1e9) "). La columna déf. ∝ τ⁻ es la alternativa tau_menos (firma §B 18), medida: el déficit repartido ∝ τ⁻ del hogar." _n
-file write `fh' "Nota 2: YA del motor " `f1' (`YA_motor_tot'/1e9) " vs YAHogS14 = B.2n " `f1' (`ExNOpHogS14'/1e9) " + 1/3 B.3n " `f1' (`MixNHogS14'/3e9) " + D.4 neto " `f1' (`RentaPropHogNeta'/1e9) " = " `f1' (`YAHogS14'/1e9) " − D.442 " `f1' ((`YAHogS14' - `YAHogS14n')/1e9) " = ancla " `f1' (`YAHogS14n'/1e9) "; factor " %8.6f (`fYA') " (debe ser 1 desde v8.15b); nta_YA = $nta_YA; Σ YA_base " `f1' (scalar(NTAYABaseNac)/1e9) ". Por decil (motor → re-anclado):"
+file write `fh' "Nota 2: YA del motor " `f1' (`YA_motor_tot'/1e9) " vs YAHogS14 = B.2n " `f1' (`ExNOpHogS14'/1e9) " + 1/3 B.3n " `f1' (`MixNHogS14'/3e9) " + D.4 neto " `f1' (`RentaPropHogNeta'/1e9) " = " `f1' (`YAHogS14'/1e9) " − D.442 − 2/3 D.422 (ing_mixto_ancla = $ing_mixto_ancla) " `f1' ((`YAHogS14' - `YAHogS14n')/1e9) " = ancla " `f1' (`YAHogS14n'/1e9) "; factor " %8.6f (`fYA') " (debe ser 1 desde v8.15b); nta_YA = $nta_YA; Σ YA_base " `f1' (scalar(NTAYABaseNac)/1e9) ". Por decil (motor → re-anclado):"
 forvalues d = 1/10 {
 	file write `fh' " D`d' " %7.1fc (scalar(NTAYAMotorD`d')/1e9) " → " %7.1fc (scalar(NTAYABaseD`d')/1e9)
 }
@@ -1286,7 +1301,7 @@ file write `fh' %-62s ("RESULTADO de los gates") %21s ("`okstr'") _n
 quietly tabstat YL YA_base YA_d8 ImpProd TmenInd nta_ISRAS nta_ISRPF nta_CUOTAS TpubEf InterRec Remesas InterOtor Cpriv CpubInd CpubCol TpubEsp TpubCol nta_ISRPM TmenD59 OtrosRec OtrosOtor [fw=factor], stat(sum) save
 tempname BR
 matrix `BR' = r(StatTotal)
-local b_prim = (`BR'[1,1] + `BR'[1,2]) - `YAHogS14n' - `D1HogS14' - `MixNHogS14'*2/3
+local b_prim = (`BR'[1,1] + `BR'[1,2]) - `YAHogS14n' - `D1HogS14' - (`MixNHogS14' + `D422m')*2/3
 local b_d8 = `BR'[1,3] - `AjustePension'
 local b_impprod = `BR'[1,4] - `BR'[1,5]
 local b_d5 = -(`BR'[1,6] + `BR'[1,7] + `BR'[1,19]) + `ImpIngHog'
@@ -1303,7 +1318,7 @@ file write `fh' _n "`raya'" _n
 file write `fh' "Cuadro 3. De dónde sale la brecha: Σ S sin ancla − B.8n = " %11.1fc ((`S_micro' - `AhorroHog')/1e9) " bn; partida de la cuenta NTA vs celda S.14 y efecto en S^7" _n
 file write `fh' "`raya'" _n
 file write `fh' %-66s ("Partida") %-10s ("Código") %11s ("NTA") %11s ("S.14") %11s ("Efecto en S") _n
-file write `fh' %-66s ("YL + YA base vs D.1 + B.3n + B.2n + D.4 neto − D.442") %-10s ("B.5n") `f1' ((`BR'[1,1] + `BR'[1,2])/1e9) `f1' ((`YAHogS14n' + `D1HogS14' + `MixNHogS14'*2/3)/1e9) `f1' (`b_prim'/1e9) _n
+file write `fh' %-66s ("YL + YA base vs D.1 + B.3n + B.2n + D.4 neto − D.442 (D.422 ±0)") %-10s ("B.5n") `f1' ((`BR'[1,1] + `BR'[1,2])/1e9) `f1' ((`YAHogS14n' + `D1HogS14' + (`MixNHogS14' + `D422m')*2/3)/1e9) `f1' (`b_prim'/1e9) _n
 file write `fh' %-66s ("Ajuste por cambio en los derechos de pensiones: YA D.8 vs celda") %-10s ("D.8") `f1' (`BR'[1,3]/1e9) `f1' (`AjustePension'/1e9) `f1' (`b_d8'/1e9) _n
 file write `fh' %-66s ("Impuestos netos a los productos como ingreso vs τ⁻ indirectos LIF") %-10s ("D.21−D.31") `f1' (`BR'[1,4]/1e9) `f1' (`BR'[1,5]/1e9) `f1' (`b_impprod'/1e9) _n
 file write `fh' %-66s ("ISR de personas + D.59 vs D.5 S.14; ancla $isr_personas_ancla") %-10s ("D.5") `f1' ((`BR'[1,6] + `BR'[1,7] + `BR'[1,19])/1e9) `f1' (`ImpIngHog'/1e9) `f1' (`b_d5'/1e9) _n
@@ -1324,7 +1339,7 @@ local fm "%20.4f"
 file open `fh' using `"`dirnta'/nta-grupoedad.json"', write replace text
 file write `fh' `"{"esquema":"nta/v1","anio":`anio',"unidad":"MXN corrientes de `anio', sumas [fw=factor]","corte":"grupoedad","' _n
 file write `fh' `""identidad":"C - YL - ImpProd - (tau_mas - tau_menos) - (YA - YA_ajuste - S_sinancla) - intra = 0 (sin ancla); con ancla multiplicativa el residual declarado es S_ajuste = S - S_sinancla; ImpProd = impuestos netos a los productos como ingreso (∝ Cpriv); tau_mas = tau_pub_efectivo + tau_pub_especie (individual D.63) + tau_pub_colectivo (ConGob - D.63) + inter_recibido + remesas; tau_menos = tau_pub + inter_otorgado","' _n
-file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_anclaS_param":"$nta_anclaS_param","nta_YA":"$nta_YA","nta_cuotas":"$nta_cuotas","nta_d8":"$nta_d8","nta_anclaTau":"$nta_anclaTau","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","hub":"$hub","retenido_a_personas":"$retenido_a_personas","deficit_a_personas":"$deficit_a_personas","isflsh_regla":"$isflsh_regla","circuito_d442":"$circuito_d442","vintage_nodo":"$vintage_nodo","bruto_neto":"$bruto_neto","financiamiento":"$financiamiento","discrepancia_gasto":"$discrepancia_gasto","inter_hogar":"$inter_hogar","households":"`=trim("$cuad_params")'","adulto":`adulto',"tolerancia":1e-9},"' _n
+file write `fh' `""parametros":{"nta_anclaS":"$nta_anclaS","nta_anclaS_param":"$nta_anclaS_param","nta_YA":"$nta_YA","nta_cuotas":"$nta_cuotas","nta_d8":"$nta_d8","nta_anclaTau":"$nta_anclaTau","nta_alqu":"$nta_alqu","nta_tauCash":"$nta_tauCash","nta_otorgado":"$nta_otorgado","nta_mixto":"$nta_mixto","hub":"$hub","retenido_a_personas":"$retenido_a_personas","deficit_a_personas":"$deficit_a_personas","isflsh_regla":"$isflsh_regla","circuito_d442":"$circuito_d442","vintage_nodo":"$vintage_nodo","bruto_neto":"$bruto_neto","financiamiento":"$financiamiento","discrepancia_gasto":"$discrepancia_gasto","inter_hogar":"$inter_hogar","altimir_elasticidad":"$altimir_elasticidad","rentas_celda":"$rentas_celda","ing_mixto_ancla":"$ing_mixto_ancla","households":"`=trim("$cuad_params")'","adulto":`adulto',"tolerancia":1e-9},"' _n
 file write `fh' `""sectores":{"IngDisp_INBD":`=trim(string(`IngDisp', "`fm'"))',"B5nS1":`=trim(string(`B5nS1', "`fm'"))',"B6nS1":`=trim(string(`B6nS1', "`fm'"))',"B5nS11S12":`=trim(string(cond(`B5nNoFin' < ., `B5nNoFin' + `B5nFin', .), "`fm'"))',"B5nS13":`=trim(string(`B5nGob', "`fm'"))',"B5nS15":`=trim(string(`B5nISFLSH', "`fm'"))',"VintageNNI":`=trim(string(`VintageNNI', "`fm'"))',"P32S13":`=trim(string(`P32Gob', "`fm'"))',"D72S14":`=trim(string(`D72HogR', "`fm'"))',"D7pagadaS14":`=trim(string(`OtrasTransfHogU', "`fm'"))',"D59S14":`=trim(string(`D59Hog', "`fm'"))',"B9Row":`=trim(string(`B9Row', "`fm'"))',"factor_inter_hogar":`=trim(string(scalar(NTAFactorInter)/100, "%12.8f"))',"factor_donativos_isflsh":`=cond(`fDona' < ., trim(string(`fDona', "%12.8f")), "null")',"regla":"celdas CSI por sector (SCN.ado SCNSectores; CUAD-2 §6.4) que el Sankey v4 y las atribuciones a personas usan; hub = INBD BIE 724037 − CCF"},"' _n
 file write `fh' `""anclas":{"AhorroHog_B8n":`=trim(string(`AhorroHog', "`fm'"))',"AhorroHogB_B8b":`=trim(string(`AhorroHogB', "`fm'"))',"TransfEspecie_D63":`=trim(string(`TransfEspecie', "`fm'"))',"ConHogS14_P3":`=trim(string(`ConHogS14', "`fm'"))',"ConHog":`=trim(string(`ConHog', "`fm'"))',"ConGob":`=trim(string(`ConGob', "`fm'"))',"SerEGob":`=trim(string(`SerEGob', "`fm'"))',"SaluGob":`=trim(string(`SaluGob', "`fm'"))',"ComprasN":`=trim(string(`ComprasN', "`fm'"))',"ROWTrans":`=trim(string(`ROWTrans', "`fm'"))',"ROWRem":`=trim(string(`ROWRem', "`fm'"))',"ROWProp":`=trim(string(`ROWProp', "`fm'"))',"CapFij":`=trim(string(`CapFij', "`fm'"))',"IngDisp":`=trim(string(`IngDisp', "`fm'"))',"AhorroN":`=trim(string(`AhorroN', "`fm'"))',"OyE":`=trim(string(`OyE', "`fm'"))',"PEF_Pensiones":`=trim(string(`Pensiones', "`fm'"))',"PEF_PensionAM":`=trim(string(`PenBienestar', "`fm'"))',"TaltimirSelf":`=trim(string(`TSelf', "%12.8f"))',"TaltimirSal":`=trim(string(`TSal', "%12.8f"))'},"' _n
 file write `fh' `""S_vs_B8n":{"S_sin_ajuste":`=trim(string(`S_micro', "`fm'"))',"AhorroHog":`=trim(string(`AhorroHog', "`fm'"))',"factor_implicito":`=trim(string(`fS', "%12.8f"))',"brecha_pct":`=trim(string(scalar(NTABrechaSPct), "%12.6f"))',"brecha_esperada_pct":`=trim(string(`brecha_esp', "%6.2f"))',"ajuste_aditivo_que_exigiria":`=trim(string(`D', "`fm'"))',"S_final":`=trim(string(`S_nac', "`fm'"))',"S_ajuste":`=trim(string(scalar(NTASAjusteNac), "`fm'"))',"S_personas":`=trim(string(`S_pers', "`fm'"))',"S_ret":`=trim(string(scalar(NTASRetNac), "`fm'"))',"S_def":`=trim(string(scalar(NTASDefNac), "`fm'"))',"S_isflsh":`=trim(string(scalar(NTASISFLSHNac), "`fm'"))',"B8nS1":`=trim(string(`B8nS1', "`fm'"))',"B8nS11S12":`=trim(string(cond(`B8nNoFin' < ., `B8nNoFin' + `B8nFin', .), "`fm'"))',"B8nS13":`=trim(string(`B8nGob', "`fm'"))',"B8nS15":`=trim(string(`B8nISFLSH', "`fm'"))',"modo":"$nta_anclaS","modo_param":"$nta_anclaS_param","brecha_max_pct":`brecha_max',"mixto_motor":`=trim(string(scalar(NTAMixtoMotor), "`fm'"))',"mixto_transf_fin_escalado":`=trim(string(scalar(NTAMixtoTransfFin), "`fm'"))',"pensiones_en_Yl":`=trim(string(scalar(NTAPensEnYl), "`fm'"))',"regla":"off: S residual sin tapón; aditivo: suma ∝ (YL+YA) de adultos con contrapartida en YA_ajuste; multiplicativo: S × factor, sin contrapartida (cae a intra)"},"' _n
