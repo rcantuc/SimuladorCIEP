@@ -226,8 +226,8 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 | NTA: residual por persona; Σ intra nacional = 0; Σ S personas = B.8n S.1 (−308.425); factor YA = 1 | 1e-9 | VERDE (máx 2.0e-07 MXN por persona) | l. 1158–1159; `nta-identidad.txt` |
 | NTA: Σ Cpriv = P.3 S.14; Σ ISR personas = D.51 S.14; cuotas por sector; IEPS; D.5; D.7; P.32; S_ret, S_def, S_isflsh | 1e-9 | VERDE (todos) | l. 1161–1200 |
 | NTA: Sankey v4 57 nodos / 134 enlaces, conservación; panel 15 celdas | 1e-9 | VERDE (2.2e-14; 1.1e-14) | l. 1196–1197 |
-| `test-nta-identidad.sh` | 1e-9 | {{TEST_NTA}} | `diag-cuad-3-2026-11-08/test-nta-identidad.txt` |
-| `test-web-batch.sh` (paridad web = batch) | llaves N/N | {{TEST_WEB}} | `diag-cuad-3-2026-11-08/test-web-batch.txt` |
+| `test-nta-identidad.sh` | 1e-9 | VERDE (v3 35/99, v4 57/134, panel 15 celdas; ajuste S.14 −19.4 bn) | `diag-cuad-3-2026-11-08/test-nta-identidad.txt` |
+| `test-web-batch.sh` (paridad web = batch) | llaves N/N | VERDE 47/47 (el «Calcular» default reproduce el `output.txt` del batch) | `diag-cuad-3-2026-11-08/test-web-batch.txt` |
 | `test-log-ancho.sh` (110 columnas) | 0 líneas > 110 | VERDE en las 11 corridas de la sesión (la primera relectura de las series S.14 imprimía 122 líneas de 115 columnas: corregido con `quietly reshape`) | `*/test-log-ancho.txt` |
 | Σ S sin ancla vs B.8n S.14 | informativo | −19.4 bn (−1.0 %), igual que v8.17.1 | `nta-identidad.txt` nota 1 |
 | Contrato de las 32 (`contrato-32.sh`) | — | **no corrió en la sesión**: los fixtures de `/entidades` (banda de vintages) salen del paso `c32` del ritual y entran en un PR corto, como en 8.16b | — |
