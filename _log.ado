@@ -154,16 +154,21 @@ program define _log_modelo
 		}
 	}
 	local etiqueta = cond(`"`r2'"' == "" & "`e(r2_p)'" != "", "pseudo-R²", "R²")
-	local texto `"`nombre'"'
-	if `nv' < . local texto `"`texto'  N `=strtrim(string(`nv', "%12.0fc"))'"'
-	if `rv' < . local texto `"`texto'  `etiqueta' `=strtrim(string(`rv', "%6.4f"))'"'
+	local stats ""
+	if `nv' < . local stats `"`stats'  N `=strtrim(string(`nv', "%12.0fc"))'"'
+	if `rv' < . local stats `"`stats'  `etiqueta' `=strtrim(string(`rv', "%6.4f"))'"'
 	if `"`ruta'"' != "" {
 		capture estimates save `"`ruta'"', replace
 		if _rc == 0 local ref `"`ruta'.ster"'
 		else local ref `"`ruta' (no se pudo guardar: r(`=_rc'))"'
 	}
 	else if `"`archivo'"' != "" local ref `"`archivo'"'	// la tabla completa ya la guardó quien llama (estimates save)
-	mata: _lg_aviso("MODELO", "", `"`texto'"', `"`ref'"', 0)
+	* los números no se recortan: si no cabe, se recorta el nombre del modelo (110 − prefijo 10 − «  → ref»)
+	local cabe = 110 - 10 - cond(`"`ref'"' != "", udstrlen(`"  → `ref'"'), 0)
+	if udstrlen(`"`nombre'`stats'"') > `cabe' & `cabe' - udstrlen(`"`stats'"') > 4 {
+		local nombre = usubstr(`"`nombre'"', 1, `cabe' - udstrlen(`"`stats'"') - 1) + "…"
+	}
+	mata: _lg_aviso("MODELO", "", `"`nombre'`stats'"', `"`ref'"', 0)
 end
 
 

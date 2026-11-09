@@ -2505,7 +2505,7 @@ escalar personas ISRASFormales = `n_formales'
 escalar mxn ISRASSubreporte = `oblig_formales' - `ISRSalarios'
 escalar pct ISRASSubreportePct = (`oblig_formales'/`ISRSalarios' - 1)*100
 if "$ancla_formales" == "imss" {
-	noisily _log aviso, tipo(FLAG) num(27) texto("subreporte de ingresos altos: Σ obligación formales `=strtrim(string(`oblig_formales'/1e9, "%12.3fc"))' vs LIF `=strtrim(string(`ISRSalarios'/1e9, "%12.3fc"))' bn (`=strtrim(string(scalar(ISRASSubreportePct), "%6.2f"))' %)") ref("CUAD-1 §8") rojo
+	noisily _log aviso, tipo(FLAG) num(27) texto("obligación formales `=strtrim(string(`oblig_formales'/1e9, "%12.3fc"))' vs LIF `=strtrim(string(`ISRSalarios'/1e9, "%12.3fc"))' bn (`=strtrim(string(scalar(ISRASSubreportePct), "%6.2f"))' %): subreporte ingresos altos") ref("CUAD-1 §8") rojo
 }
 
 

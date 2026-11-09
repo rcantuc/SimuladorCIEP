@@ -27,7 +27,7 @@ python3 -I - "$LOG" "$MAX" "$MOSTRAR" <<'PY'
 import re, sys
 log, mx, mostrar = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 llave = re.compile(r'^[A-Z][A-Z0-9]*: \[')
-anchas, cont, exentas, vacias, maxvac, n = [], [], 0, 0, 0, 0
+anchas, cont, exentas, vacias, maxvac, n, eco = [], [], 0, 0, 0, 0, 0
 en_llave = False
 with open(log, encoding='utf-8', errors='replace') as f:
     for i, raw in enumerate(f, 1):
@@ -38,6 +38,9 @@ with open(log, encoding='utf-8', errors='replace') as f:
         vacias = 0
         if llave.match(l):
             en_llave = True; exentas += 1; continue
+        if l.startswith(('. do ', '. run ')):
+            # eco del lanzador (Stata lo escribe antes de `set linesize`, partido a 80): no es salida del motor
+            en_llave = True; eco += 1; continue
         if l.startswith('> '):
             if en_llave: exentas += 1; continue
             cont.append((i, len(l), l))
@@ -45,7 +48,7 @@ with open(log, encoding='utf-8', errors='replace') as f:
         en_llave = False
         if len(l) > mx:
             anchas.append((i, len(l), l))
-print(f'test-log-ancho: {n} líneas; exentas (contrato output.txt): {exentas}; máximo de vacías seguidas: {maxvac}')
+print(f'test-log-ancho: {n} líneas; exentas (contrato output.txt): {exentas}; eco del lanzador: {eco}; máximo de vacías seguidas: {maxvac}')
 for k, v, l in anchas[:mostrar]:
     print(f'ROJO   línea {k}: {v} caracteres: {l[:90]}…')
 for k, v, l in cont[:mostrar]:
