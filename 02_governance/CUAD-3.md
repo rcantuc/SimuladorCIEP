@@ -64,7 +64,13 @@ Escalar el ingreso por persona de la ENIGH a las celdas del sector hogares del S
 
 ### §4.0 — Las decisiones de Ricardo (2026-11-08) y lo que falta firmar
 
-Las decisiones 1–4 están en `CEPAL-delCastillo-2023-lecciones.md` (transcripción del prompt: el adjunto original no llegó; Ricardo lo sustituye si difiere). Lo que este memo **propone** y Ricardo firma al leer el PR: (a) el valor de ε\* y la regla de redondeo (§4.3); (b) que el residuo de FLAG 27 con ε\* se publique como «evasión identificable» cuando sale ≥ 0 (§8); (c) el sello amarillo de la celda B.3n + D.422 por las cuasisociedades. La lista cerrada está al final.
+Las decisiones 1–4 están en `CEPAL-delCastillo-2023-lecciones.md` (transcripción del prompt: el adjunto original no llegó; se volvió a buscar en la sesión del ritual, 2026-11-09, sin resultado). Lo que este memo **propuso** y Ricardo firmó al leer el PR: (a) el valor de ε\* y la regla de redondeo (§4.3); (b) que el residuo de FLAG 27 con ε\* se publique como «evasión identificable» cuando sale ≥ 0 (§8); (c) el sello amarillo de la celda B.3n + D.422 por las cuasisociedades. La lista cerrada está al final.
+
+**Firma (Ricardo Cantú, PR #71, comentario del 2026-11-09T03:59Z, https://github.com/rcantuc/SimuladorCIEP/pull/71#issuecomment-6731894072), textual:**
+
+> Firmo CUAD-3 §4.0: rentas_celda = b2n (cierra FLAG 18); ing_mixto_ancla = b3n_d422; altimir_elasticidad = 1.45 (ε* calibrado al ITAN 4T 2024, meseta 1.35–1.50; aplica igual a D.1 y B.3n); estadístico L1 sobre 9 rangos; FLAG 27 abierto y declarado (−212.3 bn, no se publica evasión); FLAG 45 D.59 declarado. Pendiente para la sesión del ritual: sustituir la transcripción de CEPAL-delCastillo-2023-lecciones.md por el original. — Ricardo Cantú, 2026-11-08
+
+Los tres parámetros firmados son los defaults de `SIM.do` §0.8 desde v8.17.2 (merge `68a2375`). **FLAG 46 (añadido en el ritual, 2026-11-09):** la partición ⅔ trabajo / ⅓ capital de `ing_mixto` (`ing_mixtoL`, `ing_mixtoK`; convención NTA de CUAD-0 §3 paso 3) se aplica **también a D.422** una vez que entra a la celda de los negocios: los retiros de cuasisociedades llegan como ingreso laboral en dos tercios y como ingreso de capital en un tercio por herencia de la convención, no por un hallazgo sobre su naturaleza (en el SCN son renta de la propiedad). Es un parámetro futuro (p. ej. `d422_particion = nta | capital`); con `capital` YL bajaría 433.162 bn y YA subiría lo mismo respecto a v8.17.2. Declarado en §8.
 
 ### §4.1 — Rentas efectivas → B.2n (decisión 1; cierra FLAG 18)
 
@@ -243,6 +249,7 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 | 43 (nuevo) | Con ε ≠ 1 los chars `TaltimirSal`/`TaltimirSelf` son factores medios: las reconstrucciones de `NTA.do` §3–§4 que los usan (`pensiones_en_yl = on`, `ing_mixto_depurado = off`) son aproximadas | 0 con la firma | Declarado en `NTA.do` (FLAG cuando se usan las alternativas) |
 | 44 (nuevo) | La calibración de ε usa 9 rangos del ITAN; «Más de 500 mil» (8.120 bn, 10.5 % del ISR PF) no tiene personas en la ENIGH con ningún ε ≤ 3 y los rangos 2–3 son devoluciones netas | 8.120 + (−3.143) | Declarado: el top del ITAN sigue sin contraparte micro; candidato a 9.x (truncamiento vs subreporte, `dC pp.268–271`) |
 | 45 (nuevo) | D.59 S.14 (21.138) < predial + tenencia ENIGH (53.444 crudos) | 32.306 | Declarado (§4.4); la celda CSI manda en NTA (`TmenD59`) |
+| 46 (nuevo, ritual 2026-11-09) | La partición ⅔ / ⅓ de `ing_mixto` se aplica también a D.422 (retiros de cuasisociedades) por convención NTA heredada, no por hallazgo: en el SCN D.422 es renta de la propiedad | ⅔ × 649.743 = 433.162 en YL | Declarado (§4.0); parámetro futuro `d422_particion` (`nta` | `capital`) |
 
 ## §9 Específico de México
 
