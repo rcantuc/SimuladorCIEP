@@ -17,6 +17,7 @@
 #   5 c32             contrato-32.sh --evidencia c32 --refs 01-ritual (~42 min): PASÓ y 32 meta.json.
 #   6 precache        si users/<id>/cache/sello.txt ≠ manifest (data_updated, baseline): Precache suelto → 04-precache.
 #   7 sidecar         publicar.sh <v> --empaquetar-datos; manifest-datos.json lleva el commit del hash.
+#   (8.18) todos los pasos salvo merge y baile exigen HEAD del clon = --hash al entrar (lección 22: --desde con hash nuevo no hace baile).
 #   8 release-commit  CHANGELOG [<v>] sin [Unreleased] huérfano; manifest version/release_tag/release_url_prefix;
 #                     CITATION.cff con <v> y data_updated. Si falta algo aborta con la receta: no edita master.
 #   9 tag             git tag -a <v> <hash literal> -m "<mensaje del CHANGELOG>" y push (pide confirmación salvo --si).
@@ -113,6 +114,10 @@ corre() {   # salida completa a la terminal y a $OUT; devuelve el exit del coman
 }
 FALLA=""
 falla() { FALLA="$*"; return 1; }
+exige_head() {   # 8.18 (runbook §14.1 lección 22): todo paso trabaja sobre --hash; un clon atrasado corre con fixtures viejos (ritual v8.17.2)
+    local h; h="$(git -C "$ROOT" rev-parse HEAD)"
+    [[ "$h" == "$HASH" ]] || { falla "$ROOT está en ${h:0:7}, no en $CORTO: corre antes el paso baile (--desde <paso> --hash <nuevo> no hace baile; git -C $ROOT pull --ff-only)"; return 1; }
+}
 sin_corridas_vivas() {
     local v
     v="$(pgrep -fl 'correr-sim\.sh|contrato-32\.sh|compuertas-entidad\.sh|pibe-32\.sh|test-maquina-virgen\.sh|vintage-aportaciones|stata-(se|mp) -b' 2>/dev/null | grep -v "^$$ " || true)"
@@ -151,8 +156,8 @@ paso_baile() {
 }
 
 paso_sim() {
+    exige_head || return 1
     sin_corridas_vivas || return 1
-    [[ "$(git -C "$ROOT" rev-parse HEAD)" == "$HASH" ]] || { falla "$ROOT está en $(git -C "$ROOT" rev-parse --short HEAD), no en $CORTO: corre antes el paso baile"; return 1; }
     local d="$EVID/01-ritual"
     if [[ -e "$d" ]]; then
         local previa; previa="$d.previa-$(date +%Y%m%d-%H%M%S)"
@@ -183,6 +188,7 @@ PY
 }
 
 paso_web() {
+    exige_head || return 1
     sin_corridas_vivas || return 1
     corre bash "$ROOT/05_scripts/test-web-batch.sh" --root "$ROOT" --evidencia "$EVID/02-test-web-batch" || { falla "test-web-batch ROJO (ver $EVID/02-test-web-batch/test-web-batch.md)"; return 1; }
     local n linea
@@ -199,6 +205,7 @@ PY
 }
 
 paso_c32() {
+    exige_head || return 1
     sin_corridas_vivas || return 1
     corre bash "$ROOT/05_scripts/contrato-32.sh" --evidencia "$EVID/c32" --refs "$EVID/01-ritual" || { falla "contrato-32 FALLÓ (ver $EVID/c32/contrato-32.md)"; return 1; }
     grep -q '^- \*\*PASÓ\*\*' "$EVID/c32/contrato-32.md" 2>/dev/null || { falla "contrato-32.md no dice PASÓ"; return 1; }
@@ -209,6 +216,7 @@ paso_c32() {
 
 sello() { awk -F'\t' -v k="$1" '$1 == "sello" && $2 == k { print $3 }' "$ROOT/users/$ID/cache/sello.txt" 2>/dev/null; }
 paso_precache() {
+    exige_head || return 1
     local du bl
     du="$(manifest data_updated)"; bl="$(manifest baseline)"
     if [[ "$(sello data_updated)" == "$du" && "$(sello baseline)" == "$bl" ]]; then
@@ -235,6 +243,7 @@ paso_precache() {
 }
 
 paso_sidecar() {
+    exige_head || return 1
     (cd "$ROOT" && corre bash 05_scripts/publicar.sh "$VERSION" --empaquetar-datos) || { falla "publicar.sh $VERSION --empaquetar-datos falló"; return 1; }
     local m="$ROOT/users/_sidecar/$VERSION/manifest-datos.json" c
     [[ -f "$m" ]] || { falla "no existe $m"; return 1; }
@@ -244,6 +253,7 @@ paso_sidecar() {
 }
 
 paso_release_commit() {
+    exige_head || return 1
     local errores
     errores="$(python3 -I - "$ROOT" "$VERSION" <<'PY'
 import json, re, sys
@@ -285,6 +295,7 @@ print(f"{v} — {titulo}" if titulo else v)
 PY
 }
 paso_tag() {
+    exige_head || return 1
     git -C "$ROOT" cat-file -e "$HASH^{commit}" 2>/dev/null || { falla "$HASH no es un commit en $ROOT"; return 1; }
     local msg="$MENSAJE" local_t remoto
     [[ -n "$msg" ]] || msg="$(mensaje_tag)" || { falla "no pude sacar el mensaje del tag del CHANGELOG (usa --mensaje)"; return 1; }
@@ -312,7 +323,7 @@ paso_tag() {
 }
 
 paso_check() {
-    [[ "$(git -C "$ROOT" rev-parse HEAD)" == "$HASH" ]] || { falla "$ROOT está en $(git -C "$ROOT" rev-parse --short HEAD), no en $CORTO"; return 1; }
+    exige_head || return 1
     if git -C "$ROOT" rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
         [[ "$(git -C "$ROOT" rev-parse "$VERSION^{commit}")" == "$HASH" ]] || { falla "el tag $VERSION no apunta a $CORTO"; return 1; }
     fi
@@ -325,6 +336,7 @@ paso_check() {
 }
 
 paso_listo() {
+    exige_head || return 1
     RESUMEN="listo para publicar: \`publicar.sh $VERSION\` y \`publicar-vps.sh $VNM\`"
     echo "$RESUMEN" | tee -a "$OUT"
 }

@@ -462,6 +462,9 @@ SITE_SMOKE_ASSETS=(
     cargaDefault.php
     jsonSankey.php
     NTA
+    metodo
+    metodo/cap0
+    metodo/Households
     entidades
     entidades/NL
     entidades/Jal
@@ -1501,7 +1504,16 @@ log_info "Gate humano del default (Fase 3b-ter): curl -s '${VPS_HEALTH_URL%/*}/c
 log_info "                                       curl -s '${VPS_HEALTH_URL%/*}/jsonSankey.php' | head -c 300"
 log_info "(JSON con los números de la corrida local fresca, no los fósiles)."
 if [[ -n "$PREVIOUS_DEPLOYMENT" && $DRY_RUN -eq 0 ]]; then
-    log_tty "${BLUE}[INFO]${NC} Rollback manual si lo necesitas después:"
-    log_tty "${BLUE}[INFO]${NC}   ssh ${VPS_USER}@${VPS_HOST} \"ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'\""
+    if [[ "$PREVIOUS_DEPLOYMENT" == "$VPS_HTML_VERSION" ]]; then
+        # 8.18 (runbook §14.1 lección 23): redeploy dentro del mismo minor. El symlink current ya apuntaba a este deployment y la
+        # Fase 2/3 lo sobrescribieron: mover current «al anterior» es moverlo al mismo sitio y no deshace nada.
+        log_tty "${YELLOW}[WARN]${NC} Rollback manual: NO existe por symlink. Este deploy rehízo el deployment $VPS_HTML_VERSION (current ya apuntaba ahí),"
+        log_tty "${YELLOW}[WARN]${NC}   así que «ln -sfn … $PREVIOUS_DEPLOYMENT current» apunta al mismo directorio. El respaldo real es el de la Fase 0"
+        log_tty "${YELLOW}[WARN]${NC}   (backup-vps.sh: config Apache en BACKUP_ROOT/<timestamp>/) y, para el sitio y el motor, volver a publicar la"
+        log_tty "${YELLOW}[WARN]${NC}   Release anterior con publicar-vps.sh (misma versión de deployment)."
+    else
+        log_tty "${BLUE}[INFO]${NC} Rollback manual si lo necesitas después:"
+        log_tty "${BLUE}[INFO]${NC}   ssh ${VPS_USER}@${VPS_HOST} \"ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'\""
+    fi
 fi
 exit 0

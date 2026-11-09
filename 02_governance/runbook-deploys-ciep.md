@@ -751,6 +751,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | Harness de seguridad del sitio (`test-sitio-seguridad.sh`: `php -S` + Stata falso; payloads de inyección/traversal → 400, válido → 200 con `.do` limpio) | **sí** | — | no necesita Stata: el falso registra la llamada y el `.do` nunca se ejecuta |
 | Sitio auto-contenido (`verify_sitio_autocontenido.sh`: docroot == `git ls-files 04_1/`, sin fantasmas, activos referenciados existen; roturas conocidas en `05_scripts/sitio-referencias-rotas-conocidas.txt`) | **sí** | el Gate 7 de `publicar-vps.sh` lo repite sobre el worktree de publicación antes del rsync | estático; en CI protege contra el enlace a un archivo que no viaja en git |
 | `/NTA` (`test-sitio-nta.sh`: `php -S` + el Sankey v2 y la cuenta del motor como fixtures; la ruta responde, `jsonSankeyNTA.php` sirve el v2 por default y valida `corte`/`cuenta`, mismo conteo de nodos/enlaces que el origen (52/174 con el fixture), la página no trae números, lo que FusionCharts dibuja es idéntico, como cadena, al JSON de origen y las cifras de «Anchoring and residual» se llenan desde `?cuenta=grupoedad`; `--png` exporta la captura) | **sí** (Chrome headless) | sin argumentos toma `users/ricardo/SankeyNTA/sankey-v2-grupoedad.json` y `users/ricardo/NTA/nta-grupoedad.json` de la corrida local (o `--json`/`--cuenta`), antes de desplegar | no necesita Stata: lee los JSON ya emitidos |
+| `/metodo` (`test-sitio-metodo.sh`, 8.18: `metodo.py --check` regenera del repo y exige bytes idénticos a `04_1/metodo/`; `php -l`; `php -S`: índice, cap0, `metodo.json` y cada capítulo responden 200; cero literales de 4+ dígitos en PHP/JS/CSS; Chrome headless: cada página pinta desde `metodo.json`, 10 secciones por capítulo con tabla o párrafo o su FLAG, índice con el sello del JSON, cap0 con la columna «Otro país» vacía, sin errores de JS, enlaces internos 200) | **sí** (Chrome headless) | lo mismo, localmente, antes del PR; `metodo.py --reporte` para leer sellos y secciones vacías | no necesita Stata: lee el repo (§16) |
 | `publicar.sh` Gate 1 (CHANGELOG tiene la versión del manifest) | **sí** (`--ci`) | — | estático |
 | `publicar.sh` Gate 2 (tag anotado) | **no** | `publicar.sh vX.Y.Z --check` en el worktree de publicación, tras crear el tag | el tag lo crea el ritual; un PR de release lleva el manifest bumpeado antes del tag |
 | `publicar.sh` Gate 3 (manifest sincronizado) | **sí** | — | estático |
@@ -798,10 +799,10 @@ bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
-Branches → `master` → *Require status checks to pass before merging* → marcar los **nueve** checks de
+Branches → `master` → *Require status checks to pass before merging* → marcar los **diez** checks de
 `gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`,
-`sitio-transitorios`, `sitio-nta`, `sitio-entidades`, `publicar-check`). El nombre del check es el `name:` del job
-(no su id): cambiarlo rompe la protección. Por línea de comandos (v8.14, para añadir `sitio-entidades`):
+`sitio-transitorios`, `sitio-nta`, `sitio-entidades`, `sitio-metodo`, `publicar-check`). El nombre del check es el `name:` del job
+(no su id): cambiarlo rompe la protección. Por línea de comandos (v8.14 añadió `sitio-entidades`; 8.18 añade `sitio-metodo`: el JSON completo con los diez está en el reporte del PR de 8.18 y abajo):
 ```bash
 gh api -X PATCH repos/rcantuc/SimuladorCIEP/branches/master/protection/required_status_checks \
   --input - <<'JSON'
@@ -814,6 +815,7 @@ gh api -X PATCH repos/rcantuc/SimuladorCIEP/branches/master/protection/required_
   "efectos transitorios del Calcular (Chrome headless + Stata falso)",
   "/NTA: Sankey NTA idéntico al JSON del motor (Chrome headless)",
   "/entidades: 32 páginas generadas, 4 productos y sellos = JSON del motor (Chrome headless)",
+  "/metodo: capítulos generados del repo = publicados (Chrome headless)",
   "publicar.sh --ci (gates 1, 3, 4, 5*, 6, 7, 8)"
 ]}
 JSON
@@ -973,7 +975,7 @@ bash 05_scripts/ritual.sh v8.15.3 --desde check
 - **Lo que no hace.** Fusionar, editar `master`, publicar, desplegar, decidir un baseline nuevo.
 - **Probado (8.18a-1, sin Stata).** `--desde check` sobre la evidencia de v8.15.2 da 11/11 sin escribir nada en `-datos`. `merge`, `precache` (sello = manifest), `release-commit` y `tag` (idempotente: el tag ya existía) pasaron contra el estado real. `release-commit` y `tag` fallan como se espera para una versión sin release commit y sin tty. Los pasos `baile`, `sim`, `web`, `c32`, `sidecar` y la rama de `Precache` suelto no se ejercieron: la primera corrida real es la del siguiente release.
 
-### 14.1 Lecciones del ritual (v8.14.0–v8.17.1)
+### 14.1 Lecciones del ritual (v8.14.0–v8.18.0)
 
 Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las demás siguen siendo criterio:
 
@@ -999,6 +1001,12 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las d
 20. **Una lista a mano de lo que viaja al VPS envejece en silencio; el manifiesto se deriva de lo que las páginas piden** (v8.17.1, 2026-11-08). La Fase 3b-ter de `publicar-vps.sh` embarcaba `users/ricardo/` → `users/ciepmx/` con `DEFAULT_MANIFEST` escrito a mano; v8.17.0 cambió el default de `/NTA` al v4 (`SankeyNTA/sankey-v4-economia.json`) y la lista no se tocó: el ritual (11/11), `test-sitio-nta.sh` y `test-sitio-seguridad.sh` estaban verdes porque prueban el sitio con sus propios archivos, no el layout del deployment, y el deploy habría dejado `/NTA` en 404 (tercera vez: v8.10 sitio sin css/js, v8.12 motor sin `manifest.json`, v8.17 el v4). Desde v8.17.1 la lista vive en un solo lugar, `05_scripts/manifiesto-default.py`, que la deriva del código del sitio (qué endpoint pide cada página y a qué `users/ciepmx/<archivo>` cae cada endpoint) y la leen la Fase 3b-ter, el Gate 5-remoto y `humo-calcular.sh` (un GET por endpoint tras el swap, entidades solo NL; rojo → rollback). `test-manifiesto-default.sh` (CI) prueba que es derivación: una página que pide un corte más lo mete sola, una URL en un comentario no cuenta, un corte que el endpoint rechaza aborta. Regla: todo producto nuevo que una página pida se prueba contra el layout del deployment (`manifiesto-default.py --tsv` lo lista; `humo-calcular.sh http://localhost:8000` contra `php -S` del docroot con `users/ciepmx/` armado como la Fase 3b-ter), no solo contra el harness. Consecuencia declarada: lo que ninguna página pide deja de viajar (v2 y v1 del Sankey NTA, `nta-quinquenio-sexo.json`). (`publicar-vps.sh`)
 
 21. **El log se lee en 110 columnas y toda impresión pasa por `_log.ado`** (sesión log-legible, 2026-11-09; §15). El `wrap.log` de v8.17.1 tenía 2,743 líneas de más de 110 columnas y 463 continuaciones «>»: la mitad eran el eco de `SIM.do` (comentarios de 150 columnas, matrices con `///`) y la otra mitad cuadros de 130-180 columnas, regresiones volcadas y los JSON de los Sankeys. Desde esta sesión `correr-sim.sh` corre `SIM_run.do` con `run` (sin eco), `SIM.do` imprime el cuadro de parámetros firmados (§0.9) y `test-log-ancho.sh` es gate de `correr-sim.sh`: ninguna línea > 110, ningún «> » (exentas solo las 47 llaves del contrato `output.txt`).
+
+22. **`--desde <paso> --hash <nuevo>` no hace `baile`: `-datos` tiene que estar en el hash antes** (ritual v8.17.2, 2026-11-09). Tras el merge del PR corto de fixtures, el ritual relanzado `--desde c32 --hash <nuevo>` corrió `c32` sobre el `-datos` viejo (testigo NL anterior) porque solo `sidecar` y `check` exigían HEAD = hash. Desde 8.18 `ritual.sh` verifica HEAD = `--hash` al entrar a **cada** paso salvo `merge` y `baile` (`exige_head`): si `-datos` está atrasado, para con la receta (`git pull --ff-only` o el paso `baile`). (`sim`, `web`, `c32`, `precache`, `sidecar`, `release-commit`, `tag`, `check`, `listo`)
+
+23. **El «rollback manual» que imprime `publicar-vps.sh` en un redeploy dentro del mismo minor apunta al mismo deployment** (v8.17 → v8.17, 2026-11-08). El symlink `current` ya apuntaba a `v8.17` y el deploy rehizo ese mismo directorio: `ln -sfn … v8.17 current` no deshace nada. En ese caso el rollback real es el respaldo de la fase previa (Fase 0 `backup-vps.sh`: config Apache; y lo que la Fase 2 sobrescribió solo se recupera volviendo a publicar la Release anterior con `publicar-vps.sh`). Desde 8.18 el mensaje final lo dice cuando `PREVIOUS_DEPLOYMENT` = deployment desplegado, en vez de imprimir un `ln -sfn` inútil. (`publicar-vps.sh`)
+
+**Regla de gobernanza explícita (8.18): todo cambio al repo entra por PR, también los documentos.** La rama protegida ya lo impone (`versionado-y-git.md` §2.1); los prompts de sesión no vuelven a pedir «commit sobre master» y el release commit viaja en el PR de la versión (lección 8).
 
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 
@@ -1049,6 +1057,22 @@ Stata lee los do-files por tramos: no se edita un `.do`/`.ado` mientras una corr
 edición a medias produjo un `_log cug` y un «' invalid name» irreproducibles en los humos de esta sesión).
 
 ---
+
+## 16. Cómo se genera y verifica `/metodo` (sesión 8.18, v8.18.0)
+
+`/metodo` es la sección del método del sitio: el índice, el capítulo 0 (requerimientos para replicar) y un capítulo por módulo del motor, en el orden en que `SIM.do` los invoca, con las diez secciones de `02_governance/metodo/plantilla-capitulo.md`. **Nada de la sección se redacta en el sitio: se genera del repo.** `05_scripts/metodo.py` lee el header de cada módulo (secciones «§N Título»), `SIM.do` §0.8–§0.8c, los memos `CUAD-*.md`, `scn-celdas.md`, `scn-cuentas.csv`, `manifest.json`, `itan-catalogo.json`, los fixtures `nta-identidad.txt` y `gate-numeros.txt` (resultado de la última corrida completa, con su commit), `manifiesto-default.py --tsv` y el código de cada módulo (secciones numeradas, `ensure_asset`/`use master/`, `save`/`file open`/`SankeySumSim`), y emite `04_1_simuladorfiscal.ciep.mx/metodo/metodo.json` más un cascarón PHP por página; `js/metodo-capitulo.js` pinta todo desde el JSON (cero literales de 4+ dígitos en PHP/JS, la regla de `/NTA`). La sección 10 de cada capítulo dice de qué archivo y qué líneas salió cada sección.
+
+```bash
+python3 -I 05_scripts/metodo.py            # regenera metodo.json y las páginas (escribe en el repo)
+python3 -I 05_scripts/metodo.py --check    # regenera a un temporal y exige bytes idénticos (exit 1 si difiere)
+python3 -I 05_scripts/metodo.py --reporte  # capítulos, sello, secciones vacías y FLAGs, sin escribir
+bash 05_scripts/test-sitio-metodo.sh       # el gate completo: --check, php -l, HTTP, cero literales, Chrome headless
+```
+
+- **Sello de un capítulo:** rojo si le falta una sección obligatoria del header (§1 Propósito, §3 Procedimiento, §6 Salidas, §9 Específico de México; FLAG «header incompleto: §n»); si no, el peor sello declarado en sus entradas (§2) y anclas (§5); «sin sello» si ninguna fila lo declara. Una sección que no está en ningún documento se publica vacía con su FLAG: no se inventa texto.
+- **Regla de gobernanza: todo header nuevo pasa por el generador.** Quien toque el header de un módulo, un memo CUAD, `cap0-requerimientos.md`, `plantilla-capitulo.md`, `fuentes/README.md`, `scn-celdas.md`, `manifest.json` o los fixtures regenera (`metodo.py`) y commitea `metodo/` en el mismo PR; el check de CI `/metodo: capítulos generados del repo = publicados` falla si lo commiteado no es lo que el repo genera. Las secciones del header se marcan «§N Título» (o «N. Título») al inicio de la línea de comentario; las tablas van como filas `| … |` (continuación con la primera celda vacía); `(procedencia: …)` en la línea del título alimenta §10.
+- **Deploy:** `/metodo`, `/metodo/cap0` y `/metodo/Households` están en `SITE_SMOKE_ASSETS` de `publicar-vps.sh` (esqueleto, Gate 7 y Fase 6) y `humo-calcular.sh` hace un GET por página de `metodo.json` tras el swap (índice, cap0, los capítulos y el propio JSON): rojo → rollback. `/metodo` no lee `users/ciepmx/`, así que no entra al manifiesto derivado de `manifiesto-default.py`; sus páginas son archivos del docroot y viajan en la Fase 2.
+- **Capítulos `NTA` y `Entidades`:** enlazan a `/NTA` y `/entidades` como sus salidas; no las sustituyen.
 
 ## Gotchas de deploy (los que ya mordieron)
 
