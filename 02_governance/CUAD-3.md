@@ -1,6 +1,6 @@
 # CUAD-3 — Capítulo `Households` del método, celdas revisadas e ingresos altos: rentas efectivas a B.2n, negocios = B.3n + D.422 y brecha ENIGH–SCN repartida ∝ Y^ε (8.17.2)
 
-**Fecha:** 2026-11-08 · **Sesión:** `sesion/cuad-3` (memo + implementación; v8.17.2) · **Base:** `master` `5007066` (v8.17.1 + `_log.ado`; baseline `v8.17.0`) · **Estado:** **pendiente de firma**: Ricardo firma al leer el PR, antes del merge. Las cuatro decisiones de Ricardo del 2026-11-08 (`CEPAL-delCastillo-2023-lecciones.md`: 1 rentas efectivas → B.2n; 2 `ing_mixto` ancla = B.3n + D.422 S.14; 3 `altimir_elasticidad` calibrada contra el ITAN; 4 citar a del Castillo) están implementadas en esta rama con el valor propuesto aquí como default; §4 lleva cada parámetro con default, alternativas y FLAG, §7 los gates con su resultado medido y §8 los FLAGs que se cierran (18, 27) y los que se declaran.
+**Fecha:** 2026-11-08 · **Sesión:** `sesion/cuad-3` (memo + implementación; v8.17.2) · **Base:** `master` `5007066` (v8.17.1 + `_log.ado`; baseline `v8.17.0`) · **Estado:** **pendiente de firma**: Ricardo firma al leer el PR, antes del merge. Las cuatro decisiones de Ricardo del 2026-11-08 (`CEPAL-delCastillo-2023-lecciones.md` §5: 1 rentas efectivas → B.2n; 2 `ing_mixto` ancla = B.3n + D.422 S.14; 3 `altimir_elasticidad` calibrada contra el ITAN; 4 citar a del Castillo) están implementadas en esta rama con el valor propuesto aquí como default; §4 lleva cada parámetro con default, alternativas y FLAG, §7 los gates con su resultado medido y §8 los FLAGs que se cierran (18, 27) y los que se declaran.
 
 ## Encabezado
 
@@ -64,7 +64,7 @@ Escalar el ingreso por persona de la ENIGH a las celdas del sector hogares del S
 
 ### §4.0 — Las decisiones de Ricardo (2026-11-08) y lo que falta firmar
 
-Las decisiones 1–4 están en `CEPAL-delCastillo-2023-lecciones.md` (transcripción del prompt: el adjunto original no llegó; se volvió a buscar en la sesión del ritual, 2026-11-09, sin resultado). Lo que este memo **propuso** y Ricardo firmó al leer el PR: (a) el valor de ε\* y la regla de redondeo (§4.3); (b) que el residuo de FLAG 27 con ε\* se publique como «evasión identificable» cuando sale ≥ 0 (§8); (c) el sello amarillo de la celda B.3n + D.422 por las cuasisociedades. La lista cerrada está al final.
+Las decisiones 1–4 están en `CEPAL-delCastillo-2023-lecciones.md` (adjunto original de Ricardo, lectura de Claude del 2026-11-08, incorporado en la sesión del ritual el 2026-11-09; hasta PR #72 esa ruta llevaba una transcripción del prompt). Lo que este memo **propuso** y Ricardo firmó al leer el PR: (a) el valor de ε\* y la regla de redondeo (§4.3); (b) que el residuo de FLAG 27 con ε\* se publique como «evasión identificable» cuando sale ≥ 0 (§8); (c) el sello amarillo de la celda B.3n + D.422 por las cuasisociedades. La lista cerrada está al final.
 
 **Firma (Ricardo Cantú, PR #71, comentario del 2026-11-09T03:59Z, https://github.com/rcantuc/SimuladorCIEP/pull/71#issuecomment-6731894072), textual:**
 
@@ -317,6 +317,6 @@ Lo que **no** se infiere de las tablas y lo dice la corrida completa: el reparto
 | 4 | Estadístico de calibración | L1 de participaciones sobre los 9 rangos con ITAN ≥ 0 (r = 1, 4–11), publicado con el L1 de los rangos ≥ 1 M y el Δ del top | otro criterio (p. ej. solo rangos ≥ 1 M: mismo ε\*) |
 | 5 | FLAG 27 | **sigue abierto y declarado**: residuo −212.324 bn (−16.93 %) con ε\*; se publica como subreporte residual, sello rojo; la regla «≥ 0 = evasión identificable» queda en el código | cerrarlo por decreto (no: el número no lo permite) |
 | 6 | Lectura de D.1 en el memo | la validación con SINCO 1 (47.3 → 49.4 mil) no reproduce el 53 → 282 mil de del Castillo porque la brecha de D.1 del motor es 8.4 % y no 59 %: se declara como diferencia de celda, no como falla | — |
-| 7 | Transcripción del adjunto | `CEPAL-delCastillo-2023-lecciones.md` es transcripción del prompt: Ricardo sustituye por el original si difiere | — |
+| 7 | Adjunto de lecciones | el original sustituyó a la transcripción en el ritual v8.17.2 (2026-11-09); nada que decidir | — |
 | 8 | Cuadro 69 vs Tabla 1 | el motor no suma remuneraciones en especie ni autoconsumo a las bases crudas de D.1 y B.3n (del Castillo sí): se declara; cambiarlo es otra sesión | incluirlos (mueve los factores medios, no los totales) |
 | 9 | Release | `baseline = v8.17.2`; fixtures de `output.txt`, sankeys y NTA re-baselineados en este PR; los de `/entidades` en PR corto tras el c32 del ritual (8.16b) | — |
