@@ -121,6 +121,7 @@ for x in ${avisos[@]+"${avisos[@]}"}; do echo "  AVISO (url() de css, no bloquea
 humo=(css/custom.css css/admin2.css js/stataCalcula.js js/config-tiempos.js js/connect.js plugins/bootstrap/css/bootstrap.min.css
       plugins/font-awesome/css/all.min.css plugins/jquery/jquery-3.4.1.min.js plugins/apexcharts/dist/apexcharts.min.js
       images/ciep-logo1.png images/TE_Trabajo.png favicon.ico cargaDefault.php jsonSankey.php NTA
+      metodo metodo/cap0 metodo/Households
       entidades entidades/NL entidades/Jal entidades/Col)
 hf=()
 for a in "${humo[@]}"; do [[ -f "$SITE_REL/$a" || -f "$SITE_REL/$a/index.php" ]] || hf+=("$a"); done
