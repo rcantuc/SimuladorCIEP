@@ -1,31 +1,49 @@
-# CEPAL · del Castillo Negrete (2023) — lecciones para la Cuadratura y las cuatro decisiones de Ricardo (2026-11-08)
+> **Procedencia (sesión del ritual v8.17.2, 2026-11-09).** Este es el **adjunto original** de Ricardo (lectura de Claude, 2026-11-08), que la sesión CUAD-3 no tuvo a mano: la transcripción de las cuatro decisiones que ocupó esta ruta en PR #71 y #72 queda sustituida por el texto que sigue, tal cual. Las cuatro decisiones de §5 fueron firmadas por Ricardo en PR #71 (CUAD-3 §4.0); lo que la transcripción decía de más (lecciones con página, diferencias del motor) vive en CUAD-3 §4.4, §8 y §10 bis.
 
-> **Procedencia (sesión CUAD-3, 2026-11-08).** El prompt de la sesión cita el adjunto `CEPAL-delCastillo-2023-lecciones.md` (Claude, 2026-11-08) «con las decisiones de Ricardo». **El adjunto no llegó al repo ni al disco** (se buscó en el repo, Dropbox, iCloud, `~/CIEP_Simuladores` y Downloads): este archivo es la **transcripción** de las cuatro decisiones tal como las enuncia el prompt, más las lecciones del PDF que CUAD-3 usa, cada una con página. Ricardo sustituye este archivo por el original si difiere (como la sesión 8.17 hizo con `CUAD-1-2-firma.md`). Donde difieran, manda el original. **Sesión del ritual v8.17.2 (2026-11-09):** se volvió a buscar el adjunto (repo, Dropbox, Downloads, Desktop, Documents, `~/CIEP_Simuladores`, Spotlight) y no apareció; la transcripción se conserva. La firma de Ricardo del 2026-11-08 (PR #71) ratifica las cuatro decisiones tal como están aquí.
+# Del Castillo Negrete (CEPAL, 2023), *La distribución del ingreso y la riqueza* — lo que le sirve al Simulador
 
-**Fuente:** M. del Castillo Negrete, *La distribución del ingreso y la riqueza: nuevas aproximaciones conceptuales y metodológicas*, Documentos de Proyectos LC/TS.2023/44 – LC/MEX/TS.2023/8, CEPAL, Ciudad de México, 2023 (`02_governance/metodo/fuentes/S2300345_es.pdf`, sha256 `74c0c048…`, 606 pp.; páginas del PDF).
+*Lectura de Claude, 2026-11-08, del documento LC/TS.2023/44 (606 pp.). Capítulos leídos: III (de la generación de valor a la acumulación), IV.B–I (ENIGH, equivalencias con el SCN, ajuste, truncamiento), I.C (conclusiones). Páginas del PDF.*
 
-## Las cuatro decisiones de Ricardo (2026-11-08)
+## 1. Mismo espíritu, misma arquitectura
 
-| # | Decisión | Parámetro en el motor (8.17.2) | Sustento en del Castillo |
-|---|---|---|---|
-| 1 | Las **rentas efectivas** de inmuebles de los hogares (ENIGH P023–P025, P031) se anclan a **B.2n** de S.14, no a B.3n. Cierra el FLAG 18 de CUAD-0 | `rentas_celda = b2n` (default; `b3n` alternativa) | p. 232: «el Sistema de Cuentas Nacionales incluye, en el rubro B.2b Excedente bruto de operación del sector Hogares (S.14), la renta de los inmuebles, más la renta imputada de las viviendas que las familias ocupan»; cuadro 69 (p. 233): X017 «Alquiler de casas, edificios e inmuebles» en el grupo de B.2b. SNA 2008 §24.55 |
-| 2 | La celda de los **negocios y el trabajo independiente** (`ing_mixto`) es **B.3n + D.422** retiros de ingresos de cuasisociedades de S.14 | `ing_mixto_ancla = b3n_d422` (default; `b3n` alternativa) | p. 232: «El ingreso mixto de la encuesta será comparado con los rubros B.3b Ingreso mixto bruto y D.422 Retiros de ingresos de cuasi sociedades»; cuadro 69 y cuadro 71 (p. 236) |
-| 3 | La brecha ENIGH–SCN de D.1 y de B.3n se reparte dentro de cada celda con una **elasticidad del subreporte** ε, **calibrada contra el ITAN** (ISR de personas físicas por rango de ingreso declarado, 4T 2024) | `altimir_elasticidad = <ε*>` (numérico; `1` = Altimir uniforme, `1.75` = del Castillo) | p. 238, ecs. (3)–(4): factor_i = (Y_i/ΣY)^1.75, ponderador_i = factor_i/Σ factor; p. 237: «el ajuste no debe ser neutro con la distribución»; p. 240–241 y cuadro 74: validación con funcionarios y directivos del sector financiero (53 716 → 282 110 MXN mensuales, 2018) |
-| 4 | **Citar a del Castillo** como antecedente mexicano del método (CUAD-3 §10, `/metodo` cap. 0, `/NTA`) | — | p. 224–228 (Martínez de Navarrete, Altimir, Hernández-Laos, Ravallion, Leyva-Parra, Bustos); p. 229 (del Castillo 2015/2017 con S.14 y microdatos ENIGH) |
+Del Castillo sigue la **secuencia de cuentas del SCN por sector institucional** (producción → asignación primaria → distribución secundaria → uso → acumulación → balance) y la lleva a las personas con la ENIGH homologada 1984–2020: es el principio A del Simulador («SCN = totales; ENIGH = distribución») con veinte años más de serie. México es su caso de estudio con la CSI base 2013. La diferencia de alcance es la que Ricardo señala: él llega a la cuenta de capital y al balance (riqueza, B.90); el Simulador se detiene en el ahorro (v10).
 
-## Lecciones del PDF que CUAD-3 usa (con página)
+## 2. Lo que confirma decisiones ya firmadas
 
-1. **Altimir reparte proporcional al ingreso dentro de cada tipo** (p. 225): «El subregistro en cada tipo de ingreso es proporcional a las percepciones, con excepción de los ingresos por renta de la propiedad; en este caso la diferencia se concentra en el quintil superior». Es lo que el motor hace desde 8.15b con `Taltimir*` (elasticidad unitaria) y, para D.4, con `d4_relativo` entre declarantes.
-2. **La crítica de Ravallion a la distribución neutra** (p. 225): «el supuesto de “distribución neutra”, es decir, asumir que el nivel de subreporte es el mismo en todos los niveles económicos es erróneo; en su investigación en la India encontró que el subregistro crece a medida que aumenta el ingreso de las familias».
-3. **La tabla de equivalencias ENIGH ↔ S.14** (cuadro 69, p. 233): D.1 ↔ X001–X006 + remuneraciones en especie YE001–YE009; B.3b + D.422 ↔ X007–X014 + autoconsumo; D.41 + D.421 + D.443 + D.451 + B.2b − alquiler imputado ↔ X016–X023; D.62 + D.752 + D.759 − X040 ↔ X024–X036 y programas. Es la Tabla 1 de CUAD-0 escrita desde el otro lado.
-4. **Magnitud y tendencia del subreporte** (cuadros 70–73, pp. 234–238): factor SCN/ENIGH del ingreso nacional 2.86 en 2020; D.1 1.73; ingreso mixto 4.41; renta de la propiedad 5.25 (6.04 en 2018); transferencias 3.60 (2018). El 41 % de la diferencia de 2018 es renta de la propiedad y 38 % negocios y cuenta propia (gráfico 76, p. 237).
-5. **Elasticidad del subreporte** (p. 237–238): «El ajuste de las remuneraciones de los asalariados y del ingreso mixto, no es neutro con la distribución, es decir, se considera una elasticidad ingreso del subreporte mayor a uno»; renta de la propiedad y transferencias «solo a las familias que han declarado este tipo de ingresos, de manera proporcional». Ecuaciones (3) y (4) con exponente 1,75 (p. 238).
-6. **Validación externa** (p. 240–241, cuadro 74): los directores y funcionarios del sector financiero privado pasan de 53 716 a 282 110 MXN mensuales (+435 %); PageGroup situaba a un director general entre 160 000 y 585 000 en 2018. «se puede considerar el ajuste llevado a cabo como plausible y ligeramente conservador».
-7. **Imputación del ISR** (p. 241–242): base gravable = 85 % del ingreso por trabajo ajustado (15 % exento y contribuciones), tarifa LISR, y la diferencia con D.51 S.14 se resta con elasticidad uno («en este caso hay sobre reporte, por la evasión fiscal»). D.59 S.14 (tenencia y predial) proporcional al ingreso ajustado.
-8. **Truncamiento** (pp. 266–271): los extremos están representados; incluir una familia Forbes mueve el Gini de 0,426 a 0,427; la cobertura de «Funcionarios, directores y jefes» en la ENIGH (3,1 %; 3,7 % expandido) supera a la del Censo 2020 (1,7 %; 3,2 % expandido), cuadro 92 (p. 271). El problema es subreporte, no truncamiento: por eso ε y no un relleno de la cola.
+| Decisión del Simulador | Del Castillo | Dónde |
+|---|---|---|
+| Una celda SCN por variable ENIGH (principio C) | Cuadro 69: equivalencias clave por clave (X001–X036) con D.1, B.3b, D.41/D.421/D.443/D.451, D.62/D.75 | p. 233 |
+| D.442 fuera de la renta de la propiedad (`cuotas_d614 = neto`) | Compara la ENIGH con D.41 + D.421 + D.443 + D.451, **no** con D.44 completo | p. 232 |
+| ISR de personas anclado a D.51 S.14 (`isr_personas_ancla = d51_s14`) | Imputa el ISR con tablas LISR sobre base gravable y lo compara con D.51 S.14; la diferencia es evasión | p. 241 |
+| Predial y tenencia como D.59, fuera del consumo | Imputa D.59 S.14 (tenencia, predial) ∝ ingreso | p. 242 |
+| Herencias, loterías y premios fuera del ingreso corriente (`cap4 fuera`) | Resta X040 de las transferencias | p. 233 |
+| Renta de la propiedad y transferencias repartidas solo entre quienes declaran, proporcional | Regla explícita (c) del ajuste | p. 239 |
+| La ENIGH no está truncada; el problema es subreporte | Prueba con las UPM de Miguel Hidalgo y el SINCO vs Censo: «los dos extremos están adecuadamente representados» | pp. 268–273 |
 
-## Lo que el motor hace distinto y declara (CUAD-3 §4, §8)
+## 3. Lo que cambia o cierra algo abierto
 
-- La celda de D.1 del motor es D.1 S.14 **sin** remuneraciones en especie de la ENIGH (del Castillo las suma con YE001–YE009); la ENIGH monetaria se escala a la celda completa.
-- El motor ancla el ISR de asalariados a la LIF y la obligación de PF por rango al ITAN (CUAD-1); del Castillo imputa ISR con la tarifa sobre el 85 % y lo reescala a D.51 con elasticidad uno. El gate informativo «base gravable / salarios ajustados» (Households §11.1) mide la distancia.
-- La renta de la propiedad del motor se reparte por `d4_relativo` (proxy de propiedad, sello rojo) y no «entre los declarantes de la ENIGH» (0.43 % de cobertura): la regla de del Castillo requeriría que la ENIGH viera D.4.
+### 3.1 FLAG 18 — rentas efectivas de hogares: del Castillo las pone en B.2b, y el +221 bn lo confirma
+Cuadro 69 asigna **X017 «Alquiler de casas, edificios e inmuebles»** al grupo «renta de la propiedad + B.2b», y el texto (p. 232) dice que el B.2b de S.14 «incluye la renta de los inmuebles, más la renta imputada de las viviendas que las familias ocupan». Es la lectura SNA 2008 §24.55 (la alternativa `rentas_celda = b2n` que Devin midió), no la de §7.9 + INEGI p. 45 que firmamos. La prueba empírica del paso 0 de 8.15b (B.2b S.14 2,107.6 vs alquiler imputado CSVM 1,886.4 = **+221 bn**) coincide con esta lectura: el excedente de hogares de INEGI trae las rentas efectivas. **Propuesta:** cerrar FLAG 18 con `rentas_celda = b2n`: X017 (cap3 rentas) ancla con el alquiler imputado a B.2n; B.3n queda para negocios y honorarios. Mueve números (anclas de Households) → `baseline` nuevo; citar del Castillo p. 232 y SNA §24.55 en CUAD-0 §10 y retirar la cita de §7.9 para este punto.
+
+### 3.2 Cuasisociedades — la celda de negocios es B.3b **+ D.422**
+La ENIGH tiene X007/X008 «ingreso de cooperativas, sociedades y cuasisociedades»; del Castillo compara el ingreso mixto ENIGH con **B.3b + D.422 Retiros de ingresos de cuasisociedades** (p. 232). Nuestro FLAG «cuasisociedades» (negocios con contabilidad completa están en S.11) se cierra parcialmente: lo que los hogares retiran de esas cuasisociedades sí está en S.14, como D.422 recibida. **Propuesta:** ancla de `ing_mixto` = B.3n + D.422 S.14 (verificar la celda en CSI_115); P068–P081 y X007/X008 juntos.
+
+### 3.3 Elasticidad de subreporte > 1 — la corrección de ingresos altos que dejamos para 9.x ya tiene método y calibración
+Altimir reparte la brecha ENIGH–SCN proporcional al ingreso (elasticidad 1). Del Castillo la reparte con **factor_i = (Y_i / ΣY)^1.75**, ponderador = factor_i / Σ factor (p. 238), para salarios e ingreso mixto; renta de la propiedad y transferencias siguen proporcionales entre declarantes. Valida con sueldos de directivos del sector financiero (ENIGH 53 mil → ajustado 282 mil mensuales; PageGroup 160–585 mil) y lo califica de «plausible y ligeramente conservador». Esto es exactamente nuestro FLAG 27: con Altimir uniforme la obligación de ISR de los formales queda **debajo** de lo recaudado (λ > 1, «evasión» negativa). Con ε > 1 la cola alta recibe más brecha, la obligación sube y la descomposición informalidad/evasión se vuelve identificable. **Propuesta:** parámetro `altimir_elasticidad` ∈ {1 (hoy), 1.75 (del Castillo), calibrada} aplicado **dentro de cada celda** (D.1, B.3n), y —ventaja nuestra que él no tenía— **calibrar ε contra el ITAN por rango** (8.16): la ε que reproduce la distribución del ISR de PF por rango de ingreso declarado es la que se firma. Es el contenido de 9.x «top incomes» adelantado a una decisión de método; mueve todo lo publicado → `baseline`.
+
+### 3.4 Base gravable de asalariados
+Del Castillo usa 85 % del ingreso laboral ajustado como base gravable (15 % de exentos y cuotas) para quienes tienen contrato. El Simulador ya hace mejor (exenciones por concepto, cuotas calculadas); pero su regla sirve de **cota de verificación**: Σ base gravable del motor / Σ salarios ajustados debe andar cerca de 0.85. Gate informativo.
+
+### 3.5 Serie homologada 1984–2020
+Su base homologada ENIGH (claves X001–X040) cubre 1984–2020; nuestra banda de vintages es 2016–2024. Para `/entidades` y para la narrativa histórica, la homologación de claves de del Castillo es la referencia para extender la banda hacia atrás si alguna vez hace falta (9.x o Colombia: es la «tabla de correspondencia encuesta → SCN» del cap. 0).
+
+## 4. Lo que es v10 (acumulación de capital y riqueza)
+
+Cap. III.F–G y V: cuentas de capital y financiera, variaciones de valor, balances (B.90 valor neto S.14 creció 6.1 % anual; riqueza/ingreso laboral de 6.8 a 16.2 veces). Fuentes para México: ENNVIH, ENH, ENIF, y la ausencia de una encuesta financiera de hogares como la EFH de Chile o la EFHU de Uruguay. El Simulador podría cerrar el ciclo con la cuenta de capital de S.14 (P.5, B.9) y el balance por edad: el «Futuro» del Sankey dejaría de ser un sumidero. No antes de 9.0.
+
+## 5. Decisiones para Ricardo
+
+1. **FLAG 18:** cerrar con `rentas_efectivas → B.2n` (del Castillo p. 232 + SNA §24.55 + el +221 medido) / mantener B.3n (§7.9 + INEGI p. 45). Mi voto: **B.2n**: tres evidencias contra una lectura de manual.
+2. **Cuasisociedades:** ancla de `ing_mixto` = B.3n + D.422 S.14 / solo B.3n. Mi voto: **+ D.422**, si la celda existe en CSI_115.
+3. **`altimir_elasticidad`:** adelantar a 8.18 como parámetro con default 1 y la calibración contra ITAN como memo (CUAD-3) / dejarlo en 9.x. Mi voto: **memo CUAD-3 antes de 9.0**; es la pieza que convierte FLAG 27 en resultado publicable y la que más mueve la distribución.
+4. Citar a del Castillo (2023) en CUAD-0 §10, CUAD-1 §10 y cap. 0 de `/metodo` como el antecedente metodológico más cercano, y en el texto de `/NTA` como referencia.
