@@ -15,7 +15,7 @@
 **** Parametros de Cuadratura (v8.15b, 2026-10-31; CUAD-0 §4 y §4.0, la firma). Globals que SIM.do §0.8 declara y este
 **** archivo lee en §0.0; sueltos, el default es el valor FIRMADO. Cada valor es un FLAG declarado (tambien en users/$id/NTA/nta-identidad.txt):
 ****   (SIM.do §0.8, resumen de alternativas) pensiones_en_yl off | on (v8.14.0); ing_mixto_depurado transf_negocios | off (cap5-cap9 dentro,
-****   v8.14.0); rentas_celda b2n (CUAD-3: SNA §24.55, del Castillo cuadro 69) | b3n (v8.15b-v8.17.1); ing_mixto_ancla b3n_d422 | b3n; altimir_elasticidad 1.75 | 1 (uniforme, v8.17.1); alq_en_capital off
+****   v8.14.0); rentas_celda b2n (CUAD-3: SNA §24.55, del Castillo cuadro 69) | b3n (v8.15b-v8.17.1); ing_mixto_ancla b3n_d422 | b3n; altimir_elasticidad 1.45 | 1 (uniforme, v8.17.1) | 1.75 (del Castillo); alq_en_capital off
 ****   (único valor); d4_relativo proxy_propiedad (SELLO ROJO) | enigh (cap6 + cap8); yk_ancla b2n_b3n_d4 | actual (ExNOpSoc residuo BIE +
 ****   impuestos − OyE); cap4 fuera (enajenaciones con factor 1, fuera de Yl/Yk, siguen en ing_bruto_tax) | dentro; suborrow off (D.1 S.14 ya
 ****   incluye el exterior) | on (v8.14.0); cuotas_d614 neto | actual; oye_en_hub off («Empresas públicas → Gobierno» en los Sankeys) | on.
@@ -43,10 +43,10 @@
 ****                                  se compara con B.3b + D.422 retiros de ingresos de cuasisociedades) — la ancla de ing_mixto es B.3n (f.70) + D.422 S.14
 ****                                  (f.99 R/P, dentro de D.42) y D.422 sale de la celda D.4 de ing_capital: YL sube 2/3 D.422 y YA baja lo mismo; el total
 ****                                  YL + YA = B.5n S.14 − D.442 no cambia. Alternativa b3n (v8.15b-v8.17.1). Sello amarillo: la ENIGH no identifica cuasisociedades.
-****   altimir_elasticidad = 1.75     «brecha ENIGH–SCN repartida ∝ Y^ε dentro de la celda» (CUAD-3 §4.0, decision 3; del Castillo 2023 p. 238, ecs. 3-4) —
+****   altimir_elasticidad = 1.45     «brecha ENIGH–SCN repartida ∝ Y^ε dentro de la celda» (CUAD-3 §4.0, decision 3; del Castillo 2023 p. 238, ecs. 3-4) —
 ****                                  en D.1 y en B.3n (+ D.422) cada persona recibe brecha × Y_i^ε / Σ_j w_j Y_j^ε: g_i = 1 + brecha × Y_i^(ε−1) / Σ w Y^ε;
 ****                                  con ε = 1 es Altimir uniforme (g_i = ancla / Σ, byte-identico a v8.17.1). No aplica a B.2n, D.4 (d4_relativo entre
-****                                  declarantes) ni ROWTrans. Numerico en [1, 3]; firmado 1.75 (calibracion contra el ITAN 4T 2024, CUAD-3 §4; 1.75 es el
+****                                  declarantes) ni ROWTrans. Numerico en [1, 3]; firmado 1.45 = ε* (minimo del estadistico L1 contra el ITAN 4T 2024, CUAD-3 §4.3; 1.75 es el
 ****                                  valor de del Castillo). Las chars TaltimirSal/TaltimirSelf siguen siendo ancla / Σ (factor medio); NTA.do las usa solo
 ****                                  en las alternativas pensiones_en_yl = on e ing_mixto_depurado = off, que con ε ≠ 1 son aproximadas (FLAG).
 ****   yk_ancla = b2n_b3n_d4          «Yk = B.2n + 1/3 B.3n + D.4 neto de S.14» — Yk = ing_capital + ing_mixtoK + ing_estim_alqu (+ cap3 con b2n) +
@@ -212,8 +212,8 @@ foreach p of local cuad_params {
 	local cuad_linea "`cuad_linea' `nombre'=${`nombre'}"
 	if "${`nombre'}" != "`firmado'" local cuad_flag = 1
 }
-* 8.17.2 (CUAD-3 §4.0, decision 3): altimir_elasticidad es numerico, ε ∈ [1, 3]; firmado 1.75 (del Castillo 2023, p. 238); 1 = Altimir uniforme (v8.17.1) *
-local cuad3_eps_firmado = 1.75
+* 8.17.2 (CUAD-3 §4.0, decision 3): altimir_elasticidad es numerico, ε ∈ [1, 3]; firmado 1.45 (ε* calibrado contra el ITAN 4T 2024, CUAD-3 §4.3; 1.75 = del Castillo 2023, p. 238); 1 = Altimir uniforme (v8.17.1) *
+local cuad3_eps_firmado = 1.45
 if "$altimir_elasticidad" == "" global altimir_elasticidad "`cuad3_eps_firmado'"
 capture confirm number $altimir_elasticidad
 if _rc != 0 {
@@ -319,8 +319,12 @@ if _rc != 0 {
 }
 local D422m = cond("$ing_mixto_ancla" == "b3n_d422", `D422Hog', 0)
 local D422ya = `D422m'*2/3
-local MixAncla = `MixNHogS14' + `D422m'
-local D4Hog = `D4Hog' - `D422m'
+* con b3n los locales se copian como texto (no se recalculan): un `= x − 0' re-renderiza el double y movia el ultimo bit (NTA 1e-14) *
+if "$ing_mixto_ancla" == "b3n_d422" {
+	local MixAncla = `MixNHogS14' + `D422Hog'
+	local D4Hog = `D4Hog' - `D422Hog'
+}
+else local MixAncla "`MixNHogS14'"
 local MixRotulo = cond("$ing_mixto_ancla" == "b3n_d422", "Ingreso mixto neto + retiros de cuasisociedades", "Ingreso mixto neto")
 * 8.16a: tabla vertical de anclas (_tabla_anclas.ado + catalogo 05_scripts/scn-cuentas.csv); solo cambia el log *
 local scn_razon = cond("$scn_sello" == "verde", "asset raw/SCN congelado, manifest scn_vintage", "sin asset congelado: descarga en caliente")
@@ -2407,7 +2411,7 @@ if "`altimir'" == "yes" {
 	noisily _log cuadro fila "B.2n" "Excedente neto de operación" "1" "`ExNOpHogS14'" "`alqmotor'" "`=`ExNOpHogS14' - `alqmotor''" "TaltimirHouse" "TaltimirHouse" "TaltimirHouse" "TaltimirHouse"
 	noisily _log cuadro fila "D.4" "Renta de la propiedad" "1" "`MacroCap'" "`ALTIMIR0'[1,6]" "`=`MacroCap' - `ALTIMIR0'[1,6]'" "TaltimirCap" "TaltimirCap" "TaltimirCap" "TaltimirCap", nota("D.4 neto − D.442 − D.422 (b3n_d422): Distribucion ∝ ing_d4_rel entre declarantes, sin ε (sello rojo)")
 	noisily _log cuadro nota "g_i = 1 + brecha × Y_i^(ε−1) / Σ_j w_j Y_j^ε (del Castillo 2023, p. 238); con ε = 1, g_i = ancla / Σ ENIGH (Altimir uniforme, v8.17.1)"
-	noisily _log cuadro nota "altimir_elasticidad = $altimir_elasticidad (firmado 1.75, CUAD-3 §4.0); B.2n, D.4 y ROWTrans sin ε"
+	noisily _log cuadro nota "altimir_elasticidad = $altimir_elasticidad (firmado 1.45 = ε* calibrado contra el ITAN, CUAD-3 §4.3); B.2n, D.4 y ROWTrans sin ε"
 	noisily _log cuadro print, titulo("Brecha ENIGH–SCN repartida ∝ Y^ε por celda, sector hogares S.14, año `anioenigh'") unidad("MXN `anioenigh', miles de millones") sello("$scn_sello") ref("CUAD-3 §4")
 	escalar custom(%5.2f) CUAD3Elasticidad = `eps'
 	* Distribucion sobre una variable existente la re-escala por macro/Σ relativo (PerfilesSim la usa asi, con relativo = la misma variable);

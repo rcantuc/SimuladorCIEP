@@ -99,7 +99,7 @@ global rentas_celda "b2n"							// CUAD-3 §4.0 (CUAD-0 §4.0 decía b3n) · lee
 global alq_en_capital "off"							// CUAD-0 §4.0 · único valor; lee: Households §9
 global d4_relativo "proxy_propiedad"				// CUAD-0 §4.0 · lee: Households §9, §11.3
 global ing_mixto_ancla "b3n_d422"					// CUAD-3 §4.0 · lee: Households §9, §9.1; NTA §4
-global altimir_elasticidad "1.75"					// CUAD-3 §4.0 · lee: Households §9 (ε de la brecha ∝ Y^ε en D.1 y B.3n; 1 = Altimir)
+global altimir_elasticidad "1.45"					// CUAD-3 §4.0 (ε* calibrado contra el ITAN 4T 2024) · lee: Households §9 (brecha ∝ Y^ε en D.1 y B.3n; 1 = Altimir, 1.75 = del Castillo)
 global yk_ancla "b2n_b3n_d4"						// CUAD-0 §4.0 · lee: Households §9.1; NTA §4
 global cap4 "fuera"									// CUAD-0 §4.0 · lee: Households §9
 global suborrow "off"								// CUAD-0 §4.0 · lee: Households §9; Sankey
@@ -146,7 +146,7 @@ noisily _log param, nombre(rentas_celda) firmado(b2n) doc("CUAD-3 §4.0") lee("H
 noisily _log param, nombre(alq_en_capital) firmado(off) doc("CUAD-0 §4.0") lee("Households §9 (único valor)")
 noisily _log param, nombre(d4_relativo) firmado(proxy_propiedad) doc("CUAD-0 §4.0") lee("Households §9, §11.3")
 noisily _log param, nombre(ing_mixto_ancla) firmado(b3n_d422) doc("CUAD-3 §4.0") lee("Households §9, §9.1; NTA §4")
-noisily _log param, nombre(altimir_elasticidad) firmado(1.75) doc("CUAD-3 §4.0") lee("Households §9")
+noisily _log param, nombre(altimir_elasticidad) firmado(1.45) doc("CUAD-3 §4.0") lee("Households §9")
 noisily _log param, nombre(yk_ancla) firmado(b2n_b3n_d4) doc("CUAD-0 §4.0") lee("Households §9.1; NTA §4")
 noisily _log param, nombre(cap4) firmado(fuera) doc("CUAD-0 §4.0") lee("Households §9")
 noisily _log param, nombre(suborrow) firmado(off) doc("CUAD-0 §4.0") lee("Households §9; Sankey")

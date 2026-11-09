@@ -2754,7 +2754,8 @@ program define SCNHogaresS14
 			else local col = 2
 		}
 		g id = _n
-		reshape long `var'_, i(id) j(anio) string
+		* 8.17.2: sin eco del reshape (lineas «(j = 2003 …)» de 115 columnas rompian test-log-ancho.sh en la primera corrida que relee las series) *
+		quietly reshape long `var'_, i(id) j(anio) string
 		rename `var'_ `var'
 		replace `var' = `var'*1000000
 		replace anio = substr(anio,1,4)
