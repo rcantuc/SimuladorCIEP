@@ -8,6 +8,20 @@
 *!***    Última actualización: 03jul2026 ****
 *!***                                    ****
 *!*******************************************
+* §1 Propósito (procedencia: 03_help/Stata/SCN.sthlp «Descripción»; 02_governance/scn-celdas.md encabezado): `SCN` descarga, procesa y proyecta el Sistema
+*   de Cuentas Nacionales (SCN) de México integrando dos fuentes oficiales del INEGI: BIE (ingreso, producción bruta, consumo de hogares, gasto de
+*   gobierno y PIB por actividad económica) y CSI (cuentas por sectores institucionales: ingreso mixto, cuotas de seguridad social, subsidios y
+*   excedentes de operación). Permite descomponer el PIB por sus tres métodos y obtener la distribución funcional del ingreso entre trabajo, capital y
+*   depreciación; es insumo de TasasEfectivas, GastoPC, Households y NTA. Lo que el motor lee es master/SCN.dta, construido por UpdateSCN a partir de
+*   las 525 series del BIE y los tabulados CSI congelados en raw/SCN/ (asset scn-congelado-2024.zip; anclas en anioenigh, marco del Paquete desde el
+*   último año congelado).
+* §2 Entradas (procedencia: CUAD-0 §2 filas «CSI» y «BIE, series SCN»; manifest.json scn_vintage; 02_governance/scn-celdas.md):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | BIE, 525 series del SCN (raw/SCN/bie/<serie>.csv → master/SCN.dta) | INEGI, vía AccesoBIE; asset scn-congelado-2024.zip | el que registra el manifest por serie (scn_vintage.bie.<serie>: sha256, fecha de consulta, etiqueta INEGI, vía); último congelado «2025 p1» | PIB, RemSalSS, ExNOp*, ROW*, CapFij, ConHog y las de scn-celdas.md tabla A | anio | amarillo (vintage BIE vs CSI declarado) |
+*   | CSI_103/106/109/112/115/118/121 = S.1, S.11, S.12, S.13, S.14, S.15, S.2 (raw/SCN/CSI_1xx.xlsx) | INEGI, base 2018, serie 2003–2024, «2024 revisada»; mismo asset | el manifest manda su sha256 (scn_vintage.csi) | filas de scn-celdas.md tabla B (cuadro + fila + columna) | cuadro + fila + columna (AR U/A, AS R/P) | amarillo |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 4):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Cuentas nacionales por sector | Cuentas económicas integradas por sector institucional, con hogares separados de ISFLSH si es posible; al menos 5 años consecutivos; vintage identificable | INEGI, cuentas por sector institucional (CSI; canal BIE, congelado en raw/, política §4 bis de CUAD-0): S.11, S.12, S.13, S.14, S.15, S.2; partidas D.1, B.2n, B.3n, D.21/D.31, D.29/D.39, D.4, D.5, D.61, D.62, D.63, D.7, D.8, P.3, P.32, P.51c, B.5n, B.6n, B.8n, B.9 |
 program define SCN, return
 quietly {
 	timer on 33

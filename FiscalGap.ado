@@ -1,3 +1,15 @@
+*! FiscalGap — brecha fiscal del Simulador Fiscal CIEP (header añadido en la sesión 8.18 para /metodo; texto tomado de los documentos que se citan)
+* §1 Propósito (procedencia: SIM.do §8.1 «Brecha fiscal»; CHANGELOG [v8.3.0]; 03_help/FiscalGap.md): brecha fiscal: a partir del Paquete Económico 2027
+*   construye una trayectoria anual cerrada por componentes (ingresos, gasto, costo financiero, RFSP y SHRFSP) sobre el horizonte 2027–2032, que se
+*   despliega en una sola tabla Proy_fiscal, con los ingresos y gastos proyectados desde los perfiles por persona del escenario base.
+* §2 Entradas (procedencia: comentario de este archivo sobre users/<idbase>/bootstraps (l. 13–14); Precache.ado header «Items»; SIM.do §7 y §8.1):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | users/<idbase>/bootstraps/<bootstrap>/<var>RECprom.dta (PerfilesSim.do §8) y su colapso users/<idbase>/cache/REC_<var>.dta (Precache) | motor | corrida vigente | estimación, contribuyentes por anio, modulo, aniobase | anio modulo aniobase | según PerfilesSim |
+*   | users/<id>/ingresos.dta y gastos.dta (SIM.do §7) | motor | corrida vigente | variables *_Sim por persona | folioviv foliohog numren | según Households §2 |
+*   | master/PEF.dta (colapso PEF_<by>_<ifkey>.dta de Precache), PIBDeflactor, SHRFSP | SHCP, INEGI | vintage del asset / en vivo | gasto histórico, PIB, deuda | anio | verde / amarillo |
+* §6 Salidas (procedencia: §4.5 «Outputs» de este archivo (llaves PROY*); 01_modulos/output.do header; runbook §14.1 lección 7):
+*   | Archivo / JSON / figura | Qué contiene | Quién lo consume | Check de CI que lo protege |
+*   | output.txt: PROYLABOR, PROYCONSU, PROYCAPIT, PROYORGAN, PROYEDUCA y las demás PROY* (vía log output) | trayectoria proyectada por componente, en % del PIB | sitio (cargaDefault.php); sidecar datos-<v>.zip | gate-numeros.sh byte a byte (sesión); test-web-batch.sh web = batch |
 program define FiscalGap
 quietly {
 

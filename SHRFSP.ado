@@ -1,4 +1,15 @@
 *! version 8.0 CIEP 03jul2026
+* §1 Propósito (procedencia: 03_help/Stata/SHRFSP.sthlp «Descripción»): `SHRFSP` descarga y analiza la deuda pública de México en su medida más amplia,
+*   combinando las Estadísticas Oportunas de la SHCP (saldos de deuda, requerimientos financieros, balance fiscal y costo de la deuda) y el BIE (PIB y
+*   deflactor). El Saldo Histórico de los Requerimientos Financieros del Sector Público incluye pasivos fuera del presupuesto; saldo y flujo se
+*   relacionan por la identidad SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + ajustes cambiarios(t).
+* §2 Entradas (procedencia: 03_help/Stata/SHRFSP.sthlp «Descripción»; runbook §9):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | Estadísticas Oportunas de Finanzas Públicas (saldos de deuda, RFSP, balance, costo financiero) | SHCP | en vivo (runbook §9) | SHRFSP, RFSP y componentes, costo de la deuda | anio mes | verde |
+*   | BIE (PIB y deflactor) | INEGI vía PIBDeflactor | en vivo | PIB nominal, deflactor | anio | amarillo |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 13):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Deuda y balance | Deuda, costo financiero y balance del gobierno general, y deuda subnacional por unidad | SHCP: SHRFSP, costo financiero, balance presupuestario; deuda estatal por entidad |
 program define SHRFSP, return
 quietly {
 	capture mkdir `"${SIMROOT}/users/"'

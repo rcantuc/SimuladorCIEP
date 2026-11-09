@@ -1,3 +1,16 @@
+* output.do — las llaves de output.txt (header añadido en la sesión 8.18 para /metodo; texto tomado de los documentos que se citan)
+* §1 Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el
+*   contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del
+*   flujo canónico SIM.do (gate test-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al
+*   usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga.
+* §2 Entradas (procedencia: runbook §12 inventario; comentario de este archivo l. 38–40): los escalares y globals vivos al final de la corrida (SIM.do §2
+*   CRECPIB/CRECDEF/DEUDA0, LIF, PEF, FiscalGap, Simulador, TasasEfectivas) y master/<anioenigh>/cuadratura.do (los diez Cuad*/Cuad*PIB de Households.do §9.1).
+* §6 Salidas (procedencia: CUAD-0 §6 fila «users/<id>/output.txt»; runbook §14.1 lección 7; 05_scripts/gate-numeros.sh header):
+*   | Archivo / JSON / figura | Qué contiene | Quién lo consume | Check de CI que lo protege |
+*   | users/<id>/output.txt (INCD*, APORT*, PROY*, INGRESOS*, GASTOS*, PIBY, CRECPIB*, CRECDEF*, DEUDA*, CUADRATURA, …: 47 llaves) | default del sitio: lo que cargaDefault.php devuelve y Web.Stata.do reproduce | sitio (cargaDefault.php, checkStataStatus.php); sidecar datos-<v>.zip | gate-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); test-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md §0.3 fila «Gates»):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | Gates | Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados | gate-numeros.sh, identidad NTA, contrato-N, paridad web = batch |
 quietly log on output
 
 * Horizonte macro 2026-2032 (v8.3.0): mismos 7 anios que el marco del sitio

@@ -1,5 +1,5 @@
 *! version 8.15.1 CIEP 31oct2026
-* Precache — produce el cache de lo invariante al escenario (v8.12 fase 2a).
+* §1 Propósito (procedencia: este header): Precache — produce el cache de lo invariante al escenario (v8.12 fase 2a).
 *
 * Perfil del flujo web «Calcular» (02_governance/perf/perfil-web-2026-10-18.md):
 * de ~32 s, ~12 s se iban en piezas que NO dependen de ningún input del
@@ -10,7 +10,7 @@
 * _precache_usa, que aborta con receta si faltan o caducaron (sin fallback).
 * Viajan al VPS con publicar-vps.sh (Fase 3b-bis, junto con los *RECprom).
 *
-* Items y convención de nombres (users/<id>/cache/):
+* §6 Salidas — Items y convención de nombres (users/<id>/cache/):
 *   PEF_<by>_<ifkey>.dta          colapso anual de master/PEF.dta tal como lo pide
 *                                 FiscalGap (PEF if transf_gf == 0, by(divCIEP)):
 *                                 gasto, gastoTOT, CuoTOT en PESOS corrientes por
@@ -33,7 +33,7 @@
 *                                   insumo <item>   <ruta relativa a SIMROOT>  <bytes>  -
 *
 * Uso: Precache [, ANIOpe(int) ANIOvp(int)]    (defaults: scalars anioPE / aniovp)
-* Requiere: $SIMROOT, $id, $bootstrap; master/PEF.dta, master/perfiles<aniope>.dta,
+* §2 Entradas — Requiere: $SIMROOT, $id, $bootstrap; master/PEF.dta, master/perfiles<aniope>.dta,
 * master/<anioenigh>/households.dta y los <var>RECprom.dta de users/$id/bootstraps/$bootstrap/.
 * (Ojo: en comentarios de Stata nunca escribir barra+asterisco: abre un comentario de bloque y se come el resto
 * del archivo. Y los tabs del sello se escriben con _tab: Stata convierte en espacios los tabs del código fuente.)

@@ -29,6 +29,17 @@
 *   Gráficas, escalares (escalar) y la base llevan la abreviatura como sufijo
 *   (pibNL.png, pibYNL, ...); la base nacional master/PIBDeflactor.dta no se toca.
 *   Los exógenos $pib/$def/$inf (CGPE) se aplican igual que en el nacional.
+* §1 Propósito (procedencia: 03_help/Stata/PIBDeflactor.sthlp «Descripción»): `PIBDeflactor` descarga, procesa y proyecta los principales indicadores
+*   macroeconómicos de México: PIB, deflactor de precios, inflación y demografía laboral. Es el comando base del Simulador Fiscal CIEP: genera el
+*   deflactor y el PIB que usan todos los demás comandos (LIF, PEF, SHRFSP, etc.) para expresar valores en términos reales; las series se presentan
+*   en tres tramos (histórico observado desde 1993, estimaciones CGPE de la SHCP, proyecciones CIEP con los globals de crecimiento de SIM.do §2).
+* §2 Entradas (procedencia: 03_help/Stata/PIBDeflactor.sthlp «Descripción»; runbook §9 «SCN congelado desde v8.15b; el resto, en vivo»; CUAD-0 §2 sello de las series BIE):
+*   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+*   | BIE (INEGI) vía AccesoBIE: PIB trimestral, índice de precios implícitos, INPC y empleo | INEGI, Banco de Información Económica | en vivo (runbook §9: solo el SCN está congelado) | PIB, deflactor, INPC, población ocupada | anio trimestre | amarillo |
+*   | CONAPO: proyecciones de población 1950–2070 (master/Poblacion.dta de Poblacion.ado) | CONAPO vía Poblacion.ado | pry23 | población, edades laborales | anio | verde |
+* §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 5):
+*   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+*   | PIB y deflactores | PIB nacional y subnacional nominal, mismo año base, deflactor | INEGI, PIB nacional y PIBE por entidad; deflactor implícito |
 program define PIBDeflactor, return
 quietly {
 	timer on 3

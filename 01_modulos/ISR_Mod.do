@@ -20,6 +20,15 @@
 **   | Factores de empalme             | Cociente LIF / micro por impuesto, leido de la corrida       | Hoy cableados (3.793/3.255, 0.241/0.553, 4.176/2.781, 1.675/1.525):     |
 **   |                                 |                                                             | CUAD-1 FLAG 29                                                          |
 **
+** §1 Propósito (procedencia: SIM.do §4.2 «Submódulo ISR (web)» y el bloque `if "`cambioisrpf'" == "1"` (NUEVA ESTIMACIÓN ISR ASALARIADOS / P. FÍSICAS /
+**   P. MORALES / CUOTAS IMSS); SIM.do §7 merge de users/<id>/isr_mod.dta; runbook §12 inventario «ISR_Mod, IVA_Mod, output → Web.Stata.do, web»):
+**   submódulo ISR (web): cuando el formulario del sitio cambia la tarifa (cambioisrpf = 1), recalcula sobre la base armonizada la nueva estimación
+**   de ISR asalariados, ISR personas físicas, ISR personas morales y cuotas IMSS con las matrices ISR, SE, DED, PM, CSS_IMSS y CSS_ISSSTE de SIM.do
+**   §4.2–§4.4, y escribe users/<id>/isr_mod.dta, que SIM.do §7 funde en el ciclo de vida. Solo corre en el flujo web (Web.Stata.do).
+** §2 Entradas (procedencia: secciones «INFORMACIÓN PIB» e «INFORMACIÓN HOUSEHOLDS» de este archivo; SIM.do §4.2–§4.4):
+**   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
+**   | master/<anioenigh>/households.dta (base armonizada de Households.do) y escalares de PIBDeflactor | motor | corrida vigente | ing_bruto_tax, exenciones, deducciones, cuotas, formalidad | folioviv foliohog numren | según Households §2 |
+**   | Matrices ISR, SE, DED, PM, CSS_IMSS, CSS_ISSSTE del formulario | SIM.do §4.2–§4.4 (LISR art. 96/152, Anexo 8 RMF; IMSS Informe 2021-2022 Anexo A.4; IFA ISSSTE 2021) | cableadas | tarifa, subsidio al empleo, deducciones, tasa PM, cuotas por ramo | — | amarillo (vintage 2021 para 2024, CUAD-1 §2) |
 timer on 94
 noisily di _newline(2) in g "  MODULO: " in y "ISR " aniovp
 

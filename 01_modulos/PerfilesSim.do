@@ -4,6 +4,18 @@
 ****    INFORMACION POR INDIVIDUOS    ****
 ****                                  ****
 ******************************************
+** §1 Propósito (procedencia: SIM.do §3.3 «Perfiles de la política económica actual (Paquete Económico)»; secciones §1–§8 de este archivo; README.md
+**   «Opciones globales», bootstrap): perfiles de la política económica actual (Paquete Económico): reparte a las personas de la ENIGH armonizada los
+**   agregados del PEF (§1 macros: educación, otros gastos, infraestructura) y de la LIF (§2) del año del Paquete, ajusta la población (§3) y el SCN (§4),
+**   construye las variables de ingresos y gastos totales por persona (§5) y promedia las réplicas bootstrap de Simulador en
+**   users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta (§8), que es lo que lee FiscalGap (sin fallback: si falta, aborta con la receta).
+** §6 Salidas (procedencia: README.md «Opciones globales», bootstrap; runbook §12 inventario «users/ricardo/bootstraps»):
+**   | Archivo / JSON / figura | Qué contiene | Quién lo consume | Check de CI que lo protege |
+**   | users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta | promedio de las réplicas bootstrap de cada variable (perfil, incidencia, ciclo, proyección) | FiscalGap (sin fallback); viajan al VPS en la Fase 3b-bis de publicar-vps.sh | sin protección automática — gate humano (la corrida completa; FiscalGap aborta si faltan) |
+**   | master/perfiles<anioPE>.dta | base por persona del año del Paquete | GastoPC, TasasEfectivasEntidad, SankeySF, CicloEntidad | sin protección automática — gate humano |
+** §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md §0.3 «Reparto de sector a persona»):
+**   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
+**   | Reparto de sector a persona | Toda partida de sector lleva una regla declarada; per cápita es el default honesto | Vigente desde 8.15b (CUAD-0 firmado): reglas propiedad / incidencia / per cápita con sello (principio B) |
 if "`1'" == "" {
 	clear all
 	local 1 = 2026
