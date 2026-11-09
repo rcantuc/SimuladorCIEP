@@ -50,33 +50,33 @@
     "celdas": [
      {
       "celda": "I",
-      "n": "4478",
-      "hog": "1275",
-      "pob": "1399183"
+      "n": "4436",
+      "hog": "1282",
+      "pob": "1359046"
      },
      {
       "celda": "II",
-      "n": "2655",
-      "hog": "726",
-      "pob": "1465728"
+      "n": "2648",
+      "hog": "719",
+      "pob": "1464890"
      },
      {
       "celda": "III",
-      "n": "2151",
-      "hog": "644",
-      "pob": "1286186"
+      "n": "2302",
+      "hog": "673",
+      "pob": "1335525"
      },
      {
       "celda": "IV",
-      "n": "1805",
-      "hog": "594",
-      "pob": "1160502"
+      "n": "1752",
+      "hog": "581",
+      "pob": "1158513"
      },
      {
       "celda": "V",
-      "n": "1497",
-      "hog": "557",
-      "pob": "1063713"
+      "n": "1448",
+      "hog": "541",
+      "pob": "1057338"
      }
     ]
    },
@@ -95,14 +95,14 @@
       "from": "De 5 a 17",
       "to": "Imp al trabajo",
       "n": 48,
-      "top1": 18.76470688162028,
+      "top1": 18.86949349569635,
       "motivo": "n"
      },
      {
       "from": "De 65 y más",
       "to": "Imp al trabajo",
-      "n": 285,
-      "top1": 71.05366513357399,
+      "n": 280,
+      "top1": 63.49569436964053,
       "motivo": "top1"
      }
     ],
@@ -166,7 +166,7 @@
       "from": "Indígena",
       "to": "Imp al trabajo",
       "n": 75,
-      "top1": 7.008410764825824,
+      "top1": 6.973476356145714,
       "motivo": "n"
      },
      {
@@ -220,7 +220,7 @@
       "from": "Sin escolaridad",
       "to": "Imp al trabajo",
       "n": 32,
-      "top1": 29.63050934420619,
+      "top1": 29.637980525327,
       "motivo": "n+top1"
      },
      {
@@ -286,7 +286,7 @@
     "g": 11,
     "quinquenio": "50-54",
     "n": 408,
-    "top1_aporta": 4.157846,
+    "top1_aporta": 4.359514,
     "top1_recibe": 25.208181,
     "motivo": "top1"
    },
@@ -296,7 +296,7 @@
     "g": 13,
     "quinquenio": "60-64",
     "n": 293,
-    "top1_aporta": 47.208184,
+    "top1_aporta": 48.307042,
     "top1_recibe": 2.583714,
     "motivo": "top1"
    },
@@ -306,7 +306,7 @@
     "g": 14,
     "quinquenio": "65-69",
     "n": 234,
-    "top1_aporta": 39.99193,
+    "top1_aporta": 32.143923,
     "top1_recibe": 2.193171,
     "motivo": "top1"
    },
@@ -316,7 +316,7 @@
     "g": 17,
     "quinquenio": "80-84",
     "n": 93,
-    "top1_aporta": 10.4996,
+    "top1_aporta": 10.57952,
     "top1_recibe": 7.782554,
     "motivo": "n"
    },
@@ -326,7 +326,7 @@
     "g": 18,
     "quinquenio": "85-89",
     "n": 54,
-    "top1_aporta": 30.997574,
+    "top1_aporta": 30.968599,
     "top1_recibe": 12.613591,
     "motivo": "n+top1"
    },
@@ -336,7 +336,7 @@
     "g": 19,
     "quinquenio": "90-94",
     "n": 15,
-    "top1_aporta": 78.404616,
+    "top1_aporta": 78.377425,
     "top1_recibe": 40.962924,
     "motivo": "n+top1"
    },
@@ -386,7 +386,7 @@
     "g": 18,
     "quinquenio": "85-89",
     "n": 72,
-    "top1_aporta": 13.728613,
+    "top1_aporta": 13.734503,
     "top1_recibe": 12.05794,
     "motivo": "n"
    },
@@ -445,29 +445,29 @@
    {
     "impuesto": "ISRPF",
     "n": 12586,
-    "top1": 51.199191,
+    "top1": 55.139051,
     "motivo": "top1"
    }
   ],
   "top1_n100": {
-   "pct": 71.05366513357399,
-   "donde": "grupoedad De 65 y más→Imp al trabajo (n=285)"
+   "pct": 63.49569436964053,
+   "donde": "grupoedad De 65 y más→Imp al trabajo (n=280)"
   },
   "top1_te": {
-   "pct": 51.199191,
+   "pct": 55.139051,
    "impuesto": "ISRPF"
   }
  },
  "ciclo": {
-  "neto_pesos": 217396590776.5,
-  "aporta_pesos": 508286509812.12,
+  "neto_pesos": 218772571579.42,
+  "aporta_pesos": 509662490615.04,
   "recibe_pesos": 290889919035.63,
   "pob": 6375312
  },
  "pibe": {
   "pibe_pesos": 3231482553598.41,
-  "neto_pesos": 217396590776.4979,
-  "neto_pct_pibe": 6.727456737602262,
+  "neto_pesos": 218772571579.4166,
+  "neto_pct_pibe": 6.770037218236034,
   "vintage": "2026-10-19",
   "fuente_vintage": "master/PIBDeflactor<ABREV>.meta base_generada (sello pibe-32)",
   "anio_vp": 2027,
@@ -481,7 +481,7 @@
   "neto_pct_pib": 3.171000000000003,
   "fuente_pct": "entidades-pibe32.json escalar NetoCicloPIBNac (contrato-32.do; null si la corrida no lo exportó)",
   "share_pob": 0.04708801,
-  "share_neto": 0.17391871,
+  "share_neto": 0.17501951,
   "n": 308598,
   "pob": 135391415
  },
@@ -493,7 +493,7 @@
  },
  "procedencia": {
   "generador": "generar-entidades.py v1.0 (v8.13.0)",
-  "commit": "eb20d98",
+  "commit": "2a9fa6e",
   "insumos": [
    "ciclo-vida.json",
    "tasas-efectivas.json",
@@ -509,7 +509,7 @@
    "ciclo": "01_modulos/visualizations/CicloEntidad.do v1.0",
    "tasas": "01_modulos/TasasEfectivasEntidad.do v1.0 -> TasasEfectivasMicro.ado v1.1.0"
   },
-  "generado_el": "2026-11-07 22:15:31"
+  "generado_el": "2026-11-08 23:32:01"
  },
  "pibe_32": {
   "suma_pesos": 39629803600641.83,
