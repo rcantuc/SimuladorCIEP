@@ -148,7 +148,23 @@ Rangos excluidos del estadístico: 2 y 3 (ITAN negativo: devoluciones netas) y �
 
 **Tabla 3c — Sensibilidad publicada: qué llaves de `output.txt` se mueven entre ε = 1 y ε\*** (con las celdas nuevas en ambos), INCD por decil (ISR asalariados, bloque 12), `APORT*`, `INGRESOSTEF`, y Σ S sin ancla vs B.8n S.14.
 
-{{TABLA_3C}}
+Corridas completas: `02-full-eps1-celdas-nuevas` (ε = 1, `b2n` + `b3n_d422`) y `01-sim-completo` (ε\* = 1.45, mismas celdas); la primera columna es v8.17.1 (`L`). Bloques `INCD` = per cápita anual (MXN) por decil, en el orden de las llamadas a `Simulador`; `INCD2` = participación del decil X.
+
+| Bloque `INCD` (per cápita anual, MXN) | Decil I: v8.17.1 → ε = 1 nuevas → ε\* | Decil X: v8.17.1 → ε = 1 nuevas → ε\* | Nacional | Participación del decil X (`INCD2`, %): v8.17.1 → ε = 1 → ε\* |
+|---|---|---|---|---|
+| 1 Yl | 38,144 → 30,353 → 29,287 | 1,144,717 → 1,202,826 → 1,524,416 | 378,338 → 389,493 → 389,493 | 30.3 → 30.9 → 39.1 |
+| 2 Yk | 51,841 → 49,110 → 50,133 | 1,622,323 → 1,598,949 → 1,671,167 | 378,158 → 367,003 → 367,003 | 42.9 → 43.6 → 45.5 |
+| 3 ingbrutotot | 68,353 → 56,907 → 55,545 | 2,223,336 → 2,262,717 → 2,699,446 | 620,739 → 620,739 → 620,739 | 35.8 → 36.5 → 43.5 |
+| 6 Ahorro | −266,660 → −279,493 → −276,908 | 1,096,125 → 1,140,597 → 1,534,938 | 8,998 → 8,998 → 8,998 | 1,218.1 → 1,267.6 → 1,705.9 |
+| 11 ing_subor | 208,862 → 191,606 → 174,819 | 1,148,809 → 1,147,290 → 1,231,073 | 602,962 → 602,962 → 602,962 | 19.7 → 19.4 → 22.5 |
+| 13 ISRAS | 35,207 → 31,111 → 26,933 | 388,043 → 390,467 → 406,061 | 174,412 → 174,413 → 174,517 | 34.1 → 33.6 → 39.0 |
+| 14 ISRPF | 458 → 515 → 273 | 47,428 → 46,941 → 56,975 | 12,900 → 12,886 → 13,281 | 83.5 → 82.7 → 88.4 |
+| 16 Laboral | 15,687 → 13,214 → 8,997 | 272,443 → 270,085 → 309,951 | 144,297 → 144,179 → 145,256 | 32.3 → 31.9 → 36.3 |
+| 17 ISRPM | 9,426 → 9,213 → 10,082 | 243,930 → 245,734 → 237,180 | 66,085 → 66,085 → 66,085 | 42.7 → 42.4 → 40.6 |
+| 32 ImpuestosAportaciones | 43,047 → 43,199 → 43,040 | 569,170 → 564,329 → 585,174 | 185,629 → 185,629 → 185,629 | 30.7 → 30.4 → 31.5 |
+| 43 AportacionesNetas | −168,078 → −179,753 → −167,273 | 413,579 → 411,948 → 433,969 | 30,987 → 30,987 → 30,987 | 133.5 → 132.9 → 140.0 |
+
+Lectura: entre ε = 1 y ε\* (mismas celdas) cambian 406 de las 509 líneas de `output.txt` (5,700 números); las celdas nuevas solas (v8.17.1 → ε = 1) mueven 401 líneas y los totales nacionales de Yl (+11,155 per cápita: ⅔ D.422) y Yk; ε mueve solo el reparto: el decil X gana 8.2 puntos de participación en Yl (30.9 → 39.1), 5.4 en el ISR de asalariados (33.6 → 39.0) y 5.7 en el ISR de personas físicas (82.7 → 88.4); la Laboral del decil I baja de 13,214 a 8,997 porque la obligación se desplaza arriba con el mismo total LIF. `INGRESOS`, `INGRESOSTEF`, `GASTOS*` y `PIBY` no cambian (anclas LIF/PEF; la tasa efectiva del ISR PM sigue sobre B.2n S.11 + S.12); `PROY*` cambia en segundo orden (ISR proyectado por decil; p. ej. el primer bloque 10.847/12.266/13.576 → 11.044/12.519/13.946 % del PIB) y `PROYMAX` del bloque de aportaciones netas un año (2069 → 2070, 2055 → 2056). `APORT*` (aportaciones por edad y sexo, % del total) se redistribuye hacia las edades de 25–64 del decil X. Σ S sin ancla vs B.8n S.14: −19.4 bn (−1.0 %) en las tres corridas.
 
 **Propuesta del memo.** Default = ε\* calibrado (redondeado a 0.05) si el ajuste al ITAN mejora claramente sobre ε = 1; si no, 1.75 de del Castillo con FLAG; alternativa 1. Resultado: **default `altimir_elasticidad = 1.45`** (ε\*: L1 56.6 pp contra 94.9 con ε = 1: mejora clara); alternativas `1` (Altimir uniforme, v8.17.1) y `1.75` (del Castillo, L1 78.4), ambas corren con FLAG. Ricardo puede preferir 1.50 (L1 57.4, misma meseta) o el 1.75 de la literatura: la diferencia entre 1.45 y 1.50 es de 0.8 pp de L1, 1 punto de Gini de YL y 2.8 bn de obligación de asalariados (Tabla 3a).
 
@@ -194,7 +210,27 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 
 ## §7 Identidades verificadas
 
-{{TABLA_7}}
+Última corrida: `01-sim-completo` (defaults de CUAD-3, hash del PR; evidencia `diag-cuad-3-2026-11-08/`). Gates de Households §9.1 y §11.5, NTA y los tests de la sesión.
+
+| Identidad | Tolerancia | Resultado | Fuente |
+|---|---|---|---|
+| Gate de la sesión: con `rentas_celda = b3n`, `ing_mixto_ancla = b3n`, `altimir_elasticidad = 1` el motor reproduce v8.17.1 | byte a byte (`output.txt`), 1e-9 (sankeys) | **VERDE**: `output.txt` byte-idéntico (51,892 bytes); 10 sankeys ≤ 3.0e-14 | `00-gate-eps1-celdas-v8171/gate-numeros.txt`; `03-bitcheck-eps1-celdas-v8171` |
+| `gate-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1 | byte a byte / 1e-9 | **ROJO esperado** (404 de 509 líneas; SankeySF decil 80/104 enlaces, Δ rel. máx 0.35; SankeyNTA decil 113/143, 0.33); fixtures re-baselineados → VERDE contra la corrida | `01-sim-completo/gate-numeros.txt` |
+| Households: Σ `ing_subor` = D.1 S.14 (10,052.962) con g_i ∝ Y^ε | 1e-9 | VERDE, reldif 0.0e+00 | `wrap.log` l. 844 |
+| Households: Σ `ing_mixto` = B.3n + D.422 (7,606.727); componentes = agregado | 1e-9 | VERDE, reldif 1.3e-16 | l. 845, 848 |
+| Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n (910.359) | 1e-9 | VERDE, 0.0e+00 | l. 846 |
+| Households: Σ `ing_capital` = D.4 neto − D.442 − D.422 (4,347.294) | 1e-9 | VERDE, 0.0e+00 | l. 847 |
+| Households: YA = YAHogS14 − D.442 − ⅔ D.422 (7,793.229); Σ Yl = D.1 + ⅔ (B.3n + D.422) (15,124.113); Σ Yk − CCF | 1e-9 | VERDE, 0.0e+00 (los tres) | l. 849, 929, 930 |
+| Households: PIB BIE = YL + YA + D.442 + B.5n S.11+S.12 + S.13 + S.15 + CCF + ROW + vintage (`CUADRATURA`: 44.923 + 23.148 + 1.800 + 2.833 + 4.735 + 0.347 + 19.181 + 2.782 + 0.252 = 100.000) | 1e-9 | VERDE, 0.0e+00 | l. 850; `output.txt` |
+| Households: Σ ISR_PF = ITAN PF 4T 2024 (77.117); Σ ISR_PM = LIF (1,351.427) | 1e-9 | VERDE | l. 767, 794–795 |
+| NTA: residual por persona; Σ intra nacional = 0; Σ S personas = B.8n S.1 (−308.425); factor YA = 1 | 1e-9 | VERDE (máx 2.0e-07 MXN por persona) | l. 1158–1159; `nta-identidad.txt` |
+| NTA: Σ Cpriv = P.3 S.14; Σ ISR personas = D.51 S.14; cuotas por sector; IEPS; D.5; D.7; P.32; S_ret, S_def, S_isflsh | 1e-9 | VERDE (todos) | l. 1161–1200 |
+| NTA: Sankey v4 57 nodos / 134 enlaces, conservación; panel 15 celdas | 1e-9 | VERDE (2.2e-14; 1.1e-14) | l. 1196–1197 |
+| `test-nta-identidad.sh` | 1e-9 | {{TEST_NTA}} | `diag-cuad-3-2026-11-08/test-nta-identidad.txt` |
+| `test-web-batch.sh` (paridad web = batch) | llaves N/N | {{TEST_WEB}} | `diag-cuad-3-2026-11-08/test-web-batch.txt` |
+| `test-log-ancho.sh` (110 columnas) | 0 líneas > 110 | VERDE en las 11 corridas de la sesión (la primera relectura de las series S.14 imprimía 122 líneas de 115 columnas: corregido con `quietly reshape`) | `*/test-log-ancho.txt` |
+| Σ S sin ancla vs B.8n S.14 | informativo | −19.4 bn (−1.0 %), igual que v8.17.1 | `nta-identidad.txt` nota 1 |
+| Contrato de las 32 (`contrato-32.sh`) | — | **no corrió en la sesión**: los fixtures de `/entidades` (banda de vintages) salen del paso `c32` del ritual y entran en un PR corto, como en 8.16b | — |
 
 ## §8 Límites conocidos
 
@@ -244,7 +280,23 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 
 ## Δ esperado condicional (tras CUAD-3, con las celdas nuevas y ε\*)
 
-{{TABLA_DELTA}}
+| Agregado publicado | v8.17.1 | Esperado CUAD-3 (§4.1–§4.3) | Real v8.17.2 (`01-sim-completo`) | Por qué |
+|---|---:|---:|---:|---|
+| Factor de B.2n (`TaltimirHouse`) | 2.5860 | 1.9671 | **1.9671** | `rentas_celda = b2n` |
+| Factor de B.3n (`TaltimirSelf`, medio) | 3.6848 | 4.2800 | **4.2800** | sin rentas, + D.422 |
+| Celda de D.4 de `ing_capital` (bn) | 4,997.037 | 4,347.294 | **4,347.294** (factor 2.8912) | − D.422 |
+| YL (`CUADRATURA`, % PIB) | 43.636 (14,690.951) | 44.923 (15,124.113) | **44.923** | + ⅔ D.422 |
+| YA (`CUADRATURA`, % PIB) | 24.435 (8,226.391) | 23.148 (7,793.229) | **23.148** | − ⅔ D.422 |
+| Resto de `CUADRATURA` (D.442, sectores, CCF, ROW, vintage) | 1.800 … 0.252 | sin cambio | **sin cambio** | la identidad no toca sectores |
+| Σ obligación de asalariados (bn; formales / toda la base) | 1,016.584 / 1,282.675 | sube con ε | **1,041.461 / 1,300.546** | ε\* = 1.45 (Tabla 3a) |
+| Residuo FLAG 27 (bn, %) | −237.200 (−18.92) | no cierra con ε ≤ 2 | **−212.324 (−16.93)** | subreporte residual, sello rojo |
+| Gini YL por hogar; top 10 % / top 1 % de YL | 0.523; 39.7 / 12.5 % | ↑ | **0.608; 48.1 / 22.9 %** | ε en D.1 y B.3n |
+| Participación del decil X en Yl (`INCD2`) | 30.3 % | ↑ | **39.1 %** | ídem |
+| `INGRESOS`, `INGRESOSTEF`, `GASTOS*`, `PIBY` | — | sin cambio | **sin cambio** | anclas LIF/PEF |
+| `INCD*`, `APORT*`, `PROY*` | — | se mueven | **404 de 509 líneas de `output.txt`** (Tabla 3c) | reparto por decil/edad |
+| Σ S sin ancla vs B.8n S.14 | −19.4 (−1.0 %) | sin cambio | **−19.4 (−1.0 %)** | totales de S.14 iguales |
+| Hub del Sankey v4 (INBD, % PIB) | 81.561 | sin cambio | **81.561** | celdas de sector iguales |
+| Sankeys (`gate-numeros`) | baseline v8.17.1 | ROJO esperado | **ROJO**: SF decil 80/104, NTA decil 113/143; re-baseline | reparto por decil |
 
 Lo que **no** se infiere de las tablas y lo dice la corrida completa: el reparto por decil del ISR de asalariados (`INCD` bloque 12) y el tamaño del cambio en `APORT*` por edad y sexo. A partir de v8.17.2 los números **no comparan** con ≤ v8.17.1 por: B.2n incluye rentas efectivas; B.3n + D.422; elasticidad ε\*.
 
