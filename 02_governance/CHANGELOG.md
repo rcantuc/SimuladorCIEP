@@ -16,6 +16,16 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.18.2] — 2026-11-09
+
+### [v8.18.2] — Banner del libro de la portada en inglés: sin el fondo de personajes 3D y botones en fila (rama `sesion/8.18.2-portada-en`, 2026-11-09)
+
+**Baseline sin cambio: `v8.17.2`. Versión solo-sitio, solo layout: no cambia el motor, ningún número ni ningún JSON.** `git diff v8.18.1..HEAD` toca únicamente `index.php`, `index-en.php`, `CHANGELOG.md`, `manifest.json` (campos de versión), `CITATION.cff` y `metodo.json`/`metodo-en.json` (campo `version`).
+
+- **Correcciones — `index-en.php`, banner «The Simulator's Book»:** (1) `.libro-promo` llevaba un degradado sobre `images/libro-promo/fondo-portada.jpg` (personajes 3D) que se veía detrás del texto; ahora usa el mismo fondo sólido `#FDF7E0` que `index.php`, y el override de ≤ 767 px ya no pinta `#FFD520`. (2) «Discover the book» y «Discover the method» caían apilados y pegados: los dos `<a>` eran `inline-block` y el segundo llevaba `margin-left: 12px`, con lo que 199 + 12 + 216 px más el espacio entre elementos no cabían en los 430 px de `.libro-promo-txt` (en español, 182 + 190 sí). Los dos botones van ahora en `.libro-promo-btns` (`display: flex; flex-wrap: wrap; gap: 12px`), en inglés y en español: si algún idioma no cabe en una fila, el salto conserva la separación. Los estilos del banner de las dos portadas quedan idénticos.
+- **Alcance:** el estilo es CSS en línea de las dos portadas, no el compartido (`css/metodo.css` y `css/admin2.css` no cambian), así que `/metodo`, `/NTA` y `/entidades` no se ven afectados. Nota: la portada declara `initial-scale=0.25`, por lo que en un teléfono se dibuja con el layout de escritorio (≈ 1560 px de ancho) y el `@media (max-width: 767px)` nunca aplica.
+- **Release:** `manifest.json` `version`/`release_tag`/`release_url_prefix` = v8.18.2, `baseline` = v8.17.2 (sin cambio), `data_updated` sin cambio; `CITATION.cff` regenerada; `metodo.json` y `metodo-en.json` regenerados con la versión. `images/libro-promo/fondo-portada.jpg` queda en el repo sin referencias.
+
 ## [v8.18.1] — 2026-11-09
 
 ### [v8.18.1] — Sitio de método bilingüe (ES/EN), header y pie alineados a la portada y fix del pie de versión (PR #76, rama `sesion/header-metodo`, 2026-11-09)

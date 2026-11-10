@@ -2654,7 +2654,7 @@ if ($deployed_version !== "") {
 <div class="container-fluid pb-0 mb-0 justify-content-center text-light footer-box" id="libro-simulador">
 	<!-- CIEP book banner (same pattern as the banner on paqueteeconomico.ciep.mx) -->
 	<style>
-	.libro-promo{background:linear-gradient(90deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.8) 40%,rgba(255,255,255,.55) 58%,rgba(255,255,255,0) 76%),#FFD520 url('images/libro-promo/fondo-portada.jpg') right center/cover no-repeat;border-radius:0;padding:64px 24px;margin:0 -15px}
+	.libro-promo{background:#FDF7E0;border-radius:0;padding:64px 24px;margin:0 -15px}
 	.libro-promo-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:44px;flex-wrap:wrap;justify-content:space-between}
 	.libro-promo-txt{flex:0 1 430px;max-width:430px;min-width:280px;font-family:'Roboto Mono',monospace;color:#1F262B;text-align:left}
 	.libro-promo-eyebrow{display:inline-block;background:#1F262B;color:#FFD520;font-size:12px;font-weight:700;letter-spacing:2px;padding:6px 14px;margin-bottom:14px;text-transform:uppercase}
@@ -2663,12 +2663,13 @@ if ($deployed_version !== "") {
 	.libro-promo-desc{font-size:13.5px;line-height:1.6;margin:0 0 22px;color:#1F262B}
 	.libro-promo-cta{display:inline-block;background:#1F262B;color:#fff;font-weight:700;font-size:14px;padding:12px 28px;border-radius:28px;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
 	.libro-promo-cta:hover{color:#e8f04b;text-decoration:none;transform:translateY(-2px);box-shadow:0 8px 22px rgba(31,38,43,.35)}
-	.libro-promo-cta-sec{background:transparent;color:#1F262B;border:2px solid #1F262B;padding:10px 26px;margin-left:12px}
+	.libro-promo-btns{display:flex;flex-wrap:wrap;gap:12px}
+	.libro-promo-cta-sec{background:transparent;color:#1F262B;border:2px solid #1F262B;padding:10px 26px}
 	.libro-promo-cta-sec:hover{background:#1F262B;color:#e8f04b}
 	.libro-promo-img{flex:0 1 380px;min-width:260px;text-align:center}
 	.libro-promo-img img{width:100%;max-width:400px;height:auto;border-radius:10px;box-shadow:0 18px 45px rgba(31,38,43,.4)}
 	.footer-micrositios a.icon-link{white-space:nowrap}
-	@media(max-width:767px){.libro-promo{padding:36px 16px;background:#FFD520}.libro-promo-title{font-size:24px}.libro-promo-inner{gap:26px}}
+	@media(max-width:767px){.libro-promo{padding:36px 16px}.libro-promo-title{font-size:24px}.libro-promo-inner{gap:26px}}
 	</style>
 	<div class="libro-promo">
 	  <div class="libro-promo-inner">
@@ -2677,8 +2678,10 @@ if ($deployed_version !== "") {
 	      <h2 class="libro-promo-title">Human-Centered Public Finance</h2>
 	      <p class="libro-promo-tag">An informed debate is a public good.</p>
 	      <p class="libro-promo-desc">The &ldquo;citizen's textbook&rdquo; to understand the foundations and purposes of our public resources. The theory behind this simulator: replicate every chart, simulate scenarios, and join the debate. (In Spanish.)</p>
-	      <a class="libro-promo-cta" href="https://libro.ciep.mx" target="_blank" rel="noopener">Discover the book</a>
-	      <a class="libro-promo-cta libro-promo-cta-sec" href="/metodo/?lang=en">Discover the method</a>
+	      <div class="libro-promo-btns">
+	        <a class="libro-promo-cta" href="https://libro.ciep.mx" target="_blank" rel="noopener">Discover the book</a>
+	        <a class="libro-promo-cta libro-promo-cta-sec" href="/metodo/?lang=en">Discover the method</a>
+	      </div>
 	    </div>
 	    <div class="libro-promo-img">
 	      <a href="https://libro.ciep.mx" target="_blank" rel="noopener"><img src="images/libro-promo/portada-libro-900.jpg" alt="Cover of the book Finanzas P&uacute;blicas Antropoc&eacute;ntricas" loading="lazy"></a>
