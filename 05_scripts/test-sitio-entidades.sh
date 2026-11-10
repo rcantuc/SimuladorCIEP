@@ -193,7 +193,7 @@ aserta '[[ "$code_xx" == "404" ]] || ! grep -q "entidadPagina(" "$H/body"' "GET 
 
 echo "## 3. cero números en el sitio (los valores vienen de los JSON del motor y de meta.json)"
 # (se descartan antes las entidades HTML &#NNNN; y los colores CSS #rrggbb, que no son números)
-for f in entidades/_entidad.php entidades/index.php entidades/_catalogo.php jsonEntidad.php js/entidad.js plantilla-metodo.php css/metodo.css; do
+for f in entidades/_entidad.php entidades/index.php entidades/_catalogo.php entidades/_cuerpo-entidad-en.php entidades/_cuerpo-entidad-es.php entidades/_cuerpo-indice-en.php entidades/_cuerpo-indice-es.php jsonEntidad.php js/entidad.js plantilla-metodo.php css/metodo.css; do
     aserta '! sed -E "s/&#[0-9]+;//g; s/#[0-9a-fA-F]{3,8}//g" "$SITE/'"$f"'" | grep -qE "[0-9]{4,}"' "$f sin literales de 4+ dígitos"
 done
 n_lit=0
