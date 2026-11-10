@@ -30,7 +30,7 @@ $METODO_PAGINAS = array(
 // Nunca un fatal; ningún valor de respaldo escrito aquí.
 function metodo_meta_deploy() {
 	$meta = array('version' => '', 'version_html' => '', 'data_updated_iso' => '', 'release_url' => '', 'enigh_vintage' => '', 'commit' => '');
-	$archivo = dirname(__DIR__) . '/DEPLOYED_COMMIT';
+	$archivo = __DIR__ . '/DEPLOYED_COMMIT';   // 8.19: la plantilla vive en la raíz del docroot desde 8.18 (antes en metodo/, de ahí el dirname)
 	if (!is_readable($archivo)) return $meta;
 	$lineas = @file($archivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 	if ($lineas === false) return $meta;
