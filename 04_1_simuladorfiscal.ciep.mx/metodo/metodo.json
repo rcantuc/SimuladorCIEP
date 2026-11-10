@@ -90,10 +90,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/Poblacion.sthlp «Descripción»; README.md «Programas disponibles» 1): `Poblacion` procesa las proyecciones",
-      "demográficas del Consejo Nacional de Población (CONAPO): Conciliación Demográfica de México 1970–2019 y Proyecciones de la población de México",
-      "y de las entidades federativas 2020–2070 (pry23, publicadas el 11 de septiembre de 2023): estimación de habitantes a mitad de cada año",
-      "(1970–2070), por entidad federativa, sexo y edad simple. También genera gráficos de la pirámide y transición demográfica para el año de interés."
+      "Propósito (procedencia: 03_help/Stata/Poblacion.sthlp «Descripción»; README.md «Programas disponibles» 1): `Poblacion` procesa las proyecciones demográficas del Consejo Nacional de Población (CONAPO): Conciliación Demográfica de México 1970–2019 y Proyecciones de la población de México y de las entidades federativas 2020–2070 (pry23, publicadas el 11 de septiembre de 2023): estimación de habitantes a mitad de cada año (1970–2070), por entidad federativa, sexo y edad simple. También genera gráficos de la pirámide y transición demográfica para el año de interés."
      ],
      "tablas": [],
      "lista": [],
@@ -494,10 +491,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/PIBDeflactor.sthlp «Descripción»): `PIBDeflactor` descarga, procesa y proyecta los principales indicadores",
-      "macroeconómicos de México: PIB, deflactor de precios, inflación y demografía laboral. Es el comando base del Simulador Fiscal CIEP: genera el",
-      "deflactor y el PIB que usan todos los demás comandos (LIF, PEF, SHRFSP, etc.) para expresar valores en términos reales; las series se presentan",
-      "en tres tramos (histórico observado desde 1993, estimaciones CGPE de la SHCP, proyecciones CIEP con los globals de crecimiento de SIM.do §2)."
+      "Propósito (procedencia: 03_help/Stata/PIBDeflactor.sthlp «Descripción»): `PIBDeflactor` descarga, procesa y proyecta los principales indicadores macroeconómicos de México: PIB, deflactor de precios, inflación y demografía laboral. Es el comando base del Simulador Fiscal CIEP: genera el deflactor y el PIB que usan todos los demás comandos (LIF, PEF, SHRFSP, etc.) para expresar valores en términos reales; las series se presentan en tres tramos (histórico observado desde 1993, estimaciones CGPE de la SHCP, proyecciones CIEP con los globals de crecimiento de SIM.do §2)."
      ],
      "tablas": [],
      "lista": [],
@@ -1175,13 +1169,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/SCN.sthlp «Descripción»; 02_governance/scn-celdas.md encabezado): `SCN` descarga, procesa y proyecta el Sistema",
-      "de Cuentas Nacionales (SCN) de México integrando dos fuentes oficiales del INEGI: BIE (ingreso, producción bruta, consumo de hogares, gasto de",
-      "gobierno y PIB por actividad económica) y CSI (cuentas por sectores institucionales: ingreso mixto, cuotas de seguridad social, subsidios y",
-      "excedentes de operación). Permite descomponer el PIB por sus tres métodos y obtener la distribución funcional del ingreso entre trabajo, capital y",
-      "depreciación; es insumo de TasasEfectivas, GastoPC, Households y NTA. Lo que el motor lee es master/SCN.dta, construido por UpdateSCN a partir de",
-      "las 525 series del BIE y los tabulados CSI congelados en raw/SCN/ (asset scn-congelado-2024.zip; anclas en anioenigh, marco del Paquete desde el",
-      "último año congelado)."
+      "Propósito (procedencia: 03_help/Stata/SCN.sthlp «Descripción»; 02_governance/scn-celdas.md encabezado): `SCN` descarga, procesa y proyecta el Sistema de Cuentas Nacionales (SCN) de México integrando dos fuentes oficiales del INEGI: BIE (ingreso, producción bruta, consumo de hogares, gasto de gobierno y PIB por actividad económica) y CSI (cuentas por sectores institucionales: ingreso mixto, cuotas de seguridad social, subsidios y excedentes de operación). Permite descomponer el PIB por sus tres métodos y obtener la distribución funcional del ingreso entre trabajo, capital y depreciación; es insumo de TasasEfectivas, GastoPC, Households y NTA. Lo que el motor lee es master/SCN.dta, construido por UpdateSCN a partir de las 525 series del BIE y los tabulados CSI congelados en raw/SCN/ (asset scn-congelado-2024.zip; anclas en anioenigh, marco del Paquete desde el último año congelado)."
      ],
      "tablas": [],
      "lista": [],
@@ -12867,9 +12855,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: este header l. 3–4 y 41–44; CUAD-2 §1): NTA.do — Cuenta de Transferencias Nacionales por individuo (Lee–Mason), cerrada por",
-      "grupo de edad y por quinquenio×sexo; cumple por persona, por grupo y a nivel nacional la identidad C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S) y emite la",
-      "cuenta, el Sankey de la economía completa (v4) y el panel grupo × sexo que publica /NTA.",
+      "Propósito (procedencia: este header l. 3–4 y 41–44; CUAD-2 §1): NTA.do — Cuenta de Transferencias Nacionales por individuo (Lee–Mason), cerrada por grupo de edad y por quinquenio×sexo; cumple por persona, por grupo y a nivel nacional la identidad C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S) y emite la cuenta, el Sankey de la economía completa (v4) y el panel grupo × sexo que publica /NTA.",
       "[CUAD-2] Dibujar todo el PIB (BIE) como flujo de personas por edad → sectores institucionales → personas por edad, con el INBD como único pivote y cada partida de sector con regla declarada a persona o con nodo propio, de modo que el consumo, los impuestos, las transferencias y el ahorro de cada sector cuadren con la CSI 2024 y el `CUADRATURA` de `output.txt`."
      ],
      "tablas": [],
@@ -13044,9 +13030,7 @@
     },
     "4": {
      "texto": [
-      "DECISIONES (sesión log-legible, 2026-11-09): los diez parámetros del Sankey de la economía completa (SIM.do §0.8c; CUAD-2 §4, firmados en",
-      "CUAD-1-2-firma.md §A 16, 19-23 y §B 17-18) se describen aquí; SIM.do solo los declara en una línea y §0.9 imprime el cuadro con FLAG si el",
-      "valor no es el firmado. La primera alternativa es la firmada; «no implementado» imprime FLAG y dibuja la firmada:",
+      "DECISIONES (sesión log-legible, 2026-11-09): los diez parámetros del Sankey de la economía completa (SIM.do §0.8c; CUAD-2 §4, firmados en CUAD-1-2-firma.md §A 16, 19-23 y §B 17-18) se describen aquí; SIM.do solo los declara en una línea y §0.9 imprime el cuadro con FLAG si el valor no es el firmado. La primera alternativa es la firmada; «no implementado» imprime FLAG y dibuja la firmada:",
       "hub                  inbd (hub = ingreso nacional disponible BIE 724037, 81.561 % PIB 2024; los sectores entran con su B.5n) | ing_nacional (lado hogares, v3; el v4 no se emite).",
       "retenido_a_personas  on (B.5n y B.8n de S.11 + S.12 llegan a personas ∝ ing_d4_rel, regla P, sello rojo; «Sociedades» visible en medio) | off (nodo de sector sin edad).",
       "deficit_a_personas   per_capita (B.8n S.13, −1,157.268, a todas las personas por igual, C) | tau_menos (∝ τ⁻ de cada persona) | off (solo «Financiamiento → Gobierno»).",
@@ -14114,9 +14098,7 @@
     },
     "6": {
      "texto": [
-      "Salidas — SALIDAS: users/$id/NTA/nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json (obligatorio: 36 celdas), nta-identidad.txt,",
-      "nta-panel-grupoedad-sexo.json (NTA-3: panel grupo × sexo, §7c); users/$id/SankeyNTA/sankey-v2-grupoedad.json (contrato",
-      "v2.1, §7) y sankey-v3-grupoedad.json (NTA-3: contrato v3, edades solo al inicio y al final, §7b; NTA-4: value + pctpib por enlace; el 31/79 de v1 no se toca).",
+      "Salidas — SALIDAS: users/$id/NTA/nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json (obligatorio: 36 celdas), nta-identidad.txt, nta-panel-grupoedad-sexo.json (NTA-3: panel grupo × sexo, §7c); users/$id/SankeyNTA/sankey-v2-grupoedad.json (contrato v2.1, §7) y sankey-v3-grupoedad.json (NTA-3: contrato v3, edades solo al inicio y al final, §7b; NTA-4: value + pctpib por enlace; el 31/79 de v1 no se toca).",
       "Nada de literales: todo número que sale viene de escalar/SCN/LIF/PEF o de la base.",
       "[CUAD-2] Nombres sin paréntesis ni puntos (restricción de `SankeySumSim`). **[v3]** existe hoy; **[mueve]** existe y cambia de lugar; **[nuevo]**. Valores en bn (CSI salvo nota), con `hub = inbd`, `retenido_a_personas = off`, `deficit_a_personas = off`, `isflsh_regla = sector`, `circuito_d442 = neto`, `vintage_nodo = si`, `bruto_neto = neto`, `financiamiento = un_nodo_4`.",
       "[CUAD-2 · 6.1 Columna 0 → hub (fuentes del ingreso nacional disponible)] Identidad del hub: INBD = B.5n S.1 + transferencias netas del mundo (BIE) + vintage = 26,188.047 + 1,186.091 + 84.901 ✓. La renta primaria neta pagada al exterior (936.500, `CUADRATURA[7]`) y la CCF (6,457.576, `[6]`) ya no son fuentes: el hub es neto y después de D.4 con el mundo (D.1 y D.4 de S.14 ya son netos de S.2).",
@@ -14431,14 +14413,14 @@
         [
          "`dirnta'/nta-identidad.txt",
          "",
-         "01_modulos/Households.do; NTA/index.php",
+         "01_modulos/Households.do",
          "check-solo-display.py; test-humo-calcular.sh; test-manifiesto-default.sh; test-sitio-nta.sh; verificar-identidad-valores.py",
          "01_modulos/NTA.do l. 1231"
         ],
         [
          "`dirnta'/nta-grupoedad.json",
          "",
-         "NTA/index.php",
+         "",
          "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.do; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 1345"
         ],
@@ -14459,21 +14441,21 @@
         [
          "users/$id/SankeyNTA/sankey-v3-grupoedad.json",
          "",
-         "NTA/index.php",
+         "",
          "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 1935"
         ],
         [
          "users/$id/SankeyNTA/sankey-v4-economia.json",
          "",
-         "NTA/index.php",
+         "",
          "manifiesto-default.py; publicar-vps.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 2359"
         ],
         [
          "`dirnta'/nta-panel-grupoedad-sexo.json",
          "",
-         "NTA/index.php",
+         "",
          "test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 2491"
         ]
@@ -16987,12 +16969,12 @@
     },
     {
      "archivo": "`dirnta'/nta-identidad.txt",
-     "consume": "01_modulos/Households.do; NTA/index.php",
+     "consume": "01_modulos/Households.do",
      "check": "check-solo-display.py; test-humo-calcular.sh; test-manifiesto-default.sh; test-sitio-nta.sh; verificar-identidad-valores.py"
     },
     {
      "archivo": "`dirnta'/nta-grupoedad.json",
-     "consume": "NTA/index.php",
+     "consume": "",
      "check": "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.do; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
@@ -17007,17 +16989,17 @@
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v3-grupoedad.json",
-     "consume": "NTA/index.php",
+     "consume": "",
      "check": "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v4-economia.json",
-     "consume": "NTA/index.php",
+     "consume": "",
      "check": "manifiesto-default.py; publicar-vps.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
      "archivo": "`dirnta'/nta-panel-grupoedad-sexo.json",
-     "consume": "NTA/index.php",
+     "consume": "",
      "check": "test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
@@ -17391,11 +17373,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: SIM.do §3.3 «Perfiles de la política económica actual (Paquete Económico)»; secciones §1–§8 de este archivo; README.md",
-      "«Opciones globales», bootstrap): perfiles de la política económica actual (Paquete Económico): reparte a las personas de la ENIGH armonizada los",
-      "agregados del PEF (§1 macros: educación, otros gastos, infraestructura) y de la LIF (§2) del año del Paquete, ajusta la población (§3) y el SCN (§4),",
-      "construye las variables de ingresos y gastos totales por persona (§5) y promedia las réplicas bootstrap de Simulador en",
-      "users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta (§8), que es lo que lee FiscalGap (sin fallback: si falta, aborta con la receta)."
+      "Propósito (procedencia: SIM.do §3.3 «Perfiles de la política económica actual (Paquete Económico)»; secciones §1–§8 de este archivo; README.md «Opciones globales», bootstrap): perfiles de la política económica actual (Paquete Económico): reparte a las personas de la ENIGH armonizada los agregados del PEF (§1 macros: educación, otros gastos, infraestructura) y de la LIF (§2) del año del Paquete, ajusta la población (§3) y el SCN (§4), construye las variables de ingresos y gastos totales por persona (§5) y promedia las réplicas bootstrap de Simulador en users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta (§8), que es lo que lee FiscalGap (sin fallback: si falta, aborta con la receta)."
      ],
      "tablas": [],
      "lista": [],
@@ -17827,10 +17805,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/LIF.sthlp «Descripción»): `LIF` descarga y analiza los ingresos presupuestarios del gobierno federal",
-      "combinando tres fuentes oficiales: la Ley de Ingresos de la Federación (montos aprobados por el Congreso), las Estadísticas Oportunas de la SHCP",
-      "(recaudación observada mensual) y el BIE (PIB y deflactor para expresar valores como % del PIB). Permite consultar la recaudación histórica desde",
-      "1993, comparar su evolución entre años, analizar la elasticidad de cada impuesto respecto al PIB y proyectar el cierre del año en curso."
+      "Propósito (procedencia: 03_help/Stata/LIF.sthlp «Descripción»): `LIF` descarga y analiza los ingresos presupuestarios del gobierno federal combinando tres fuentes oficiales: la Ley de Ingresos de la Federación (montos aprobados por el Congreso), las Estadísticas Oportunas de la SHCP (recaudación observada mensual) y el BIE (PIB y deflactor para expresar valores como % del PIB). Permite consultar la recaudación histórica desde 1993, comparar su evolución entre años, analizar la elasticidad de cada impuesto respecto al PIB y proyectar el cierre del año en curso."
      ],
      "tablas": [],
      "lista": [],
@@ -18292,11 +18267,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: SIM.do §4.2 «Submódulo ISR (web)» y el bloque `if \"`cambioisrpf'\" == \"1\"` (NUEVA ESTIMACIÓN ISR ASALARIADOS / P. FÍSICAS /",
-      "P. MORALES / CUOTAS IMSS); SIM.do §7 merge de users/<id>/isr_mod.dta; runbook §12 inventario «ISR_Mod, IVA_Mod, output → Web.Stata.do, web»):",
-      "submódulo ISR (web): cuando el formulario del sitio cambia la tarifa (cambioisrpf = 1), recalcula sobre la base armonizada la nueva estimación",
-      "de ISR asalariados, ISR personas físicas, ISR personas morales y cuotas IMSS con las matrices ISR, SE, DED, PM, CSS_IMSS y CSS_ISSSTE de SIM.do",
-      "§4.2–§4.4, y escribe users/<id>/isr_mod.dta, que SIM.do §7 funde en el ciclo de vida. Solo corre en el flujo web (Web.Stata.do)."
+      "Propósito (procedencia: SIM.do §4.2 «Submódulo ISR (web)» y el bloque `if \"`cambioisrpf'\" == \"1\"` (NUEVA ESTIMACIÓN ISR ASALARIADOS / P. FÍSICAS / P. MORALES / CUOTAS IMSS); SIM.do §7 merge de users/<id>/isr_mod.dta; runbook §12 inventario «ISR_Mod, IVA_Mod, output → Web.Stata.do, web»): submódulo ISR (web): cuando el formulario del sitio cambia la tarifa (cambioisrpf = 1), recalcula sobre la base armonizada la nueva estimación de ISR asalariados, ISR personas físicas, ISR personas morales y cuotas IMSS con las matrices ISR, SE, DED, PM, CSS_IMSS y CSS_ISSSTE de SIM.do §4.2–§4.4, y escribe users/<id>/isr_mod.dta, que SIM.do §7 funde en el ciclo de vida. Solo corre en el flujo web (Web.Stata.do)."
      ],
      "tablas": [],
      "lista": [],
@@ -18685,11 +18656,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: SIM.do §4.5 «Submódulo IVA (web)» y el bloque `if \"`cambioiva'\" == \"1\"` (NUEVA ESTIMACIÓN IVA); runbook §9.6 «Brecha simulación vs.",
-      "proyección LIF (IVA_Mod.do)»): submódulo IVA (web): cuando el formulario del sitio cambia la matriz IVAT (tasa general, tratamiento por rubro:",
-      "tasa cero / exento / gravado, y evasión e informalidad), recalcula el IVA por persona sobre master/<anioenigh>/categ_iva.dta y escribe",
-      "users/<id>/iva_mod.dta, que SIM.do §7 funde en el ciclo de vida. El IVA simulado del año del Paquete (potencial ENIGH a precios del Paquete",
-      "× (1 − informalidad)) no se fuerza a la recaudación proyectada de la LIF: la diferencia se declara como residuo documentado («brecha … pp»)."
+      "Propósito (procedencia: SIM.do §4.5 «Submódulo IVA (web)» y el bloque `if \"`cambioiva'\" == \"1\"` (NUEVA ESTIMACIÓN IVA); runbook §9.6 «Brecha simulación vs. proyección LIF (IVA_Mod.do)»): submódulo IVA (web): cuando el formulario del sitio cambia la matriz IVAT (tasa general, tratamiento por rubro: tasa cero / exento / gravado, y evasión e informalidad), recalcula el IVA por persona sobre master/<anioenigh>/categ_iva.dta y escribe users/<id>/iva_mod.dta, que SIM.do §7 funde en el ciclo de vida. El IVA simulado del año del Paquete (potencial ENIGH a precios del Paquete × (1 − informalidad)) no se fuerza a la recaudación proyectada de la LIF: la diferencia se declara como residuo documentado («brecha … pp»)."
      ],
      "tablas": [],
      "lista": [],
@@ -21506,10 +21473,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/PEF.sthlp «Descripción»): `PEF` descarga y analiza el gasto público federal combinando, con una jerarquía",
-      "automática de prioridad, la Cuenta Pública (gasto ejercido), el PEF aprobado y el PPEF (proyecto), más el BIE para expresar valores como % del",
-      "PIB. Permite consultar el gasto histórico desde 2013, comparar su evolución entre años, analizar la composición del gasto por función (salud,",
-      "educación, pensiones, seguridad, etc.) y evaluar su relación con el PIB."
+      "Propósito (procedencia: 03_help/Stata/PEF.sthlp «Descripción»): `PEF` descarga y analiza el gasto público federal combinando, con una jerarquía automática de prioridad, la Cuenta Pública (gasto ejercido), el PEF aprobado y el PPEF (proyecto), más el BIE para expresar valores como % del PIB. Permite consultar el gasto histórico desde 2013, comparar su evolución entre años, analizar la composición del gasto por función (salud, educación, pensiones, seguridad, etc.) y evaluar su relación con el PIB."
      ],
      "tablas": [],
      "lista": [],
@@ -22820,10 +22784,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/GastoPC.sthlp «Descripción»; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` calcula el gasto público per",
-      "cápita por función (educación, salud, pensiones, energía, infraestructura y otros), distribuyéndolo entre los individuos de la ENIGH según sus",
-      "características socioeconómicas: el gasto total de cada función se divide entre el número de beneficiarios identificados en la ENIGH, asignando a",
-      "cada individuo el monto per cápita según su condición (si asiste a la escuela, si tiene seguro médico, si recibe pensión)."
+      "Propósito (procedencia: 03_help/Stata/GastoPC.sthlp «Descripción»; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` calcula el gasto público per cápita por función (educación, salud, pensiones, energía, infraestructura y otros), distribuyéndolo entre los individuos de la ENIGH según sus características socioeconómicas: el gasto total de cada función se divide entre el número de beneficiarios identificados en la ENIGH, asignando a cada individuo el monto per cápita según su condición (si asiste a la escuela, si tiene seguro médico, si recibe pensión)."
      ],
      "tablas": [],
      "lista": [],
@@ -23654,10 +23615,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: 03_help/Stata/SHRFSP.sthlp «Descripción»): `SHRFSP` descarga y analiza la deuda pública de México en su medida más amplia,",
-      "combinando las Estadísticas Oportunas de la SHCP (saldos de deuda, requerimientos financieros, balance fiscal y costo de la deuda) y el BIE (PIB y",
-      "deflactor). El Saldo Histórico de los Requerimientos Financieros del Sector Público incluye pasivos fuera del presupuesto; saldo y flujo se",
-      "relacionan por la identidad SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + ajustes cambiarios(t)."
+      "Propósito (procedencia: 03_help/Stata/SHRFSP.sthlp «Descripción»): `SHRFSP` descarga y analiza la deuda pública de México en su medida más amplia, combinando las Estadísticas Oportunas de la SHCP (saldos de deuda, requerimientos financieros, balance fiscal y costo de la deuda) y el BIE (PIB y deflactor). El Saldo Histórico de los Requerimientos Financieros del Sector Público incluye pasivos fuera del presupuesto; saldo y flujo se relacionan por la identidad SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + ajustes cambiarios(t)."
      ],
      "tablas": [],
      "lista": [],
@@ -24064,9 +24022,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: líneas 2–3 de este header): perfil, incidencia, ciclo de vida y proyección de una variable per cápita, con bootstrap por",
-      "diseño muestral (UPM dentro de estrato) en Mata; los cinco archivos de salida (PC, PERF, INCI, CICLO, REC) los leen Perfiles.ado, FiscalGap.ado y",
-      "CuentasGeneracionales.ado."
+      "Propósito (procedencia: líneas 2–3 de este header): perfil, incidencia, ciclo de vida y proyección de una variable per cápita, con bootstrap por diseño muestral (UPM dentro de estrato) en Mata; los cinco archivos de salida (PC, PERF, INCI, CICLO, REC) los leen Perfiles.ado, FiscalGap.ado y CuentasGeneracionales.ado."
      ],
      "tablas": [],
      "lista": [],
@@ -24588,9 +24544,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: SIM.do §8.1 «Brecha fiscal»; CHANGELOG [v8.3.0]; 03_help/FiscalGap.md): brecha fiscal: a partir del Paquete Económico 2027",
-      "construye una trayectoria anual cerrada por componentes (ingresos, gasto, costo financiero, RFSP y SHRFSP) sobre el horizonte 2027–2032, que se",
-      "despliega en una sola tabla Proy_fiscal, con los ingresos y gastos proyectados desde los perfiles por persona del escenario base."
+      "Propósito (procedencia: SIM.do §8.1 «Brecha fiscal»; CHANGELOG [v8.3.0]; 03_help/FiscalGap.md): brecha fiscal: a partir del Paquete Económico 2027 construye una trayectoria anual cerrada por componentes (ingresos, gasto, costo financiero, RFSP y SHRFSP) sobre el horizonte 2027–2032, que se despliega en una sola tabla Proy_fiscal, con los ingresos y gastos proyectados desde los perfiles por persona del escenario base."
      ],
      "tablas": [],
      "lista": [],
@@ -25091,10 +25045,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: SIM.do §8.2 «Sankey del sistema fiscal»; runbook §9.7 fila «SIM.do §8.2 → SankeySF.do»): Sankey del sistema fiscal:",
-      "para cada corte (decil, grupoedad, sexo, rural, escol) dibuja de users/<id>/aportaciones.dta los flujos de los hogares hacia los impuestos (eje 1)",
-      "y del gasto público hacia las familias (eje 4), con los renglones macro de la LIF y el PEF; con global entidad, los mismos cortes de la entidad",
-      "(quintil estatal en vez de decil) con banda de vintages ENIGH y sellos de muestra."
+      "Propósito (procedencia: SIM.do §8.2 «Sankey del sistema fiscal»; runbook §9.7 fila «SIM.do §8.2 → SankeySF.do»): Sankey del sistema fiscal: para cada corte (decil, grupoedad, sexo, rural, escol) dibuja de users/<id>/aportaciones.dta los flujos de los hogares hacia los impuestos (eje 1) y del gasto público hacia las familias (eje 4), con los renglones macro de la LIF y el PEF; con global entidad, los mismos cortes de la entidad (quintil estatal en vez de decil) con banda de vintages ENIGH y sellos de muestra."
      ],
      "tablas": [],
      "lista": [],
@@ -25196,7 +25147,7 @@
         [
          "users/$id/sankey-`1'.json",
          "",
-         "01_modulos/NTA.do; NTA/index.php; entidades/NL (_entidad.php); index.php (js/stataCalcula.js)",
+         "01_modulos/NTA.do",
          "compuertas-entidad.py; manifiesto-default.py; publicar-vps.sh; publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-entidades.js; test-sitio-entidades.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/visualizations/SankeySF.do l. 503"
         ]
@@ -25365,7 +25316,7 @@
     },
     {
      "archivo": "users/$id/sankey-`1'.json",
-     "consume": "01_modulos/NTA.do; NTA/index.php; entidades/NL (_entidad.php); index.php (js/stataCalcula.js)",
+     "consume": "01_modulos/NTA.do",
      "check": "compuertas-entidad.py; manifiesto-default.py; publicar-vps.sh; publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-entidades.js; test-sitio-entidades.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     }
    ],
@@ -25463,8 +25414,7 @@
     },
     "2": {
      "texto": [
-      "Entradas (procedencia: 05_scripts/contrato-32.sh «Bases precedentes (runbook §13)»; runbook §13.1): users/$id/aportaciones.dta y los escalares de la",
-      "sesión nacional de SIM.do; las 5 bases de vintages users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta (banda bmin/bmax; sin ellas aborta);",
+      "Entradas (procedencia: 05_scripts/contrato-32.sh «Bases precedentes (runbook §13)»; runbook §13.1): users/$id/aportaciones.dta y los escalares de la sesión nacional de SIM.do; las 5 bases de vintages users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta (banda bmin/bmax; sin ellas aborta);",
       "master/PIBDeflactor<ABREV>.dta de las 32 (pibe-32.sh, sello pibe-32 en master/PIBDeflactor<ABREV>.meta); el catálogo SIMentidad.ado."
      ],
      "tablas": [
@@ -25925,10 +25875,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el",
-      "contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del",
-      "flujo canónico SIM.do (gate test-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al",
-      "usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga."
+      "Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del flujo canónico SIM.do (gate test-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga."
      ],
      "tablas": [],
      "lista": [],
@@ -25937,8 +25884,7 @@
     },
     "2": {
      "texto": [
-      "Entradas (procedencia: runbook §12 inventario; comentario de este archivo l. 38–40): los escalares y globals vivos al final de la corrida (SIM.do §2",
-      "CRECPIB/CRECDEF/DEUDA0, LIF, PEF, FiscalGap, Simulador, TasasEfectivas) y master/<anioenigh>/cuadratura.do (los diez Cuad*/Cuad*PIB de Households.do §9.1)."
+      "Entradas (procedencia: runbook §12 inventario; comentario de este archivo l. 38–40): los escalares y globals vivos al final de la corrida (SIM.do §2 CRECPIB/CRECDEF/DEUDA0, LIF, PEF, FiscalGap, Simulador, TasasEfectivas) y master/<anioenigh>/cuadratura.do (los diez Cuad*/Cuad*PIB de Households.do §9.1)."
      ],
      "tablas": [],
      "lista": [],

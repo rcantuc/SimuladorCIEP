@@ -29,6 +29,9 @@ Qué emite (04_1_simuladorfiscal.ciep.mx/metodo/):
   - metodo.json: {version, anios, secciones, capitulos: [...], cap0, bibliografia}; un objeto por capítulo con los
     campos del esquema de la plantilla (proposito, entradas, pasos, decisiones, anclas, salidas, identidades, limites,
     especifico_mx, procedencia) y, para la página, `secciones[n] = {texto, tablas, lista, vacia, flag}`;
+  - metodo-en.json (8.19): el mismo JSON con cada cadena de texto pasada por 02_governance/metodo/traduccion-en.json (memoria
+    de traducción revisable en PR; --check falla si falta una cadena, --pendientes-en <ruta> vuelca las que faltan); la página
+    lo lee con ?lang=en;
   - index.php, cap0/index.php y <Modulo>/index.php: cascarones PHP sobre plantilla-metodo.php; TODO el contenido lo pinta
     js/metodo-capitulo.js desde metodo.json (cero literales de 4+ dígitos en PHP/JS: test-sitio-metodo.sh lo exige).
 Sello de cada capítulo: rojo si falta alguna de las secciones 1, 3, 6 o 9 (FLAG «header incompleto: §n»); si no, el
@@ -39,6 +42,7 @@ Uso:
   python3 -I 05_scripts/metodo.py --check                     regenera a un temporal y compara byte a byte (exit 1 si difiere)
   python3 -I 05_scripts/metodo.py --reporte                   imprime capítulos, sello, secciones vacías y FLAGs (no escribe)
   python3 -I 05_scripts/metodo.py --json-a <ruta>             solo el JSON, a otra ruta (para pruebas)
+  python3 -I 05_scripts/metodo.py --pendientes-en <ruta>      vuelca (JSON) las cadenas sin traducción al inglés
 Determinista: no lee la fecha ni el commit (el hash de cada archivo fuente sí, sha256 del contenido); así CI puede
 regenerar y exigir bytes idénticos a lo commiteado.
 """
@@ -300,6 +304,16 @@ def juntar_parrafos(lineas):
             parrafos[-1] = (parrafos[-1] + ' ' + s.strip()).strip()
             continue
         if sangria >= 2:
+            # línea cortada a media frase (el párrafo anterior no cierra con . : ; ? ) …) y que no empieza como una entrada
+            # (viñeta, «nombre = valor», FLAG): continuación del mismo párrafo, no un párrafo nuevo (8.19: el Propósito salía
+            # con un salto de línea en cada renglón del header).
+            if (parrafos and parrafos[-1] != '' and ultima in ('corrido', 'continuacion')
+                    and (parrafos[-1][-1] not in '.;?!…' or re.search(r'(?:^|\s)(?:vs|etc|pp?|fig|cap|art|núm)\.$', parrafos[-1]))
+                    and (parrafos[-1][-1] != ':' or (s.strip()[0].islower() and parrafos[-1].startswith('Propósito')))
+                    and not re.match(r'^(?:[-•*·]\s|\d+[.)]\s|FLAG\b|[A-Za-z_][\w.$-]*\s*=)', s.strip())):
+                parrafos[-1] = (parrafos[-1] + ' ' + s.strip()).strip()
+                ultima = 'continuacion'
+                continue
             parrafos.append(s.strip())
             ultima = 'entrada'
             continue
@@ -874,11 +888,12 @@ PHP_INDICE = """<?php
 // GENERADO por 05_scripts/metodo.py: no editar a mano (test-sitio-metodo.sh regenera y exige bytes idénticos).
 // Todo el contenido lo pinta /js/metodo-capitulo.js desde /metodo/metodo.json; aquí no hay números ni frases del método.
 require_once dirname(__DIR__) . '/plantilla-metodo.php';
-metodo_cabecera(array('slug' => 'metodo', 'titulo' => 'Método', 'lang' => 'es',
-\t'descripcion' => 'Cómo calcula el Simulador Fiscal CIEP: un capítulo por módulo, generado del repositorio.'));
+metodo_cabecera(array('slug' => 'metodo', 'titulo' => array('es' => 'Método', 'en' => 'Method'), 'lang' => 'es',
+\t'descripcion' => array('es' => 'Cómo calcula el Simulador Fiscal CIEP: un capítulo por módulo, generado del repositorio.',
+\t\t'en' => 'How the Simulador Fiscal CIEP computes: one chapter per module, generated from the repository.')));
 ?>
 \t\t<div id="metodo-contenido" class="metodo-generado" data-metodo-pagina="indice" data-metodo-estado="cargando">
-\t\t\t<p class="metodo-cargando">Cargando el método desde <code>metodo.json</code>…</p>
+\t\t\t<p class="metodo-cargando"><?= metodo_lang() === 'es' ? 'Cargando el método…' : 'Loading the method…' ?></p>
 \t\t</div>
 <?php
 metodo_pie(array('scripts' => array('/js/metodo-capitulo.js'), 'init' => 'metodoCapitulo({"url": "/metodo/metodo.json", "pagina": "indice"});'));
@@ -890,11 +905,12 @@ PHP_CAPITULO = """<?php
 // Todo el contenido lo pinta /js/metodo-capitulo.js desde /metodo/metodo.json; aquí no hay números ni frases del método.
 require_once dirname(__DIR__, 2) . '/plantilla-metodo.php';
 metodo_cabecera(array('slug' => 'metodo', 'titulo' => '%(slug)s', 'lang' => 'es',
-\t'descripcion' => 'Capítulo %(slug)s del método del Simulador Fiscal CIEP, generado del repositorio.',
+\t'descripcion' => array('es' => 'Capítulo %(slug)s del método del Simulador Fiscal CIEP, generado del repositorio.',
+\t\t'en' => 'Chapter %(slug)s of the method of the Simulador Fiscal CIEP, generated from the repository.'),
 \t'migas' => array(array('href' => '/metodo/%(slug)s/', 'texto' => '%(slug)s'))));
 ?>
 \t\t<div id="metodo-contenido" class="metodo-generado" data-metodo-pagina="capitulo" data-metodo-capitulo="%(slug)s" data-metodo-estado="cargando">
-\t\t\t<p class="metodo-cargando">Cargando el capítulo desde <code>metodo.json</code>…</p>
+\t\t\t<p class="metodo-cargando"><?= metodo_lang() === 'es' ? 'Cargando el capítulo…' : 'Loading the chapter…' ?></p>
 \t\t</div>
 <?php
 metodo_pie(array('scripts' => array('/js/metodo-capitulo.js'), 'init' => 'metodoCapitulo({"url": "/metodo/metodo.json", "pagina": "capitulo", "capitulo": "%(slug)s"});'));
@@ -905,16 +921,103 @@ PHP_CAP0 = """<?php
 // GENERADO por 05_scripts/metodo.py: no editar a mano (test-sitio-metodo.sh regenera y exige bytes idénticos).
 // Todo el contenido lo pinta /js/metodo-capitulo.js desde /metodo/metodo.json; aquí no hay números ni frases del método.
 require_once dirname(__DIR__, 2) . '/plantilla-metodo.php';
-metodo_cabecera(array('slug' => 'metodo', 'titulo' => 'Capítulo 0', 'lang' => 'es',
-\t'descripcion' => 'Capítulo 0 del método del Simulador Fiscal CIEP: requerimientos para replicarlo en otro país.',
-\t'migas' => array(array('href' => '/metodo/cap0/', 'texto' => 'Capítulo 0'))));
+metodo_cabecera(array('slug' => 'metodo', 'titulo' => array('es' => 'Capítulo 0', 'en' => 'Chapter 0'), 'lang' => 'es',
+\t'descripcion' => array('es' => 'Capítulo 0 del método del Simulador Fiscal CIEP: requerimientos para replicarlo en otro país.',
+\t\t'en' => 'Chapter 0 of the method of the Simulador Fiscal CIEP: requirements to replicate it in another country.'),
+\t'migas' => array(array('href' => '/metodo/cap0/', 'texto' => array('es' => 'Capítulo 0', 'en' => 'Chapter 0')))));
 ?>
 \t\t<div id="metodo-contenido" class="metodo-generado" data-metodo-pagina="cap0" data-metodo-estado="cargando">
-\t\t\t<p class="metodo-cargando">Cargando el capítulo desde <code>metodo.json</code>…</p>
+\t\t\t<p class="metodo-cargando"><?= metodo_lang() === 'es' ? 'Cargando el capítulo…' : 'Loading the chapter…' ?></p>
 \t\t</div>
 <?php
 metodo_pie(array('scripts' => array('/js/metodo-capitulo.js'), 'init' => 'metodoCapitulo({"url": "/metodo/metodo.json", "pagina": "cap0"});'));
 """
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Traducción al inglés (8.19): metodo-en.json = metodo.json con cada cadena de texto pasada por la memoria de traducción
+# 02_governance/metodo/traduccion-en.json ({"cadena en español": "cadena en inglés"}). El generador sigue sin redactar:
+# la memoria es un archivo del repo, revisable en PR, y una cadena sin traducción se queda en español y se cuenta
+# (--check falla; --pendientes-en <ruta> la vuelca para traducirla). Los números de una cadena pueden cambiar entre
+# corridas (fixtures): si la cadena exacta no está, se busca la misma con otros números y se sustituyen en orden.
+# ---------------------------------------------------------------------------------------------------------------------
+TRADUCCION_EN = '02_governance/metodo/traduccion-en.json'
+NO_TRADUCIR = {'sha256', 'sello', 'modulo', 'clave', 'tipo', 'parametro', 'programa', 'n', 'lineas', 'generador',
+               'plantilla', 'version', 'baseline', 'data_updated', 'enigh_vintage', 'desde_version', 'ultima_decision',
+               'ruta', 'pagina', 'hash', 'celda_scn', 'variable', 'llave'}
+_RE_LETRAS = re.compile(r'[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2,}')
+_RE_IDENT = re.compile(r'^[\w./$<>{}()\[\]\-*:#@=+,|~%^&!?\'"]+$')
+
+
+def traducible(t):
+    """¿Lleva prosa? No: vacía, solo código entre comillas invertidas, números, rutas o identificadores sin espacios."""
+    resto = re.sub(r'`[^`]*`', '', t)
+    resto = re.sub(r'\bl\.\s*\d+(?:\s*[–-]\s*\d+)?', '', resto)               # «l. 30–35»
+    resto = re.sub(r'\S*(?:/|\.(?:ado|do|dta|json|csv|md|py|sh|js|php|txt|zip|xlsx?|pdf|sthlp)\b)\S*', '', resto)   # rutas y archivos
+    resto = re.sub(r'§\s*[\d.]+[a-z]?', '', resto).strip()
+    if not _RE_LETRAS.search(resto) or not re.search(r'[a-záéíóúñ]{2,}', resto):
+        return False
+    if ' ' not in resto and _RE_IDENT.match(resto) and (re.search(r'[/_.$\d]', resto) or resto.isupper()):
+        return False
+    return True
+
+
+class Traductor:
+    def __init__(self, memoria):
+        self.m = memoria
+        self.faltan = []
+        self._vistas = set()
+        self.plantillas = {}
+        for es, en in memoria.items():
+            self.plantillas.setdefault(re.sub(r'\d+', '\x00', es), (es, en))
+
+    def cadena(self, t, forzar=False):
+        # forzar: rótulos en mayúsculas (las secciones de SIM.do, «2. ECONOMÍA») que el filtro de prosa no reconoce
+        if not isinstance(t, str) or not (traducible(t) or (forzar and _RE_LETRAS.search(t))):
+            return t
+        if t in self.m:
+            return self.m[t]
+        par = self.plantillas.get(re.sub(r'\d+', '\x00', t))
+        if par:
+            es, en = par
+            viejos, nuevos = re.findall(r'\d+', es), re.findall(r'\d+', t)
+            if re.findall(r'\d+', en) == viejos:
+                it = iter(nuevos)
+                return re.sub(r'\d+', lambda _: next(it), en)
+        if t not in self._vistas:
+            self._vistas.add(t)
+            self.faltan.append(t)
+        return t
+
+    def valor(self, x, clave=None):
+        if isinstance(x, str):
+            return x if clave in NO_TRADUCIR else self.cadena(x)
+        if isinstance(x, list):
+            return [self.valor(v, clave) for v in x]
+        if isinstance(x, dict):
+            if isinstance(x.get('columnas'), list) and isinstance(x.get('filas'), list):
+                # tabla: la columna «Sello» lleva el valor del sello (verde/amarillo/rojo), que la página traduce al pintarlo
+                sello_cols = {i for i, c in enumerate(x['columnas']) if isinstance(c, str) and c.lower().startswith('sello')}
+                out = {k: self.valor(v, k) for k, v in x.items() if k != 'filas'}
+                out['filas'] = [[(v if i in sello_cols and self._sello_puro(v) else self.valor(v)) for i, v in enumerate(f)] if isinstance(f, list) else self.valor(f)
+                                for f in x['filas']]
+                return out
+            return {k: (self.cadena(v, forzar=True) if k == 'sim_seccion' else self.valor(v, k)) for k, v in x.items()}
+        return x
+
+    @staticmethod
+    def _sello_puro(v):
+        # el valor del sello solo (verde/amarillo/rojo, con o sin asteriscos): lo traduce la página; con texto extra, se traduce aquí
+        return not isinstance(v, str) or re.sub(r'[*\s]', '', v).lower() in ('', 'verde', 'amarillo', 'rojo', 'sinsello')
+
+
+def traducir_salida(repo, salida):
+    ruta = repo.p(TRADUCCION_EN)
+    memoria = json.loads(leer(ruta)) if os.path.exists(ruta) else {}
+    tr = Traductor(memoria)
+    en = tr.valor(salida)
+    en['idioma'] = 'en'
+    return en, tr.faltan
 
 
 def generar(repo):
@@ -953,11 +1056,12 @@ def generar(repo):
     return salida, paginas
 
 
-def escribir(destino, salida, paginas):
+def escribir(destino, salida, paginas, salida_en):
     os.makedirs(destino, exist_ok=True)
-    with open(os.path.join(destino, 'metodo.json'), 'w', encoding='utf-8') as f:
-        json.dump(salida, f, ensure_ascii=False, indent=1)
-        f.write('\n')
+    for nombre, obj in (('metodo.json', salida), ('metodo-en.json', salida_en)):
+        with open(os.path.join(destino, nombre), 'w', encoding='utf-8') as f:
+            json.dump(obj, f, ensure_ascii=False, indent=1)
+            f.write('\n')
     for rel, contenido in paginas.items():
         ruta = os.path.join(destino, rel)
         os.makedirs(os.path.dirname(ruta), exist_ok=True)
@@ -966,7 +1070,7 @@ def escribir(destino, salida, paginas):
 
 
 def archivos_generados(paginas):
-    return ['metodo.json'] + sorted(paginas)
+    return ['metodo.json', 'metodo-en.json'] + sorted(paginas)
 
 
 def main():
@@ -975,9 +1079,17 @@ def main():
     ap.add_argument('--check', action='store_true')
     ap.add_argument('--reporte', action='store_true')
     ap.add_argument('--json-a', default=None)
+    ap.add_argument('--pendientes-en', default=None, help='vuelca a esta ruta (JSON) las cadenas sin traducción al inglés')
     a = ap.parse_args()
     repo = Repo(os.path.abspath(a.root))
     salida, paginas = generar(repo)
+    salida_en, faltan = traducir_salida(repo, salida)
+    if a.pendientes_en:
+        with open(a.pendientes_en, 'w', encoding='utf-8') as f:
+            json.dump(faltan, f, ensure_ascii=False, indent=1)
+            f.write('\n')
+        print('metodo.py: %d cadenas sin traducción al inglés → %s' % (len(faltan), a.pendientes_en))
+        return 0
     if a.reporte:
         print('%s · %d capítulos · sellos %s · FLAGs %d' % (VERSION_SCRIPT, salida['resumen']['capitulos'], salida['resumen']['sellos'], salida['resumen']['flags']))
         for c in salida['capitulos']:
@@ -995,7 +1107,7 @@ def main():
     if a.check:
         tmp = tempfile.mkdtemp(prefix='metodo-check-')
         try:
-            escribir(tmp, salida, paginas)
+            escribir(tmp, salida, paginas, salida_en)
             dif = []
             for rel in archivos_generados(paginas):
                 g = os.path.join(tmp, rel)
@@ -1010,12 +1122,15 @@ def main():
                     rel = os.path.relpath(os.path.join(raiz, f), destino)
                     if rel not in esperados and not f.startswith('.'):
                         dif.append('sobra en el repo: %s/%s' % (SALIDA, rel))
+            if faltan:
+                dif.append('%d cadena(s) sin traducción al inglés en %s (vuélcalas con --pendientes-en <ruta>); la primera: %s' % (
+                    len(faltan), TRADUCCION_EN, faltan[0][:100]))
             if dif:
                 print('metodo.py --check: %d diferencia(s); regenera con `python3 -I 05_scripts/metodo.py` y commitea:' % len(dif))
                 for d in dif:
                     print('  ' + d)
                 return 1
-            print('metodo.py --check: %d archivos generados = commiteados (metodo.json + %d páginas)' % (len(esperados), len(paginas)))
+            print('metodo.py --check: %d archivos generados = commiteados (metodo.json, metodo-en.json + %d páginas); traducción al inglés completa' % (len(esperados), len(paginas)))
             return 0
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
@@ -1029,8 +1144,10 @@ def main():
                     os.remove(os.path.join(raiz, f))
             if raiz != destino and not os.listdir(raiz):
                 os.rmdir(raiz)
-    escribir(destino, salida, paginas)
-    print('metodo.py: %s/metodo.json + %d páginas (%d capítulos; sellos %s; FLAGs %d)' % (
+    escribir(destino, salida, paginas, salida_en)
+    if faltan:
+        print('metodo.py: AVISO %d cadena(s) sin traducción al inglés (--pendientes-en <ruta> las vuelca)' % len(faltan))
+    print('metodo.py: %s/metodo.json + metodo-en.json + %d páginas (%d capítulos; sellos %s; FLAGs %d)' % (
         SALIDA, len(paginas), salida['resumen']['capitulos'], salida['resumen']['sellos'], salida['resumen']['flags']))
     return 0
 
