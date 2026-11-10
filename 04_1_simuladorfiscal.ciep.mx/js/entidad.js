@@ -25,6 +25,28 @@
 // Todo lo recibido queda en window.entidadData (lo lee el gate 05_scripts/test-sitio-entidades.js).
 window.entidadData = window.entidadData || {meta: null, ciclo: null, tasas: null, neto: null, sankeys: {}, cicloSeries: {}, indice: null, notas: {}, corte: null};
 
+// Idioma (8.19): el de <html lang> (plantilla-metodo.php lo resuelve con ?lang=; default inglés en /entidades).
+var ENT_T = (document.documentElement.getAttribute('lang') || 'en').toLowerCase() === 'es' ? {
+	coinciden: ' (coinciden)', difieren: ' (difieren en esta corrida: ver el reporte del deploy)', err: 'No se pudieron cargar los datos (',
+	en_celda: ' en esta celda', y: ', y', una_persona: ' una persona concentra ', de_su_monto: ' % de su monto', indicativa: '; léase como indicativo.',
+	nota: 'Nota', volver: 'Volver al texto', productos: {sankey: 'Sankey', ciclo: 'Ciclo de vida', tasas: 'Tasa efectiva'}, celda_delgada: 'Celda delgada',
+	sin_sellos: 'Ninguna celda sellada en esta gráfica.', sellos_sankey: 'Enlaces sellados en este corte', hombres: 'Hombres', mujeres: 'Mujeres',
+	eje_ciclo: ': % de la aportación neta de la entidad', tip_ciclo: ' % del neto de la entidad', sellos_ciclo: 'Celdas selladas (sexo × quinquenio)',
+	aria_tasas: 'Tasas efectivas de la entidad frente a las nacionales', tasa_nacional: 'tasa micro nacional ', nac: ' % (nac. ',
+	leyenda_tasas: 'barra = tasa efectiva estatal (micro / micro, por residencia) · marca = tasa micro nacional · ⚠ = sellada', sellos_tasas: 'Tasas selladas',
+	neto_pibe: ' (neto / PIBE)', nacional: 'Nacional (neto / PIB)', aria_neto: 'Aportación neta del ciclo de vida como % del PIB: entidad frente a nacional',
+	err_indice: 'No se pudieron cargar los datos del índice ('
+} : {
+	coinciden: ' (they coincide)', difieren: ' (they differ in this run: see the deploy report)', err: 'The data could not be loaded (',
+	en_celda: ' in this cell', y: ', and', una_persona: ' one person accounts for ', de_su_monto: ' % of its amount', indicativa: '; read as indicative.',
+	nota: 'Note', volver: 'Back to the text', productos: {sankey: 'Sankey', ciclo: 'Lifecycle', tasas: 'Effective rate'}, celda_delgada: 'Thin cell',
+	sin_sellos: 'No sealed cells in this chart.', sellos_sankey: 'Sealed links in this cut', hombres: 'Men', mujeres: 'Women',
+	eje_ciclo: ': % of the state\'s net contribution', tip_ciclo: ' % of the state net', sellos_ciclo: 'Sealed cells (sex × five-year group)',
+	aria_tasas: 'Effective tax rates of the state vs national', tasa_nacional: 'national micro rate ', nac: ' % (nat. ',
+	leyenda_tasas: 'bar = state effective rate (micro / micro, by residence) · tick = national micro rate · ⚠ = sealed', sellos_tasas: 'Sealed rates',
+	neto_pibe: ' (net / PIBE)', nacional: 'National (net / GDP)', aria_neto: 'Net lifecycle contribution as % of GDP: state vs national',
+	err_indice: 'The index data could not be loaded ('
+};
 var ENT_PALETA = ['#5d62b5', '#29c3be', '#f2726f', '#ffc533', '#62b58f', '#bc95df', '#67cdf2', '#8d95c7', '#f7a35c'];
 var ENT_COLOR_SELLO = '#c0392b';
 
@@ -38,7 +60,7 @@ function entidadEscapa(s) {
 function entidadFormato(valor, unidad) {
 	if (valor === undefined || valor === null) return 'n/a';
 	if (unidad === 'texto') return String(valor);
-	if (unidad === 'coincide') return valor === true ? ' (they coincide)' : (valor === false ? ' (they differ in this run: see the deploy report)' : '');
+	if (unidad === 'coincide') return valor === true ? ENT_T.coinciden : (valor === false ? ENT_T.difieren : '');
 	var v = Number(valor);
 	if (isNaN(v)) return String(valor);
 	var opts = {maximumFractionDigits: 0}, signo = false;
@@ -79,7 +101,7 @@ function entidadAjax(url, ok, err) {
 
 function entidadError(id, url, detalle) {
 	var caja = document.getElementById(id);
-	if (caja) { caja.classList.add('metodo-sankey-error'); caja.textContent = 'The data could not be loaded (' + url + '). ' + detalle; }
+	if (caja) { caja.classList.add('metodo-sankey-error'); caja.textContent = ENT_T.err + url + '). ' + detalle; }
 }
 
 // --- sellos: catálogo de celdas selladas de la entidad (meta.json), con su número de nota al pie ---
@@ -108,26 +130,26 @@ function entidadSellos(meta, cfg) {
 }
 
 function entidadTextoSello(x) {
-	var t = 'n = ' + entidadFormato(x.n, 'entero') + ' in this cell';
-	if (x.motivo && x.motivo.indexOf('top1') >= 0) t += (x.motivo === 'top1' ? ', and' : ';') + ' one person accounts for ' + entidadFormato(x.top1, 'top1') + ' % of its amount';
-	return t + '; read as indicative.';
+	var t = 'n = ' + entidadFormato(x.n, 'entero') + ENT_T.en_celda;
+	if (x.motivo && x.motivo.indexOf('top1') >= 0) t += (x.motivo === 'top1' ? ENT_T.y : ';') + ENT_T.una_persona + entidadFormato(x.top1, 'top1') + ENT_T.de_su_monto;
+	return t + ENT_T.indicativa;
 }
 
 function entidadNotaRef(x) {
-	return '<sup class="metodo-nota-ref" id="ref-' + x.nota + '"><a href="#nota-' + x.nota + '" aria-label="Note ' + x.nota + '">' + x.nota + '</a></sup>';
+	return '<sup class="metodo-nota-ref" id="ref-' + x.nota + '"><a href="#nota-' + x.nota + '" aria-label="' + ENT_T.nota + ' ' + x.nota + '">' + x.nota + '</a></sup>';
 }
 
 // Escribe las notas al pie de los sellos a continuación de las de la página.
 function entidadNotasSellos(lista, cfg) {
 	var ol = document.querySelector('ol.metodo-notas');
 	if (!ol) return;
-	var nombres = {sankey: 'Sankey', ciclo: 'Lifecycle', tasas: 'Effective rate'};
+	var nombres = ENT_T.productos;
 	lista.forEach(function (x) {
 		var li = document.createElement('li');
 		li.id = 'nota-' + x.nota; li.value = x.nota;
 		li.setAttribute('data-sello', x.clave); li.setAttribute('data-producto', x.producto); li.setAttribute('data-n', String(x.n));
 		var donde = x.producto === 'sankey' ? ' (' + ((cfg.etiquetasCortes || {})[x.corte] || x.corte) + ')' : '';
-		li.innerHTML = '<b>⚠ Thin cell — ' + nombres[x.producto] + donde + ': ' + entidadEscapa(x.celda) + '.</b> ' + entidadEscapa(entidadTextoSello(x)) + ' <a class="metodo-nota-volver" href="#ref-' + x.nota + '" aria-label="Back to the text">&#8617;</a>';
+		li.innerHTML = '<b>⚠ ' + ENT_T.celda_delgada + ' — ' + nombres[x.producto] + donde + ': ' + entidadEscapa(x.celda) + '.</b> ' + entidadEscapa(entidadTextoSello(x)) + ' <a class="metodo-nota-volver" href="#ref-' + x.nota + '" aria-label="' + ENT_T.volver + '">&#8617;</a>';
 		ol.appendChild(li);
 	});
 }
@@ -136,7 +158,7 @@ function entidadNotasSellos(lista, cfg) {
 function entidadListaSellos(id, items, titulo) {
 	var caja = document.getElementById(id);
 	if (!caja) return;
-	if (!items.length) { caja.innerHTML = '<p class="ent-sellos-ninguno">No sealed cells in this chart.</p>'; return; }
+	if (!items.length) { caja.innerHTML = '<p class="ent-sellos-ninguno">' + ENT_T.sin_sellos + '</p>'; return; }
 	var h = '<p class="ent-sellos-titulo">' + entidadEscapa(titulo) + ' (' + items.length + '):</p><ul>';
 	items.forEach(function (x) {
 		h += '<li data-sello="' + entidadEscapa(x.clave) + '" data-n="' + entidadEscapa(String(x.n)) + '"><span class="ent-sello-marca">⚠</span> ' + entidadEscapa(x.celda) + ' — n = ' + entidadEscapa(entidadFormato(x.n, 'entero')) + (x.motivo && x.motivo.indexOf('top1') >= 0 ? ', top-1 ' + entidadEscapa(entidadFormato(x.top1, 'top1')) + ' %' : '') + entidadNotaRef(x) + '</li>';
@@ -156,7 +178,7 @@ function entidadSankeys(cfg, sellos) {
 			if (previo) previo.dispose();
 			new FusionCharts({id: id + '-chart', type: 'sankey', renderAt: id, width: '100%', height: '100%', dataFormat: 'json', dataSource: ds}).render();
 		});
-		entidadListaSellos(cfg.ids.sankeySellos, sellos.filter(function (x) { return x.producto === 'sankey' && x.corte === corte; }), 'Sealed links in this cut');
+		entidadListaSellos(cfg.ids.sankeySellos, sellos.filter(function (x) { return x.producto === 'sankey' && x.corte === corte; }), ENT_T.sellos_sankey);
 	};
 	var carga = function (corte) {
 		if (D.sankeys[corte]) { pintar(corte); return; }
@@ -199,14 +221,14 @@ function entidadCiclo(cfg, sellos) {
 				dataLabels: {enabled: false},
 				stroke: {width: 1, colors: ['#fff']},
 				grid: {xaxis: {lines: {show: false}}},
-				xaxis: {categories: categorias, title: {text: (s === 'H' ? 'Men' : 'Women') + ': % of the state\'s net contribution'}, labels: {style: {colors: '#404040', fontSize: '9px'}}},
+				xaxis: {categories: categorias, title: {text: (s === 'H' ? ENT_T.hombres : ENT_T.mujeres) + ENT_T.eje_ciclo}, labels: {style: {colors: '#404040', fontSize: '9px'}}},
 				yaxis: {labels: {style: {fontSize: '9px'}}},
-				tooltip: {shared: false, y: {formatter: function (val) { return entidadFormato(val, 'pct3') + ' % of the state net'; }}},
+				tooltip: {shared: false, y: {formatter: function (val) { return entidadFormato(val, 'pct3') + ENT_T.tip_ciclo; }}},
 				legend: {position: 'top'}
 			};
 			new ApexCharts(el, opciones).render();
 		});
-		entidadListaSellos(cfg.ids.cicloSellos, sellos.filter(function (x) { return x.producto === 'ciclo'; }), 'Sealed cells (sex × five-year group)');
+		entidadListaSellos(cfg.ids.cicloSellos, sellos.filter(function (x) { return x.producto === 'ciclo'; }), ENT_T.sellos_ciclo);
 	}, function (det) { entidadError(cfg.ids.cicloH, cfg.urls.ciclo, det); entidadError(cfg.ids.cicloM, cfg.urls.ciclo, det); });
 }
 
@@ -226,21 +248,21 @@ function entidadTasas(cfg, sellos) {
 		var maximo = 0;
 		filas.forEach(function (i) { maximo = Math.max(maximo, Math.abs(i.te), Math.abs(i.te_nacional_micro)); });
 		var k = maximo > 0 ? barMax / maximo : 0;
-		var svg = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Effective tax rates of the state vs national">'];
+		var svg = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + ENT_T.aria_tasas + '">'];
 		svg.push('<defs><pattern id="ent-rayado" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="' + ENT_PALETA[0] + '"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fff" stroke-width="3"/></pattern></defs>');
 		filas.forEach(function (i, j) {
 			var y = pad + j * filaH, sel = sellados[i.impuesto];
 			var x0 = pad + etqW, w = Math.max(1, Math.abs(i.te) * k), xn = x0 + Math.abs(i.te_nacional_micro) * k;
 			svg.push('<text class="ent-tasas-etiqueta" x="' + (x0 - 6) + '" y="' + (y + filaH / 2 + 4) + '" text-anchor="end">' + entidadEscapa(i.impuesto) + (sel ? ' ⚠' : '') + '</text>');
 			svg.push('<rect class="ent-tasas-barra" x="' + x0 + '" y="' + (y + 5) + '" width="' + w + '" height="' + (filaH - 10) + '" fill="' + (sel ? 'url(#ent-rayado)' : ENT_PALETA[0]) + '" data-impuesto="' + entidadEscapa(i.impuesto) + '" data-te="' + entidadEscapa(String(i.te)) + '" data-te-nacional="' + entidadEscapa(String(i.te_nacional_micro)) + '" data-sello="' + (sel ? '1' : '0') + '"><title>' + entidadEscapa(i.impuesto + ': state ' + entidadFormato(i.te, 'pct3') + ' % vs national ' + entidadFormato(i.te_nacional_micro, 'pct3') + ' % (' + entidadFormato(i.rel_vs_nac, 'signo-pct2') + ' pp)' + (sel ? ' — ⚠ ' + entidadTextoSello(sel) : '')) + '</title></rect>');
-			svg.push('<line class="ent-tasas-nacional" x1="' + xn + '" y1="' + (y + 2) + '" x2="' + xn + '" y2="' + (y + filaH - 2) + '" stroke="#000" stroke-width="2"><title>' + entidadEscapa('national micro rate ' + entidadFormato(i.te_nacional_micro, 'pct3') + ' %') + '</title></line>');
-			svg.push('<text class="ent-tasas-valor" x="' + (x0 + barMax + 8) + '" y="' + (y + filaH / 2 + 4) + '">' + entidadEscapa(entidadFormato(i.te, 'pct3') + ' % (nat. ' + entidadFormato(i.te_nacional_micro, 'pct3') + ' %)') + '</text>');
+			svg.push('<line class="ent-tasas-nacional" x1="' + xn + '" y1="' + (y + 2) + '" x2="' + xn + '" y2="' + (y + filaH - 2) + '" stroke="#000" stroke-width="2"><title>' + entidadEscapa(ENT_T.tasa_nacional + entidadFormato(i.te_nacional_micro, 'pct3') + ' %') + '</title></line>');
+			svg.push('<text class="ent-tasas-valor" x="' + (x0 + barMax + 8) + '" y="' + (y + filaH / 2 + 4) + '">' + entidadEscapa(entidadFormato(i.te, 'pct3') + ENT_T.nac + entidadFormato(i.te_nacional_micro, 'pct3') + ' %)') + '</text>');
 		});
-		svg.push('<text class="ent-tasas-leyenda" x="' + (pad + etqW) + '" y="' + (H - 4) + '">bar = state effective rate (micro / micro, by residence) · tick = national micro rate · ⚠ = sealed</text>');
+		svg.push('<text class="ent-tasas-leyenda" x="' + (pad + etqW) + '" y="' + (H - 4) + '">' + ENT_T.leyenda_tasas + '</text>');
 		svg.push('</svg>');
 		caja.innerHTML = svg.join('');
 		caja.setAttribute('data-filas', String(filas.length));
-		entidadListaSellos(cfg.ids.tasasSellos, sellos.filter(function (x) { return x.producto === 'tasas'; }), 'Sealed rates');
+		entidadListaSellos(cfg.ids.tasasSellos, sellos.filter(function (x) { return x.producto === 'tasas'; }), ENT_T.sellos_tasas);
 	}, function (det) { entidadError(cfg.ids.tasas, cfg.urls.tasas, det); });
 }
 
@@ -270,8 +292,8 @@ function entidadNeto(cfg, meta) {
 function entidadNetoBarras(caja, meta, pct) {
 	if (!caja) return;
 	var filas = [
-		{etiqueta: meta.entidad.nombre + ' (net / PIBE)', v: pct, color: ENT_PALETA[0]},
-		{etiqueta: 'National (net / GDP)', v: meta.nacional.neto_pct_pib, color: '#999'}
+		{etiqueta: meta.entidad.nombre + ENT_T.neto_pibe, v: pct, color: ENT_PALETA[0]},
+		{etiqueta: ENT_T.nacional, v: meta.nacional.neto_pct_pib, color: '#999'}
 	].filter(function (f) { return f.v !== null && f.v !== undefined; });
 	var W = caja.clientWidth || 700, filaH = 34, pad = 6, etqW = 230, valW = 90, barMax = Math.max(60, W - etqW - valW - 2 * pad);
 	var H = pad * 2 + filaH * filas.length;
@@ -279,7 +301,7 @@ function entidadNetoBarras(caja, meta, pct) {
 	filas.forEach(function (f) { maximo = Math.max(maximo, Math.abs(f.v)); });
 	var k = maximo > 0 ? barMax / maximo : 0, hayNeg = filas.some(function (f) { return f.v < 0; });
 	var cero = pad + etqW + (hayNeg ? barMax / 2 : 0), escala = hayNeg ? k / 2 : k;
-	var svg = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Net lifecycle contribution as % of GDP: state vs national">'];
+	var svg = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + ENT_T.aria_neto + '">'];
 	filas.forEach(function (f, j) {
 		var y = pad + j * filaH, w = Math.abs(f.v) * escala, x = f.v < 0 ? cero - w : cero;
 		svg.push('<text class="ent-tasas-etiqueta" x="' + (pad + etqW - 6) + '" y="' + (y + filaH / 2 + 4) + '" text-anchor="end">' + entidadEscapa(f.etiqueta) + '</text>');
@@ -338,6 +360,6 @@ function entidadIndice(cfg) {
 	}, function (det) {
 		if (tabla) tabla.querySelectorAll('td[data-col]').forEach(function (td) { td.textContent = 'n/a'; td.classList.add('metodo-cifra-error'); });
 		var p = document.getElementById('ent-indice-estado');
-		if (p) p.textContent = 'The index data could not be loaded (' + cfg.url + '). ' + det;
+		if (p) p.textContent = ENT_T.err_indice + cfg.url + '). ' + det;
 	});
 }

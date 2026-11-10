@@ -134,6 +134,10 @@ chk 200 "GET /entidades (la ruta)"                            "$U/entidades"
 chk 200 "GET /entidades/"                                     "$U/entidades/"
 aserta '[[ $(grep -c "<tr data-abrev=" "$H/body") == 32 ]]' "el índice trae 32 filas (una por entidad del catálogo)"
 aserta 'grep -q "jsonEntidad.php?producto=indice" "$H/body"' "el índice pide /jsonEntidad.php?producto=indice"
+# idioma (8.19): /entidades va en inglés por default; ?lang=es sirve los cuerpos _cuerpo-*-es.php con los mismos ids y endpoints
+chk 200 "GET /entidades/?lang=es" "$U/entidades/?lang=es"
+aserta 'grep -q "<html lang=\"es\">" "$H/body" && [[ $(grep -c "<tr data-abrev=" "$H/body") == 32 ]] && grep -q "/entidades/NL/?lang=es" "$H/body"' "?lang=es: índice en español con 32 filas y enlaces que conservan ?lang=es"
+aserta 'for p in entidad indice; do for a in "id=\"[^\"]*\"" "data-[a-z-]*=\"[^\"]*\"" "jsonEntidad[^\"<]*" "metodo_url\([^)]*\)"; do diff <(grep -oE "$a" "$SITE/entidades/_cuerpo-$p-en.php" | sort) <(grep -oE "$a" "$SITE/entidades/_cuerpo-$p-es.php" | sort) >/dev/null || exit 1; done; done' "los cuerpos en español llevan los mismos ids, data-*, endpoints y enlaces que los de inglés"
 aserta 'grep -q "entidadIndice(" "$H/body"' "el índice llama entidadIndice(…)"
 for e in $ENTIDADES; do
     chk 200 "GET /entidades/$e/"                              "$U/entidades/$e/"
