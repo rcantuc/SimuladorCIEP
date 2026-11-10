@@ -6,22 +6,125 @@ body.metodo {
 	background-color: #f8f8f8;
 	color: #333;
 }
+/* Header (8.19): fondo blanco; el logo del Simulador a la izquierda (117 px de ancho, como en index.php, sin distorsión), y a la derecha CIEP pegado a
+   las redes y las banderas. Debajo, una franja con las migas. Mismas piezas que el header del
+   simulador grande (index.php) pero sobre blanco: el logo es la variante de letra oscura (images/logo-sim-fiscal-ciep.png). */
 .metodo-header {
 	background: #fff;
-	border-bottom: 1px solid #e3e6ea;
-	padding: 14px 0;
+	box-shadow: 0 0 0.7rem rgba(31, 45, 61, .12);
 }
-.metodo-header .container {
+.metodo-header-fila {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 18px;
+	min-height: 79px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.metodo-logo {
+	display: block;
+	flex: none;
 }
 .metodo-logo img {
 	display: block;
+	width: 117px;
+	height: auto;
+}
+.metodo-header-der {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+	margin-left: auto;
+}
+.metodo-header-ciep {
+	display: block;
+}
+.metodo-header-ciep img {
+	display: block;
+	width: 107px;
+	height: auto;
+}
+.metodo-social {
+	display: flex;
+	align-items: center;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	gap: 14px;
+}
+.metodo-social img {
+	display: block;
+	width: 22px;
+	height: 22px;
+	/* los iconos del sitio son blancos (para el header oscuro): sobre blanco se oscurecen */
+	filter: brightness(0) opacity(.5);
+	transition: filter .2s ease;
+}
+.metodo-social a:hover img {
+	filter: brightness(0) opacity(.85);
+}
+.metodo-lang {
+	display: flex;
+	gap: 8px;
+}
+.metodo-lang .lang-item {
+	display: block;
+	padding: 1px 3px 2px 4px;
+	background: #fff;
+	border-radius: 4px;
+	opacity: .55;
+	transition: opacity .3s ease;
+}
+.metodo-lang .lang-item:hover {
+	opacity: .85;
+}
+.metodo-lang .lang-item.active {
+	opacity: 1;
+	box-shadow: 0 0 0 1px #c9ccd1;
+}
+.metodo-lang img {
+	display: block;
+	width: 34px;
+	height: auto;
+}
+.metodo-migas {
+	background: #fff;
+	border-top: 1px solid #e3e6ea;
+	border-bottom: 1px solid #e3e6ea;
+	padding: 8px 0;
+}
+@media (max-width: 767px) {
+	.metodo-header-fila {
+		flex-direction: column;
+		justify-content: center;
+		gap: 10px;
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+	.metodo-header-der {
+		margin-left: 0;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
 }
 .metodo-nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 6px 24px;
 	font-size: 13px;
 	color: #7d7d83;
+}
+.metodo-nav-accesos {
+	display: flex;
+	gap: 22px;
+	margin-left: auto;
+}
+.metodo-nav-accesos a.propia {
+	color: #000;
+	font-weight: 600;
 }
 .metodo-nav a {
 	color: #7d7d83;
@@ -143,13 +246,62 @@ body.metodo {
 	padding-top: 14px;
 	margin-top: 18px;
 }
+/* Footer (8.19): el del simulador grande (index.php): dos filas oscuras, vínculos amarillos, logo de letra blanca. */
 .metodo-pie {
-	padding: 10px 15px 28px;
+	margin-top: 28px;
+	color: #caced1;
 	font-size: 12px;
-	color: #7d7d83;
+}
+.metodo-pie-fila-2 {
+	background: #28323C;
+	padding: 40px 0 36px;
+}
+.metodo-pie-fila-1 {
+	background: #1E242A;
+	padding: 18px 0;
+}
+.metodo-pie-logo img {
+	display: block;
+	height: 52px;
+	width: auto;
+}
+.metodo-pie-titulo {
+	color: #fff;
+	margin-bottom: 10px;
+}
+.metodo-pie li {
+	margin: 5px 0 9px;
+	font-size: 80%;
+}
+.metodo-pie li a {
+	color: #ffe719;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.metodo-pie li a:hover {
+	color: #caced1;
+}
+.metodo-pie-copia {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+.metodo-pie-copia a {
+	color: inherit;
+	text-decoration: underline dotted;
+}
+.metodo-social-pie img {
+	filter: none;
+	opacity: .8;
+}
+.metodo-social-pie a:hover img {
+	filter: none;
+	opacity: 1;
 }
 
-/* Notas al pie numeradas (metodo_nota_ref / metodo_notas en metodo/plantilla.php): tamaño menor,
+/* Notas al pie numeradas (metodo_nota_ref / metodo_notas en plantilla-metodo.php): tamaño menor,
    mismo ancho de columna que el texto, enlace de ida (superíndice) y vuelta (↩). */
 .metodo-nota-ref {
 	font-size: 70%;
