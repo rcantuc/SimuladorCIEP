@@ -5,7 +5,8 @@
 //     al menos una tabla o un párrafo y cada vacía su aviso con el FLAG; el sello de la cabecera es el del JSON;
 //   - capítulo 0: tantas secciones como el JSON más la bibliografía; en la tabla de requerimientos la columna «Otro país» está vacía;
 //   - cero errores de JS (pageerror / console.error) en todas las páginas;
-//   - todo enlace interno (href que empieza con «/») de esas páginas responde 200 (una petición por URL distinta).
+//   - todo enlace interno (href que empieza con «/») de esas páginas responde 200 (una petición por URL distinta);
+//   - inglés (8.19): /metodo/?lang=en, cap0 y el primer capítulo pintan desde metodo-en.json con html lang=en y enlaces ?lang=en.
 // Salida: 0 todo verde; 1 algún aserto falló. Imprime una línea por aserto.
 const fs = require('fs');
 const http = require('http');
@@ -85,6 +86,30 @@ function get(url) {
     });
     ok(meta >= 6 && selloPag === c.sello, '  ' + c.modulo + ': cabecera con ' + meta + ' campos y sello «' + selloPag + '» = JSON');
     ok(ordenOk && contenidoOk, '  ' + c.modulo + ': 10 secciones en orden; las no vacías con tabla o párrafo, las vacías con su FLAG (' + secs.filter(s => s.vacia === '1').length + ' vacías)');
+    await page.close();
+  }
+
+  // inglés (8.19): ?lang=en pinta desde metodo-en.json, <html lang="en">, bandera EN activa y enlaces que conservan ?lang=en
+  for (const ruta of ['/metodo/?lang=en', '/metodo/cap0/?lang=en', '/metodo/' + d.capitulos[0].modulo + '/?lang=en']) {
+    const page = await browser.newPage();
+    page.on('pageerror', e => erroresJs.push(ruta + ': ' + e.message));
+    page.on('console', m => { if (m.type() === 'error') erroresJs.push(ruta + ': console ' + m.text()); });
+    await page.goto(urlBase + ruta, { waitUntil: 'networkidle0' });
+    let r = {};
+    try {
+      await page.waitForFunction(() => { const c = document.getElementById('metodo-contenido'); return c && c.getAttribute('data-metodo-estado') !== 'cargando'; }, { timeout: 30 * 1e3 });
+      r = await page.evaluate(() => ({
+        estado: document.getElementById('metodo-contenido').getAttribute('data-metodo-estado'),
+        lang: document.documentElement.getAttribute('lang'),
+        idioma: (window.metodoData || {}).idioma,
+        bandera: (document.querySelector('.metodo-lang .lang-item.active') || {}).getAttribute ? document.querySelector('.metodo-lang .lang-item.active').getAttribute('hreflang') : '',
+        internos: [...document.querySelectorAll('#metodo-contenido a[href^="/metodo/"]')].map(a => a.getAttribute('href')),
+      }));
+    } catch (e) { r = { estado: 'timeout' }; }
+    const sinLang = (r.internos || []).filter(h => !/[?]lang=en/.test(h));
+    ok(r.estado === 'ok' && r.lang === 'en' && r.idioma === 'en' && r.bandera === 'en' && sinLang.length === 0,
+      ruta + ' en inglés: pinta desde metodo-en.json, html lang=en, bandera EN activa, ' + (r.internos || []).length + ' enlaces internos con ?lang=en' +
+      (sinLang.length ? ' (sin ?lang: ' + sinLang.slice(0, 3).join(', ') + ')' : '') + ' [' + JSON.stringify({ estado: r.estado, lang: r.lang, idioma: r.idioma, bandera: r.bandera }) + ']');
     await page.close();
   }
 

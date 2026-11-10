@@ -16,6 +16,21 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.18.1] — 2026-11-09
+
+### [v8.18.1] — Sitio de método bilingüe (ES/EN), header y pie alineados a la portada y fix del pie de versión (PR #76, rama `sesion/header-metodo`, 2026-11-09)
+
+**Baseline sin cambio: `v8.17.2`. Versión solo-sitio: no cambia el motor (`*.ado`, `*.do`, `SIM.do`), `manifest.json` salvo `version`/`release_tag`/`release_url_prefix`, ni un número publicado** (`git diff 6596090..HEAD` no toca ningún `.ado`/`.do`; los archivos fuera de `04_1_simuladorfiscal.ciep.mx/` son `metodo.py`, sus tests y la memoria de traducción). Los commits de la rama llevan la etiqueta de la sesión (`8.19/N`); el tag es v8.18.1 porque es un patch sobre v8.18.0.
+
+- **Correcciones — `fix(8.19/1)` `b1480d0`:** `metodo_meta_deploy()` leía `DEPLOYED_COMMIT` un nivel arriba del docroot desde que 8.18 movió la plantilla a la raíz (`dirname(__DIR__)`): el pie de `/metodo`, `/NTA` y `/entidades` no mostraba la versión en v8.18.0.
+- **Institucional — `feat(8.19/2)` `e68f490`, portada (`index.php`, `index-en.php`):** logo del header centrado en vertical; el botón del header dice «Metodología» / «Methodology» (baja al banner del libro) y el banner gana «Conoce el método» / «Discover the method» → `/metodo`.
+- **Institucional — `feat(8.19/3)` `617269f`, `plantilla-metodo.php` y `css/metodo.css`:** header blanco simétrico al de la portada (logo a la izquierda; CIEP, redes y banderas a la derecha), pie como el de la portada, migas a la izquierda (Simulador Fiscal CIEP › Método › Capítulos › capítulo) y accesos Método / NTA / Entidades a la derecha. **Bilingüe:** `?lang=es|en` con lista blanca (`metodo_lang`, `metodo_url`, `metodo_t`); sin `?lang=` cada sección abre en su idioma original (`/metodo` español; `/NTA` y `/entidades` inglés); las banderas cambian el idioma y los enlaces internos lo conservan.
+- **Institucional — `feat(8.19/4)` `5165435`, `/metodo` en inglés:** `metodo.py` emite `metodo-en.json` desde la memoria `02_governance/metodo/traduccion-en.json` (3,186 cadenas; **`metodo.py --check` falla si falta una traducción**, `--pendientes-en <ruta>` las vuelca); une los renglones cortados de los headers (el Propósito salía con un párrafo por renglón); índice con el Capítulo 0 como primera fila y la nota del sello bajo la tabla; los sellos con texto extra toman su color; `test-sitio-metodo.sh`/`.js` ganan asertos de idioma.
+- **Institucional — `feat(8.19/5)` `439b38e`, `/NTA` y `/entidades` en español:** el cuerpo de cada página vive en `_cuerpo-{en,es}.php` (mismos `id`, `data-*` y endpoints, exigido por `test-sitio-nta.sh` y `test-sitio-entidades.sh`); rótulos de gráficas y avisos de `metodo-sankey.js` y `entidad.js` en los dos idiomas; las etiquetas de los nodos del Sankey no se traducen (FusionCharts identifica el nodo por su etiqueta).
+- **Correcciones — `fix(8.19/7)` `9034dcc`, CI de seguridad:** `05_scripts/manifiesto-default.py` deriva lo que viaja al VPS de lo que piden las páginas; al mover el cuerpo de `/NTA` a `NTA/_cuerpo-{en,es}.php` dejó de ver `nta-identidad.txt` (y `_entidad.php` dejó de declarar `$cortes = array(…)` en forma literal). Ahora lee también los cuerpos `NTA/_cuerpo-*.php`, `_entidad.php` conserva la forma literal (las etiquetas en español la sustituyen después) y `test-manifiesto-default.sh` copia los cuerpos a su copia mínima. Nota para la lección 20 del runbook: **todo cambio de las páginas de método corre también `test-manifiesto-default.sh`, que no es parte de `test-sitio-*`**.
+- **Comandos — `test-sitio-entidades.sh`:** el chequeo de «sin literales de 4+ dígitos» cubre también los cuatro cuerpos `_cuerpo-*` de `/entidades`.
+- **Release:** `manifest.json` `version`/`release_tag`/`release_url_prefix` = v8.18.1, `baseline` = v8.17.2 (sin cambio), `data_updated` sin cambio; `CITATION.cff` regenerada; `metodo.json` y `metodo-en.json` regenerados con la versión.
+
 ## [v8.18.0] — 2026-11-09
 
 ### [v8.18.0] — `/metodo` generado del repo: un capítulo por módulo, en el orden de `SIM.do`, con las diez secciones de la plantilla (sesión `sesion/8.18`, 2026-11-09)

@@ -134,6 +134,10 @@ chk 200 "GET /entidades (la ruta)"                            "$U/entidades"
 chk 200 "GET /entidades/"                                     "$U/entidades/"
 aserta '[[ $(grep -c "<tr data-abrev=" "$H/body") == 32 ]]' "el índice trae 32 filas (una por entidad del catálogo)"
 aserta 'grep -q "jsonEntidad.php?producto=indice" "$H/body"' "el índice pide /jsonEntidad.php?producto=indice"
+# idioma (8.19): /entidades va en inglés por default; ?lang=es sirve los cuerpos _cuerpo-*-es.php con los mismos ids y endpoints
+chk 200 "GET /entidades/?lang=es" "$U/entidades/?lang=es"
+aserta 'grep -q "<html lang=\"es\">" "$H/body" && [[ $(grep -c "<tr data-abrev=" "$H/body") == 32 ]] && grep -q "/entidades/NL/?lang=es" "$H/body"' "?lang=es: índice en español con 32 filas y enlaces que conservan ?lang=es"
+aserta 'for p in entidad indice; do for a in "id=\"[^\"]*\"" "data-[a-z-]*=\"[^\"]*\"" "jsonEntidad[^\"<]*" "metodo_url\([^)]*\)"; do diff <(grep -oE "$a" "$SITE/entidades/_cuerpo-$p-en.php" | sort) <(grep -oE "$a" "$SITE/entidades/_cuerpo-$p-es.php" | sort) >/dev/null || exit 1; done; done' "los cuerpos en español llevan los mismos ids, data-*, endpoints y enlaces que los de inglés"
 aserta 'grep -q "entidadIndice(" "$H/body"' "el índice llama entidadIndice(…)"
 for e in $ENTIDADES; do
     chk 200 "GET /entidades/$e/"                              "$U/entidades/$e/"
@@ -189,7 +193,7 @@ aserta '[[ "$code_xx" == "404" ]] || ! grep -q "entidadPagina(" "$H/body"' "GET 
 
 echo "## 3. cero números en el sitio (los valores vienen de los JSON del motor y de meta.json)"
 # (se descartan antes las entidades HTML &#NNNN; y los colores CSS #rrggbb, que no son números)
-for f in entidades/_entidad.php entidades/index.php entidades/_catalogo.php jsonEntidad.php js/entidad.js plantilla-metodo.php css/metodo.css; do
+for f in entidades/_entidad.php entidades/index.php entidades/_catalogo.php entidades/_cuerpo-entidad-en.php entidades/_cuerpo-entidad-es.php entidades/_cuerpo-indice-en.php entidades/_cuerpo-indice-es.php jsonEntidad.php js/entidad.js plantilla-metodo.php css/metodo.css; do
     aserta '! sed -E "s/&#[0-9]+;//g; s/#[0-9a-fA-F]{3,8}//g" "$SITE/'"$f"'" | grep -qE "[0-9]{4,}"' "$f sin literales de 4+ dígitos"
 done
 n_lit=0

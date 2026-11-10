@@ -167,6 +167,10 @@ aserta '[[ $(grep -c "name=\"nta-sexo\"" "$H/body") == 3 ]]' "la página trae el
 aserta '! grep -q "corte=grupoedad\"" "$H/body" && ! grep -q "renderAt.*corte=v2-grupoedad" "$H/body"' "la página ya no dibuja el v1 ni el v2 (sin url corte=grupoedad ni Sankey con corte=v2-grupoedad)"
 aserta 'grep -q "split household-level items among the members of each household<sup" "$H/body"' "la frase del reparto intra-hogar lleva el superíndice de la nota"
 aserta 'grep -q "id=\"nota-1\"" "$H/body" && grep -q "Within-household allocation" "$H/body"' "la nota al pie 1 existe (Within-household allocation)"
+# idioma (8.19): /NTA va en inglés por default; ?lang=es sirve NTA/_cuerpo-es.php con los mismos contenedores y endpoints
+chk 200 "GET /NTA/?lang=es" "$U/NTA/?lang=es"
+aserta 'grep -q "<html lang=\"es\">" "$H/body" && grep -q "id=\"sankey-nta\"" "$H/body" && grep -q "id=\"sankey-nta-v3\"" "$H/body" && [[ $(grep -c "id=\"nta-panel-[1-5]\"" "$H/body") == 5 ]] && [[ $(grep -c "name=\"nta-sexo\"" "$H/body") == 3 ]] && grep -q "jsonSankeyNTA.php?cuenta=panel-grupoedad-sexo" "$H/body" && grep -q "id=\"nota-1\"" "$H/body"' "?lang=es: <html lang=\"es\">, los mismos contenedores (Sankeys, 5 paneles, 3 radios, nota 1) y endpoints"
+aserta 'for a in "id=\"[^\"]*\"" "data-[a-z-]*=\"[^\"]*\"" "jsonSankeyNTA[^\"<]*"; do diff <(grep -oE "$a" "$SITE/NTA/_cuerpo-en.php" | sort) <(grep -oE "$a" "$SITE/NTA/_cuerpo-es.php" | sort) >/dev/null || exit 1; done' "NTA/_cuerpo-es.php lleva exactamente los mismos ids, data-* y endpoints que NTA/_cuerpo-en.php"
 chk 200 "jsonSankeyNTA.php (sin corte: default v4)"            "$U/jsonSankeyNTA.php"
 aserta 'grep -q "ciepmx/SankeyNTA/sankey-v4-economia.json" "$H/body"' "el default sirve users/ciepmx/SankeyNTA/sankey-v4-economia.json"
 chk 200 "jsonSankeyNTA.php?corte=v3-grupoedad (el corte)"      "$U/jsonSankeyNTA.php?corte=v3-grupoedad"
@@ -202,7 +206,7 @@ chk 404 "jsonSankeyNTA.php?cuenta=quinquenio-sexo (sin arch.)" "$U/jsonSankeyNTA
 
 echo "## 2. cero números en la página (los valores vienen de los JSON del motor)"
 # (se descartan antes las entidades HTML &#NNNN; y los colores CSS #rrggbb, que no son números)
-for f in NTA/index.php js/metodo-sankey.js plantilla-metodo.php css/metodo.css jsonSankeyNTA.php; do
+for f in NTA/index.php NTA/_cuerpo-en.php NTA/_cuerpo-es.php js/metodo-sankey.js plantilla-metodo.php css/metodo.css jsonSankeyNTA.php; do
     aserta '! sed -E "s/&#[0-9]+;//g; s/#[0-9a-fA-F]{3,8}//g" "$SITE/'"$f"'" | grep -qE "[0-9]{4,}"' "$f sin literales de 4+ dígitos"
 done
 

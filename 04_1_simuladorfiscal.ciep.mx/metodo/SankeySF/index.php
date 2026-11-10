@@ -4,11 +4,12 @@
 // Todo el contenido lo pinta /js/metodo-capitulo.js desde /metodo/metodo.json; aquí no hay números ni frases del método.
 require_once dirname(__DIR__, 2) . '/plantilla-metodo.php';
 metodo_cabecera(array('slug' => 'metodo', 'titulo' => 'SankeySF', 'lang' => 'es',
-	'descripcion' => 'Capítulo SankeySF del método del Simulador Fiscal CIEP, generado del repositorio.',
+	'descripcion' => array('es' => 'Capítulo SankeySF del método del Simulador Fiscal CIEP, generado del repositorio.',
+		'en' => 'Chapter SankeySF of the method of the Simulador Fiscal CIEP, generated from the repository.'),
 	'migas' => array(array('href' => '/metodo/SankeySF/', 'texto' => 'SankeySF'))));
 ?>
 		<div id="metodo-contenido" class="metodo-generado" data-metodo-pagina="capitulo" data-metodo-capitulo="SankeySF" data-metodo-estado="cargando">
-			<p class="metodo-cargando">Cargando el capítulo desde <code>metodo.json</code>…</p>
+			<p class="metodo-cargando"><?= metodo_lang() === 'es' ? 'Cargando el capítulo…' : 'Loading the chapter…' ?></p>
 		</div>
 <?php
 metodo_pie(array('scripts' => array('/js/metodo-capitulo.js'), 'init' => 'metodoCapitulo({"url": "/metodo/metodo.json", "pagina": "capitulo", "capitulo": "SankeySF"});'));

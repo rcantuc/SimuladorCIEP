@@ -41,6 +41,12 @@ window.metodoCuentaData = window.metodoCuentaData || null;
 window.metodoPanelData = window.metodoPanelData || null;
 window.metodoPanelSources = window.metodoPanelSources || {};
 
+// Idioma (8.19): el de <html lang> (plantilla-metodo.php lo resuelve con ?lang=). Solo los rótulos de unidad y los avisos;
+// las etiquetas de los nodos son las que emite el motor (en español) y no se traducen: FusionCharts identifica el nodo por ella.
+var METODO_T = (document.documentElement.getAttribute('lang') || 'en').toLowerCase() === 'es'
+	? {pib: ' % del PIB · ', bn: ' mm de pesos', err: 'No se pudieron cargar los datos de la gráfica (', errPanel: 'No se pudieron cargar los datos del panel (', flujos: '): entradas = salidas = '}
+	: {pib: ' % of GDP · ', bn: ' bn MXN', err: 'The chart data could not be loaded (', errPanel: 'The panel data could not be loaded (', flujos: '): inflows = outflows = '};
+
 // El dataSource que se dibuja: en % del PIB cuando el motor lo emitió así (value del enlace = pctpib, mxn = el value
 // original, tooltext con ambas unidades); si no, el recibido sin cambios. Solo se reordenan campos: nada se calcula.
 function metodoSankeyEnUnidad(dataSource) {
@@ -49,7 +55,7 @@ function metodoSankeyEnUnidad(dataSource) {
 	if (!enPct) return dataSource;
 	var d = {chart: dataSource.chart, nodes: dataSource.nodes, links: dataSource.links.map(function (l) {
 		return {from: l.from, to: l.to, value: l.pctpib, mxn: l.value,
-			tooltext: l.from + ' → ' + l.to + '<br>' + metodoFormato(l.pctpib, 'pctpib') + ' % of GDP · ' + metodoFormato(l.value, 'bn') + ' bn MXN'};
+			tooltext: l.from + ' → ' + l.to + '<br>' + metodoFormato(l.pctpib, 'pctpib') + METODO_T.pib + metodoFormato(l.value, 'bn') + METODO_T.bn};
 	})};
 	Object.keys(dataSource).forEach(function (k) { if (!(k in d)) d[k] = dataSource[k]; });
 	return d;
@@ -90,7 +96,7 @@ function metodoSankeys(lista) {
 				try { detalle = JSON.parse(xhr.responseText).error || ''; } catch (e) { detalle = xhr.statusText || ''; }
 				if (contenedor) {
 					contenedor.classList.add('metodo-sankey-error');
-					contenedor.textContent = 'The chart data could not be loaded (' + cfg.url + '). ' + detalle;
+					contenedor.textContent = METODO_T.err + cfg.url + '). ' + detalle;
 				}
 			}
 		});
@@ -161,7 +167,7 @@ function metodoPanelFlujos(panel, celda) {
 
 // Las dos unidades de un valor del panel, para tooltips: «x.xx % of GDP · y,yyy.y bn MXN» (sin pctpib: solo bn).
 function metodoAmbas(v, p) {
-	return (p !== undefined && p !== null ? metodoFormato(p, 'pctpib') + ' % of GDP · ' : '') + metodoFormato(v, 'bn') + ' bn MXN';
+	return (p !== undefined && p !== null ? metodoFormato(p, 'pctpib') + METODO_T.pib : '') + metodoFormato(v, 'bn') + METODO_T.bn;
 }
 
 // Dibuja el mini-Sankey de una celda en el contenedor (ancho y alto del contenedor; se redibuja al cambiar de tamaño).
@@ -255,7 +261,7 @@ function metodoMiniSankey(caja, panel, celda) {
 		svg.push('<rect class="metodo-mini-barra" x="' + xr + '" y="' + b.y0 + '" width="' + barW + '" height="' + (b.y1 - b.y0) + '" fill="' + color + '"><title>' + metodoEscapa(b.label + ': ' + metodoAmbas(b.v, b.p)) + '</title></rect>');
 		svg.push(texto(xr - 4, 'end', yS[i]));
 	});
-	svg.push('<rect class="metodo-mini-centro" x="' + cx + '" y="' + pad + '" width="' + barW + '" height="' + cH + '" fill="' + '#333' + '"><title>' + metodoEscapa(celda.grupo + ' (' + celda.sexo + '): inflows = outflows = ' + metodoAmbas(tot, totP)) + '</title></rect>');
+	svg.push('<rect class="metodo-mini-centro" x="' + cx + '" y="' + pad + '" width="' + barW + '" height="' + cH + '" fill="' + '#333' + '"><title>' + metodoEscapa(celda.grupo + ' (' + celda.sexo + METODO_T.flujos + metodoAmbas(tot, totP)) + '</title></rect>');
 	svg.push('</svg>');
 	caja.innerHTML = svg.join('');
 	return f;
@@ -321,7 +327,7 @@ function metodoPanel(cfg) {
 			var detalle = '';
 			try { detalle = JSON.parse(xhr.responseText).error || ''; } catch (e) { detalle = xhr.statusText || ''; }
 			var caja = document.getElementById(contenedor);
-			if (caja) { caja.classList.add('metodo-sankey-error'); caja.textContent = 'The panel data could not be loaded (' + cfg.url + '). ' + detalle; }
+			if (caja) { caja.classList.add('metodo-sankey-error'); caja.textContent = METODO_T.errPanel + cfg.url + '). ' + detalle; }
 			document.querySelectorAll('[data-pib]').forEach(function (el) { el.textContent = 'n/a'; el.classList.add('metodo-cifra-error'); });
 		}
 	});

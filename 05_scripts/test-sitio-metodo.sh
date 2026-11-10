@@ -9,6 +9,8 @@
 #   1. php -l de las páginas generadas y de plantilla-metodo.php.
 #   2. HTTP (php -S sobre una copia del sitio): /metodo y /metodo/ responden 200; /metodo/metodo.json es JSON válido con tantos
 #      capítulos como carpetas <Modulo>/; cada /metodo/<Modulo>/ y /metodo/cap0/ responde 200 con su cascarón.
+#   2b. Idioma (8.19): /metodo/metodo-en.json (traducción) con los mismos capítulos; ?lang=en pone <html lang="en"> y la bandera
+#      EN; sin ?lang la página va en español; un ?lang fuera de la lista blanca se ignora.
 #   3. Cero números: ni las páginas generadas, ni js/metodo-capitulo.js, ni plantilla-metodo.php, ni css/metodo.css traen un
 #      literal de 4+ dígitos (toda cifra y toda frase viene de metodo.json).
 #   4. Chrome headless (test-sitio-metodo.js): cada página carga y marca data-metodo-estado="ok"; en el índice cada <span data-metodo>
@@ -98,6 +100,16 @@ assert all(set(c[\"secciones\"])=={str(n) for n in range(1,11)} for c in d[\"cap
 assert all(c[\"sello\"] in (\"verde\",\"amarillo\",\"rojo\",\"sin sello\") for c in d[\"capitulos\"])
 assert all(c[\"sello\"]==\"rojo\" for c in d[\"capitulos\"] if c[\"flags\"])
 " "$H/metodo.json"' "metodo.json: version, baseline, 10 secciones de la plantilla, capítulos en el orden de SIM.do con sus 10 secciones, sellos válidos (rojo si hay FLAG), cap0 y bibliografía"
+echo "## 2b. idioma (8.19): metodo-en.json y ?lang= con lista blanca"
+chk 200 "GET /metodo/metodo-en.json" "$U/metodo/metodo-en.json"
+cp "$H/body" "$H/metodo-en.json"
+aserta 'python3 -I -c "import json,sys; a=json.load(open(sys.argv[1])); b=json.load(open(sys.argv[2])); assert b[\"idioma\"]==\"en\" and len(a[\"capitulos\"])==len(b[\"capitulos\"]) and [c[\"modulo\"] for c in a[\"capitulos\"]]==[c[\"modulo\"] for c in b[\"capitulos\"]]" "$H/metodo.json" "$H/metodo-en.json"' "metodo-en.json: idioma en, mismos capítulos y en el mismo orden que metodo.json"
+chk 200 "GET /metodo/?lang=en" "$U/metodo/?lang=en"
+aserta 'grep -q "<html lang=\"en\">" "$H/body" && grep -q "lang-item active\" hreflang=\"en\"" "$H/body"' "?lang=en: <html lang=\"en\"> y la bandera EN activa"
+chk 200 "GET /metodo/ (sin lang)" "$U/metodo/"
+aserta 'grep -q "<html lang=\"es\">" "$H/body"' "sin ?lang: /metodo va en español (su idioma por default)"
+chk 200 "GET /metodo/?lang=xx (fuera de lista)" "$U/metodo/?lang=xx"
+aserta 'grep -q "<html lang=\"es\">" "$H/body" && ! grep -q "xx" <(grep -o "<html[^>]*>" "$H/body")' "?lang fuera de la lista blanca se ignora (español)"
 chk 200 "GET /metodo/cap0/" "$U/metodo/cap0/"
 aserta 'grep -q "data-metodo-pagina=\"cap0\"" "$H/body"' "cap0 es el cascarón del capítulo 0"
 for s in $(python3 -I -c 'import json,sys; print(" ".join(c["modulo"] for c in json.load(open(sys.argv[1], encoding="utf-8"))["capitulos"]))' "$H/metodo.json"); do

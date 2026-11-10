@@ -57,7 +57,7 @@ copia() { # copia mínima del repo que la derivación lee
     cp "$REPO_ROOT/SIMentidad.ado" "$d/"
     cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/js/stataCalcula.js" "$d/04_1_simuladorfiscal.ciep.mx/js/"
     cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/"{cargaDefault,jsonSankey,jsonSankeyEscol,jsonSankeyGrupoedad,jsonSankeyRural,jsonSankeySexo,jsonSankeyNTA,jsonEntidad}.php "$d/04_1_simuladorfiscal.ciep.mx/"
-    cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/NTA/index.php" "$d/04_1_simuladorfiscal.ciep.mx/NTA/"
+    cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/NTA/index.php" "$REPO_ROOT"/04_1_simuladorfiscal.ciep.mx/NTA/_cuerpo-*.php "$d/04_1_simuladorfiscal.ciep.mx/NTA/"   # 8.19: lo que /NTA pide vive también en sus cuerpos _cuerpo-{en,es}.php
     cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/entidades/"{index,_entidad}.php "$d/04_1_simuladorfiscal.ciep.mx/entidades/"
 }
 copia "$H/c1"

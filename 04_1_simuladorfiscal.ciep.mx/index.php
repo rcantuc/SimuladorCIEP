@@ -132,11 +132,16 @@ if ($deployed_version !== "") {
 		.tabla2 {
 		}
 		#home-top {
-			display: block;
+			display: flex;
+			align-items: center;
 			width: 147px;
 			height: 63px;
 			overflow: hidden;
-			padding-top: 6px;
+			padding: 0;
+		}
+		#home-top img {
+			width: 117px;
+			height: auto;
 		}
 		#top-logo-ciep {
 			width: 107px;
@@ -854,7 +859,7 @@ if ($deployed_version !== "") {
 						<div class="navbar-search">
 							<form>
 								<div class="form-group tutorial-btn">
-									<a href="#libro-simulador" class="btn btn-outline-primary">El libro del simulador</a>
+									<a href="#libro-simulador" class="btn btn-outline-primary">Metodología</a>
 								</div>
 							</form>
 						</div>
@@ -2682,6 +2687,8 @@ if ($deployed_version !== "") {
 	.libro-promo-desc{font-size:13.5px;line-height:1.6;margin:0 0 22px;color:#1F262B}
 	.libro-promo-cta{display:inline-block;background:#1F262B;color:#fff;font-weight:700;font-size:14px;padding:12px 28px;border-radius:28px;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
 	.libro-promo-cta:hover{color:#e8f04b;text-decoration:none;transform:translateY(-2px);box-shadow:0 8px 22px rgba(31,38,43,.35)}
+	.libro-promo-cta-sec{background:transparent;color:#1F262B;border:2px solid #1F262B;padding:10px 26px;margin-left:12px}
+	.libro-promo-cta-sec:hover{background:#1F262B;color:#e8f04b}
 	.libro-promo-img{flex:0 1 380px;min-width:260px;text-align:center}
 	.libro-promo-img img{width:100%;max-width:400px;height:auto;border-radius:10px;box-shadow:0 18px 45px rgba(31,38,43,.4)}
 	.footer-micrositios a.icon-link{white-space:nowrap}
@@ -2695,6 +2702,7 @@ if ($deployed_version !== "") {
 	      <p class="libro-promo-tag">Un debate informado es un bien p&uacute;blico.</p>
 	      <p class="libro-promo-desc">El &ldquo;libro de texto ciudadano&rdquo; para entender los fundamentos y prop&oacute;sitos de nuestros recursos. La teor&iacute;a detr&aacute;s de este simulador: replica cada gr&aacute;fico, simula escenarios y participa en el debate.</p>
 	      <a class="libro-promo-cta" href="https://libro.ciep.mx" target="_blank" rel="noopener">Conoce el libro</a>
+	      <a class="libro-promo-cta libro-promo-cta-sec" href="/metodo/">Conoce el método</a>
 	    </div>
 	    <div class="libro-promo-img">
 	      <a href="https://libro.ciep.mx" target="_blank" rel="noopener"><img src="images/libro-promo/portada-libro-900.jpg" alt="Portada del libro Finanzas P&uacute;blicas Antropoc&eacute;ntricas" loading="lazy"></a>
