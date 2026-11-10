@@ -1854,11 +1854,12 @@ body .fc-toolbar .btn-group .btn.btn-primary:focus {
 
 
 #home-top {
-	display: block;
+	display: flex;
+	align-items: center;
     width: 137px;
     height: 63px;
     overflow: hidden;
-    padding-top: 6px;
+    padding: 0;
 }
 #home-top img {
     position: relative;
