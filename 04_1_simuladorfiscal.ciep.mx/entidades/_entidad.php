@@ -32,22 +32,25 @@ $nombre = $ent['nombre'];
 $h = function ($s) { return htmlspecialchars($s); };
 $ep = '/jsonEntidad.php?abrev=' . rawurlencode($abrev) . '&producto=';
 require_once dirname(__DIR__) . '/plantilla-metodo.php';
-$lang = metodo_lang('en');   // 8.19: la página es bilingüe; default inglés, ?lang=es la cambia
-$cortes = $lang === 'es' ? array(
-	'quintil' => 'Quintil de ingreso (estatal)',
-	'grupoedad' => 'Grupo de edad',
-	'sexo' => 'Sexo',
-	'rural' => 'Rural / urbano / indígena',
-	'escol' => 'Escolaridad',
-) : array(
+metodo_lang('en');   // 8.19: la página es bilingüe; default inglés, ?lang=es la cambia
+// Los cortes se declaran con la forma `$cortes = array(…)` (05_scripts/manifiesto-default.py los lee de aquí para derivar qué
+// archivos viajan al VPS); las etiquetas en español sustituyen a las de inglés, con las mismas claves.
+$cortes = array(
 	'quintil' => 'Income quintile (state)',
 	'grupoedad' => 'Age group',
 	'sexo' => 'Sex',
 	'rural' => 'Rural / urban / indigenous',
 	'escol' => 'Schooling',
 );
-require_once dirname(__DIR__) . '/plantilla-metodo.php';
-
+if (metodo_lang() === 'es') {
+	$cortes = array(
+		'quintil' => 'Quintil de ingreso (estatal)',
+		'grupoedad' => 'Grupo de edad',
+		'sexo' => 'Sexo',
+		'rural' => 'Rural / urbano / indígena',
+		'escol' => 'Escolaridad',
+	);
+}
 metodo_cabecera(array(
 	'slug' => 'entidades',
 	'titulo' => array('en' => $nombre . ': the fiscal system by state', 'es' => $nombre . ': el sistema fiscal por entidad'),

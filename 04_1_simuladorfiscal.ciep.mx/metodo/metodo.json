@@ -14413,14 +14413,14 @@
         [
          "`dirnta'/nta-identidad.txt",
          "",
-         "01_modulos/Households.do",
+         "01_modulos/Households.do; NTA/index.php",
          "check-solo-display.py; test-humo-calcular.sh; test-manifiesto-default.sh; test-sitio-nta.sh; verificar-identidad-valores.py",
          "01_modulos/NTA.do l. 1231"
         ],
         [
          "`dirnta'/nta-grupoedad.json",
          "",
-         "",
+         "NTA/index.php",
          "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.do; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 1345"
         ],
@@ -14441,21 +14441,21 @@
         [
          "users/$id/SankeyNTA/sankey-v3-grupoedad.json",
          "",
-         "",
+         "NTA/index.php",
          "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 1935"
         ],
         [
          "users/$id/SankeyNTA/sankey-v4-economia.json",
          "",
-         "",
+         "NTA/index.php",
          "manifiesto-default.py; publicar-vps.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 2359"
         ],
         [
          "`dirnta'/nta-panel-grupoedad-sexo.json",
          "",
-         "",
+         "NTA/index.php",
          "test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 2491"
         ]
@@ -16969,12 +16969,12 @@
     },
     {
      "archivo": "`dirnta'/nta-identidad.txt",
-     "consume": "01_modulos/Households.do",
+     "consume": "01_modulos/Households.do; NTA/index.php",
      "check": "check-solo-display.py; test-humo-calcular.sh; test-manifiesto-default.sh; test-sitio-nta.sh; verificar-identidad-valores.py"
     },
     {
      "archivo": "`dirnta'/nta-grupoedad.json",
-     "consume": "",
+     "consume": "NTA/index.php",
      "check": "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.do; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
@@ -16989,17 +16989,17 @@
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v3-grupoedad.json",
-     "consume": "",
+     "consume": "NTA/index.php",
      "check": "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v4-economia.json",
-     "consume": "",
+     "consume": "NTA/index.php",
      "check": "manifiesto-default.py; publicar-vps.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
      "archivo": "`dirnta'/nta-panel-grupoedad-sexo.json",
-     "consume": "",
+     "consume": "NTA/index.php",
      "check": "test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     },
     {
@@ -25147,7 +25147,7 @@
         [
          "users/$id/sankey-`1'.json",
          "",
-         "01_modulos/NTA.do",
+         "01_modulos/NTA.do; NTA/index.php; entidades/NL (_entidad.php); index.php (js/stataCalcula.js)",
          "compuertas-entidad.py; manifiesto-default.py; publicar-vps.sh; publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-entidades.js; test-sitio-entidades.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
          "01_modulos/visualizations/SankeySF.do l. 503"
         ]
@@ -25316,7 +25316,7 @@
     },
     {
      "archivo": "users/$id/sankey-`1'.json",
-     "consume": "01_modulos/NTA.do",
+     "consume": "01_modulos/NTA.do; NTA/index.php; entidades/NL (_entidad.php); index.php (js/stataCalcula.js)",
      "check": "compuertas-entidad.py; manifiesto-default.py; publicar-vps.sh; publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-entidades.js; test-sitio-entidades.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
     }
    ],

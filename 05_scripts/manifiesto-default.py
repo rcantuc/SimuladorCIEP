@@ -110,7 +110,11 @@ def main():
         agrega(archivos[0], php, "index.php (js/stataCalcula.js)")
 
     # --- 2. /NTA: lo que NTA/index.php pide y cómo jsonSankeyNTA.php lo resuelve ------------------------------------
-    nta_pag = sin_comentarios(leer(os.path.join(sitio, "NTA", "index.php")))
+    # 8.19: el cuerpo de /NTA vive en NTA/_cuerpo-{en,es}.php (el idioma de la página); lo que la página pide está en index.php
+    # y en esos cuerpos. Los dos idiomas piden lo mismo (test-sitio-nta.sh lo exige): la unión no agrega filas, solo no pierde ninguna.
+    nta_dir = os.path.join(sitio, "NTA")
+    nta_pag = "\n".join(sin_comentarios(leer(os.path.join(nta_dir, f))) for f in ["index.php"] + sorted(
+        f for f in os.listdir(nta_dir) if f.startswith("_cuerpo-") and f.endswith(".php")))
     nta_php = leer(os.path.join(sitio, "jsonSankeyNTA.php"))
     nta_codigo = sin_comentarios(nta_php)
     m_corte = re.search(r'"%s/([A-Za-z0-9_/-]+)sankey-\{\$corte\}\.json"', nta_codigo)
