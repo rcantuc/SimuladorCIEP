@@ -313,9 +313,9 @@ Salta al Paso 2.
 la contraseña NO se comparte ni se guarda en credentials):*
 ```bash
 # desde el clon de desarrollo: sube el script a tu home del VPS
-scp 05_scripts/vps/crear-deployment 05_scripts/vps/ciepmx-deploy.sudoers ciepmx@66.179.250.191:~/
+scp 05_scripts/vps/crear-deployment 05_scripts/vps/ciepmx-deploy.sudoers <USUARIO>@<IP_VPS>:~/
 
-ssh ciepmx@66.179.250.191
+ssh <USUARIO>@<IP_VPS>
 sudo install -o root -g root -m 0755 ~/crear-deployment /usr/local/sbin/crear-deployment
 sudo visudo -cf ~/ciepmx-deploy.sudoers                 # valida sintaxis: debe decir "parsed OK"
 sudo install -o root -g root -m 0440 ~/ciepmx-deploy.sudoers /etc/sudoers.d/ciepmx-deploy
@@ -334,7 +334,7 @@ pidiendo contraseña. Para revocarlo: `sudo rm /etc/sudoers.d/ciepmx-deploy`.
 con esta misma receta en su mensaje:
 
 ```bash
-ssh ciepmx@66.179.250.191
+ssh <USUARIO>@<IP_VPS>
 sudo mkdir /var/www/html/vA.B
 sudo mkdir /SIM/OUT/A.B
 sudo chown ciepmx:ciepmx /var/www/html/vA.B /SIM/OUT/A.B
@@ -462,7 +462,7 @@ necesitas"). Su forma general — re-apuntar AMBOS symlinks al deployment
 anterior:
 
 ```bash
-ssh ciepmx@66.179.250.191 "ln -sfn '/var/www/html/v<ANTERIOR>' '/var/www/html/current' && ln -sfn '/SIM/OUT/<ANTERIOR>' '/SIM/OUT/current'"
+ssh <USUARIO>@<IP_VPS> "ln -sfn '/var/www/html/v<ANTERIOR>' '/var/www/html/current' && ln -sfn '/SIM/OUT/<ANTERIOR>' '/SIM/OUT/current'"
 ```
 
 (ejemplo real tras el cutover v8.0 → v8.1: `v<ANTERIOR>` = `v8.0` y
