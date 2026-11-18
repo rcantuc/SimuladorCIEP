@@ -16,11 +16,11 @@ global SIMROOT "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú
 adopath ++ "${SIMROOT}"
 set scheme ciep
 
-** 0.1 Token del BIE/INEGI
-capture run "${SIMROOT}/set_token.do"
-if _rc != 0 {
-	noisily _log aviso, tipo(IMPORTANTE) texto("set_token.do no encontrado: copia set_token.template.do como set_token.do y configúralo") ref("runbook §1") rojo
-	exit
+** 0.1 Token del BIE/INEGI (opcional)
+* Si existe set_token.do se carga (token personal); si no, AccesoBIE usa el token de cortesía CIEP.
+capture confirm file "${SIMROOT}/set_token.do"
+if _rc == 0 {
+	run "${SIMROOT}/set_token.do"
 }
 
 ** 0.2 Parámetros
