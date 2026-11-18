@@ -6,12 +6,12 @@
 |---|---|
 | Fecha | 2026-11-18 |
 | Punto de partida | `master` = `e2e3f0d` (v8.18.2) |
-| Rama | `docs/auditoria-publicacion-2026-11` (un commit, solo este archivo) |
-| Naturaleza | Solo lectura y reporte. No cambia código, no toca el VPS ni el endpoint, no implementa ningún fix. |
+| Rama | `docs/auditoria-publicacion-2026-11` (el reporte; desde la adenda del 18-nov, también la decisión B y la fila del runbook: §8) |
+| Naturaleza | Solo lectura y reporte. No cambia código, no toca el VPS ni el endpoint, no implementa ningún fix. La adenda del 18-nov (§8) sí cambia tres archivos versionados. |
 | Evidencia | `~/CIEP_Simuladores/diag-auditoria-publicacion-2026-11-18/` (scripts, salidas, espejos; fuera de Dropbox y de git) |
 | Herramientas | gitleaks 8.30.1, `barrido.py` / `barrido2.py` (barrido manual por blobs), php 8.5.3 local para las pruebas del Gate 2 |
 
-> **Antes de subir este archivo a GitHub:** describe exposiciones que siguen abiertas en un repositorio que ya es público (§0). La sesión lo dejó commiteado en local y **sin push**; cuándo y cómo se publica es la decisión 1 de §6.
+> **Antes de subir este archivo a GitHub:** describe exposiciones que siguen abiertas en un repositorio que ya es público (§0). La sesión lo dejó commiteado en local y **sin push**; cuándo y cómo se publica es la decisión 1 de §6. **Actualización 2026-11-18:** Ricardo autorizó un solo push, con el expediente resuelto, cuando cierre el gemelo tenencia/v6 (§8); hasta entonces sigue sin push.
 
 ## 0. Resumen y una premisa que no se sostiene
 
@@ -44,7 +44,7 @@ Además se buscaron por **coincidencia exacta** los valores que hoy viven en arc
 | Id | Severidad | Tipo | Commit / archivo | ¿Historia o árbol vivo? |
 |---|---|---|---|---|
 | **G1-1** | **Crítico** | Token API del BIE/INEGI (UUID, `sha256[:10]` = `b2454eaa3e`) | `AccesoBIE.ado:13` y `Stata net/AccesoBIE.ado:13`, de `464741d` (2025-12-11) a `2f46d92` (2026-04-30), commits **anteriores a la reescritura** | Fuera de las refs del repo (la reescritura lo sustituyó por `[REDACTED_TOKEN]`), pero **GitHub lo sigue sirviendo**: `raw.githubusercontent.com/rcantuc/SimuladorCIEP/2f46d92…/AccesoBIE.ado` responde 200 sin autenticación, y `git fetch origin 2f46d92…` entrega los 1,077 commits viejos. |
-| G1-2 | Alto | Usuario SSH + IP del VPS: `ciepmx` @ `66.179.250.191` | Desde `94a2089` (2026-07-09); 101 blobs | **Árbol vivo**: `05_scripts/publicar-vps-credentials.template.sh:7,10`, `02_governance/runbook-deploys-ciep.md:316,318,337,465`, `02_governance/historico/reconocimiento-vps.md`, `02_governance/historico/bitacora-arquitectura.md`. |
+| G1-2 | Alto | Usuario SSH + IP del VPS: `<USUARIO>` @ `<IP_VPS>` (los valores, en la carpeta de evidencia) | Desde `94a2089` (2026-07-09); 101 blobs | **Árbol vivo**: `05_scripts/publicar-vps-credentials.template.sh:7,10`, `02_governance/runbook-deploys-ciep.md:316,318,337,465`, `02_governance/historico/reconocimiento-vps.md`, `02_governance/historico/bitacora-arquitectura.md`. |
 | G1-3 | Alto | Mapa del servidor (no es credencial) | `02_governance/historico/reconocimiento-vps.md`, desde `94a2089` | **Árbol vivo**: Ubuntu 22.04.2 con 98 actualizaciones pendientes y reinicio requerido (L40–49), Apache 2.4 + PHP 8.1.2 y los cuatro vhosts (L211), puertos abiertos (L209), usuario con grupo `sudo` (L42), crons (L161–163), y la IP de la sesión SSH de un colaborador con su nombre (L310, L465). |
 | G1-4 | Alto (dato personal, no credencial) | Bitácoras del simulador de tabaco con IP, fecha, hora y un campo de texto libre donde los visitantes escribieron nombres | `tabaco/{1,1.0,1.1,1.2}/calcula.log` y `descargas.log` (`cccdebf` 2022-11-10 → `220082a` 2023-11-15): hasta 3,275 líneas y 915 IP distintas por archivo; 572 valores distintos de texto libre en `tabaco/1/calcula.log` | Solo historia: la del **fork público** y la anterior a la reescritura. El repo actual no las tiene (la reescritura purgó `tabaco/`). |
 | G1-5 | Bajo | IP del servidor Cloudways del endpoint Stata, sin usuario: `104.248.223.143` | `02_governance/runbook-deploys-ciep.md:262` | Árbol vivo. Es la IP a la que resuelve `ciep.mx` por DNS. El alias SSH y la ruta remota reales: 0 coincidencias en toda la historia. |
@@ -60,7 +60,15 @@ Además se buscaron por **coincidencia exacta** los valores que hoy viven en arc
 
 Por la escala del encargo es crítico (credencial en uso, sin baja confirmada). El daño posible es acotado: el BIE sirve datos públicos; lo que está en juego es la identidad institucional ante INEGI y que una baja tardía del token corte `pibe-32.sh` y `AccesoBIE` en `-datos`.
 
+**Resolución de G1-1 (2026-11-18).** Decisión de Ricardo, textual:
+
+> RESUELTO CON RIESGO RESIDUAL ACEPTADO: token rotado el 18-nov; el pipeline opera con el nuevo en `-datos/set_token.do` (fuera de git, por diseño). INEGI no ofrece mecanismo de revocación, por lo que el token expuesto en `2f46d92` queda posiblemente vivo. Riesgo aceptado por Ricardo: la API del BIE es gratuita y de datos públicos; el peor caso es consumo de cuota a nombre ajeno, sin acceso a sistemas ni datos. La purga de historia procede como higiene (sesión planeada), no como emergencia.
+
+*Verificación al commit de esta adenda (misma comparación por `sha256[:10]`, sin imprimir el valor):* `~/CIEP_Simuladores/SimuladorCIEP-datos/set_token.do` no ha cambiado: es el archivo del 2026-10-16 y su token sigue siendo `b2454eaa3e`, el expuesto. El clon de Dropbox y `Tabaco/Mayo2026/set_token.do` usan `9170596f05`, que ya estaba el 31-oct. La frase «el pipeline opera con el nuevo en `-datos/set_token.do`» queda **POR CONFIRMAR** hasta que ese archivo cambie; se vuelve a comprobar antes del push. El resto de la resolución no depende de esa frase.
+
 **Sobre G1-2.** Los valores de la plantilla son idénticos a los de los dos `publicar-vps-credentials.sh` reales (comparación directa: `VPS_USER`, `VPS_HOST`, `VPS_HTML_ROOT`, `VPS_SIM_ROOT`). El archivo ignorado ya no protege nada de eso. La IP sola es pública (DNS de `simuladorfiscal`, `iepsaltabaco` y `tenencia`); lo que el repo agrega es el usuario SSH, que pertenece al grupo `sudo`, y el nombre sugerido de la llave (`~/.ssh/ionos_ciepmx`, L37). Ninguna contraseña ni llave en ninguna historia.
+
+**Resolución de G1-2 (2026-11-18), decisión B: salen del árbol vivo.** `05_scripts/publicar-vps-credentials.template.sh` lleva marcadores (`<USUARIO>`, `<IP_VPS>`, `<RUTA_AL_REPO>`, `<LLAVE_SSH>`) y la advertencia de no escribir valores reales, como la plantilla del endpoint; las cuatro líneas del runbook y la entrada 1.18 de `historico/bitacora-arquitectura.md` dicen `<USUARIO>@<IP_VPS>`. El `git grep` de `<usuario>@` y de la IP da un solo resultado en el árbol: `historico/reconocimiento-vps.md:407`, que se resuelve en la purga junto con G1-3. Los dos `publicar-vps-credentials.sh` reales conservan sus valores y `publicar-vps.sh` no lee la plantilla (solo la nombra en un mensaje de error). Lo que no cambia: los 101 blobs de la historia siguen teniendo los valores hasta la purga, y el nombre del usuario sigue en el árbol donde es código o receta (`05_scripts/vps/crear-deployment:22`, `ciepmx-deploy.sudoers`, los `chown` del runbook).
 
 ### 1.3 Falsos positivos
 
@@ -183,12 +191,22 @@ Ningún archivo queda en **NO PUBLICAR AÚN**: no hay un solo camino clase (c) v
 
 Segundo punto del mismo tipo: `reconocimiento-vps.md:211` registra en julio un vhost `develop.ciep.mx → v6/` y el docroot `v7/` con `test_log.php` (§7.8). `develop.ciep.mx` ya no resuelve por DNS; si `v6/` y `v7/` siguen en disco con el PHP anterior a v8.11a y algún vhost los alcanza, tienen el mismo fallo.
 
+**Estado de la familia pre-v8 al 2026-11-18 (adenda).** L-1 se confirmó en el servidor y se atendió el mismo día, fuera de este repo. Evidencia en `~/CIEP_Simuladores/diag-tabaco-rce-2026-11-18/` y `diag-tenencia-v6-2026-11-18/`.
+
+| Sitio | Estado | Detalle |
+|---|---|---|
+| `tabaco/` (`iepsaltabaco.ciep.mx`) | **Parchado, forense limpio, en producción desde el 18-nov** | Lo desplegado era la copia local (11 PHP con el mismo sha256). Parche de 7 archivos con `seguridad.php`; batería de 253 comprobaciones; los 7 `OK` de `sha256sum -c` en el VPS. Forense: sin evidencia de explotación en bitácoras, artefactos y procesos; el barrido de los logs de Apache lo corrió Ricardo y sus secciones [1]–[4] salieron vacías. |
+| `tenencia/` (`tenencia.ciep.mx`) | **Abajo; gemelo en curso** | Mismo fallo en `calculaStata.php`, más un `eval()` sobre la salida de Stata. Vhosts `003-tenencia` y `tenencia-ssl` deshabilitados. Parche de 3 archivos entregado (batería de 170), sin desplegar. |
+| `v6/` (vhost `002-develop`) | **Abajo; gemelo en curso** | Era alcanzable por la IP con la cabecera `Host: develop.ciep.mx` aunque el nombre no resuelva. Corrió Stata hasta el 28-ene-2026. Vhost deshabilitado; retiro del docroot propuesto, sin ejecutar. |
+
+`v7/` y `v8.0`–`v8.9` conservan en disco el `idSession` crudo; ningún vhost los sirve.
+
 ## 3. Semáforo
 
 | Capa | Color | Razón |
 |---|---|---|
 | **1. HTML / JS / CSS / JSON** | **Verde** | Ya es pública de facto. En los 250 archivos de texto propios que se sirven (sitio sin `plugins/`, `04_3_anteriores/`, `nl-assets/`) no hay rutas internas, credenciales ni comentarios sensibles; `metodo.json` no trae rutas absolutas; no hay `console.log` en el JS propio. Una excepción cosmética: `04_3_anteriores/v1/derechos-hidrocarburos.php.html:7` es una página de error de PHP capturada con la ruta de la Mac. Las fugas en tiempo de ejecución son H-6. |
-| **2. `.sh` de operación** | **Rojo** | La regla es «verde solo si Gate 1 limpio», y no lo está (G1-1). Los scripts en sí no llevan credenciales; lo que llevan es el usuario y la IP reales en la plantilla (G1-2). Pasa a verde con el token rotado y G1-2 decidido. |
+| **2. `.sh` de operación** | **Verde** (2026-11-18; era Rojo) | El rojo venía de G1-1 y de G1-2, y los dos quedaron decididos el 18-nov: G1-1, resuelto con riesgo residual aceptado; G1-2, decisión B, usuario e IP fuera de la plantilla y del runbook. Los scripts nunca llevaron credenciales. Un pendiente verificado al commit: `-datos/set_token.do` aún no trae el token nuevo (ver la resolución de G1-1). Antes: «Rojo. La regla es "verde solo si Gate 1 limpio", y no lo está (G1-1). […] Pasa a verde con el token rotado y G1-2 decidido.» |
 | **3. `.php` del endpoint** | **Ámbar** | Veredicto por archivo en §2.5: 10 en PUBLICABLE TRAS FIX, 71 en PUBLICABLE, ninguno en NO PUBLICAR AÚN. |
 
 La doctrina describe un hecho, no una decisión futura: las tres capas ya están publicadas. Lo que queda por decidir es el orden en que se cierra lo abierto, y L-1 va antes que todo lo demás porque no depende de este repo.
@@ -252,3 +270,18 @@ Fuera del alcance: el JavaScript del sitio (XSS en cliente) no se auditó; el ga
 **Qué no se hizo.** Ninguna petición a `simuladorfiscal.ciep.mx`, al VPS ni al endpoint Stata. Ningún cambio de código, de `.gitignore`, de README ni de CHANGELOG. Ningún fix. Nada escrito en el clon de Dropbox ni en `-datos`; el clon de Dropbox sigue en `ricardo/piramide-sexo` con su `simulador.stpr` modificado, como estaba.
 
 **Lo que queda en disco.** La carpeta de evidencia (1.0 GB) contiene los espejos del fork y de la historia vieja, que incluyen el token y las bitácoras con datos de visitantes; son copias de material ya público y se pueden borrar al cerrar la decisión 3. Los JSON de los barridos se guardaron con el token y las IP de visitantes enmascarados. El worktree y la rama local quedan en pie hasta la decisión 1.
+
+## 8. Adenda del 2026-11-18 — lo que se resolvió después de la auditoría
+
+Las secciones anteriores quedan como se escribieron, salvo las cuatro notas fechadas (G1-1, G1-2, §2.6 y el semáforo) y el valor de G1-2 en la tabla de hallazgos, que ya no va en claro.
+
+| Punto de la auditoría | Qué pasó |
+|---|---|
+| G1-1; §4 fila 1; §6 decisión 2 | Resuelto con riesgo residual aceptado. INEGI no revoca: la fila 1 de §4 deja de estar pendiente de su respuesta. Falta que `-datos/set_token.do` traiga el token nuevo. |
+| G1-2; §5 contradicción 3; §6 decisión 4 | Decisión B: marcadores en la plantilla, el runbook y la bitácora. Las dos plantillas de credenciales ya dicen lo mismo. |
+| G1-3; §6 decisión 5 | `historico/reconocimiento-vps.md` no se toca aquí; va a la sesión de purga de historia (§6 decisión 3), planeada como higiene. |
+| L-1; §4 filas 7 y 8; §6 decisión 7 | Confirmado y atendido: tabaco en producción con parche; tenencia y `v6` abajo, con el gemelo en curso (§2.6). `v6/`, `v7/` y el vhost `develop` seguían en el VPS. |
+| Semáforo | Capa 2 pasa a Verde. Capa 1 sigue Verde y Capa 3, Ámbar (H-1 a H-9 sin tocar). |
+| §6 decisión 1 | Un solo push de esta rama cuando cierre el gemelo. |
+
+Cambios versionados de la adenda, fuera de este archivo: `05_scripts/publicar-vps-credentials.template.sh`, `02_governance/runbook-deploys-ciep.md` (cuatro líneas con `<USUARIO>@<IP_VPS>` y una fila nueva en «Gotchas de deploy» con el inventario de la familia pre-v8 y la regla de `seguridad.php`) y `02_governance/historico/bitacora-arquitectura.md` (una línea). Siguen pendientes de decisión: §6 puntos 3, 6, 8 y 9.
