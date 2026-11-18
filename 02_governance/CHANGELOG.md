@@ -16,11 +16,11 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
+## [v8.19.0] — 2026-11-18
 
-### Token de cortesía CIEP en `AccesoBIE`: el Simulador consulta la API del INEGI recién instalado (rama `sesion/token-cortesia`, 2026-11-18)
+### [v8.19.0] — Token de cortesía CIEP en `AccesoBIE`: el Simulador consulta la API del INEGI recién instalado (rama `sesion/token-cortesia`, 2026-11-18)
 
-**Versión por asignar al publicar. Ningún número cambia:** el motor lee el asset congelado de `raw/SCN`; en descarga en caliente, la API y la consulta pública entregan la misma serie (probado con las seis que baja `PIBDeflactor`: 734407, 735143, 446562, 446565 y 446566, 134 de 134 trimestres, y 910392, 562 de 562 meses; mismos faltantes y diferencia máxima 5e-11).
+**Baseline sin cambio: `v8.17.2`. Sin despliegue al VPS: el sitio sigue en el deployment `v8.18` (no cambia ningún número ni ninguna página; del sitio solo cambia el campo `version` de `metodo.json`, que viajará con el próximo deployment); publica la Release y el endpoint Stata `net from`. Ningún número cambia:** el motor lee el asset congelado de `raw/SCN`; en descarga en caliente, la API y la consulta pública entregan la misma serie (probado con las seis que baja `PIBDeflactor`: 734407, 735143, 446562, 446565 y 446566, 134 de 134 trimestres, y 910392, 562 de 562 meses; mismos faltantes y diferencia máxima 5e-11). Corrida completa de `SIM.do` sobre `3fd9894` sin `set_token.do` (máquina virgen): `gate-numeros` VERDE, `output.txt` byte-idéntico y los 10 sankeys con Δ 0 (evidencia `diag-token-cortesia-2026-11-18/01-sim`).
 
 - **Comandos — `AccesoBIE.ado` v8.6, cascada del token:** opción `token()` → global `$BIE_API_TOKEN` → **token de cortesía CIEP**, público por diseño y registrado a `info@ciep.mx` (constante `BIE_TOKEN_CORTESIA` al inicio del programa; el valor vive solo ahí). Ya no existe la rama «sin token». La consulta pública (.aspx) pasa a ser el respaldo en runtime de los tres niveles. En pantalla: una línea con el nivel usado (nunca el token), la vía de cada serie (`Vía: API oficial (BIE-BISE)` o `Vía: respaldo .aspx`) y un `AVISO` cuando se usó el respaldo.
 - **Correcciones — la API oficial no se estaba usando:** `AccesoBIE` pedía la fuente `BIE`, que responde 400 con cualquier token; las series nacionales salían siempre por la consulta pública. Ahora pide `BIE-BISE` y luego `BISE`, las fuentes que documenta el INEGI. Para que las dos vías sigan entregando lo mismo, la serie de la API se recorta a 1980 en adelante y se ordena por periodo ascendente. La etiqueta de la variable sale del catálogo `CL_INDICATOR` (nombre del indicador) en lugar de la jerarquía temática del portal; ningún módulo consume esa etiqueta (las 18 llamadas del motor pasan `nombres()` y re-etiquetan).
