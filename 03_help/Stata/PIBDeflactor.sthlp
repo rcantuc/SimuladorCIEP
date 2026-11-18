@@ -86,7 +86,7 @@ La segunda forma (misma convención que {cmd:Poblacion}; en {cmd:SIM.do} la arma
 {cmd:global entidad}) corre el módulo para una {bf:entidad federativa}: PIBE nominal
 e índice de precios implícitos del BIE (750453/753357, anuales desde 2003, replicados
 en los cuatro trimestres), población ocupada y desocupada de la ENOE por entidad
-(BISE 6200093954/6200093973 vía la API oficial; requiere {cmd:$BIE_API_TOKEN}), INPC de
+(BISE 6200093954/6200093973 vía la API oficial, con el token de {cmd:AccesoBIE}), INPC de
 la entidad (programa INPC de INEGI, estructura 112001700070, vía {cmd:AccesoINPCEntidad};
 existe desde julio de 2018, por lo que la inflación promedio se calcula desde el primer
 año observado) y población

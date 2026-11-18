@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 8.1 CIEP 04oct2026}{...}
+{* *! version 8.6 CIEP 18nov2026}{...}
 {viewerjumpto "Descripción" "AccesoBIE##description"}{...}
 {viewerjumpto "Configuración del token" "AccesoBIE##token"}{...}
 {viewerjumpto "Primeros pasos" "AccesoBIE##quickstart"}{...}
@@ -34,15 +34,23 @@ Ricardo Cantú Calderón {c |} {browse "mailto:ricardocantu@ciep.mx":ricardocant
 El comando tiene {bf:dos vías de acceso} a los datos, con respaldo automático:
 {p_end}
 
-{phang2}1. {bf:API oficial del INEGI} (requiere token gratuito): intenta el banco BIE y luego el BISE. Es la vía {bf:recomendada} — contrato formal y estable con el INEGI.{p_end}
-{phang2}2. {bf:Consulta pública de exportación (.aspx)}: el mecanismo con que el portal del BIE exporta series a Excel, abierto y sin token. Se usa como respaldo si la API falla — o como vía única si no hay token configurado, avisando en pantalla.{p_end}
+{phang2}1. {bf:API oficial del INEGI}: intenta la fuente BIE-BISE y luego la BISE. Es la vía {bf:principal} — contrato formal y estable con el INEGI. Siempre hay token: el tuyo o el de cortesía del CIEP (ver {it:Configuración del token}).{p_end}
+{phang2}2. {bf:Consulta pública de exportación (.aspx)}: el mecanismo con que el portal del BIE exporta series a Excel, abierto y sin token. Es el {bf:respaldo}: se usa solo si la API no entrega la serie, con un aviso en pantalla.{p_end}
 {phang2}3. Hasta 3 reintentos automáticos de la cadena completa, con 2 segundos de espera entre cada uno.{p_end}
 
 {pstd}
-{bf:Ambas vías entregan exactamente el mismo formato de datos.} La diferencia es
-de robustez: la consulta pública lee la tabla de una página web del INEGI, que
-podría cambiar de forma sin aviso; la API es un servicio formal. Por eso el
-token es la vía recomendada, aunque el comando funcione sin él.
+{bf:Ambas vías entregan exactamente el mismo formato de datos} (desde 1980, en
+orden ascendente de periodo). La diferencia es de robustez: la consulta pública
+lee la tabla de una página web del INEGI, que podría cambiar de forma sin aviso;
+la API es un servicio formal. En pantalla, cada serie descargada dice por cuál
+vía llegó ({it:Vía: API oficial (BIE-BISE)} o {it:Vía: respaldo .aspx}). Lo único
+que cambia con la vía es la etiqueta de la variable (y su nombre automático, si
+no usas {opt nombres()}): la API da el nombre del indicador
+({it:Producto Interno Bruto}); la consulta pública, su jerarquía temática
+({it:Valores a precios corrientes > Producto Interno Bruto}). Si el nombre o la
+etiqueta te importan (títulos de gráficas, tablas), usa {opt nombres()} y fija
+la etiqueta con {cmd:label var} después de la llamada, como hacen los módulos
+del Simulador.
 {p_end}
 
 {pstd}
@@ -54,34 +62,45 @@ correspondientes.
 
 {pstd}
 {bf:Nota técnica:} Requiere Python con las librerías {cmd:requests} y
-{cmd:beautifulsoup4}. A partir de v8.0, el token de acceso al BIE/INEGI
-{ul:no} viene incluido en el código del comando: se fija como global
-Stata (ver {it:Configuración del token} más abajo). Sin token, el comando
-funciona por la consulta pública, con aviso.
+{cmd:beautifulsoup4}. No hay que configurar nada más para empezar: el comando
+trae un token de cortesía del CIEP (ver {it:Configuración del token} más abajo).
 {p_end}
 
 {hline}
 
 {marker token}{...}
-{title:Configuración del token del BIE}
+{title:Configuración del token (opcional)}
 
 {pstd}
-{cmd:AccesoBIE} lee el token del BIE/INEGI de la global Stata
-{cmd:BIE_API_TOKEN} (o de la opción {opt token()}). {bf:Si no hay token, el
-comando NO aborta}: usa la consulta pública (.aspx) del INEGI como vía única
-y te lo avisa en pantalla — así siempre sabes por cuál vía obtuviste los
-datos. El comando solo aborta con error si la serie no se pudo obtener por
-{bf:ninguna} vía (sin conexión, o clave de serie inexistente).
+{bf:No necesitas configurar nada.} {cmd:AccesoBIE} siempre tiene un token para
+la API de Indicadores del INEGI. Lo busca en este orden y usa el primero que
+exista:
+{p_end}
+
+{phang2}1. La opción {opt token()} de la llamada.{p_end}
+{phang2}2. La global Stata {cmd:BIE_API_TOKEN} (tu token personal; ver abajo).{p_end}
+{phang2}3. El {bf:token de cortesía CIEP}, incluido en el código del comando.{p_end}
+
+{pstd}
+Al consultar la API, el comando dice en pantalla cuál de los tres niveles usó
+(nunca imprime el token). El token de cortesía es {bf:público por diseño}: está
+registrado a nombre del CIEP ({cmd:info@ciep.mx}) y se publica con el código para
+que el Simulador funcione recién instalado. La API es gratuita, de solo lectura
+y de datos públicos; el único riesgo de publicarlo es el consumo de su cuota.
 {p_end}
 
 {pstd}
-El simulador usa un archivo {cmd:set_token.do} en la raíz del repositorio
-para cargar el token. Este archivo está en {cmd:.gitignore} y nunca se
-versiona; cada usuario tiene el suyo con su token personal.
+{bf:Cuándo conviene tu propio token:} si haces muchas consultas (replicaciones,
+descargas masivas) y no quieres depender de la cuota compartida. El INEGI
+entrega un token gratuito por correo electrónico; solicítalo en
+{browse "https://www.inegi.org.mx/servicios/api-indicadores/":www.inegi.org.mx/servicios/api-indicadores/}.
+El token se activa por servicio: uno obtenido para otra API del INEGI (por
+ejemplo, el DENUE) no sirve aquí hasta registrarlo también en la API de
+Indicadores.
 {p_end}
 
 {pstd}
-{bf:Configuración inicial} (sólo una vez por máquina):
+{bf:Cómo configurarlo} (una vez por máquina):
 {p_end}
 
 {phang2}1. Copia {cmd:set_token.template.do} (incluido en el repo) como
@@ -89,17 +108,31 @@ versiona; cada usuario tiene el suyo con su token personal.
 {phang2}{cmd:. ! cp set_token.template.do set_token.do}{p_end}
 
 {phang2}2. Edita {cmd:set_token.do} y reemplaza {cmd:tu-token-aqui} con tu
-token real.{p_end}
+token.{p_end}
 
 {pstd}
-{cmd:SIM.do} carga el global automáticamente al inicio de cada corrida
-(busca la línea con {cmd:capture do "set_token.do"}). No necesitas hacer
-nada más en cada sesión.
+{cmd:set_token.do} está en {cmd:.gitignore} y nunca se versiona. {cmd:profile.do}
+y {cmd:SIM.do} lo cargan si existe; si no existe no pasa nada: se usa el token
+de cortesía. También puedes fijar la global a mano en la sesión:
+{cmd:global BIE_API_TOKEN "tu-token"}.
 {p_end}
 
 {pstd}
-Si no tienes token, solicítalo en
-{browse "https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx":www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx}.
+{bf:Un token inválido NO produce error.} El INEGI no valida el token al entregar
+los datos de un indicador: con un token mal escrito, inventado o no registrado
+en la API de Indicadores, la serie llega igual por la API. Lo único que se
+pierde es el nombre del indicador (el catálogo de nombres sí valida el token),
+así que la etiqueta de la variable queda genérica: {it:Indicador 734407}. Si ves
+etiquetas así, revisa tu token.
+{p_end}
+
+{pstd}
+{bf:Si la API no responde} —venga el token de cualquiera de los tres niveles—,
+el comando usa la consulta pública (.aspx) como respaldo y lo avisa. Solo aborta
+con error si la serie no se pudo obtener por {bf:ninguna} vía (sin conexión, o
+clave de serie inexistente). La excepción son los indicadores del BISE por área
+geográfica (claves de 10 dígitos con {opt area()}): solo existen en la API y no
+tienen respaldo.
 {p_end}
 
 {hline}
@@ -146,10 +179,10 @@ separados por espacio. Si no se especifica, se usan los nombres de los metadatos
 {p_end}
 
 {phang}
-{opt token(string)} — Token de acceso para la API del INEGI. Si se omite, el
-comando lee el global Stata {cmd:$BIE_API_TOKEN}. Si tampoco está fijado el
-global, el comando usa la consulta pública (.aspx) con un aviso en pantalla.
-Ver {it:Configuración del token} arriba.
+{opt token(string)} — Token de acceso para la API del INEGI, solo para esta
+llamada. Si se omite, el comando usa la global Stata {cmd:$BIE_API_TOKEN} y, si
+tampoco está fijada, el token de cortesía CIEP. Ver {it:Configuración del token}
+arriba.
 {p_end}
 
 {phang}
@@ -276,7 +309,9 @@ Al ejecutar el comando se genera una base de datos en memoria con:
 
 {pstd}
 Las variables incluyen {bf:etiquetas descriptivas} obtenidas automáticamente
-de los metadatos del INEGI.
+de los metadatos del INEGI. La etiqueta —y el nombre automático de la variable,
+si no usas {opt nombres()}— depende de la vía por la que llegó la serie (ver
+{it:Descripción}); los datos, no.
 {p_end}
 
 {pstd}{bf:Procesamiento automático de los datos:}{p_end}
@@ -300,7 +335,7 @@ de los metadatos del INEGI.
 
 {pstd}
 2. {bf:INEGI — API de Indicadores:}
-{browse "https://www.inegi.org.mx/servicios/api_indicadores.html"}
+{browse "https://www.inegi.org.mx/servicios/api-indicadores/"}
 {p_end}
 
 {pstd}

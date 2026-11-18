@@ -260,7 +260,7 @@ if [[ "$MODE" == "download" && -n "$VINTAGES" ]]; then
         RAIZ="$(cd "$INTO_DIR" && pwd)"
     fi
     [[ -f "$RAIZ/SIM.do" && -f "$RAIZ/05_scripts/vintage-aportaciones.do" ]] || { echo "--vintages: $RAIZ no es la raiz de un clon/worktree del Simulador (falta SIM.do o 05_scripts/vintage-aportaciones.do)." >&2; exit 1; }
-    [[ -f "$RAIZ/set_token.do" ]] || echo "AVISO: $RAIZ/set_token.do no existe; si master/ no trae las bases del BIE, PIBDeflactor/SCN no podran consultarlo." >&2
+    [[ -f "$RAIZ/set_token.do" ]] || echo "AVISO: $RAIZ/set_token.do no existe; si master/ no trae las bases del BIE, AccesoBIE las consultara con el token de cortesia CIEP." >&2
     USUARIO="$(whoami)"
     fallas=0
     echo "VINTAGES ($VINTAGES) → $RAIZ/users/$USUARIO-v<t>/aportaciones.dta  (driver 05_scripts/vintage-aportaciones.do; Stata: $STATA)"
