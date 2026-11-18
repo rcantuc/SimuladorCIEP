@@ -21,7 +21,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 |---|---|
 | `arquitectura.md` | Cómo está organizado el Simulador como sistema de cuatro capas (desarrollo, distribución a investigadores, reproducción histórica, web pública); qué es una versión publicada; cómo se reproduce un análisis; el principio «Stata produce los números» con su límite y sus puntos de control (§6.3.1); infraestructura (Cloudways / IONOS); lo que sigue pendiente (§7); apéndice de comportamientos no obvios del entorno. |
 | `versionado-y-git.md` | Parte I: convenciones de commits, ramas, etiquetas, reescritura de historia, `.gitignore`. Parte II: historia de versiones (era v7.x vs. v8.0+) y contexto de los releases. |
-| `politicas-institucionales.md` | Parte I: gestión de secretos y credenciales (qué es secreto, dónde vive, qué hacer si se compromete). Parte II: ciclo de vida de productos del Ecosistema CIEP. |
+| `politicas-institucionales.md` | Parte I: gestión de secretos y credenciales (qué es secreto, dónde vive, qué hacer si se compromete; §3.4, la excepción única de los tokens de cortesía). Parte II: ciclo de vida de productos del Ecosistema CIEP. |
 | `runbook-deploys-ciep.md` | Comandos para publicar un release a las tres caras (Git → endpoint Stata → VPS web), por tipo de release, con rollback. |
 | `runbook-actualizar-assets.md` | Qué es el manifiesto, por qué existe el candado `ensure_asset` y los pasos exactos para actualizar un archivo de datos sin romperlo. |
 
