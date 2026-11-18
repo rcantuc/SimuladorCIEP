@@ -1,4 +1,4 @@
-*! version 8.5 CIEP 01nov2026 (v8.15.2: dentro de UpdateSCN ($SCN_SOLO_ASSET) una serie sin asset aborta, salvo rawwip, que la baja y la declara en $SCN_CALIENTE; antes v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
+*! version 8.6 CIEP 18nov2026 (token de cortesía CIEP: cascada token() > $BIE_API_TOKEN > cortesía; fuente BIE-BISE en la API; respaldo .aspx para los tres niveles; antes v8.15.2: dentro de UpdateSCN ($SCN_SOLO_ASSET) una serie sin asset aborta, salvo rawwip, que la baja y la declara en $SCN_CALIENTE; antes v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
@@ -7,8 +7,30 @@
 *! Ejemplo: AccesoBIE 750453, nombres(PIBE) area(19)   <- indicador estatal, Nuevo León
 *! Ejemplo: AccesoBIE 6200093954, nombres(PO) area(19) <- indicador BISE (10 dígitos) por entidad, vía API
 
+* -----------------------------------------------------------------------------
+* TOKEN DE CORTESÍA CIEP — PÚBLICO POR DISEÑO (no es una fuga: no se oculta, no
+* se mueve a .gitignore, no se ofusca)
+* -----------------------------------------------------------------------------
+* El local BIE_TOKEN_CORTESIA (primera línea del programa) es un token de la API
+* de Indicadores del INEGI registrado a nombre del CIEP (dueño: info@ciep.mx)
+* para que el Simulador funcione recién instalado, sin configurar nada. Se
+* versiona y se publica a propósito: la API es gratuita, de solo lectura y de
+* datos públicos; el único riesgo es consumo de cuota. La política (excepción
+* única a «cero secretos en código», prueba de vida y reposición) está en
+* 02_governance/politicas-institucionales.md, Parte I §3.4. Los tokens
+* personales NUNCA van en este archivo: van en set_token.do (gitignored).
+*
+* Cascada del token (gana el primero que exista):
+*   1. opción token()          explícita, por llamada
+*   2. global BIE_API_TOKEN    set_token.do, que cargan profile.do y SIM.do
+*   3. token de cortesía CIEP  este archivo
+* La consulta pública de exportación (.aspx) es el respaldo en runtime de los
+* tres niveles: solo se usa si la API oficial no entrega la serie.
+* -----------------------------------------------------------------------------
+
 program define AccesoBIE
 	version 17.0
+	local BIE_TOKEN_CORTESIA "3f21ff6f-4fac-4ce1-a4c1-99813c92567f"
 	
 	syntax anything(name=series) [, Nombres(string) Token(string) AREa(string)]
 
@@ -30,19 +52,20 @@ program define AccesoBIE
 		local area : di %02.0f `area'
 	}
 	
-	// Token vía global Stata $BIE_API_TOKEN. Sin token NO se aborta: se salta
-	// la API oficial y se usa la consulta pública de exportación (.aspx) del
-	// INEGI, avisando al usuario por cuál vía obtuvo los datos.
-	local sintoken = 0
+	// Cascada del token (ver encabezado): opción token() > global $BIE_API_TOKEN >
+	// token de cortesía CIEP. Siempre hay token, así que la API oficial es la vía
+	// de los tres niveles y la consulta pública (.aspx) queda de respaldo. El
+	// aviso del nivel se imprime una vez por llamada y solo si se llega a
+	// consultar la API (con asset congelado o tabla por área no se usa token).
+	// El token nunca se imprime.
+	local avisotoken "AccesoBIE: usando el token de la opci{c o'}n token()."
 	if "`token'" == "" {
-		if "$BIE_API_TOKEN" == "" {
-			local sintoken = 1
-			display as text "AccesoBIE: sin token del BIE/INEGI — usando la consulta p{c u'}blica (.aspx) del INEGI."
-			display as text "Para la v{c i'}a oficial (recomendada), configura tu token gratuito:"
-			display as text `"  global BIE_API_TOKEN "tu-token"  — solicita el tuyo en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"'
-			display as text "(Investigadores CIEP: corre set_token.do o reinicia Stata; profile.do lo carga al arranque.)"
-		}
 		local token "$BIE_API_TOKEN"
+		local avisotoken "AccesoBIE: usando tu token (global BIE_API_TOKEN)."
+	}
+	if "`token'" == "" {
+		local token "`BIE_TOKEN_CORTESIA'"
+		local avisotoken "AccesoBIE: usando token de cortes{c i'}a CIEP. Para tu propia cuota: global BIE_API_TOKEN"
 	}
 	
 	quietly {
@@ -62,17 +85,17 @@ program define AccesoBIE
 		// Procesar cada serie
 		local j = 1
 		foreach serie of local series {
+			global INEGI_VIA_`serie' ""
 			
 			if "`area'" != "" & strlen("`serie'") >= 10 {
 				// Modo area() para indicadores del BISE (clave de 10 dígitos, p. ej.
 				// 6200093954 = población ocupada ENOE por entidad): no existen en la
 				// consulta pública del BIE, solo en la API oficial, que recibe el área
-				// geográfica como parámetro (00 nacional, 01-32 entidades). Sin token
-				// no hay vía alterna: se avisa y se aborta.
-				if "`token'" == "" {
-					noisily display as error "AccesoBIE: el indicador `serie' (BISE) por {c a'}rea solo est{c a'} disponible v{c i'}a la API oficial y no hay token configurado."
-					noisily display as error `"  global BIE_API_TOKEN "tu-token"  — solicita el tuyo en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"'
-					exit 198
+				// geográfica como parámetro (00 nacional, 01-32 entidades). Aquí no hay
+				// respaldo .aspx: si la API no responde se aborta con su mensaje.
+				if "`avisotoken'" != "" {
+					noisily display as text "`avisotoken'"
+					local avisotoken ""
 				}
 				global INEGI_AREAS_ERR_`serie' ""
 				python: inegi_bise_area("`serie'", "`area'", "`token'")
@@ -130,7 +153,11 @@ program define AccesoBIE
 						noisily display as text "  Serie `serie': sin asset congelado; descarga en caliente (rawwip, sello amarillo)"
 						global SCN_CALIENTE "$SCN_CALIENTE `serie'"
 					}
-					// Llamar a Python para obtener datos via API oficial
+					// Llamar a Python para obtener datos via API oficial (respaldo: .aspx)
+					if "`avisotoken'" != "" {
+						noisily display as text "`avisotoken'"
+						local avisotoken ""
+					}
 					python: inegi_api("`serie'", "`token'")
 				}
 				
@@ -144,11 +171,6 @@ program define AccesoBIE
 			if _N == 0 {
 				noisily display as error "AccesoBIE: no se pudo obtener la serie `serie' por ninguna v{c i'}a (API oficial y consulta p{c u'}blica agotadas)."
 				noisily display as error "Verifica tu conexi{c o'}n a internet y la clave de la serie."
-				if `sintoken' {
-					noisily display as error "Sin token solo se intenta la consulta p{c u'}blica. Para la v{c i'}a oficial (API), configura tu token gratuito:"
-					noisily display as error `"  global BIE_API_TOKEN "tu-token"  — solicita el tuyo en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"'
-					noisily display as error "(Investigadores CIEP: corre set_token.do o reinicia Stata; profile.do lo carga al arranque.)"
-				}
 				exit 198
 			}
 			
@@ -168,8 +190,16 @@ program define AccesoBIE
 			local vardesc = "${INEGI_DESC_`serie'}"
 			if "`vardesc'" == "" local vardesc "`varlabel'"
 			
+			// Vía por la que llegó la serie (solo en descarga en caliente): si la
+			// API oficial no la entregó y se usó el respaldo .aspx, se avisa.
+			local via "${INEGI_VIA_`serie'}"
+			if "`via'" != "" local via " | V{c i'}a: `via'"
+			if strpos("`via'", ".aspx") {
+				noisily display as text "  AVISO: la API oficial del INEGI no entreg{c o'} la serie `serie'; se us{c o'} el respaldo: consulta p{c u'}blica (.aspx)."
+			}
+			
 			// Mostrar información de descarga
-			noisily display as text "  Serie: " as result "`serie'" as text " | Variable: " as result "`varname'" as text " | " as text "`vardesc'"
+			noisily display as text "  Serie: " as result "`serie'" as text "`via' | Variable: " as result "`varname'" as text " | " as text "`vardesc'"
 			
 			// Limpiar el nombre de la variable (solo caracteres válidos)
 			local varname = ustrregexra("`varname'", "[^a-zA-Z0-9_]", "_")
@@ -286,6 +316,7 @@ program define AccesoBIE
 			global INEGI_VARNAME_`serie' ""
 			global INEGI_LABEL_`serie' ""
 			global INEGI_DESC_`serie' ""
+			global INEGI_VIA_`serie' ""
 			global INEGI_AREAS_LIST_`serie' ""
 			global INEGI_AREAS_FECHA_`serie' ""
 		}
@@ -307,6 +338,7 @@ from sfi import Macro
 
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # segundos entre reintentos
+AAMIN = '1980'   # primer año que pide la consulta pública (aamin); la API se recorta al mismo piso
 
 EXPORT_URL = 'https://www.inegi.org.mx/app/indicadores/exportacion.aspx'
 
@@ -479,19 +511,19 @@ def read_meta(meta_path):
 def inegi_api(serie, token):
     """
     Descarga datos del INEGI con reintentos automáticos.
-    1. Intenta primero con la API oficial (BIE, BISE)
-    2. Si falla, usa scraping del portal de exportación
+    1. Intenta primero con la API oficial (BIE-BISE, BISE). Siempre hay token:
+       opción token(), global BIE_API_TOKEN o token de cortesía CIEP
+    2. Si falla, usa scraping del portal de exportación (respaldo .aspx)
     3. Reintenta hasta 3 veces si hay errores de conexión
     """
     
     for intento in range(1, MAX_RETRIES + 1):
-        # Intentar con API oficial (solo si hay token; sin token no se
-        # golpea la API y se va directo a la consulta publica .aspx)
-        if token and try_api(serie, token):
+        # Intentar con API oficial
+        if try_api(serie, token):
             return
         
-        # Si la API falla (o no hay token), usar el portal de exportacion
-        if intento == 1 and token:
+        # Si la API falla, usar el portal de exportacion
+        if intento == 1:
             print("  API no disponible, usando portal web...")
         if try_scraping(serie):
             return
@@ -509,13 +541,17 @@ def inegi_api(serie, token):
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', f'v{serie}')
     Macro.setGlobal(f'INEGI_LABEL_{serie}', f'Serie {serie}')
     Macro.setGlobal(f'INEGI_DESC_{serie}', f'Serie {serie}')
+    Macro.setGlobal(f'INEGI_VIA_{serie}', '')
 
 
 def try_api(serie, token):
-    """Intenta obtener datos de la API oficial del INEGI."""
+    """Intenta obtener datos de la API oficial del INEGI. Las fuentes de datos
+    que documenta el INEGI son BIE-BISE y BISE; la fuente 'BIE' a secas responde
+    400 con cualquier token. INDICATOR no valida el token (entrega datos con
+    cualquier cadena); los catálogos sí (ver api_indicator_name)."""
     base_url = "https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml"
     
-    for banco in ['BIE', 'BISE']:
+    for banco in ['BIE-BISE', 'BISE']:
         url = f"{base_url}/INDICATOR/{serie}/es/00/false/{banco}/2.0/{token}?type=json"
         
         try:
@@ -530,7 +566,7 @@ def try_api(serie, token):
                 observations = serie_data.get('OBSERVATIONS', [])
                 
                 if observations:
-                    indicator_name = f"Indicador {serie}"
+                    indicator_name = api_indicator_name(base_url, serie, banco, token) or f"Indicador {serie}"
                     save_data_api(serie, observations, indicator_name, banco)
                     return True
                     
@@ -538,6 +574,18 @@ def try_api(serie, token):
             continue
     
     return False
+
+
+def api_indicator_name(base_url, serie, banco, token):
+    """Nombre del indicador en el catálogo CL_INDICATOR. Los catálogos sí validan
+    el token (401 si no está enrolado en la API de Indicadores): con un token
+    inválido los datos llegan igual y solo se pierde el nombre, que queda
+    genérico ("Indicador <serie>")."""
+    try:
+        url = f"{base_url}/CL_INDICATOR/{serie}/es/{banco}/2.0/{token}?type=json"
+        return requests.get(url, timeout=30).json()['CODE'][0]['Description'].strip() or None
+    except Exception:
+        return None
 
 
 def try_scraping(serie):
@@ -608,8 +656,13 @@ def try_scraping(serie):
 
 
 def save_data_api(serie, observations, indicator_name, banco):
-    """Guarda datos obtenidos de la API."""
+    """Guarda datos obtenidos de la API con la misma forma que la consulta
+    pública: desde AAMIN y en orden ascendente de periodo (la API entrega la
+    serie completa, del periodo más reciente al más antiguo)."""
     set_metadata(serie, indicator_name)
+    Macro.setGlobal(f'INEGI_VIA_{serie}', f'API oficial ({banco})')
+    observations = sorted((obs for obs in observations if (obs.get('TIME_PERIOD') or '') >= AAMIN),
+                          key=lambda obs: obs['TIME_PERIOD'])
     
     csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     
@@ -635,6 +688,7 @@ def save_data_api(serie, observations, indicator_name, banco):
 def save_data_scraping(serie, data_rows, indicator_name):
     """Guarda datos obtenidos por scraping."""
     set_metadata(serie, indicator_name)
+    Macro.setGlobal(f'INEGI_VIA_{serie}', 'respaldo .aspx')
     
     csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     

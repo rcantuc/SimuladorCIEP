@@ -67,7 +67,7 @@ Dropbox sincroniza esa carpeta automáticamente: cuando se publica una versión 
 
 Para que Stata "vea" la Carpeta del Simulador, el investigador principal deja un pequeño archivo de configuración en tu instalación de Stata. Ese archivo le dice a Stata dónde está la carpeta, y a partir de ahí el Simulador se carga solo cada vez que abres el programa.
 
-Si vas a usar el comando `AccesoBIE` (descarga series del INEGI), también necesitas un **token**: una clave personal de acceso, como una contraseña, que el INEGI te da gratis. La configuración del token también es parte de la instalación inicial; el detalle está en `help AccesoBIE` dentro de Stata.
+Si vas a usar el comando `AccesoBIE` (descarga series del INEGI), no necesitas configurar nada: el comando trae un **token de cortesía** del CIEP (la clave con que el INEGI identifica a quien consulta su servicio de datos). Si prefieres usar un token propio —es gratuito y el INEGI lo entrega por correo—, el detalle está en `help AccesoBIE` dentro de Stata.
 
 ### 2.3 Configurar Python en Stata (Windows, una sola vez)
 
@@ -286,7 +286,7 @@ Descarga directamente a Stata cualquier serie del Banco de Información Económi
 AccesoBIE 734407, nombres(PIBNominal)
 ```
 
-**Requiere token**: una clave personal gratuita del INEGI. Si no está configurada, el comando se detiene con un error que te dice exactamente qué hacer. Detalle: `help AccesoBIE`.
+**No requiere configuración**: usa un token de cortesía del CIEP y te lo dice en pantalla. Si configuraste un token propio, usa el tuyo. Detalle: `help AccesoBIE`.
 
 ### 4.9 `GastoPC` — Gasto per cápita ⚠️ en construcción
 
@@ -469,11 +469,11 @@ Si el resultado **no** es la ruta de la Carpeta del Simulador (algo como `.../Si
 
 **Qué hacer:** es el mismo problema que 8.1 (Stata no encuentra la Carpeta del Simulador). Aplica el mismo diagnóstico.
 
-### 8.3 `AccesoBIE` falla pidiendo un token
+### 8.3 `AccesoBIE` avisa que usó el respaldo, o no encuentra la serie
 
-**Cómo se ve:** error explícito que menciona el token y la página del INEGI.
+**Cómo se ve:** una línea `AVISO: la API oficial del INEGI no entregó la serie…; se usó el respaldo`, o un error en rojo que dice que la serie no se pudo obtener por ninguna vía.
 
-**Qué hacer:** tu token no está configurado. La solución paso a paso está en `help AccesoBIE`, sección "Configuración del token". Si no tienes token, ahí mismo viene el enlace para solicitarlo al INEGI (es gratuito e inmediato).
+**Qué hacer:** el aviso no es un error: el servicio de datos del INEGI no respondió y el comando bajó la misma serie por la consulta pública; tus datos están completos. `AccesoBIE` ya no falla por falta de token (usa el de cortesía del CIEP). Si aparece el error en rojo, revisa tu conexión a internet y la clave de la serie. Si las etiquetas de las variables dicen `Indicador 734407` en vez del nombre del indicador, el token que configuraste no es válido: revisa `help AccesoBIE`, sección "Configuración del token".
 
 ### 8.4 Falla la descarga de datos en la primera corrida
 

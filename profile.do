@@ -189,17 +189,14 @@ end
 ******************************
 cd `"${SIMROOT}"'
 
-** 2.0 Token del BIE/INEGI **
-* Se carga desde set_token.do (gitignored) para que AccesoBIE funcione desde
-* el arranque. confirm file distingue archivo ausente (nota amable en la
-* bienvenida) de archivo roto (run SIN capture: el error se ve en su origen).
-local sim_token_missing = 0
+** 2.0 Token del BIE/INEGI (opcional) **
+* Si existe set_token.do (gitignored) se carga, para que AccesoBIE use el token
+* personal desde el arranque. Si no existe no hay nada que avisar: AccesoBIE usa
+* el token de cortesía CIEP. confirm file distingue archivo ausente (normal) de
+* archivo roto (run SIN capture: el error se ve en su origen).
 capture confirm file "${SIMROOT}/set_token.do"
 if _rc == 0 {
 	run "${SIMROOT}/set_token.do"
-}
-else {
-	local sim_token_missing = 1
 }
 
 ** 2.1 Entidades Federativas **
@@ -262,12 +259,6 @@ noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "03_he
 noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "03_help/Stata/GastoPC.sthlp":({it:help})}"'
 noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "03_help/Stata/AccesoBIE.sthlp":({it:help})}"' 
 noisily di `" {stata "sim_changelog":sim_changelog} [, VERsion(str)] {view "03_help/Stata/sim_changelog.sthlp":({it:help})}"'
-
-if `sim_token_missing' {
-	noisily di _newline in g "  Nota: falta configurar el token del BIE/INEGI, necesario para los"
-	noisily di in g "  comandos que consultan el BIE (como AccesoBIE). Copia"
-	noisily di in g "  set_token.template.do a set_token.do y coloca ah{c i'} tu token."
-}
 
 if `sim_python_missing' {
 	noisily di _newline in g "  Nota: Python no est{c a'} configurado en Stata. AccesoBIE, los comandos"

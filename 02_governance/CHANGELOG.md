@@ -16,6 +16,21 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.19.0] — 2026-11-18
+
+### [v8.19.0] — Token de cortesía CIEP en `AccesoBIE`: el Simulador consulta la API del INEGI recién instalado (rama `sesion/token-cortesia`, 2026-11-18)
+
+**Baseline sin cambio: `v8.17.2`. Sin despliegue al VPS: el sitio sigue en el deployment `v8.18` (no cambia ningún número ni ninguna página; del sitio solo cambia el campo `version` de `metodo.json`, que viajará con el próximo deployment); publica la Release y el endpoint Stata `net from`. Ningún número cambia:** el motor lee el asset congelado de `raw/SCN`; en descarga en caliente, la API y la consulta pública entregan la misma serie (probado con las seis que baja `PIBDeflactor`: 734407, 735143, 446562, 446565 y 446566, 134 de 134 trimestres, y 910392, 562 de 562 meses; mismos faltantes y diferencia máxima 5e-11). Corrida completa de `SIM.do` sobre `3fd9894` sin `set_token.do` (máquina virgen): `gate-numeros` VERDE, `output.txt` byte-idéntico y los 10 sankeys con Δ 0 (evidencia `diag-token-cortesia-2026-11-18/01-sim`).
+
+- **Comandos — `AccesoBIE.ado` v8.6, cascada del token:** opción `token()` → global `$BIE_API_TOKEN` → **token de cortesía CIEP**, público por diseño y registrado a `info@ciep.mx` (constante `BIE_TOKEN_CORTESIA` al inicio del programa; el valor vive solo ahí). Ya no existe la rama «sin token». La consulta pública (.aspx) pasa a ser el respaldo en runtime de los tres niveles. En pantalla: una línea con el nivel usado (nunca el token), la vía de cada serie (`Vía: API oficial (BIE-BISE)` o `Vía: respaldo .aspx`) y un `AVISO` cuando se usó el respaldo.
+- **Correcciones — la API oficial no se estaba usando:** `AccesoBIE` pedía la fuente `BIE`, que responde 400 con cualquier token; las series nacionales salían siempre por la consulta pública. Ahora pide `BIE-BISE` y luego `BISE`, las fuentes que documenta el INEGI. Para que las dos vías sigan entregando lo mismo, la serie de la API se recorta a 1980 en adelante y se ordena por periodo ascendente. La etiqueta de la variable sale del catálogo `CL_INDICATOR` (nombre del indicador) en lugar de la jerarquía temática del portal; ningún módulo consume esa etiqueta (las 18 llamadas del motor pasan `nombres()` y re-etiquetan).
+- **Comandos — un token inválido no produce error:** el INEGI no valida el token en `INDICATOR`; con un token inventado la serie llega igual y solo se pierde el nombre del indicador (`Indicador 734407`). Documentado en `help AccesoBIE`.
+- **Comandos — `SIM.do` §0.1 y `profile.do` §2.0:** `set_token.do` es opcional. `SIM.do` ya no aborta si falta y `profile.do` ya no avisa al arrancar; los dos lo cargan si existe (un archivo roto sigue tronando en su origen). `set_token.template.do` se reescribe como plantilla opcional.
+- **Correcciones — dirección de registro del token:** mensajes, plantilla y ayuda apuntaban a `…/app/api/denue/v1/tokenVerify.aspx` (404, y de otro servicio); ahora, `https://www.inegi.org.mx/servicios/api-indicadores/`. La referencia `api_indicadores.html` de la ayuda también estaba muerta.
+- **Institucional — `politicas-institucionales.md` Parte I §3.4 (nueva), «Excepción única: tokens de cortesía»:** cuatro condiciones acumulativas, registro cerrado, prueba de vida (`CL_UNIT` con fuente `BISE`: 200 activo, 401 no enrolado) y reposición en un commit si el INEGI bloquea el token. §6 cierra el incidente del token del BIE: el INEGI no revoca; riesgo residual aceptado.
+- **Documentación:** `03_help/Stata/AccesoBIE.sthlp` (cascada, vías, token inválido), `03_help/manual-investigador-ciep.md` (§2.2, §4.8 y §8.3 decían que el comando se detenía sin token), `guia-simulador-bien-gobernado.md`, `PIBDeflactor.sthlp`.
+- **Sin cambio, a propósito:** `05_scripts/refrescar-scn.sh` (también pide la fuente `BIE`; va en un cambio aparte) y `05_scripts/pibe-32.*` (siguen exigiendo `set_token.do`).
+
 ## [v8.18.2] — 2026-11-09
 
 ### [v8.18.2] — Banner del libro de la portada en inglés: sin el fondo de personajes 3D y botones en fila (rama `sesion/8.18.2-portada-en`, 2026-11-09)

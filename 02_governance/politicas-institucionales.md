@@ -38,6 +38,8 @@ Este documento reúne dos políticas que antes vivían en archivos separados de 
 
 > **Cero secretos en código. Cero secretos en documentación. Cero secretos compartidos por canal informal (correo, mensaje, Slack, dictado verbal, captura de pantalla).**
 
+**Única excepción, cerrada.** Los *tokens de cortesía* de §3.4: tokens de APIs públicas, gratuitas y de solo lectura que el CIEP publica a propósito y que están listados ahí, uno por uno. Nada más queda fuera de esta regla.
+
 **Qué cuenta como "secreto"** para efectos de esta política: cualquier credencial que, si cae en manos equivocadas, permite acceso no autorizado a un sistema, dato o servicio del CIEP. La sección 2 lo desglosa por categoría.
 
 **Por qué la regla es absoluta y no condicionada.** Una credencial compartida por canal informal queda fuera del control del CIEP a partir de ese momento: vive en la cache de correo del receptor, en el historial de Slack que sincroniza con la nube del proveedor, en notas personales, en respaldos automáticos del dispositivo. El control institucional sobre dónde está esa credencial se pierde. La política no asume disciplina permanente del personal; asume que las personas olvidan, se distraen, copian y pegan sin pensar, y migra el riesgo al diseño en lugar de al voluntarismo individual.
@@ -51,7 +53,7 @@ Este documento reúne dos políticas que antes vivían en archivos separados de 
 | Categoría | Qué es | Ejemplo en el CIEP |
 |---|---|---|
 | Credenciales de servicios web | Contraseñas de cuentas en plataformas externas. | Cuenta institucional en el Banco de Indicadores Económicos (BIE) de INEGI. |
-| Tokens API | Llaves que autentican acceso programático a servicios externos sin contraseña interactiva. | Token del BIE consumido por `AccesoBIE.ado`. |
+| Tokens API | Llaves que autentican acceso programático a servicios externos sin contraseña interactiva. | Token personal de un investigador para la API de Indicadores del INEGI (`set_token.do`). El token de cortesía que trae `AccesoBIE.ado` no es un secreto: §3.4. |
 | Llaves SSH y certificados | Archivos digitales que prueban identidad ante un servidor o ante una autoridad de certificación. | Llave SSH al VPS de IONOS; certificado SSL de `simuladorfiscal.ciep.mx`. |
 | Contraseñas de correo institucional | Especialmente las direcciones que sirven como destino de verificación de dominio o de recuperación de cuentas. | `hostmaster.ciep.mx`. |
 | Credenciales de infraestructura | Acceso administrativo a servidores, bases de datos, servicios en la nube. | Acceso root al VPS de IONOS. |
@@ -93,6 +95,57 @@ Las siguientes herramientas son útiles para uso personal y no están prohibidas
 > **Ninguna credencial de producción vive en una carpeta sincronizada**, esté o no bajo control de versiones. Ni llaves TLS, ni `.env`, ni `wp-config.php`, ni tokens. El archivo con el valor real vive en el servidor que lo usa; su respaldo, en el gestor de secretos institucional — nunca en una carpeta que se replica a las máquinas del equipo.
 
 Regla añadida el 2026-08-01 (Entrega 1.5, boceto Paquete 2027). El hallazgo que la motivó no fue de git —el repositorio y su historia estaban limpios— sino de Dropbox: una llave privada TLS, dos `wp-config.php` con credenciales de MySQL y dos `.env` en carpetas sincronizadas con quince años de historia y rotación de personal, donde el alcance del acceso es incognoscible. La sección 3 del verificador `05_scripts/verify_gitignore.sh` escanea el árbol real como red de seguridad para git, pero el escaneo no sustituye esta regla: que un archivo de credenciales esté ignorado no significa que deba estar ahí.
+
+### 3.4 Excepción única: tokens de cortesía
+
+> Un **token de cortesía** es el único valor con forma de credencial que el CIEP publica a propósito. No es una categoría abierta: es la lista cerrada del registro de abajo. Todo valor que no esté en ese registro se rige por §1 y §3 sin excepción.
+
+**Para qué existe.** Las herramientas públicas del CIEP deben funcionar recién instaladas. Algunas fuentes de datos públicos piden un token solo para identificar a quien consulta; no protegen nada. Para esas fuentes, y solo para esas, el CIEP registra un token propio y lo distribuye con el código.
+
+**Condiciones (las cuatro a la vez; si falta una, el valor es un secreto y aplica §1).**
+
+1. **API pública, gratuita y de solo lectura.** El token solo identifica al consumidor ante una API de datos públicos sin costo. No da acceso a ningún sistema, cuenta, panel, dato no público ni operación de escritura, del CIEP o de terceros. El peor uso indebido posible es consumir la cuota del propio token.
+2. **Designado explícitamente «de cortesía».** Es decisión escrita del investigador principal, tomada antes de que el valor entre al repositorio. Ningún token «se vuelve» de cortesía por haber quedado expuesto: eso es un incidente (§5.4).
+3. **Registrado a un correo institucional**, no al de una persona, y emitido para este fin: nunca se reutiliza un token personal ni uno que haya servido para otra cosa.
+4. **Listado en el registro de esta sección**, con dueño, lugar donde vive y fecha. Un valor con forma de token que aparezca en el repositorio y no esté en el registro es un incidente (§5.4).
+
+**Lo que la excepción no cubre.** Los tokens personales de los investigadores, aunque sean de la misma API (viven en `set_token.do`, ignorado, y nunca se versionan). Tokens de APIs con costo, con escritura o con datos no públicos. Contraseñas, llaves y cualquier credencial de infraestructura. Tokens expuestos por accidente.
+
+**Registro de tokens de cortesía (lista cerrada).**
+
+| Token | Servicio | Dueño (correo de registro) | Dónde vive | Designado | Estado |
+|---|---|---|---|---|---|
+| Token de cortesía de `AccesoBIE` | API de Indicadores del INEGI (BIE y BISE) | `info@ciep.mx` | Ver la constante `BIE_TOKEN_CORTESIA` en `AccesoBIE.ado`: es el único archivo que contiene el valor. Ni esta tabla, ni la plantilla, ni la ayuda lo repiten. | 2026-11-18, investigador principal | Activo. Prueba de vida 2026-11-18: 200 (control negativo: 401). Las reposiciones se registran en `CHANGELOG.md`. |
+
+**Cómo se usa.** `AccesoBIE` busca el token en este orden y usa el primero que exista: opción `token()`, global `$BIE_API_TOKEN` (token personal, de `set_token.do`), token de cortesía. La consulta pública de exportación del BIE (.aspx) queda como respaldo en runtime de los tres niveles: si la API no entrega la serie, el comando la baja por ahí y lo avisa.
+
+**Lo que hay que saber del token del INEGI** (constatado el 2026-11-18):
+
+- Es uno por correo, permanente, sin mecanismo de revocación ni de rotación. «Rotar» significa registrar otro correo.
+- Se activa por servicio. El DENUE y la API de Indicadores se registran por separado y entregan la misma clave; un token registrado solo en el DENUE no está enrolado en Indicadores (así estuvo este token unos minutos el día de su designación).
+- El servicio de datos (`INDICATOR`) no valida el token: entrega la serie con cualquier cadena. Los catálogos (`CL_*`) sí lo validan: responden 401 a un token no enrolado.
+- Las fuentes de datos válidas son `BIE-BISE` y `BISE`. La fuente `BIE` a secas responde 400 con cualquier token.
+- Registro en la API de Indicadores: `https://www.inegi.org.mx/app/desarrolladores/generatoken/Usuarios/token_Verify.aspx` (es el formulario que muestra `https://www.inegi.org.mx/servicios/api-indicadores/`). La dirección `…/app/api/denue/v1/tokenVerify.aspx`, que el código y la ayuda citaron hasta esta fecha, responde 404 y además era de otro servicio.
+
+**Prueba de vida** (obligatoria en toda reposición, con un token inventado como control negativo en la misma corrida):
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' \
+  "https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_UNIT/null/es/BISE/2.0/<TOKEN>?type=json"
+```
+
+`200` = activo; `401` = no enrolado en la API de Indicadores. Nunca se valida con `INDICATOR` (devuelve 200 y datos con cualquier cadena) ni con la API del DENUE (es otro servicio, con enrolamiento aparte, y responde HTTP 200 incluso cuando rechaza la clave).
+
+**Si el INEGI bloquea o agota el token de cortesía.** El Simulador no se cae: `AccesoBIE` pasa al respaldo .aspx y lo avisa en pantalla; ese aviso, o un 401 en la prueba de vida, es la señal. La reposición es un solo commit, que toca un archivo de código y el CHANGELOG:
+
+1. Registrar otro correo institucional en la API de Indicadores (y en cada servicio del INEGI que se use).
+2. Correr la prueba de vida con su control negativo.
+3. Sustituir el valor de la constante en `AccesoBIE.ado` —el único archivo que lo contiene— y anotar la reposición en `CHANGELOG.md`: fecha, correo de registro y resultado de la prueba de vida. La fila del registro solo se toca si cambia el dueño.
+4. Publicar como cualquier cambio (pull request, endpoint y Carpeta del Simulador).
+
+No es un incidente de §6, porque no hay secreto comprometido, y no hay historia que reescribir: el token retirado era público por diseño.
+
+**Por qué es aceptable que sea público.** La API es gratuita y sirve datos públicos; el token no autentica al CIEP ante ningún otro sistema; el único riesgo es el consumo de su cuota, y el respaldo .aspx lo absorbe. Consultados el 2026-11-18, los Términos de uso del sitio (`inegi.org.mx/inegi/terminos.html`) no mencionan el token, y la página de la API de Indicadores lo menciona solo para decir cómo se obtiene y dónde va en la consulta; ninguno de los dos prohíbe compartirlo. No se localizó un documento de términos específico de la API.
 
 ---
 
@@ -166,7 +219,7 @@ Regla añadida el 2026-08-01 (Entrega 1.5, boceto Paquete 2027). El hallazgo que
 Calendario sugerido (afinable con el investigador principal según riesgo del secreto):
 
 - **Anual:** contraseñas de cuentas en servicios externos que no soportan llaves SSH o tokens (servicios que se acceden únicamente por contraseña tradicional).
-- **Cada 6 meses:** tokens API de servicios de datos críticos (BIE de INEGI y similares). Mantener registro de la fecha de la última rotación en el gestor de secretos, junto a la credencial.
+- **Cada 6 meses:** tokens API de servicios de datos críticos (BIE de INEGI y similares). Mantener registro de la fecha de la última rotación en el gestor de secretos, junto a la credencial. (El INEGI no ofrece rotación ni revocación: ahí «rotar» es registrar otro correo; ver §3.4.)
 - **Cada renovación de certificado SSL:** llaves SSL del servidor web, si la renovación implica generar nueva llave (depende del flujo elegido).
 - **Inmediato y sin esperar calendario:** cualquier credencial expuesta o sospechada de exposición, según §5.4.
 
@@ -202,7 +255,7 @@ Calendario sugerido (afinable con el investigador principal según riesgo del se
 
 | Fecha | Secreto afectado | Modo de exposición | Respuesta tomada | Mejora aplicada |
 |---|---|---|---|---|
-| 2018-10-29 a 2026-05-12 | Token API del Banco de Indicadores Económicos (BIE) de INEGI, cuenta institucional CIEP. | Hardcoded en `AccesoBIE.ado` y publicado en repositorio público de GitHub durante aproximadamente 7.5 años. | (1) Solicitud formal de revocación a INEGI por correo a `atencion.usuarios@inegi.org.mx` (2026-05-12). (2) Solicitud de token nuevo bajo correo distinto al original. (3) Sustitución en código (el token salió de `AccesoBIE.ado`) y reescritura de historia Git (mayo de 2026): hechas. | (4) Creación de esta política como respuesta institucional al incidente. (5) Decisión arquitectónica: tokens API jamás hardcoded; se leen de un archivo local gitignored (`set_token.do`, que fija la global de Stata `$BIE_API_TOKEN`; `SIM.do` §0.1 y `profile.do` §2.0), con fallback documentado: sin token `AccesoBIE` usa la consulta pública de exportación del BIE y avisa (la vía real queda por serie en `manifest.json: scn_vintage`); `pibe-32.sh` sí lo exige (el BISE no responde sin él). (6) `.gitignore` reforzado en mayo 2026 para prevenir entrada de archivos `.env` y similares al repositorio. |
+| 2018-10-29 a 2026-05-12 | Token API del Banco de Indicadores Económicos (BIE) de INEGI, cuenta institucional CIEP. | Hardcoded en `AccesoBIE.ado` y publicado en repositorio público de GitHub durante aproximadamente 7.5 años. | (1) Solicitud formal de revocación a INEGI por correo a `atencion.usuarios@inegi.org.mx` (2026-05-12). (2) Solicitud de token nuevo bajo correo distinto al original. (3) Sustitución en código (el token salió de `AccesoBIE.ado`) y reescritura de historia Git (mayo de 2026): hechas. **Cierre 2026-11-18:** el INEGI no ofrece revocación (un token por correo, permanente), así que el token expuesto puede seguir vivo; los tokens personales en uso son otros y viven solo en `set_token.do`. Riesgo residual aceptado por el investigador principal: la API es gratuita y de datos públicos, y el peor caso es consumo de cuota a nombre ajeno. | (4) Creación de esta política como respuesta institucional al incidente. (5) Decisión arquitectónica: tokens API jamás hardcoded; se leen de un archivo local gitignored (`set_token.do`, que fija la global de Stata `$BIE_API_TOKEN`; `SIM.do` §0.1 y `profile.do` §2.0), con fallback documentado: sin token `AccesoBIE` usa la consulta pública de exportación del BIE y avisa (la vía real queda por serie en `manifest.json: scn_vintage`); `pibe-32.sh` sí lo exige (el BISE no responde sin él). (6) `.gitignore` reforzado en mayo 2026 para prevenir entrada de archivos `.env` y similares al repositorio. **Nota 2026-11-18:** la decisión (5) tiene desde esta fecha una excepción única y cerrada, los tokens de cortesía de §3.4; `AccesoBIE` ya no tiene rama «sin token» (cae al de cortesía) y la consulta pública queda como respaldo en runtime. |
 | 2026-01-28 a 2026-07-09 | Llaves privadas SSL de `simuladorfiscal.ciep.mx` y `iepsaltabaco.ciep.mx` (las del certificado activo entre enero y mayo de 2026 — no las llaves activas post-mayo, que nunca estuvieron expuestas). | Colocadas en `/var/www/html/v7/ssl/` durante la renovación de certificados 2026 y quedadas ahí con permisos 664 dentro del docroot público. Servidas por HTTP durante ~5 meses: verificado con `curl -I` que el recurso respondía HTTP 200. Detectado por el reconocimiento estructural del VPS de la Fase 2 del roadmap de deployment (`reconocimiento-vps.md` §7.2, 2026-07-09) y cerrado el mismo día por el investigador principal directo en el VPS. Sin evidencia de compromiso; impacto potencial acotado a descifrado retroactivo de tráfico enero-mayo 2026, que solo contiene datos públicos por diseño del sitio. | (1) Rotación de password del usuario del VPS (`passwd`). (2) Eliminación de `/var/www/html/v7/ssl/` y verificación externa con `curl` de HTTP 404. (3) Apretar permisos de llaves activas `/etc/ssl/private/2026a/` de 644 a 640 con grupo `ssl-cert`; directorio a 710 con grupo `ssl-cert`. (4) `www-data` agregado al grupo `ssl-cert`. (5) Restart de Apache y verificación externa de HTTP 200 en ambos dominios post-restart. (6) Registro de este incidente en la presente bitácora. | (7) Aprendizaje institucional durable: **llaves privadas SSL NUNCA en docroot público, incluso temporalmente durante renovación**. La renovación de certificados debe usar directorios fuera del docroot (`/etc/ssl/private/<año>/` como convención institucional). (8) Verificación externa por `curl` es paso obligatorio después de operaciones sobre certificados o directorios de llaves. (9) El reconocimiento estructural periódico del VPS (formalizado en Fase 2 del roadmap de deployment) es el gate humano que destapó este incidente. |
 
 Nuevos incidentes se registran como filas adicionales en la tabla, en orden cronológico ascendente.
@@ -241,7 +294,7 @@ Reconocido explícitamente en A.6: las credenciales del VPS IONOS (simuladorfisc
 
 A la fecha de esta versión (2026-05-14), los secretos asociados a los Simuladores CIEP y su infraestructura son:
 
-- **Token API del BIE de INEGI** — usado por `AccesoBIE.ado` para extraer series económicas. Categoría: token API (§2).
+- **Tokens personales de la API de Indicadores del INEGI (BIE y BISE)** — uso opcional en `AccesoBIE.ado` (cuota propia, vía `set_token.do`) y requisito de `pibe-32.sh` y `refrescar-scn.sh`. Categoría: token API (§2). El token de cortesía que trae `AccesoBIE.ado` no entra en este inventario: no es un secreto (§3.4).
 - **Credenciales de la cuenta de correo `hostmaster.ciep.mx`** — usadas en la renovación del certificado SSL del sitio web público. Categoría: contraseña de correo institucional (§2).
 - **Acceso root al VPS de IONOS** — donde corre el sitio `simuladorfiscal.ciep.mx`. Categoría: credencial de infraestructura (§2).
 - **Llave privada del certificado SSL** del sitio web público. Categoría: llave SSH y certificado (§2).
@@ -318,6 +371,7 @@ Daniel Orduña es el primer caso del rol "desarrollador externo de infraestructu
 |---|---|---|
 | 2026-05-12 | 1.0 | Versión inicial. Articula el principio fundacional (cero secretos en código, documentación o canales informales), define categorías de secretos, criterios para el gestor institucional, matriz de acceso por rol, cinco procedimientos operativos (incorporación, acceso temporal, salida, compromiso, rotación), y la bitácora de incidentes arrancando con la exposición histórica del token BIE (2018-2026). Diseñada para ser portable a contextos institucionales hermanos; el apéndice A aplica la política al caso específico del Simulador Fiscal CIEP. |
 | 2026-05-14 | 1.1 | Incorpora la categoría de rol **desarrollador externo de infraestructura** (§4): persona contratada por el CIEP bajo régimen externo (honorarios, contrato de servicios) que opera infraestructura institucional (hosting, dominios, sistemas de gestión de contenido) sin tocar código de los Simuladores CIEP. Acceso granular por infraestructura específica; las decisiones administrativas las toma el investigador principal en consulta técnica. Agrega **§5.6** con procedimientos de incorporación, modificación y salida del rol nuevo (la salida implica revocación inmediata más rotación de credenciales sin importar la naturaleza de la salida). Estrena **§7 (Compromisos institucionales pendientes)** con primer compromiso: reducir el bus factor de Cloudways a ≥ 2 en 6-12 meses (fecha límite 2027-05-14). Renombra el **Apéndice A** a *Aplicación a los Simuladores CIEP y su infraestructura*, agrega Cloudways al inventario (A.1), reformatea A.2 como tabla activo→acceso, e incorpora **A.5** sobre Daniel Orduña como caso fundacional del rol nuevo, con reconocimiento explícito del cambio de práctica (decisiones administrativas migran de facto a institución) y nota de que esta versión es punto de partida — la v1.2 capturará el input operativo de Daniel tras conversación pendiente. |
+| 2026-11-18 | 1.1 + §3.4 | Agrega **§3.4 (Excepción única: tokens de cortesía)**: cuatro condiciones acumulativas, registro cerrado con su primera fila (token de la API de Indicadores del INEGI, `info@ciep.mx`; el valor vive solo en `AccesoBIE.ado`), hechos del token del INEGI (uno por correo, sin revocación, activación por servicio), prueba de vida con `CL_UNIT` y procedimiento de reposición. Punteros en §1, §2, §5.5 y A.1; cierre del incidente del token del BIE en §6 (sin revocación posible; riesgo residual aceptado). No consume la v1.2, reservada en A.5. |
 
 ---
 
