@@ -453,7 +453,8 @@ SITE_SMOKE_ASSETS=(
     js/config-tiempos.js
     js/connect.js
     plugins/bootstrap/css/bootstrap.min.css
-    plugins/font-awesome/css/all.min.css
+    plugins/font-awesome/css/fontawesome.min.css
+    plugins/font-awesome/css/solid.min.css
     plugins/jquery/jquery-3.4.1.min.js
     plugins/apexcharts/dist/apexcharts.min.js
     images/ciep-logo1.png

@@ -84,7 +84,8 @@ if ($deployed_version !== "") {
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
 	<link href="plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="plugins/font-awesome/css/all.min.css" rel="stylesheet">
+	<link href="plugins/font-awesome/css/fontawesome.min.css" rel="stylesheet">
+	<link href="plugins/font-awesome/css/solid.min.css" rel="stylesheet">
 
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,200;0,300;0,400;0,600;0,700;1,200;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
 
