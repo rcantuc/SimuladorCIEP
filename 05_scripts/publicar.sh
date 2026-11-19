@@ -27,7 +27,7 @@
 #   5c. (v8.15b-pre) Gate 11: manifest.json declara `baseline` (tag desde el que los números publicados son
 #      comparables; CUAD-0 §4 ter) y ese tag existe. Obligatorio desde v8.15.0; antes, informativo. También en --ci.
 #   5d. (limpieza 2026-11) Gate 12: cada ruta de archivo de simulador.stpr (el panel de Ricardo) existe en el repo
-#      (05_scripts/stpr.py verificar). También en --ci.
+#      (05_scripts/verificar-panel.py verificar). También en --ci.
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
@@ -1037,14 +1037,15 @@ gate_citation() {
 # (set_token.do) son aviso. Estático: corre también en --ci.
 gate_stpr() {
     local out
-    if out="$(python3 -I "$REPO_ROOT/05_scripts/stpr.py" verificar --stpr "$REPO_ROOT/simulador.stpr" 2>&1)"; then
+    if out="$(python3 -I "$REPO_ROOT/05_scripts/verificar-panel.py" verificar --stpr "$REPO_ROOT/simulador.stpr" 2>&1)"; then
         while IFS= read -r l; do [[ "$l" == *AVISO* ]] && log_warn "Gate 12:${l#  AVISO:}"; done <<< "$out"
-        log_info "✓ Gate 12: panel de proyecto — $(tail -n 1 <<< "$out" | sed 's/^stpr.py verificar: //')"
+        log_info "✓ Gate 12: panel de proyecto — $(tail -n 1 <<< "$out" | sed 's/^verificar-panel.py: //')"
         return 0
     fi
     log_error "Gate 12 FALLO: simulador.stpr lista rutas que no existen en el repo:"
     grep -E 'ROTA|Error|error' <<< "$out" | sed 's/^/        /' >&2
-    log_error "        Si un PR movió o renombró el archivo: python3 05_scripts/stpr.py mover <viejo>=<nuevo> (solo la ruta)."
+    log_error "        Si un PR movió o renombró el archivo: python3 05_scripts/verificar-panel.py mover <viejo>=<nuevo> (solo la ruta)."
+    log_error "        Si la ruta sale del repo (../../../Ricardo Cantú/…): python3 05_scripts/verificar-panel.py normalizar."
     log_error "        Si el archivo ya no existe, quitarlo del panel es decisión de Ricardo (Project Manager de Stata)."
     return 1
 }

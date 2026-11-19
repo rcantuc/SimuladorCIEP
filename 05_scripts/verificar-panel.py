@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""stpr.py — lee y ajusta las rutas de simulador.stpr (el panel del Project Manager de Stata, de Ricardo).
+"""verificar-panel.py — lee y ajusta las rutas de simulador.stpr (el panel del Project Manager de Stata, de Ricardo).
 
 El .stpr es una serialización Java (com.stata.projmanager.Tree → Node → ProjItem{isRelPath, type, name, path}).
 Este script la recorre con un lector del protocolo de serialización (no por búsqueda de bytes). Cada ProjItem tiene
@@ -10,14 +10,21 @@ type 0 (archivo, con path), 1 (grupo del panel, sin path) o 2 (la raíz del proy
              no viaja entre clones). Excepción: un archivo que .gitignore excluye a propósito (set_token.do, el token
              personal) no puede existir en un checkout limpio; si falta y `git check-ignore` lo confirma, es AVISO.
              Exit 0 si no hay rotas, 1 si alguna. Es el Gate 12 de `publicar.sh` (--check y --ci).
+  normalizar reescribe a su ruta relativa real cada ruta que sale del repo (empieza con ../ o es absoluta) y cuyo
+             final sí existe en el repo: se queda con el sufijo más largo que existe. Causa conocida: la carpeta de
+             Dropbox «Ricardo Cantú» está en disco con la «ú» descompuesta (u + acento, NFD); si Stata abre el proyecto
+             por una ruta con la «ú» compuesta (NFC), no reconoce el archivo como del proyecto y guarda
+             ../../../Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/<ruta>. Se corre cuando Ricardo publica cambios del
+             panel, antes de fusionar (versionado-y-git.md §2.5). Una ruta que sale del repo y no resuelve se reporta.
   mover      reescribe SOLO el campo path de los ProjItem cuyo path es exactamente <viejo> (o empieza con <viejo>/,
              para mover carpetas). El name (lo que el panel muestra), el orden y qué archivos aparecen no se tocan:
              son decisiones de Ricardo (versionado-y-git.md §2.5). Pares viejo=nuevo, uno por argumento.
 
 Uso:
-  python3 05_scripts/stpr.py listar    [--stpr simulador.stpr]
-  python3 05_scripts/stpr.py verificar [--stpr simulador.stpr] [--root <repo>]
-  python3 05_scripts/stpr.py mover     [--stpr simulador.stpr] viejo=nuevo [viejo=nuevo ...]
+  python3 05_scripts/verificar-panel.py listar     [--stpr simulador.stpr]
+  python3 05_scripts/verificar-panel.py verificar  [--stpr simulador.stpr] [--root <repo>]
+  python3 05_scripts/verificar-panel.py normalizar [--stpr simulador.stpr] [--root <repo>]
+  python3 05_scripts/verificar-panel.py mover      [--stpr simulador.stpr] viejo=nuevo [viejo=nuevo ...]
 """
 import argparse
 import os
@@ -160,7 +167,7 @@ def items(ruta):
 
 def main():
     ap = argparse.ArgumentParser(description='Rutas de simulador.stpr: listar, verificar, mover (solo el campo path).')
-    ap.add_argument('accion', choices=['listar', 'verificar', 'mover'])
+    ap.add_argument('accion', choices=['listar', 'verificar', 'normalizar', 'mover'])
     ap.add_argument('pares', nargs='*', help='mover: viejo=nuevo')
     ap.add_argument('--stpr', default=None, help='default: <raíz del repo>/simulador.stpr')
     ap.add_argument('--root', default=None, help='verificar: raíz contra la que se resuelven los paths relativos')
@@ -189,28 +196,45 @@ def main():
             print('  AVISO: %s no está en este árbol; .gitignore lo excluye a propósito (archivo local por diseño)' % p)
         for p, por in rotas:
             print('  ROTA: %s (%s)' % (p, por))
-        print('stpr.py verificar: %d rutas de archivo en %s, %d rotas' % (len(its), os.path.relpath(stpr, root), len(rotas)))
+        print('verificar-panel.py: %d rutas de archivo en %s, %d rotas' % (len(its), os.path.relpath(stpr, root), len(rotas)))
         return 1 if rotas else 0
 
-    pares = []
-    for par in a.pares:
-        if '=' not in par:
-            ap.error('mover espera pares viejo=nuevo: %r' % par)
-        pares.append(tuple(par.split('=', 1)))
+    destinos = []                 # (item, ruta nueva)
+    if a.accion == 'normalizar':
+        sin_resolver = []
+        for it in its:
+            p = it['path'] or ''
+            if not (p.startswith('../') or os.path.isabs(p)):
+                continue
+            partes = [x for x in p.split('/') if x not in ('', '.', '..')]
+            q = next(('/'.join(partes[i:]) for i in range(len(partes)) if os.path.isfile(os.path.join(root, *partes[i:]))), None)
+            if q is None or not it['isRelPath']:
+                sin_resolver.append(p)
+            else:
+                destinos.append((it, q))
+        for p in sin_resolver:
+            print('  SIN RESOLVER: %s (sale del repo y ningún final de la ruta existe en él, o el panel la marca absoluta)' % p)
+    else:
+        pares = []
+        for par in a.pares:
+            if '=' not in par:
+                ap.error('mover espera pares viejo=nuevo: %r' % par)
+            pares.append(tuple(par.split('=', 1)))
+        for it in its:
+            p = it['path'] or ''
+            for viejo, nuevo in pares:
+                if p == viejo or p.startswith(viejo.rstrip('/') + '/'):
+                    destinos.append((it, nuevo + p[len(viejo):]))
+                    break
     b = open(stpr, 'rb').read()
     cambios = []
-    for it in its:
-        for viejo, nuevo in pares:
-            p = it['path'] or ''
-            if p == viejo or p.startswith(viejo.rstrip('/') + '/'):
-                ini, fin, ref = it['path_span']
-                if ref:
-                    sys.exit('stpr.py: el path %r es una referencia a otra cadena del .stpr; no se reescribe '
-                             'sin rehacer los handles (ábrelo en el Project Manager)' % p)
-                q = nuevo + p[len(viejo):]
-                cod = q.encode('utf-8')
-                cambios.append((ini, fin, bytes([TC_STRING]) + struct.pack('>H', len(cod)) + cod, p, q))
-                break
+    for it, q in destinos:
+        ini, fin, ref = it['path_span']
+        if ref:
+            sys.exit('verificar-panel.py: el path %r es una referencia a otra cadena del .stpr; no se reescribe '
+                     'sin rehacer los handles (ábrelo en el Project Manager)' % it['path'])
+        cod = q.encode('utf-8')
+        cambios.append((ini, fin, bytes([TC_STRING]) + struct.pack('>H', len(cod)) + cod, it['path'], q))
     for ini, fin, nuevo_b, _, _ in sorted(cambios, reverse=True):
         b = b[:ini] + nuevo_b + b[fin:]
     if cambios:
@@ -218,7 +242,7 @@ def main():
         open(stpr, 'wb').write(b)
     for _, _, _, p, q in cambios:
         print('  %s -> %s' % (p, q))
-    print('stpr.py mover: %d ruta(s) reescrita(s) en %s' % (len(cambios), stpr))
+    print('verificar-panel.py %s: %d ruta(s) reescrita(s) en %s' % (a.accion, len(cambios), stpr))
     return 0
 
 
