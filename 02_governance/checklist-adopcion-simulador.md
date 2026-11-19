@@ -21,13 +21,13 @@
 
 ## Estado (2026-11-19)
 
-| # | SimuladorTabaco `v1.1.0` | SimuladorTenencia `v1.0.1` | HEEI `v1.0.1` |
+| # | SimuladorTabaco `v1.1.0` | SimuladorTenencia `v1.0.1` | HEEI `v1.0.2` |
 |---|---|---|---|
 | 1 | ✓ privado | ✓ privado | ✓ privado; gitleaks sobre toda la historia (131 commits) sin hallazgos; hook `pre-commit` |
 | 2 | ✓ | ✓ (con el sha256 de `tecnico_nacional.dta`, asset del Release, y el constructor que lo reproduce con su insumo fijado por sha256) | ✓ «Mapa de datos externos» del README (México con peso y sha256; la base del censo, solo con su peso) y `paises/RD/datos/LEEME.md` |
 | 3 | ✓ | ✓ | ✓ `CHANGELOG.md`; tags anotados `v1.0.0` (`7b1a6ff`, lo desplegado desde el 2026-11-14) y `v1.0.1`. `legado/<año>-<tema>/` y `WEB/PRE/<fecha>/` quedan documentados como histórico, no como versión (no se renombran, decisión de Ricardo) |
 | 4 | ✓ cascada de cortesía | N/A: el motor no usa el token; `AccesoBIE.do` viejo (sin token) solo con `update`. Pendiente si se reactiva | ✓ sin token en el repo; `set_token.do` ignorado; `AccesoBIE` 8.7 por `net install` desde `https://ciep.mx/simuladorfiscal/` (ya no desde la carpeta Dropbox del Simulador) |
-| 5 | ✓ `deploy-web.sh`, `deploy-motor.sh` (por versión, con rollback) y `humo-web.sh` con compuerta de huellas (151 llaves contra la baseline; `v1.1.0` desplegada así) | ✓ `deploy-web.sh`, `deploy-motor.sh` y `humo-web.sh` con compuerta (7 de 7) | ✓ `WEB/deploy.sh` (simulación por omisión, `--ejecutar`, manifiesto versionado de 11 artefactos, `HEAD` del VPS) y `WEB/humo.sh` con compuerta (151 de 151; `v1.0.1` desplegada así). El humo del VPS pasa dentro de tolerancia (5.31e-16 en un campo): la referencia se regeneró en la Mac |
+| 5 | ✓ `deploy-web.sh`, `deploy-motor.sh` (por versión, con rollback) y `humo-web.sh` con compuerta de huellas (151 llaves contra la baseline; `v1.1.0` desplegada así) | ✓ `deploy-web.sh`, `deploy-motor.sh` y `humo-web.sh` con compuerta (7 de 7) | ✓ `WEB/deploy.sh` (simulación por omisión, `--ejecutar`, manifiesto versionado de 11 artefactos, `HEAD` del VPS) y `WEB/humo.sh` con compuerta (151 de 151; `v1.0.1` y `v1.0.2` desplegadas así). Desde `v1.0.2` la referencia es la del VPS (§8b): el humo del servidor es byte a byte y el de la Mac usa la tolerancia documentada |
 | 6 | ✓ `seguridad.php` (batería 253/253) | ✓ `seguridad.php` gemelo (170/170) | ✓ `heei_validar()`, anclas `\A…\z`, id de sesión con `random_int`; batería 42 de 42, con control negativo (8 de 8 contra `v1.0.0`) |
 | 7 | ✓ | ✓ | ✓ `deploys/bitacora.md`, sembrada con el `clone` y los 27 `pull` del reflog del VPS (marcados como reconstruidos) |
 | 8 | ✓ desde `v1.1.0` (producción corría en `float` y la baseline de `v1.0.0`, en `double`, no la reproducía; deploy pendiente) | ✗ pendiente | ✓ (los `Geo/stata/*.do` que se corren solos no lo fijan; pendiente de decisión) |
