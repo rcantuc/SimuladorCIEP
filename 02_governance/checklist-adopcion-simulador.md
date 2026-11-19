@@ -17,6 +17,7 @@
 | 7 | **Bitácora append-only de lo desplegado** (`deploys/bitacora.md`): fecha, versión o commit, destino, qué, verificación y quién. Las correcciones son renglones nuevos. | el último renglón coincide con el último tag desplegado |
 | 8 | **Precisión explícita: `set type double`** al inicio de toda la cadena de do-files. El Stata del servidor arranca con `c(type)=float` y trunca a precisión simple lo que se genera sin tipo (incidente de HEEI, 15-ago-2026); la Mac de desarrollo tiene `double` y no lo delata. | `grep -n "set type double"` en el `.do` de entrada; humo en el servidor (punto 5) |
 | 9 | **Baseline por versión:** antes de cada tag, corrida del pipeline de principio a fin, con la salida de referencia versionada (`baseline/`) y su `LEEME.md` (qué se corrió, con qué Stata, contra qué se comparó). El éxito se mide con centinela o con «sin `r(…)` en el log», porque `stata -b` termina con 0 aunque el do-file truene. Se regenera solo con una razón escrita. Si el pipeline no corre completo, no hay tag. | `baseline/LEEME.md`; repetir la receta y comparar |
+| 10 | **Ningún número derivado escrito a mano.** Deflactores, poblaciones, tipos de cambio, tasas de crecimiento y cualquier cociente de series oficiales salen de la serie oficial, calculados al construir los datos (no en cada corrida) y con la fecha de la serie registrada junto al dato. Los parámetros normativos (tasas de ley, tarifas, porcentajes de distribución) pueden ir literales, pero con su fuente y su año. Todos los montos que se publican declaran su año de precios. | `grep` de literales con decimales en el motor: cada uno es un parámetro normativo con fuente o se reemplaza por su cálculo |
 
 ## Estado (2026-11-19)
 
@@ -31,6 +32,7 @@
 | 7 | ✓ | ✓ | ✗: el commit desplegado se puede leer en el servidor, pero no hay registro de cuándo ni de quién |
 | 8 | ✓ desde `v1.1.0` (producción corría en `float` y la baseline de `v1.0.0`, en `double`, no la reproducía; deploy pendiente) | ✗ pendiente | ✓ |
 | 9 | ✓ sin `update`, camino web y con `update`; `v1.0.1` reproduce la respuesta real del servidor en 151 de 151 llaves | ✓ resultados idénticos byte a byte a producción | ✓ (`WEB/referencia/` y la suite de humo) |
+| 10 | ✗ por revisar: literales inventariados el 2026-11-19 (divisor `12497.96` sin fuente, línea de pobreza `20713.89` de dic-2020, proporción `0.22386`) | ✗ el deflactor `0.9598823614` de los montos simulados sale de una serie vieja; corrección en `v1.1.0`, pendiente de aprobación | POR CONFIRMAR |
 
 ## Qué cambió al contrastar con HEEI
 
@@ -39,4 +41,5 @@
 - **Punto 6:** se agregó «el identificador de sesión lo genera el servidor» (así lo hace HEEI) y el anclaje `\A…\z`.
 - **Punto 3:** la regla quedó como «ninguna fecha **como mecanismo de versión**». HEEI guarda lo retirado en `legado/<año>-<tema>/` con README, que es archivo histórico y no versión. Para Tabaco y Tenencia se decidió no traer legado al repo. **Decisión abierta:** si `legado/` puede llevar el año en el nombre o debe quedar como `legado/<tema>/`.
 - **Regla de versiones (agregada el 2026-11-19):** parche si las cifras públicas no cambian; menor si cambian. Salió de Tabaco: `v1.0.1` solo corrigió la baseline (producción corre en `float`) y `v1.1.0` fijó `double`, lo que movió el séptimo dígito de 8 cifras públicas.
+- **Punto 10 (agregado el 2026-11-19):** el motor de Tenencia dividía los montos simulados entre `0.9598823614`, un cociente de una serie vieja con proyecciones a 2025 que ninguna versión disponible del deflactor reproduce. Ningún número derivado se escribe a mano; sale de la serie oficial.
 - **Lo que la lista no exige, porque en estos simuladores resultó innecesario:** el sidecar de datos del Simulador Fiscal (manifiesto más `ensure_asset`). En un simulador chico se decide archivo por archivo: fuera de git y documentado en el README, o asset del Release con sha256 si es insumo no reproducible.
