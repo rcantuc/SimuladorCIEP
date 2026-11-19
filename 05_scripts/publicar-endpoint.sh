@@ -17,6 +17,7 @@ TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 TIMESTAMP_FILENAME="$(date -u +%Y%m%d-%H%M%S)"
 
 DRY_RUN=false
+VERIFICAR=false
 SKIP_BACKUP=false
 FORCE=false
 VERSION=""
@@ -40,6 +41,52 @@ abort() {
     exit "${2:-1}"
 }
 
+# ═══ GATE DE FRESCURA (v8.19.1) ═══
+# Lo que recibe un usuario de `net from` es lo que sirve la URL pública, no lo que hay en disco: delante del
+# endpoint está el Varnish de Cloudways (perfil WordPress, TTL 30 días). En v8.19.0 el rsync dejó los
+# archivos nuevos en disco y `net install AccesoBIE` siguió entregando la versión anterior (x-cache: HIT).
+# Se descargan por la URL pública, SIN parámetros (como Stata), stata.toc, AccesoBIE.ado y ensure_asset.ado,
+# y se comparan por sha256 contra el disco del servidor (sha256sum por SSH: si difieren, es la caché) y el
+# disco contra las copias publicadas del tmp dir (ensure_asset.ado lleva el pin; si difieren, es el deploy).
+# Si alguno no coincide, el script falla y nombra la causa.
+gate_frescura() {
+    local f url publico local_sha pub_sha disk_sha fallas=0 cache=0
+    log_step "Gate de frescura: URL pública = disco del servidor = publicado (sha256)"
+    for f in stata.toc AccesoBIE.ado ensure_asset.ado; do
+        url="${ENDPOINT_URL%/}/$f"
+        publico="$TMP_DIR/.frescura-$f"
+        local_sha="$(shasum -a 256 "$TMP_DIR/$f" | awk '{print $1}')"
+        disk_sha="$(ssh "$SSH_ALIAS" "sha256sum '$REMOTE_PATH/$f' 2>/dev/null" | awk '{print $1}')"
+        if ! curl -sf -m 30 -o "$publico" "$url"; then
+            log_error "  $f: GET $url falló"; fallas=$((fallas+1)); continue
+        fi
+        pub_sha="$(shasum -a 256 "$publico" | awk '{print $1}')"
+        # disco = publicado; stata.toc lleva la fecha de publicación: en --verificar basta con que nombre la versión
+        if [[ "$disk_sha" != "$local_sha" ]] && ! { [[ "$VERIFICAR" == "true" && "$f" == "stata.toc" ]] && ssh "$SSH_ALIAS" "grep -q 'versión $VERSION,' '$REMOTE_PATH/$f'"; }; then
+            log_error "  $f: el DISCO del servidor (${disk_sha:0:12}…) no es lo publicado (${local_sha:0:12}…): deploy incompleto, no caché."
+            fallas=$((fallas+1)); continue
+        fi
+        if [[ "$pub_sha" != "$disk_sha" ]]; then
+            log_error "  $f: la URL pública sirve ${pub_sha:0:12}… y el disco tiene ${disk_sha:0:12}… (caché vieja)."
+            fallas=$((fallas+1)); cache=$((cache+1)); continue
+        fi
+        log_info "  ✓ $f: sha256 ${pub_sha:0:12}… en la URL pública, el disco y lo publicado"
+    done
+    if (( fallas > 0 )); then
+        log_error "Gate de frescura FALLÓ: $fallas de 3 archivos no coinciden."
+        if (( cache > 0 )); then
+            log_error "Causa probable: la CACHÉ del servidor (Varnish de Cloudways, TTL 30 días) sigue sirviendo la versión anterior"
+            log_error "  ($cache archivo(s): el disco ya tiene lo publicado; solo la caché está vieja)."
+            local host ruta; host="${ENDPOINT_URL#*://}"; host="${host%%/*}"; ruta="/${ENDPOINT_URL#*://*/}"; ruta="${ruta%/}"
+            log_error "Remedio (runbook §3, «Caché del endpoint»): purgar por URL y volver a verificar:"
+            log_error "  ssh $SSH_ALIAS 'cd $REMOTE_PATH && for f in stata.toc *.ado *.pkg *.sthlp; do curl -s -o /dev/null -X URLPURGE -H \"Host: $host\" -H \"X-Application: wordpress\" \"http://127.0.0.1:8080$ruta/\$f\"; done'"
+            log_error "  bash 05_scripts/publicar-endpoint.sh --verificar $VERSION"
+        fi
+        return 1
+    fi
+    log_info "✓ Gate de frescura: lo que entrega la URL pública es lo publicado (3/3)"
+}
+
 usage() {
     cat <<EOF
 Uso: $(basename "$0") [opciones] <version>
@@ -48,6 +95,8 @@ Publica el sub-canal Stata del Simulador Fiscal CIEP al endpoint público.
 
 Opciones:
   --dry-run        Verifica y muestra qué cambiaría sin tocar el servidor
+  --verificar      Solo el gate de frescura (v8.19.1): compara lo que sirve la URL pública con lo que
+                   se publicaría para <version>, sin backup ni rsync (tras purgar la caché)
   --skip-backup    Omite el backup pre-deploy del estado actual del endpoint
   --force          Permite republish ignorando "tag existe en remoto"
   -h, --help       Esta ayuda
@@ -66,6 +115,7 @@ EOF
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --dry-run)      DRY_RUN=true; shift ;;
+        --verificar)    VERIFICAR=true; shift ;;
         --skip-backup)  SKIP_BACKUP=true; shift ;;
         --force)        FORCE=true; shift ;;
         -h|--help)      usage; exit 0 ;;
@@ -103,7 +153,7 @@ if ! python3 -c 'import tomllib' 2>/dev/null; then
 fi
 
 log_info "Versión a publicar: $VERSION"
-log_info "Modo: dry-run=$DRY_RUN, skip-backup=$SKIP_BACKUP, force=$FORCE"
+log_info "Modo: dry-run=$DRY_RUN, verificar=$VERIFICAR, skip-backup=$SKIP_BACKUP, force=$FORCE"
 log_info "Python: $PYTHON_VERSION (tomllib disponible)"
 
 # ═══ FASE 1: VERIFICACIONES PRE-DEPLOY ═══
@@ -209,6 +259,13 @@ done
 FILE_COUNT="${#ALL_FILES[@]}"
 log_info "✓ $FILE_COUNT archivos copiados al tmp dir"
 
+# .htaccess de la carpeta (v8.19.1): cabeceras de no-caché para .ado/.toc/.pkg/.sthlp. Versionado en el repo
+# ([package] htaccess de manifest-endpoint.toml); sin él, el rsync --delete lo borraría del servidor.
+HTACCESS_SRC="$(echo "$MANIFEST_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin).get('package', {}).get('htaccess', ''))")"
+[[ -n "$HTACCESS_SRC" && -f "$REPO_ROOT/$HTACCESS_SRC" ]] || abort "manifest-endpoint.toml no declara [package] htaccess o el archivo no existe: '$HTACCESS_SRC'"
+cp "$REPO_ROOT/$HTACCESS_SRC" "$TMP_DIR/.htaccess"
+log_info "✓ .htaccess del endpoint (desde $HTACCESS_SRC)"
+
 # Inyectar el PIN de versión en la COPIA publicada de ensure_asset.ado.
 # El archivo del repo queda intacto (pin vacío): solo la copia distribuida
 # lleva la versión quemada, para que un usuario sin repo reconstruya datos
@@ -253,8 +310,15 @@ log_info "✓ stata.toc generado"
 # "Server unable to read htaccess file"). Ocurrió en el deploy de v8.0.1.
 # El flag --chmod del rsync se conserva como refuerzo para rsync genuino.
 chmod 755 "$TMP_DIR"
-chmod 644 "$TMP_DIR"/*
+chmod 644 "$TMP_DIR"/* "$TMP_DIR/.htaccess"
 log_info "✓ Permisos normalizados en tmp dir (dir 755, archivos 644)"
+
+# ═══ --verificar: solo el gate de frescura ═══
+
+if [[ "$VERIFICAR" == "true" ]]; then
+    gate_frescura || exit 3
+    exit 0
+fi
 
 # ═══ DRY-RUN: salir aquí ═══
 
@@ -311,15 +375,6 @@ log_step "Fase 5: Verificación post-deploy"
 
 sleep 2  # margen para que el endpoint refresque
 
-TOC_REMOTE="$(curl -sf "${ENDPOINT_URL%/}/stata.toc" 2>/dev/null || echo '')"
-if [[ -z "$TOC_REMOTE" ]]; then
-    log_warn "No se pudo hacer GET a ${ENDPOINT_URL%/}/stata.toc. Posible cache/CDN."
-elif echo "$TOC_REMOTE" | grep -q "$VERSION"; then
-    log_info "✓ Endpoint sirve stata.toc con versión $VERSION"
-else
-    log_warn "stata.toc remoto NO contiene versión $VERSION. Posible cache/CDN; verificar manualmente en unos minutos."
-fi
-
 REMOTE_COUNT="$(ssh "$SSH_ALIAS" "ls -1 '$REMOTE_PATH' | wc -l" | tr -d ' ')"
 EXPECTED_COUNT=$((FILE_COUNT + 1))  # +1 por stata.toc
 if [[ "$REMOTE_COUNT" -eq "$EXPECTED_COUNT" ]]; then
@@ -327,6 +382,14 @@ if [[ "$REMOTE_COUNT" -eq "$EXPECTED_COUNT" ]]; then
 else
     log_warn "Conteo remoto ($REMOTE_COUNT) difiere del esperado ($EXPECTED_COUNT)"
 fi
+if [[ "$(ssh "$SSH_ALIAS" "cmp -s '$REMOTE_PATH/.htaccess' - && echo OK" < "$TMP_DIR/.htaccess")" == "OK" ]]; then
+    log_info "✓ .htaccess remoto = $HTACCESS_SRC"
+else
+    log_warn ".htaccess remoto no coincide con $HTACCESS_SRC"
+fi
+
+FRESCURA_OK=true
+gate_frescura || FRESCURA_OK=false
 
 # ═══ FASE 6: REGISTRO ═══
 
@@ -338,6 +401,7 @@ mkdir -p "$(dirname "$LOG_FILE")"
 COMMIT_SHORT="$(git rev-parse --short HEAD)"
 OPERATOR="$(whoami)"
 RESULT="OK"
+[[ "$FRESCURA_OK" == "true" ]] || RESULT="STALE-CACHE"
 
 echo "$TIMESTAMP $VERSION $COMMIT_SHORT $OPERATOR $RESULT $BACKUP_REMOTE_PATH" >> "$LOG_FILE"
 log_info "✓ Registrado en $LOG_FILE"
@@ -347,4 +411,8 @@ log_info "Deploy de $VERSION completado exitosamente."
 log_info "Endpoint público: ${ENDPOINT_URL%/}/"
 log_info "Backup remoto:    $BACKUP_REMOTE_PATH"
 
+if [[ "$FRESCURA_OK" != "true" ]]; then
+    log_error "Los archivos están en disco, pero la URL pública aún no los entrega (gate de frescura). Purga y verifica (arriba)."
+    exit 3
+fi
 exit 0

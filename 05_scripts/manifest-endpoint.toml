@@ -42,6 +42,10 @@ sthlp_files = [
     "03_help/Stata/SHRFSP.sthlp",
 ]
 
+# .htaccess de la carpeta del endpoint (v8.19.1): cabeceras de no-caché para .ado/.toc/.pkg/.sthlp.
+# publicar-endpoint.sh lo sube como .htaccess; el Gate 4 de publicar.sh exige que exista.
+htaccess = "05_scripts/endpoint.htaccess"
+
 pkg_files = [
     "05_scripts/AccesoBIE.pkg",
     "05_scripts/DatosAbiertos.pkg",

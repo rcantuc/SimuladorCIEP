@@ -213,6 +213,7 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 3 | Tag anotado + push del tag | §2 | Ricardo |
 | 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
 | 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
+| 5b | Endpoint fresco y usable por un externo | el gate de frescura de `publicar-endpoint.sh` en verde (si falla: purga y `--verificar`, «Caché del endpoint») y `bash 05_scripts/test-maquina-virgen.sh --net-install --endpoint https://ciep.mx/simuladorfiscal/` | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
 | 7 | «Calcular» de humo automático (Fase 6) + gate humano de lo que el humo no prueba | §6 | pipeline + Ricardo |
 | 8 | Pull en la Carpeta de investigadores (Dropbox) | manual | Ricardo |
@@ -254,6 +255,46 @@ bash 05_scripts/test-maquina-virgen.sh --download --from v8.9.0 --into "$PWD"  #
 Sin Stata (usa `gh`); cada asset se deposita en su `local_path` del manifest y
 se verifica con el SHA del manifest **local**: un asset que cambió entre la
 Release `--from` y el manifest de hoy se reporta y no se instala.
+
+### Caché del endpoint (Varnish de Cloudways) y gate de frescura — desde v8.19.1
+
+**Qué pasó.** En v8.19.0 el rsync dejó los archivos nuevos en el disco del servidor y `net install AccesoBIE`
+siguió entregando la versión anterior: delante del endpoint está el Varnish de Cloudways con el perfil
+WordPress de `ciep.mx`, que fija `beresp.ttl = 30d` (`/etc/varnish/backend_response/wordpress.vcl` →
+`varnish_default_ttl.vcl`) y respondía `x-cache: HIT` con `age` de horas. El aviso de la Fase 5 («stata.toc
+remoto NO contiene versión…») era solo un `WARN` y el deploy se dio por bueno.
+
+**Las dos defensas.**
+
+1. **`.htaccess` de la carpeta del endpoint**, versionado en `05_scripts/endpoint.htaccess` (`[package] htaccess`
+   de `manifest-endpoint.toml`; `publicar-endpoint.sh` lo sube y el Gate 4 de `publicar.sh` exige que exista):
+   `Cache-Control: no-cache, no-store, must-revalidate, max-age=0` para `.ado`, `.toc`, `.pkg` y `.sthlp`.
+   **Verificado el 2026-11-19 en el servidor real** (carpeta de prueba, borrada después): con el `.htaccess`, cada
+   GET sale `x-cache: MISS` y un cambio en disco se ve en el GET siguiente; sin él, la misma prueba dio `HIT` y la
+   versión vieja. Varnish respeta la cabecera: el objeto se vuelve no cacheable. **No arregla lo que ya está en
+   caché**: un objeto guardado antes de que existiera la cabecera (o si alguien borra el `.htaccess`) se queda
+   hasta 30 días.
+2. **Gate de frescura** al final de `publicar-endpoint.sh` (y por lo tanto de `publicar.sh`): descarga por la
+   URL pública, sin parámetros (como Stata), `stata.toc`, `AccesoBIE.ado` y `ensure_asset.ado`, y compara su
+   sha256 con el disco del servidor (`sha256sum` por SSH) y el disco con lo publicado. URL ≠ disco = caché
+   vieja; disco ≠ publicado = deploy incompleto. Si falla, el script sale con **exit 3**, registra
+   `STALE-CACHE` en `02_governance/deploys/endpoint-stata.log` e imprime la purga.
+
+**Si el gate falla por caché, la purga es obligatoria antes de cerrar el release** (una URL a la vez, desde el
+propio servidor; el VCL de Cloudways acepta `URLPURGE` desde localhost):
+```bash
+source 05_scripts/endpoint-credentials.sh
+ssh "$SSH_ALIAS" "cd '$REMOTE_PATH' && for f in stata.toc *.ado *.pkg *.sthlp; do curl -s -o /dev/null -X URLPURGE -H 'Host: ciep.mx' -H 'X-Application: wordpress' \"http://127.0.0.1:8080/simuladorfiscal/\$f\"; done"
+bash 05_scripts/publicar-endpoint.sh --verificar vX.Y.Z    # solo el gate, sin backup ni rsync: debe decir 3/3
+```
+Alternativa sin SSH: panel de Cloudways → aplicación de `ciep.mx` → **Purge Varnish** (purga TODO el sitio
+`ciep.mx`, no solo el endpoint). Después, el mismo `--verificar`.
+
+**La prueba del usuario externo.** Tras publicar, `bash 05_scripts/test-maquina-virgen.sh --net-install --endpoint
+https://ciep.mx/simuladorfiscal/`: un Stata limpio (sin `SIMROOT`, sin `profile.do`, sin token) instala
+`AccesoBIE` por `net install` y baja una serie real con el token de cortesía. Sin `--endpoint` corre contra un
+endpoint local armado con el árbol de la rama (antes de publicar). Contra el endpoint de v8.19.0 falla con
+`FileNotFoundError: /raw/temp/AccesoBIE/…` (el defecto que corrige v8.19.1).
 
 ### Si falla la conexión SSH a Cloudways
 Cloudways **whitelistea IPs** para SSH. Síntoma: `Operation timed out` al 22.

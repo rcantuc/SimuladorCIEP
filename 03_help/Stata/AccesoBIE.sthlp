@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 8.6 CIEP 18nov2026}{...}
+{* *! version 8.7 CIEP 18nov2026}{...}
 {viewerjumpto "Descripción" "AccesoBIE##description"}{...}
 {viewerjumpto "Configuración del token" "AccesoBIE##token"}{...}
 {viewerjumpto "Primeros pasos" "AccesoBIE##quickstart"}{...}
@@ -208,7 +208,7 @@ mirar el área: correcto para las series nacionales (que solo traen el área
 
 {phang2}1. Descarga la {bf:tabla completa} del indicador por la consulta pública
 (.aspx) {bf:una sola vez por sesión} y la guarda en
-{cmd:raw/temp/AccesoBIE/[serie]_areas.csv} ({cmd:periodo, area, valor, nota})
+{cmd:[serie]_areas.csv} ({cmd:periodo, area, valor, nota}) en el directorio de descargas (ver {it:Resultados})
 más {cmd:[serie]_areas.meta} (título, fecha de consulta del INEGI, áreas
 disponibles, n, URL). La escritura es atómica: si la respuesta no trae tabla,
 ni columna de área, ni filas, el comando aborta con mensaje claro y el último
@@ -319,9 +319,14 @@ si no usas {opt nombres()}— depende de la vía por la que llegó la serie (ver
 {phang2}— Conversión de tipos: los valores {cmd:"N/E"} y {cmd:"ND"} se convierten a missing{p_end}
 {phang2}— Detección automática de la frecuencia de la serie (anual, trimestral o mensual){p_end}
 
-{pstd}{bf:Archivos temporales generados:}{p_end}
-{phang2}— {cmd:raw/temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
-{phang2}— {cmd:raw/temp/AccesoBIE/[serie]_areas.csv} y {cmd:.meta} — Tabla completa por área geográfica (solo con {opt area()}){p_end}
+{pstd}{bf:Archivos temporales generados}, en el directorio de descargas:
+dentro de la Carpeta del Simulador (global {cmd:SIMROOT} fijada por
+{cmd:profile.do} o {cmd:SIM.do}), {cmd:raw/temp/AccesoBIE/}; sin {cmd:SIMROOT}
+(por ejemplo, instalado con {cmd:net install} en un Stata limpio), la carpeta
+temporal del sistema, {cmd:c(tmpdir)/AccesoBIE/}. Nunca escribe en la raíz del
+disco.{p_end}
+{phang2}— {cmd:[serie].csv} — Archivo CSV por serie descargada{p_end}
+{phang2}— {cmd:[serie]_areas.csv} y {cmd:.meta} — Tabla completa por área geográfica (solo con {opt area()}){p_end}
 
 {hline}
 

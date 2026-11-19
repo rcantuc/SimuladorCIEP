@@ -16,6 +16,20 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.19.1] — 2026-11-18
+
+### [v8.19.1] — `AccesoBIE` funciona instalado por `net install` en un Stata limpio, y el endpoint deja de servir caché vieja sin que nadie lo note (rama `sesion/8.19.1`, 2026-11-18)
+
+**Baseline sin cambio: `v8.17.2`. Sin despliegue al VPS: ningún número ni página cambia; el deployment `v8.18` sigue como `current`.** Publica la Release y el endpoint Stata `net from`. Gate de la rama: corrida completa de `SIM.do` sobre `2249ec5` sin `set_token.do`, con `gate-numeros` VERDE (`output.txt` byte-idéntico, 10 sankeys con Δ 0; evidencia `diag-v8.19.1-2026-11-18/01-sim`).
+
+- **Correcciones — `AccesoBIE.ado` v8.7, sin `$SIMROOT`:** quien instalaba `AccesoBIE` por `net install` en un Stata sin la Carpeta del Simulador (sin `SIMROOT`, sin `profile.do`) recibía `FileNotFoundError: /raw/temp/AccesoBIE/…`: el comando intentaba escribir en la raíz del disco. Ahora descarga en `c(tmpdir)/AccesoBIE/` y no crea nada en la raíz. Dentro de la Carpeta no cambia nada: sigue usando `${SIMROOT}/raw/temp/AccesoBIE/`, el asset congelado de `raw/SCN/bie/` y `area()` igual que antes. Era un defecto previo a v8.19.0 (desde `6baaba8`), visible porque v8.19.0 prometió que el comando funciona recién instalado.
+- **Institucional — `test-maquina-virgen.sh --net-install`:** la prueba que lo habría detectado. Un Stata limpio (`PLUS`, `PERSONAL`, `SITE` y `OLDPLACE` en un `/tmp` vacío; sin `SIMROOT`, sin `profile.do`, sin token) instala `AccesoBIE` por `net install` y baja el PIB trimestral (734407) con el token de cortesía. Exige 8 comprobaciones, entre ellas «Vía: API oficial», el csv en `c(tmpdir)` y nada en `/raw`. Por defecto el endpoint es local, armado desde la rama (corre antes de publicar); `--endpoint <url>` la corre contra el publicado. Contra el endpoint de v8.19.0 falla 4 de 8; contra la rama pasa 8/8.
+- **Institucional — gate de frescura en `publicar-endpoint.sh`:** en v8.19.0 el rsync dejó los archivos nuevos en el servidor y `net install` siguió entregando los viejos: el Varnish de Cloudways (perfil WordPress) los guarda 30 días, y la Fase 5 solo emitía un `WARN`. Ahora, tras el rsync, el script baja por la URL pública `stata.toc`, `AccesoBIE.ado` y `ensure_asset.ado` y los compara por sha256 con el disco del servidor y con lo publicado.
+  - Si no coinciden, sale con exit 3, registra `STALE-CACHE` en la bitácora e imprime la purga, nombrando la caché (o el deploy incompleto) como causa.
+  - `--verificar` corre solo el gate, sin backup ni rsync.
+- **Institucional — `05_scripts/endpoint.htaccess`:** cabeceras `Cache-Control: no-cache, no-store` para `.ado`, `.toc`, `.pkg` y `.sthlp` de la carpeta del endpoint. Va versionado, declarado en `manifest-endpoint.toml` (`[package] htaccess`, exigido por el Gate 4) y lo sube `publicar-endpoint.sh`. Verificado en el servidor real con una carpeta de prueba: Varnish las respeta (cada GET sale `MISS`). No limpia lo cacheado antes de que existieran: en ese caso, purga obligatoria (runbook §3, «Caché del endpoint»).
+- **Sin cambio, a propósito:** las copias sin git de `AccesoBIE.ado` (`04_5_ciep.mx/simuladorfiscal/`, `CIEP_Micrositios/…`, `Tabaco/Mayo2026/`) se quedan en la versión de v8.19.0; ninguna se sirve al público.
+
 ## [v8.19.0] — 2026-11-18
 
 ### [v8.19.0] — Token de cortesía CIEP en `AccesoBIE`: el Simulador consulta la API del INEGI recién instalado (rama `sesion/token-cortesia`, 2026-11-18)
