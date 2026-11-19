@@ -1,4 +1,4 @@
-*! version 8.6 CIEP 18nov2026 (token de cortesía CIEP: cascada token() > $BIE_API_TOKEN > cortesía; fuente BIE-BISE en la API; respaldo .aspx para los tres niveles; antes v8.15.2: dentro de UpdateSCN ($SCN_SOLO_ASSET) una serie sin asset aborta, salvo rawwip, que la baja y la declara en $SCN_CALIENTE; antes v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
+*! version 8.7 CIEP 18nov2026 (sin $SIMROOT descarga en c(tmpdir)/AccesoBIE/, sin crear nada en la raíz; antes v8.6: token de cortesía CIEP: cascada token() > $BIE_API_TOKEN > cortesía; fuente BIE-BISE en la API; respaldo .aspx para los tres niveles; antes v8.15.2: dentro de UpdateSCN ($SCN_SOLO_ASSET) una serie sin asset aborta, salvo rawwip, que la baja y la declara en $SCN_CALIENTE; antes v8.15b: asset congelado raw/SCN/bie/<serie>.csv antes de la red)
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
@@ -69,12 +69,28 @@ program define AccesoBIE
 	}
 	
 	quietly {
-		// Crear directorios temporales (mkdir no es recursivo: nivel por nivel;
-		// una instalación fresca no trae ni el directorio site/)
-		capture mkdir "${SIMROOT}"
-		capture mkdir "${SIMROOT}/raw/"
-		capture mkdir "${SIMROOT}/raw/temp/"
-		capture mkdir "${SIMROOT}/raw/temp/AccesoBIE/"
+		// Directorio de descargas (v8.7), el único que usan Stata y Python:
+		// dentro de la Carpeta del Simulador, ${SIMROOT}/raw/temp/AccesoBIE/ (igual
+		// que antes); sin $SIMROOT (instalación por net install, Stata limpio),
+		// c(tmpdir)/AccesoBIE/. Antes, sin $SIMROOT, se intentaba /raw/temp/ en la
+		// raíz del disco y la descarga tronaba en Python (FileNotFoundError).
+		// mkdir no es recursivo: nivel por nivel.
+		if `"$SIMROOT"' != "" {
+			capture mkdir "${SIMROOT}"
+			capture mkdir "${SIMROOT}/raw/"
+			capture mkdir "${SIMROOT}/raw/temp/"
+			global ACCESOBIE_DIR "${SIMROOT}/raw/temp/AccesoBIE/"
+		}
+		else {
+			local tmpdir = ustrregexra(`"`c(tmpdir)'"', "[/\\]+$", "")
+			global ACCESOBIE_DIR "`tmpdir'/AccesoBIE/"
+		}
+		capture mkdir "${ACCESOBIE_DIR}"
+		mata: st_local("okdir", strofreal(direxists(st_global("ACCESOBIE_DIR"))))
+		if !`okdir' {
+			noisily display as error `"AccesoBIE: no se pudo crear el directorio de descargas ${ACCESOBIE_DIR}"'
+			exit 603
+		}
 		
 		// Tokenizar las series
 		local nseries : word count `series'
@@ -104,13 +120,13 @@ program define AccesoBIE
 					global INEGI_AREAS_ERR_`serie' ""
 					exit 459
 				}
-				import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'_`area'.csv", clear varnames(1) encoding(utf-8) stringcols(1)
+				import delimited "${ACCESOBIE_DIR}`serie'_`area'.csv", clear varnames(1) encoding(utf-8) stringcols(1)
 				noisily display as text "  {c A'}rea " as result "`area'" as text " de `serie' | API (BISE): `=_N' observaciones"
 			}
 			else if "`area'" != "" {
 				// Modo area(): tabla completa del indicador (consulta pública),
 				// cacheada una vez por sesión; aquí se filtra el área pedida.
-				local csvareas "${SIMROOT}/raw/temp/AccesoBIE/`serie'_areas.csv"
+				local csvareas "${ACCESOBIE_DIR}`serie'_areas.csv"
 				global INEGI_AREAS_ERR_`serie' ""
 				python: inegi_area("`serie'")
 				if "${INEGI_AREAS_ERR_`serie'}" != "" {
@@ -135,8 +151,8 @@ program define AccesoBIE
 				// v8.15b (E4): asset congelado raw/SCN/bie/<serie>.csv (refrescar-scn.sh --congelar; sha256 verificado por
 				// SCNCongelado, que deja el sello): se usa sin tocar la red. Sin asset: descarga (API, respaldo .aspx) y se declara.
 				capture confirm file "${SIMROOT}/raw/SCN/bie/`serie'.csv"
-				if _rc == 0 & "$SCN_CONGELADO_SELLO" != "" & "$SCN_CONGELADO_SELLO" != "rojo" {
-					copy "${SIMROOT}/raw/SCN/bie/`serie'.csv" "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", replace
+				if _rc == 0 & `"$SIMROOT"' != "" & "$SCN_CONGELADO_SELLO" != "" & "$SCN_CONGELADO_SELLO" != "rojo" {
+					copy "${SIMROOT}/raw/SCN/bie/`serie'.csv" "${ACCESOBIE_DIR}`serie'.csv", replace
 					global INEGI_VARNAME_`serie' "v`serie'"
 					global INEGI_LABEL_`serie' "Serie `serie' (asset congelado raw/SCN)"
 					global INEGI_DESC_`serie' "asset congelado raw/SCN/bie/`serie'.csv (manifest scn_vintage; sin descarga)"
@@ -162,7 +178,7 @@ program define AccesoBIE
 				}
 				
 				// Importar los datos
-				import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
+				import delimited "${ACCESOBIE_DIR}`serie'.csv", clear varnames(1) encoding(utf-8)
 			}
 			
 			// Verificar que hay datos. Si una serie no se obtuvo por NINGUNA
@@ -350,7 +366,7 @@ def inegi_area(serie):
     (+ .meta). El filtro por área lo hace Stata al cargar. Escritura atómica:
     si la respuesta no trae tabla, ni columna de área, ni filas, se publica el
     error en INEGI_AREAS_ERR_<serie> y el último caché bueno queda intacto."""
-    root = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/'
+    root = Macro.getGlobal('ACCESOBIE_DIR')
     csv_path = root + serie + '_areas.csv'
     meta_path = root + serie + '_areas.meta'
 
@@ -397,7 +413,7 @@ def inegi_bise_area(serie, area, token):
     INEGI_AREAS_ERR_<serie> y el último caché bueno queda intacto. La API no
     devuelve el nombre del indicador (CL_INDICATOR exige otro tipo de token),
     así que la etiqueta es genérica; el llamador la fija con nombres()."""
-    root = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/'
+    root = Macro.getGlobal('ACCESOBIE_DIR')
     csv_path = root + serie + '_' + area + '.csv'
     titulo = f'Indicador BISE {serie}, área geográfica {area}'
     if Macro.getGlobal(f'INEGI_BISE_{serie}_{area}') == '1' and os.path.exists(csv_path):
@@ -535,7 +551,7 @@ def inegi_api(serie, token):
     
     # Si todo falla después de todos los reintentos, crear archivo vacío
     print(f"  Error: No se encontraron datos para la serie {serie} después de {MAX_RETRIES} intentos")
-    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('ACCESOBIE_DIR') + serie + '.csv'
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', f'v{serie}')
@@ -664,7 +680,7 @@ def save_data_api(serie, observations, indicator_name, banco):
     observations = sorted((obs for obs in observations if (obs.get('TIME_PERIOD') or '') >= AAMIN),
                           key=lambda obs: obs['TIME_PERIOD'])
     
-    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('ACCESOBIE_DIR') + serie + '.csv'
     
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
@@ -690,7 +706,7 @@ def save_data_scraping(serie, data_rows, indicator_name):
     set_metadata(serie, indicator_name)
     Macro.setGlobal(f'INEGI_VIA_{serie}', 'respaldo .aspx')
     
-    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('ACCESOBIE_DIR') + serie + '.csv'
     
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
