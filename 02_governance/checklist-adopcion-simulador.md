@@ -1,0 +1,41 @@
+# Checklist de adopción: simuladores de la familia CIEP
+
+**Qué es.** El mínimo que debe cumplir cualquier simulador del CIEP que no sea el Simulador Fiscal: un «orden mínimo digno», no la gobernanza completa de este repo (sin CUAD, sin gates de publicación ni sidecar de datos). Salió de aplicarlo dos veces, en noviembre de 2026, al rescatar a git los simuladores de Tabaco y Tenencia: el PHP de los dos solo existía en el servidor y en carpetas de Dropbox con fecha en el nombre. Después se contrastó con la Herramienta de Expansión de la Educación Inicial (HEEI), que se había ordenado por su cuenta.
+
+**Cómo se usa.** Cada punto trae su verificación: un comando o un archivo que se puede mirar. Un simulador «adopta» la checklist cuando todos los puntos están en ✓ o en N/A justificado. La plantilla de los archivos (`.gitleaks.toml`, `scripts/hooks/pre-commit`, `scripts/verify_gitignore.sh`, `scripts/deploy-web.sh`, `deploys/bitacora.md`) está en el repo `SimuladorTabaco`: se copia y se ajustan destino y casos.
+
+## La lista
+
+| # | Requisito | Verificación |
+|---|---|---|
+| 1 | **Repo git propio, privado al nacer, sin secretos.** `.gitleaks.toml` con la regla de UUID de la familia (las reglas por defecto de gitleaks **no** reconocen un token del INEGI: tiene forma de UUID y no trae prefijo; el único UUID permitido es el de cortesía, y solo en `AccesoBIE.ado`) y un hook `pre-commit` que corre gitleaks y rechaza archivos de más de 10 MB. El hook se instala en cada clon (`cp scripts/hooks/pre-commit .git/hooks/`). | `gh repo view --json visibility` → `PRIVATE`; `gitleaks git --config .gitleaks.toml` → `no leaks found`; un UUID de prueba en un `.do` hace fallar el hook |
+| 2 | **README** con propósito, cómo correr (incluido el modo batch) y **mapa de datos externos**: qué archivo, para qué, cuánto pesa, de dónde se obtiene y, si es insumo no reproducible, su sha256 y dónde viaja (asset del Release). | leer el README; cada ruta del `.gitignore` que excluye datos aparece en el mapa |
+| 3 | **CHANGELOG y tags anotados SemVer** por cada versión desplegada, desde `v1.0.0` (= primer estado bajo control de versiones, sin historia inventada). **Ninguna carpeta ni archivo con fecha como mecanismo de versión.** Lo histórico se queda congelado fuera del repo (Dropbox) y el README lo enlista con ruta y fechas, o vive en `legado/<tema>/` con su README. | `git tag -n` (tipo `tag`, no ligero); `git ls-files` sin nombres de mes o año como versión |
+| 4 | **Token del INEGI por la cascada de cortesía** (`politicas-institucionales.md` §3.4): opción `token()` → `$BIE_API_TOKEN` de `set_token.do` (ignorado) → token de cortesía. Jamás un token personal en un archivo versionado. | `git check-ignore set_token.do`; el punto 1 |
+| 5 | **Deploy por script con verificación, nunca rsync a mano.** Desde un clon limpio (nunca desde Dropbox), con manifiesto de los archivos esperados y `sha256sum -c` en el destino: N de N OK o falla. Si el servidor es un checkout de git, el commit desplegado verifica el código y el manifiesto cubre solo lo que no viaja por git. Después, humo en el servidor **con el usuario de la web** (`www-data`). | `scripts/deploy-web.sh` (simulación por omisión, `--ejecutar` para desplegar); salida `N de N OK` |
+| 6 | **Entrada web validada en un solo lugar** (`seguridad.php` o equivalente). Jamás se mete un valor del usuario en `shell_exec`/`exec` ni en el `.do` sin validarlo: identificadores en lista blanca anclada con `\A…\z` (no `^…$`, que acepta un salto de línea final), números contra una gramática, nombres reservados rechazados; una sola llamada al shell, armada con `escapeshellarg`; archivos con funciones de PHP (`copy`, `unlink`, `mkdir`), no con `rm`/`cp` por shell; nada de `eval` sobre datos. Mejor aún: el identificador de sesión lo genera el servidor. | inventario con el tokenizador de PHP: la única llamada al shell pasa por el validador; batería de inyección con control negativo (el código viejo debe resultar vulnerable) |
+| 7 | **Bitácora append-only de lo desplegado** (`deploys/bitacora.md`): fecha, versión o commit, destino, qué, verificación y quién. Las correcciones son renglones nuevos. | el último renglón coincide con el último tag desplegado |
+| 8 | **Precisión explícita: `set type double`** al inicio de toda la cadena de do-files. El Stata del servidor arranca con `c(type)=float` y trunca a precisión simple lo que se genera sin tipo (incidente de HEEI, 15-ago-2026); la Mac de desarrollo tiene `double` y no lo delata. | `grep -n "set type double"` en el `.do` de entrada; humo en el servidor (punto 5) |
+| 9 | **Baseline por versión:** antes de cada tag, corrida del pipeline de principio a fin, con la salida de referencia versionada (`baseline/`) y su `LEEME.md` (qué se corrió, con qué Stata, contra qué se comparó). El éxito se mide con centinela o con «sin `r(…)` en el log», porque `stata -b` termina con 0 aunque el do-file truene. Se regenera solo con una razón escrita. Si el pipeline no corre completo, no hay tag. | `baseline/LEEME.md`; repetir la receta y comparar |
+
+## Estado (2026-11-18)
+
+| # | SimuladorTabaco `v1.0.0` | SimuladorTenencia `v1.0.0` | HEEI (validación) |
+|---|---|---|---|
+| 1 | ✓ (falta crear el remoto privado) | ✓ (falta crear el remoto privado) | Privado ✓ · sin gitleaks ✗ |
+| 2 | ✓ | ✓ (con el sha256 de `tecnico_nacional.dta`, asset del Release) | ✓ (`README.md` y «Dependencias externas» en `SIM/README.md`) |
+| 3 | ✓ | ✓ | ✗: sin CHANGELOG; dos tags ligeros con fecha en el nombre; `legado/<año>-<tema>/` |
+| 4 | ✓ cascada de cortesía | N/A: el motor no usa el token; `AccesoBIE.do` viejo (sin token) solo con `update`. Pendiente si se reactiva | ✓ usa el `AccesoBIE` del Simulador |
+| 5 | ✓ `deploy-web.sh`; el humo es todavía manual | ✓ ídem | ✓ y más completo: árbol limpio y `HEAD == origin`, `git pull` en el servidor, manifiesto de artefactos pesados y humo como `www-data` |
+| 6 | ✓ `seguridad.php` (batería 253/253) | ✓ `seguridad.php` gemelo (170/170) | ✓ `heei_validar()` más `exec` con `escapeshellarg`, sesión generada por el servidor; `descarga.php` ancla con `^…$` (sin impacto: no hay shell ni rutas fuera de `users/`) |
+| 7 | ✓ | ✓ | ✗: el commit desplegado se puede leer en el servidor, pero no hay registro de cuándo ni de quién |
+| 8 | ✗ pendiente | ✗ pendiente | ✓ |
+| 9 | ✓ sin `update`, camino web y con `update` | ✓ resultados idénticos byte a byte a producción | ✓ (`WEB/referencia/` y la suite de humo) |
+
+## Qué cambió al contrastar con HEEI
+
+- **Se agregaron los puntos 8 y 9.** HEEI ya los cumplía y las dos adopciones no los traían. El 8 viene de un incidente real de precisión en el servidor; el 9 lo exigió el rescate (sin baseline no hubo tag) y HEEI lo resolvió con su referencia de humo y el centinela `exito.txt`.
+- **Punto 5:** se agregaron «desde el clon, nunca desde Dropbox», «humo con el usuario de la web» y la variante de servidor como checkout de git. Las tres vienen de `WEB/deploy.sh` de HEEI.
+- **Punto 6:** se agregó «el identificador de sesión lo genera el servidor» (así lo hace HEEI) y el anclaje `\A…\z`.
+- **Punto 3:** la regla quedó como «ninguna fecha **como mecanismo de versión**». HEEI guarda lo retirado en `legado/<año>-<tema>/` con README, que es archivo histórico y no versión. Para Tabaco y Tenencia se decidió no traer legado al repo. **Decisión abierta:** si `legado/` puede llevar el año en el nombre o debe quedar como `legado/<tema>/`.
+- **Lo que la lista no exige, porque en estos simuladores resultó innecesario:** el sidecar de datos del Simulador Fiscal (manifiesto más `ensure_asset`). En un simulador chico se decide archivo por archivo: fuera de git y documentado en el README, o asset del Release con sha256 si es insumo no reproducible.

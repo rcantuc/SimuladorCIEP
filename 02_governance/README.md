@@ -24,6 +24,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 | `politicas-institucionales.md` | Parte I: gestión de secretos y credenciales (qué es secreto, dónde vive, qué hacer si se compromete; §3.4, la excepción única de los tokens de cortesía). Parte II: ciclo de vida de productos del Ecosistema CIEP. |
 | `runbook-deploys-ciep.md` | Comandos para publicar un release a las tres caras (Git → endpoint Stata → VPS web), por tipo de release, con rollback. |
 | `runbook-actualizar-assets.md` | Qué es el manifiesto, por qué existe el candado `ensure_asset` y los pasos exactos para actualizar un archivo de datos sin romperlo. |
+| `checklist-adopcion-simulador.md` | El mínimo que debe cumplir cualquier otro simulador de la familia (Tabaco, Tenencia, HEEI…): repo privado sin secretos, README con datos externos, SemVer, token de cortesía, deploy verificado, validación de entrada, bitácora, precisión y baseline; con el estado de cada uno. |
 
 ## Registro y datos operativos
 
