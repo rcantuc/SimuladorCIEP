@@ -305,7 +305,7 @@ Reemplaza al patrón fósil `noisily di %fmt = scalar(...)` + relectura de log.
   garantiza que cada valor del libro tiene precisión completa y tipo semántico
   declarado. Corolario operativo: los sin-registrar de cada corrida se
   comparan AUTOMÁTICAMENTE contra el **baseline auditado**
-  `02_governance/scalarlatex-baseline.txt` (228 en v8.0.13: 211 scalars de
+  `05_scripts/fixtures/scalarlatex-baseline.txt` (228 en v8.0.13: 211 scalars de
   trabajo que el libro no referencia + 17 consumidos as-is numéricos, ver
   CHANGELOG v8.0.13). Dentro del baseline → línea informativa (sin dump);
   nombres NUEVOS → aviso en rojo con esos nombres: drift real (typo

@@ -2,7 +2,7 @@
 *
 * REGLA DURA (governance): scalarjson es un exportador HERMANO DE SOLO LECTURA.
 * NO modifica scalarlatex.ado, NI el registro $scalarlatex_reg, NI el baseline
-* auditado 02_governance/scalarlatex-baseline.txt (no lo lee siquiera: ese
+* auditado 05_scripts/fixtures/scalarlatex-baseline.txt (no lo lee siquiera: ese
 * baseline gobierna la cobertura del libro, no la de un nodo).
 *
 * NO CALCULA. Todo valor que escribe ya existe: o en el registro de escalares

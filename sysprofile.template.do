@@ -1,5 +1,5 @@
 * ============================================================================
-* sysprofile-template.do — PLANTILLA del sysprofile personal
+* sysprofile.template.do — PLANTILLA del sysprofile personal
 * ============================================================================
 *
 * Copia este archivo como sysprofile.do en el directorio donde Stata busca

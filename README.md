@@ -69,7 +69,7 @@ Además de facilitar la descarga de indicadores económicos, el simulador tiene 
 **1. Pre-análisis:** Destaca automáticamente la información más relevante en un formato estructurado, claro y comprensible.
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="03_help/images/Ventana de Resultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
+    <img src="03_help/images/VentanaResultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
 </div>
 
 

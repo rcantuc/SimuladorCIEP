@@ -2532,7 +2532,7 @@ if ($deployed_version !== "") {
 							<div class="col-xl-4 pr-5 fc-toolbar">
 								<h4><b>Public</b> obligations</h4>
                                 <p class="card-text">
-									Expenditures on <a href="images/Salud_2025.png" data-toggle="lightbox">health</a>, <a href="images/Educación_2025.png" data-toggle="lightbox">education</a>, <a href="images/Pensiones_2025.png" data-toggle="lightbox">pensions</a>, <a href="images/Pensión_AM_2025.png" data-toggle="lightbox">senior citizen pensions</a> and other social programs are heavily influenced by the demographic composition of the population. Meanwhile, amortization and the financial cost of public debt depend on financial variables such as accumulated balances, current interest rates, and exchange rates.
+									Expenditures on <a href="images/Salud_2025.png" data-toggle="lightbox">health</a>, <a href="images/Educacion_2025.png" data-toggle="lightbox">education</a>, <a href="images/Pensiones_2025.png" data-toggle="lightbox">pensions</a>, <a href="images/Pension_AM_2025.png" data-toggle="lightbox">senior citizen pensions</a> and other social programs are heavily influenced by the demographic composition of the population. Meanwhile, amortization and the financial cost of public debt depend on financial variables such as accumulated balances, current interest rates, and exchange rates.
                                 </p>
 
 								<p>

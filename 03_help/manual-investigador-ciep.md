@@ -324,7 +324,7 @@ Detalle: `help TasasEfectivas`
 
 | Regla | Por qué |
 |---|---|
-| No edites los archivos `.ado` ni los archivos de configuración (`profile.do`, `SIM.do`, `sysprofile-template.do`) | Son el motor compartido. Un cambio tuyo afecta a todo el equipo, porque Dropbox lo sincroniza a todas las máquinas. |
+| No edites los archivos `.ado` ni los archivos de configuración (`profile.do`, `SIM.do`, `sysprofile.template.do`) | Son el motor compartido. Un cambio tuyo afecta a todo el equipo, porque Dropbox lo sincroniza a todas las máquinas. |
 | No guardes archivos fuera de tu carpeta `users/` | Todo lo que quede fuera se mezcla con el motor y estorba a los demás. |
 | No borres los directorios con prefijo numérico (`01_modulos/`, `02_governance/`, `03_help/`, `04_1_simuladorfiscal.ciep.mx/` y las demás `04_*`, `05_scripts/`) | Contienen código, documentación y configuración que NO se regeneran solos. Ver sección 5.3. |
 | No "arregles" un error del Simulador por tu cuenta | Repórtalo (sección 8). Si lo parchas localmente, tu copia diverge de la del equipo y tus resultados dejan de ser comparables. |
@@ -376,7 +376,7 @@ git clone https://github.com/rcantuc/SimuladorCIEP.git ~/experimental/SimuladorC
 
 Qué esperas ver: mensajes de descarga (`Cloning into...`, contadores de objetos) y al final una carpeta `~/experimental/SimuladorCIEP` con el proyecto completo. Si falla con `git: command not found`, tu máquina no tiene Git instalado; pídeselo al investigador principal.
 
-**Paso 2 — Configura tu sysprofile para elegir clon al abrir Stata.** El *sysprofile* es un pequeño archivo de configuración (`sysprofile.do`) que vive en tu instalación de Stata y le dice dónde está el Simulador. La plantilla `sysprofile-template.do` (en la raíz del Simulador) trae los dos casos documentados: un solo clon (lo normal) y un menú para elegir entre varios clones cada vez que abres Stata. Copia la plantilla como `sysprofile.do` en la carpeta de tu instalación de Stata, descomenta el menú del "CASO 2" y ajusta las rutas a tus clones.
+**Paso 2 — Configura tu sysprofile para elegir clon al abrir Stata.** El *sysprofile* es un pequeño archivo de configuración (`sysprofile.do`) que vive en tu instalación de Stata y le dice dónde está el Simulador. La plantilla `sysprofile.template.do` (en la raíz del Simulador) trae los dos casos documentados: un solo clon (lo normal) y un menú para elegir entre varios clones cada vez que abres Stata. Copia la plantilla como `sysprofile.do` en la carpeta de tu instalación de Stata, descomenta el menú del "CASO 2" y ajusta las rutas a tus clones.
 
 Qué esperas ver: al abrir Stata, un menú te pregunta qué proyecto cargar; escribes el número y esa sesión trabaja contra el clon elegido.
 
