@@ -774,7 +774,8 @@ Dos cosas de la raíz son estado de **un** clon, no del proyecto, y cada una se 
   Si `master` trae un `.stpr` nuevo, `git pull` se queja de que el archivo local cambiaría: `--no-skip-worktree`,
   `git checkout -- simulador.stpr`, `pull`, y de nuevo `--skip-worktree`. Los worktrees de sesión y de corrida no lo
   necesitan (no abren el Project Manager). No usar `assume-unchanged` para esto: es una pista de rendimiento, no una
-  promesa, y git la descarta cuando le conviene.
+  promesa, y git la descarta cuando le conviene. Un PR que mueve o renombra archivos actualiza sus rutas en el panel
+  en el mismo PR, y el Gate 12 de `publicar.sh` lo verifica: `versionado-y-git.md` §2.5.
 
 ---
 

@@ -19,6 +19,7 @@ Este documento reúne dos piezas que antes vivían en archivos separados de esta
 
 1. [Principios y convención de mensajes de commit](#1-principios-y-convención-de-mensajes-de-commit)
 2. [Flujo de ramas y pull request](#2-flujo-de-ramas-y-pull-request)
+   - [2.5 El panel de proyecto (`simulador.stpr`)](#25-el-panel-de-proyecto-simuladorstpr)
 3. [Versionado y publicaciones](#3-versionado-y-publicaciones)
    - [3.1 Qué significa cada número de versión](#31-qué-significa-cada-número-de-versión)
    - [3.2 Cuándo sube cada número de versión](#32-cuándo-sube-cada-número-de-versión)
@@ -125,6 +126,15 @@ Mientras un pull request está abierto, hay condiciones que tienen que cumplirse
 - **Si el cambio toca el `.gitignore`,** la verificación obligatoria del §6 corre y pasa. Sin verificación verde, no se integra a `master`. Esta condición no es opcional.
 - **Si el cambio toca un módulo de cálculo del Simulador Fiscal CIEP,** la corrida de prueba (`SIM.do` end-to-end o el subset relevante) pasa. El procedimiento detallado de pruebas de regresión es objeto de un documento futuro de governance; aquí basta establecer que la corrida tiene que pasar.
 - **Quien revisa no es el mismo que quien propuso.** Auto-aprobar un pull request anula el sentido del flujo.
+- **Si el cambio mueve o renombra archivos,** las rutas correspondientes de `simulador.stpr` se actualizan en el mismo pull request (§2.5) y el Gate 12 de `publicar.sh --ci` pasa.
+
+### 2.5 El panel de proyecto (`simulador.stpr`)
+
+`simulador.stpr` es el panel del Project Manager de Stata de Ricardo: se versiona, y Ricardo lo edita a propósito para mantener sus rutas. Sus cambios se conservan; nadie lo saca de git ni lo reemplaza por una copia aparte. Regla (2026-11-19):
+
+1. **Todo PR que mueva o renombre archivos actualiza, en el mismo PR, las rutas de esos archivos en `simulador.stpr`.** Solo esas rutas: `python3 05_scripts/stpr.py mover <viejo>=<nuevo> [...]` reescribe el campo `path` de cada entrada y deja intactos el nombre que muestra el panel, el orden y el resto del archivo (una carpeta movida se escribe `carpeta/vieja=carpeta/nueva`). Se edita con el script, no con el Project Manager, para que el diff sea solo de rutas.
+2. **El orden del panel y qué archivos aparecen en él son decisiones de Ricardo.** Un PR no agrega, quita ni reordena entradas. Si crea archivos que podrían entrar al panel, los propone en su descripción y Ricardo decide.
+3. **Compuerta:** el Gate 12 de `publicar.sh` (`--check` y `--ci`) exige que cada ruta de archivo del panel exista en el repo (`python3 05_scripts/stpr.py verificar`). Una ruta absoluta o que sale del repo es falla: no viaja entre clones. Un archivo que `.gitignore` excluye a propósito (hoy solo `set_token.do`, el token personal) no puede existir en un checkout limpio y es aviso, no falla. Si una ruta está rota porque el archivo ya no existe, quitarla es decisión de Ricardo.
 
 ---
 

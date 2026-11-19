@@ -26,6 +26,8 @@
 #      Gate 10 que CITATION.cff lleve la versión y la fecha del manifest.
 #   5c. (v8.15b-pre) Gate 11: manifest.json declara `baseline` (tag desde el que los números publicados son
 #      comparables; CUAD-0 §4 ter) y ese tag existe. Obligatorio desde v8.15.0; antes, informativo. También en --ci.
+#   5d. (limpieza 2026-11) Gate 12: cada ruta de archivo de simulador.stpr (el panel de Ricardo) existe en el repo
+#      (05_scripts/stpr.py verificar). También en --ci.
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
@@ -1029,6 +1031,24 @@ gate_citation() {
     return 0
 }
 
+# Gate 12 — el panel de proyecto (limpieza 2026-11). simulador.stpr es el panel del Project Manager de Ricardo y se
+# versiona; todo PR que mueve o renombra un archivo actualiza su ruta en el panel en el mismo PR (versionado-y-git.md §2.5).
+# El gate exige que cada ruta de archivo del panel exista en el repo; los archivos que .gitignore excluye a propósito
+# (set_token.do) son aviso. Estático: corre también en --ci.
+gate_stpr() {
+    local out
+    if out="$(python3 -I "$REPO_ROOT/05_scripts/stpr.py" verificar --stpr "$REPO_ROOT/simulador.stpr" 2>&1)"; then
+        while IFS= read -r l; do [[ "$l" == *AVISO* ]] && log_warn "Gate 12:${l#  AVISO:}"; done <<< "$out"
+        log_info "✓ Gate 12: panel de proyecto — $(tail -n 1 <<< "$out" | sed 's/^stpr.py verificar: //')"
+        return 0
+    fi
+    log_error "Gate 12 FALLO: simulador.stpr lista rutas que no existen en el repo:"
+    grep -E 'ROTA|Error|error' <<< "$out" | sed 's/^/        /' >&2
+    log_error "        Si un PR movió o renombró el archivo: python3 05_scripts/stpr.py mover <viejo>=<nuevo> (solo la ruta)."
+    log_error "        Si el archivo ya no existe, quitarlo del panel es decisión de Ricardo (Project Manager de Stata)."
+    return 1
+}
+
 # Gate 11 — baseline (v8.15b-pre, 2026-10-31; CUAD-0 §4 ter, decisión 14). 05_scripts/manifest.json declara `baseline`: el tag
 # desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión (la última
 # corrección de datos). El gate exige que el campo exista, que sea un tag (local o en origin: el checkout de CI puede venir
@@ -1209,14 +1229,15 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     fi
     gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_baseline "$VERSION"       || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_stpr                      || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."   # también en --ci
         exit 1
     fi
     if [[ "$CI_MODE" == "true" ]]; then
-        log_info "--ci: los 9 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
+        log_info "--ci: los 10 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
     else
-        log_info "--check: los 11 gates pasaron para $VERSION."
+        log_info "--check: los 12 gates pasaron para $VERSION."
     fi
     exit 0
 fi
@@ -1289,6 +1310,7 @@ gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_baseline "$VERSION"       || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_stpr                      || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi
