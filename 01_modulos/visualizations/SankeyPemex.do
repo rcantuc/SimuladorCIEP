@@ -4,8 +4,17 @@
 ***                          ***
 ********************************
 clear all
-if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+if `"${SIMROOT}"' == "" {
+	di as err "SankeyPemex.do: falta la global SIMROOT (la raíz del repo). Corre antes profile.do o SIM.do §0, o define: global SIMROOT \"<carpeta del repo>\""
+	exit 198
+}
+if "$id" == "" {
+	di as err "SankeyPemex.do: falta la global id (la carpeta users/<id>/ donde SankeySumLoop escribe SankeyPemex/). Corre antes profile.do o SIM.do §0, o define: global id \"<usuario>\""
+	exit 198
+}
+capture mkdir "${SIMROOT}/raw/temp"
+capture mkdir "${SIMROOT}/users/$id"
+capture mkdir "${SIMROOT}/users/$id/SankeyPemex"
 cd "${SIMROOT}"
 
 
@@ -20,43 +29,43 @@ if "`1'" == "update" {
 	DatosAbiertos XKC0106, nog
 	rename monto Ventas
 	keep anio Ventas
-	save "raw/temp/XKC0106.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0106.dta", replace
 
 	** 1.2. Otros ingresos **
 	DatosAbiertos XKC0179, nog
 	rename monto OtrosIngresos
 	keep anio OtrosIngresos
-	save "raw/temp/XKC0179.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0179.dta", replace
 
 	** 2.1. Derechos y enteros **
 	DatosAbiertos XKC0113, nog
 	rename monto Derechos
 	keep anio Derechos
-	save "raw/temp/XKC0113.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0113.dta", replace
 
 	** 2.2. Gasto programable **
 	DatosAbiertos XKC0131, nog
 	rename monto Programable
 	keep anio Programable
-	save "raw/temp/XKC0131.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0131.dta", replace
 
 	** 2.2.1 Pensiones y jubilaciones **
 	DatosAbiertos XKC0139, nog
 	rename monto Pensiones
 	keep anio Pensiones
-	save "raw/temp/XKC0139.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0139.dta", replace
 
 	** 2.2.2. Gastos de inversión **
 	DatosAbiertos XKC0145, nog
 	rename monto Inversion
 	keep anio Inversion
-	save "raw/temp/XKC0145.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0145.dta", replace
 
 	** 2.3. Gasto no programable **
 	DatosAbiertos XKC0157, nog
 	rename monto NoProgramable
 	keep anio NoProgramable
-	save "raw/temp/XKC0157.dta", replace
+	save "${SIMROOT}/raw/temp/XKC0157.dta", replace
 }
 
 
@@ -126,8 +135,8 @@ forvalues anio = 2019(1)2025 {
 	*** Eje 1: Ingresos propios (PEMEX) ***
 	***                                 ***
 	***************************************
-	use "raw/temp/XKC0106.dta", clear
-	append using "raw/temp/XKC0179.dta"
+	use "${SIMROOT}/raw/temp/XKC0106.dta", clear
+	append using "${SIMROOT}/raw/temp/XKC0179.dta"
 
 	collapse (sum) Ing_Propios__Ventas=Ventas ///
 		Ing_Propios_Otros_Ingresos=OtrosIngresos ///
@@ -157,11 +166,11 @@ forvalues anio = 2019(1)2025 {
 	*** Eje 2: Gastos operativos, financieros e impuestos ***
 	***                                                   ***
 	*********************************************************
-	use "raw/temp/XKC0113.dta", clear
-	append using "raw/temp/XKC0131.dta"
-	append using "raw/temp/XKC0157.dta"
-	append using "raw/temp/XKC0139.dta"
-	append using "raw/temp/XKC0145.dta"
+	use "${SIMROOT}/raw/temp/XKC0113.dta", clear
+	append using "${SIMROOT}/raw/temp/XKC0131.dta"
+	append using "${SIMROOT}/raw/temp/XKC0157.dta"
+	append using "${SIMROOT}/raw/temp/XKC0139.dta"
+	append using "${SIMROOT}/raw/temp/XKC0145.dta"
 
 	collapse (sum) Gastos_Derechos_y_Enteros=Derechos ///
 		Gastos__Gastos_Operativos=Programable ///

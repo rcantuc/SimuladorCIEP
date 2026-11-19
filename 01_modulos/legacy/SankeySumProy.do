@@ -4,11 +4,18 @@
 ***                          ***
 ********************************
 clear all
-if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-cd "`c(sysdir_personal)'"
+if `"${SIMROOT}"' == "" {
+	di as err "SankeySumProy.do: falta la global SIMROOT (la raíz del repo). Corre antes profile.do o SIM.do §0, o define: global SIMROOT \"<carpeta del repo>\""
+	exit 198
+}
+if "$id" == "" {
+	di as err "SankeySumProy.do: falta la global id (la carpeta users/<id>/ donde SankeySumLoop escribe SankeyPemex/). Corre antes profile.do o SIM.do §0, o define: global id \"<usuario>\""
+	exit 198
+}
+capture mkdir "${SIMROOT}/raw/temp"
+capture mkdir "${SIMROOT}/users/$id"
+capture mkdir "${SIMROOT}/users/$id/SankeyPemex"
+cd "${SIMROOT}"
 
 
 *************************
