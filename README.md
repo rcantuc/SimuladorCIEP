@@ -220,6 +220,8 @@ Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo re
 
 Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura.md`](02_governance/arquitectura.md).
 
+La numeración de las carpetas `04_*` salta a propósito: `04_2`, `04_4` y `04_5` son carpetas locales que no se versionan (`04_2_documentos_latex/`, `04_4_libro.ciep.mx/` y `04_5_ciep.mx/`, en `.gitignore`); en el repo solo están `04_1_simuladorfiscal.ciep.mx/` (el sitio) y `04_3_anteriores/` (las versiones anteriores).
+
 ### Archivos principales
 
 #### `simulador.stpr`
