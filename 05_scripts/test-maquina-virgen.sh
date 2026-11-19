@@ -52,11 +52,23 @@
 #                --completo, corre SIM.do entero (descarga ~1.3 GB y construye todo:
 #                ~1 h) y exige TOUCH-DOWN.
 #
+#   --net-install  (dinamico, ~1 min, red al INEGI; v8.19.1)  La via del usuario EXTERNO del endpoint: un Stata
+#                limpio (macro drop _all; PLUS, PERSONAL, SITE y OLDPLACE en un /tmp vacio; sin SIMROOT, sin
+#                profile.do, sin BIE_API_TOKEN) hace `net from <endpoint>` y `net install AccesoBIE` y baja una
+#                serie real (734407, PIB trimestral) con el token de cortesia. Exito = la serie llega por la API
+#                oficial, el aviso dice «token de cortesía», la descarga queda en c(tmpdir)/AccesoBIE/, no se
+#                creo /raw en la raiz y 0 r(#);. Por defecto el endpoint es LOCAL: una carpeta armada con los
+#                archivos de manifest-endpoint.toml de ESTE arbol (lo que publicar-endpoint.sh subiria), asi el
+#                test corre antes de publicar. --endpoint <url> lo corre contra el publicado (despues de
+#                publicar.sh; p. ej. https://ciep.mx/simuladorfiscal/). Lo habria detectado en v8.19.0: sin
+#                SIMROOT, AccesoBIE escribia en /raw/temp/ y tronaba con FileNotFoundError.
+#
 # Uso: bash 05_scripts/test-maquina-virgen.sh --cobertura
 #      bash 05_scripts/test-maquina-virgen.sh --download [--stata <ruta stata-se>]
 #      bash 05_scripts/test-maquina-virgen.sh --download --from <tag> [--into <dir>]
 #      bash 05_scripts/test-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" [--into <raiz>] [--stata <ruta>]
 #      bash 05_scripts/test-maquina-virgen.sh --zip [--completo] [--stata <ruta>]
+#      bash 05_scripts/test-maquina-virgen.sh --net-install [--endpoint <url>] [--stata <ruta>]
 # Exit 0 si pasa; 1 si falla (lista lo que falta).
 
 set -uo pipefail
@@ -71,11 +83,14 @@ COMPLETO=false
 FROM_TAG=""
 INTO_DIR=""
 VINTAGES=""
+ENDPOINT=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --cobertura) MODE="cobertura"; shift ;;
         --download)  MODE="download"; shift ;;
         --zip)       MODE="zip"; shift ;;
+        --net-install) MODE="netinstall"; shift ;;
+        --endpoint)  ENDPOINT="${2:-}"; shift 2 ;;
         --completo)  COMPLETO=true; shift ;;
         --stata)     STATA="$2"; shift 2 ;;
         --from)      FROM_TAG="${2:-}"; shift 2 ;;
@@ -84,7 +99,8 @@ while [[ $# -gt 0 ]]; do
         *) echo "Argumento desconocido: $1" >&2; exit 1 ;;
     esac
 done
-[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] [--from <tag> [--into <dir>]] [--vintages \"<t ...>\" [--into <raiz>]] | --zip [--completo]" >&2; exit 1; }
+[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] [--from <tag> [--into <dir>]] [--vintages \"<t ...>\" [--into <raiz>]] | --zip [--completo] | --net-install [--endpoint <url>]" >&2; exit 1; }
+[[ -n "$ENDPOINT" && "$MODE" != "netinstall" ]] && { echo "--endpoint solo aplica con --net-install." >&2; exit 1; }
 if [[ -n "$FROM_TAG" || -n "$INTO_DIR" || -n "$VINTAGES" ]] && [[ "$MODE" != "download" ]]; then
     echo "--from/--into/--vintages solo aplican con --download." >&2; exit 1
 fi
@@ -287,6 +303,67 @@ if [[ "$MODE" == "download" && -n "$VINTAGES" ]]; then
         echo "MAQUINA VIRGEN (--vintages): $fallas vintage(s) fallaron."; exit 1
     fi
     echo "MAQUINA VIRGEN (--vintages): todos los vintages pedidos ($VINTAGES) dejaron users/$USUARIO-v<t>/aportaciones.dta con las variables que lee la banda."
+    exit 0
+fi
+
+# ─── Modo --net-install: el usuario externo del endpoint (Stata limpio, sin SIMROOT ni profile.do) ───
+if [[ "$MODE" == "netinstall" ]]; then
+    BASE="$(mktemp -d /tmp/simulador-netinstall.XXXXXX)"
+    mkdir -p "$BASE/ado" "$BASE/site" "$BASE/cwd" "$BASE/tmpdir"
+    if [[ -z "$ENDPOINT" ]]; then
+        # endpoint local: los archivos que publicar-endpoint.sh subiria desde este arbol, mas su stata.toc
+        mkdir -p "$BASE/endpoint"
+        python3 -I - "$REPO_ROOT" "$BASE/endpoint" <<'PYEOF' || { echo "NET INSTALL: no pude armar el endpoint local desde manifest-endpoint.toml" >&2; exit 1; }
+import os, shutil, sys, tomllib
+root, dst = sys.argv[1:3]
+m = tomllib.load(open(os.path.join(root, '05_scripts/manifest-endpoint.toml'), 'rb'))
+for kind in ('ado_files', 'sthlp_files', 'pkg_files'):
+    for f in m['package'][kind]:
+        shutil.copy(os.path.join(root, f), dst)
+with open(os.path.join(dst, 'stata.toc'), 'w', encoding='utf-8') as t:
+    t.write('v 3\nd ' + m['toc']['title'] + '\nd endpoint local de test-maquina-virgen.sh\n\n')
+    for k, v in m['toc']['packages'].items():
+        t.write(f'p {k}\nd {v}\n\n')
+PYEOF
+        FUENTE="$BASE/endpoint"
+    else
+        FUENTE="$ENDPOINT"
+    fi
+    RAIZ_ANTES=false; [[ -e /raw ]] && RAIZ_ANTES=true
+    # c(tmpdir) de la sesion = TMPDIR: una carpeta propia, para verificar ahi la descarga
+    cat > "$BASE/cwd/netinstall.do" <<EOF
+macro drop _all
+sysdir set PLUS "$BASE/ado/"
+sysdir set PERSONAL "$BASE/ado/"
+sysdir set OLDPLACE "$BASE/ado/"
+sysdir set SITE "$BASE/site/"
+di "SIMROOT=[\$SIMROOT] BIE_API_TOKEN=[\$BIE_API_TOKEN] tmpdir=[\`c(tmpdir)']"
+net from "$FUENTE"
+net install AccesoBIE, replace
+which AccesoBIE
+AccesoBIE 734407, nombres(pibQ)
+assert _N > 100 & !missing(pibQ[_N])
+di "NETINSTALL_OK N=" _N
+EOF
+    echo "NET INSTALL desde: $FUENTE"
+    ( cd "$BASE/cwd" && TMPDIR="$BASE/tmpdir/" "$STATA" -b do netinstall.do < /dev/null )
+    L="$BASE/cwd/netinstall.log"; fallas=0
+    chk() { if eval "$2"; then echo "  OK    $1"; else echo "  FALLO $1" >&2; fallas=$((fallas+1)); fi; }
+    chk "Stata limpio: sin SIMROOT ni BIE_API_TOKEN" "grep -qF 'SIMROOT=[] BIE_API_TOKEN=[]' '$L'"
+    chk "AccesoBIE instalado en el PLUS temporal" "grep -qiF '$BASE/ado/a/AccesoBIE.ado' '$L'"
+    chk "usa el token de cortesía" "grep -qF 'token de cortes' '$L'"
+    chk "la serie llega por la API oficial" "grep -qF 'Vía: API oficial' '$L'"
+    chk "serie descargada (más de 100 trimestres)" "grep -qF 'NETINSTALL_OK' '$L'"
+    chk "descarga en c(tmpdir)/AccesoBIE/" "[[ -s '$BASE/tmpdir/AccesoBIE/734407.csv' ]]"
+    chk "nada creado en la raíz (/raw)" "[[ '$RAIZ_ANTES' == true || ! -e /raw ]]"
+    chk "0 r(#); en el log" "! grep -qE '^r\([0-9]+\);' '$L'"
+    if (( fallas > 0 )); then
+        echo "NET INSTALL: $fallas prueba(s) fallaron; log en $L" >&2
+        grep -B2 -A4 -E 'Error|Traceback|^r\([0-9]+\);' "$L" | head -20 >&2
+        exit 1
+    fi
+    rm -rf "$BASE"
+    echo "NET INSTALL: un Stata limpio instala AccesoBIE desde $FUENTE y baja una serie real con el token de cortesía."
     exit 0
 fi
 
