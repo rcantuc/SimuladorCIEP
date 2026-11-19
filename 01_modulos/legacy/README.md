@@ -1,0 +1,25 @@
+# `01_modulos/legacy/` — archivos sin mantenimiento
+
+Estos `.do` no tienen mantenimiento y **no se garantiza que corran**. Ningún pipeline los llama (`SIM.do`, `Web.Stata.do`, `05_scripts/`). Se conservan para retomarlos. Se restauraron en la limpieza de 2026-11 desde `6e25cee^` (el commit `6e25cee`, 8.18a-2, los había borrado), con su contenido intacto. Única excepción: `SectoresEconómicosProductividad.do` se llama ahora `SectoresEconomicosProductividad.do`, sin acento, por la regla de nombres.
+
+«Último cambio» es el último commit que tocó el contenido, antes del borrado (`git log --follow`). Los renombres sin cambio de contenido no cuentan, por ejemplo la reorganización de la raíz `b7a87e0` del 2026-07-04. «Lo que le falta» es lo verificado el 2026-11-19 contra el clon de datos `SimuladorCIEP-datos`. Faltas comunes a casi todos:
+
+- **(R) Raíz vieja.** Usan `` `c(sysdir_site)' `` o `` `c(sysdir_personal)' `` como raíz del proyecto. Desde 2026-09-23 (`6baaba8`) la raíz es la global `$SIMROOT`.
+- **(D) Rutas absolutas muertas.** Apuntan a `/Users/ricardo/CIEP Dropbox/…` o `C:\Users\…\CIEP Dropbox\…`. Esas carpetas ya no existen: Dropbox vive ahora en `~/Library/CloudStorage/Dropbox-CIEP/`.
+
+| Archivo | Último cambio | Qué es | Lo que se sabe que le falta |
+|---|---|---|---|
+| `Subnacional.do` | 2026-03-19 (`fa13516`) | Finanzas públicas estatales (EFIPEM, deuda, PIB e ITAEE por entidad) | (R). Lee `XACGF00` de `DatosAbiertos`: desde la **v8.6.1** el motor ya no fabrica esa clave derivada (R28 + R33, desde 1990). La que queda es la de la SHCP, más amplia (incluye convenios, R23 y PSS, ~2×) y publicada desde 1997, así que el mismo nombre ya no significa lo mismo. Faltan `master/EstadosBaseINEGI.dta`, `master/EstadosBaseEstOpor.dta`, `raw/Subnacional/` (EFIPEM estatal y CDMX, «DEUDA SUBNACIONAL TOTAL.xlsx») y `raw/ENOE/Población ocupada.xlsx`. Se llama a sí mismo con la ruta vieja `01_modules/analysis/Subnacional.do`. Usa las globals `entidadesC`/`entidadesL` y `pib` sin definirlas. |
+| `SubnacionalGasto.do` | 2026-07-19 (`ca03041`) | Gasto estatal por concepto | (R). Selecciona por códigos de `encode` que desde la v8.1.0 ya no significan lo que significaban (aviso en su propio encabezado). Faltan `master/EstadosBaseINEGI.dta` y los `master/GastoEstatal<concepto>.dta`. Usa `$entidadesL` y `$export` sin definirlas. |
+| `SankeyPemexSum.do` | 2024-07-13 (`e12dd1e`) | Sankey de Pemex acumulado 2019–2024 (LINGO) | (D) en `sysdir set PERSONAL` y en el `cd` a `/home/ciepmx/CIEP Dropbox/…/LINGO/Sankeys/`. Las siete series `XKC*` de `DatosAbiertos` sí existen en el caché (1990–2026). `SankeySumLoop` escribe en `users/$id/SankeyPemex/` y no crea esa carpeta. |
+| `SankeySumProy.do` | 2024-07-13 (`e12dd1e`) | Sankey de Pemex proyectado 2025–2030 (LINGO) | Lo mismo que `SankeyPemexSum.do`; usa `` `c(sysdir_personal)' `` como raíz. |
+| `MicrositioPE.do` | 2024-11-29 (`2f9e3fa`) | Llena `DatosMicrositioApp.xlsx` del micrositio del Paquete Económico | (R): escribe en `` `c(sysdir_personal)'../../DatosMicrositioApp.xlsx ``, fuera del repo. El micrositio se retiró del repo (`nodos/micrositio-pe.do` no se restauró). |
+| `PerfilesGasto.do` | 2026-03-19 (`fa13516`) | Ahorro de los hogares, ENIGH 2024 (boletín de deuda) | (D): `$enigh2024`, `$export` y `municipios_costeros.dta` en `BasesCIEP` dentro de la Dropbox vieja. |
+| `Cap_Ingresos_30.do` | 2025-11-12 (`ed59edf`) | Escalares del capítulo de ingresos del libro (`scalarlatex`) | (D): `$export` → `TextbookCIEP/images`. (R): `users/$id/ingresos.dta`. |
+| `Ejercicio_Elasticidades_Ingresos_beta.do` | 2026-01-27 (`95535a7`) | Ejercicio de elasticidades de ingresos para el libro | (D): `$export` → `TextbookCIEP/images`. Empieza con `macro drop _all`, que borra `$SIMROOT`. |
+| `diccionarioCapIngresos.do` | 2025-11-12 (`ed59edf`) | Lista de las macros LaTeX (`\strAlConsumo…ing`, …) que `scalarlatex` produce para el capítulo de ingresos | No es código Stata: correrlo como do-file da error en la primera línea. Es una referencia de nombres. |
+| `HistoricoRenunciasR_CapIngresos_final.do` | 2025-11-12 (`ed59edf`) | Renuncias recaudatorias 2015–2026 en % del PIB (valores capturados a mano) | Sin insumos externos. Sus valores capturados a mano no tienen fuente en el repo. |
+| `Expenditure_PTLAC.do` | 2026-03-19 (`fa13516`) | Versión PTLAC de la armonización macro-micro del gasto (`Expenditure.do`) | (R): crea `raw/` y `temp/` bajo SITE y hace `cd` ahí. Falta `raw/ENIGH/<año>/clave_iva_auditada.dta`. Escribe `master/<año>/consumption_categ_iva.dta` y `consumption_categ_ieps.dta`, los mismos que escribe `Expenditure.do`: correrlo pisaría bases del motor. |
+| `SectoresEconomicosProductividad.do` | 2026-03-19 (`fa13516`) | Productividad por sector económico (BIE) | (R): lee y escribe `` `c(sysdir_site)'/temp/productividad.dta ``, que no existe. La descarga de `AccesoBIE` está comentada. |
+
+Para retomar uno: pasarlo a `$SIMROOT`, resolver sus faltas, y moverlo a `01_modulos/` (o a donde corresponda) en un PR que actualice su ruta en `simulador.stpr` (`versionado-y-git.md` §2.5). Hoy el panel lista `Subnacional.do` y `SubnacionalGasto.do`.
