@@ -489,6 +489,11 @@ for kind in ("ado_files", "sthlp_files", "pkg_files"):
         if not os.path.isfile(f):
             missing.append(f)
     counts.append(f"{kind}: {len(files)} archivos verificados")
+ht = package.get("htaccess", "")
+if not ht or not os.path.isfile(ht):
+    missing.append(ht or "[package] htaccess (no declarado)")
+else:
+    counts.append(f"htaccess: {ht}")
 if missing:
     print("MISSING")
     for f in missing:
