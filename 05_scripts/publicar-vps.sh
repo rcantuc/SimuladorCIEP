@@ -712,7 +712,8 @@ fi
 log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
 
 # Alcance del motor (aprobado 2026-07-10): árbol completo que el canal web
-# necesita para correr — .ado/.do/.scheme del root del repo + 01_modulos/
+# necesita para correr — los .do del root (SIM.do, profile.do), 00_comandos/ (los .ado y .scheme;
+# desde la limpieza de 2026-11 ya no están en el root) + 01_modulos/
 # (incluye Web.Stata.do y output.do). NO se propaga governance, help, sitio,
 # users/ ni raw/. De 05_scripts/ viaja SOLO manifest.json (v8.12.1): es lo que
 # _precache_manifest.ado lee en ${SIMROOT}/05_scripts/manifest.json para el
@@ -736,9 +737,8 @@ RSYNC_ENGINE_OPTS=(
     --exclude='/raw/'
     --exclude='/master/'
     --exclude='/DEPLOYED_COMMIT'
-    --include='/*.ado'
     --include='/*.do'
-    --include='/*.scheme'
+    --include='/00_comandos/***'
     --include='/01_modulos/***'
     --include='/05_scripts/'
     --include='/05_scripts/manifest.json'
@@ -938,7 +938,7 @@ while IFS= read -r _l; do [[ -n "$_l" ]] && DEFAULT_MANIFEST+=("$_l"); done <<< 
 (( ${#DEFAULT_MANIFEST[@]} > 0 )) || die "Fase 3b-ter: manifiesto-default.py no devolvió ningún archivo."
 # El catálogo de abreviaturas se lee de SIMentidad.ado (global entidadesC, sin «Nac»), la única fuente de verdad:
 # lo usa el health check de la Fase 6 (un HEAD por entidad). La derivación lo lee igual y exige 32.
-ENTIDADES_ABREV="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
+ENTIDADES_ABREV="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/00_comandos/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
 [[ -n "$ENTIDADES_ABREV" ]] || die "Fase 3b-ter: no pude leer 'global entidadesC' de SIMentidad.ado (el catálogo de las 32 entidades)."
 _n_ent=0; for _ab in $ENTIDADES_ABREV; do _n_ent=$((_n_ent+1)); done
 [[ $_n_ent -eq 32 ]] || die "Fase 3b-ter: el catálogo de SIMentidad.ado trae $_n_ent entidades; esperaba 32."
@@ -1136,9 +1136,9 @@ MOTOR_LECTURAS_VPS=(
     "01_modulos/IVA_Mod.do"
     "01_modulos/output.do"                           # Web.Stata.do §8
     "01_modulos/visualizations/SankeySF.do"          # Web.Stata.do §7.2
-    "Precache.ado" "_precache_usa.ado" "_precache_bytes.ado" "_precache_manifest.ado"
-    "FiscalGap.ado" "GastoPC.ado" "PEF.ado" "TasasEfectivas.ado" "Simulador.ado" "PIBDeflactor.ado"
-    "scheme-ciep.scheme"
+    "00_comandos/Precache.ado" "00_comandos/_precache_usa.ado" "00_comandos/_precache_bytes.ado" "00_comandos/_precache_manifest.ado"
+    "00_comandos/FiscalGap.ado" "00_comandos/GastoPC.ado" "00_comandos/PEF.ado" "00_comandos/TasasEfectivas.ado" "00_comandos/Simulador.ado" "00_comandos/PIBDeflactor.ado"
+    "00_comandos/scheme-ciep.scheme"
     "master/PEF.dta"                                 # PEF.ado §1 (use in 1) + insumo del sello
     "master/${WEB_PERFIL}"                           # insumo del sello (GastoPC_base)
     "master/${WEB_MASTER_YEAR}/households.dta"       # insumo del sello

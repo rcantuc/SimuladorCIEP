@@ -1,9 +1,9 @@
 *! version 8.0 CIEP 03jul2026
-* §1 Propósito (procedencia: 03_help/Stata/GastoPC.sthlp «Descripción»; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` calcula el gasto público per
+* §1 Propósito (procedencia: 00_comandos/GastoPC.sthlp «Descripción»; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` calcula el gasto público per
 *   cápita por función (educación, salud, pensiones, energía, infraestructura y otros), distribuyéndolo entre los individuos de la ENIGH según sus
 *   características socioeconómicas: el gasto total de cada función se divide entre el número de beneficiarios identificados en la ENIGH, asignando a
 *   cada individuo el monto per cápita según su condición (si asiste a la escuela, si tiene seguro médico, si recibe pensión).
-* §2 Entradas (procedencia: 03_help/Stata/GastoPC.sthlp «Descripción»):
+* §2 Entradas (procedencia: 00_comandos/GastoPC.sthlp «Descripción»):
 *   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
 *   | master/PEF.dta (vía PEF, cache de Precache) | SHCP | vintage del asset | montos presupuestados por ramo y función | anio divCIEP | verde |
 *   | master/perfiles<anioPE>.dta y master/<anioenigh>/households.dta (ENIGH armonizada) | INEGI vía PerfilesSim / Households | ENIGH anioenigh | alumnos, asegurados, pensionados, población | folioviv foliohog numren | según Households §2 |

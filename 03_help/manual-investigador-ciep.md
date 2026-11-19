@@ -360,7 +360,7 @@ Los directorios de la carpeta del Simulador siguen una convención de nombres qu
 
 **Dónde viven las gráficas.** Todas las gráficas que generan los comandos del Simulador se guardan únicamente en `users/tu-usuario/graphs/` — nunca en la raíz del repo. No tienes que crear esa carpeta ni configurar nada: los comandos escriben ahí automáticamente. Si borras tu `graphs/`, las gráficas se regeneran la próxima vez que corras los comandos que las producen.
 
-Los archivos sueltos en la raíz (los `.ado` de los comandos, los `scheme-*.scheme` de las gráficas, `SIM.do`, `profile.do`) tampoco se tocan: Stata los busca exactamente ahí y moverlos rompe los comandos para todo el equipo.
+Los comandos (`00_comandos/`: los `.ado`, sus ayudas `.sthlp` y los `scheme-*.scheme` de las gráficas) y los archivos de arranque de la raíz (`SIM.do`, `profile.do`) tampoco se tocan: Stata busca los comandos en `00_comandos/` y moverlos rompe los comandos para todo el equipo.
 
 ### 5.4 Clon experimental: probar mejoras sin afectar al equipo
 

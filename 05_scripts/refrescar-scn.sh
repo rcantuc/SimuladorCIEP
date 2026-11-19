@@ -208,7 +208,7 @@ hoy = datetime.datetime.now(datetime.timezone.utc)
 fecha = hoy.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 # ── 1. Inventario: las series que UpdateSCN descarga (SCN.ado) y las que llegan a un escalar que algún módulo lee ──
-ado = open(os.path.join(root, 'SCN.ado'), encoding='utf-8').read()
+ado = open(os.path.join(root, '00_comandos', 'SCN.ado'), encoding='utf-8').read()
 calls = re.findall(r'AccesoBIE\s+((?:\d+\s*(?:///\s*)?)+),\s*(?:///\s*)?nombres\(([^)]*)\)', ado, flags=re.S)
 nombre = {}
 for s, n in calls:

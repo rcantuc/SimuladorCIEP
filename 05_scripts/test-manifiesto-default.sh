@@ -53,8 +53,8 @@ aserta 'cmp -s <(cut -f2 "$H/todo.tsv") "$H/endpoints"' "--endpoints = columna 2
 
 echo "== 2. derivación, no lista (copia del sitio modificada)"
 copia() { # copia mínima del repo que la derivación lee
-    local d="$1"; rm -rf "$d"; mkdir -p "$d/04_1_simuladorfiscal.ciep.mx/js" "$d/04_1_simuladorfiscal.ciep.mx/NTA" "$d/04_1_simuladorfiscal.ciep.mx/entidades" "$d/05_scripts"
-    cp "$REPO_ROOT/SIMentidad.ado" "$d/"
+    local d="$1"; rm -rf "$d"; mkdir -p "$d/04_1_simuladorfiscal.ciep.mx/js" "$d/04_1_simuladorfiscal.ciep.mx/NTA" "$d/04_1_simuladorfiscal.ciep.mx/entidades" "$d/05_scripts" "$d/00_comandos"
+    cp "$REPO_ROOT/00_comandos/SIMentidad.ado" "$d/00_comandos/"
     cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/js/stataCalcula.js" "$d/04_1_simuladorfiscal.ciep.mx/js/"
     cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/"{cargaDefault,jsonSankey,jsonSankeyEscol,jsonSankeyGrupoedad,jsonSankeyRural,jsonSankeySexo,jsonSankeyNTA,jsonEntidad}.php "$d/04_1_simuladorfiscal.ciep.mx/"
     cp "$REPO_ROOT/04_1_simuladorfiscal.ciep.mx/NTA/index.php" "$REPO_ROOT"/04_1_simuladorfiscal.ciep.mx/NTA/_cuerpo-*.php "$d/04_1_simuladorfiscal.ciep.mx/NTA/"   # 8.19: lo que /NTA pide vive también en sus cuerpos _cuerpo-{en,es}.php
@@ -88,7 +88,7 @@ PYEOF
 python3 -I "$PY" --root "$H/c5" --archivos > "$H/c5.archivos" 2>/dev/null
 aserta '[[ "$(grep -c "/neto-pibe.json$" "$H/c5.archivos")" == "0" && "$(wc -l < "$H/c5.archivos" | tr -d " ")" == "268" ]]' "si _entidad.php deja de pedir producto=neto, salen las 32 neto-pibe.json (quedan 268)"
 # e) sin el catálogo de SIMentidad.ado → exit 2
-copia "$H/c6"; sed -i.bak 's/^\([[:space:]]*\)global entidadesC /\1global entidadesX /' "$H/c6/SIMentidad.ado"
+copia "$H/c6"; sed -i.bak 's/^\([[:space:]]*\)global entidadesC /\1global entidadesX /' "$H/c6/00_comandos/SIMentidad.ado"
 aserta '! python3 -I "$PY" --root "$H/c6" --archivos >/dev/null 2>&1' "sin global entidadesC en SIMentidad.ado → exit ≠ 0"
 
 echo "== 3. fixtures de /NTA con el nombre que la derivación espera"

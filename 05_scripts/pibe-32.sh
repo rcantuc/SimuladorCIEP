@@ -58,7 +58,7 @@ fi
 corre() {  # $1 = lista de abreviaturas ("" = las 32), $2 = etiqueta de la pasada
     local W="$EVID/wrap-pibe-32-$2.do"
     {
-        printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\n' "$REPO_ROOT" "$REPO_ROOT"
+        printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\ncd "%s"\n' "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT"
         printf 'global SIMROOT "%s"\nglobal id "%s"\nrun "%s/set_token.do"\n' "$REPO_ROOT" "$ID" "$REPO_ROOT"
         printf 'di "STATA_VERSION=" c(stata_version)\n'
         printf 'do "%s/05_scripts/pibe-32.do" "%s" "%s" %s\n' "$REPO_ROOT" "$EVID" "$1" "$PAUSA"
@@ -87,7 +87,7 @@ echo "   Stata total: $((($(date +%s)-T0)/60)) min."
 echo "== Sellos (.meta + char _dta[sello_*])"
 "${PY[@]}" sellar | tail -40
 SEL="$EVID/wrap-sellar.do"
-printf 'sysdir set SITE "%s/"\nadopath ++SITE\nglobal SIMROOT "%s"\ndo "%s/05_scripts/sellar-pibe-32.do"\n' "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT" > "$SEL"
+printf 'sysdir set SITE "%s/"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\nglobal SIMROOT "%s"\ndo "%s/05_scripts/sellar-pibe-32.do"\n' "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT" > "$SEL"
 ( "$STATA" -b do "$SEL" < /dev/null )
 [[ -f "$REPO_ROOT/wrap-sellar.log" ]] && mv -f "$REPO_ROOT/wrap-sellar.log" "$EVID/wrap-sellar.log"
 tail -3 "$EVID/wrap-sellar.log"

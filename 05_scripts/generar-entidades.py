@@ -347,7 +347,7 @@ def cmd_meta(a):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--catalogo', default=os.path.join(raiz_repo(), 'SIMentidad.ado'))
+    ap.add_argument('--catalogo', default=os.path.join(raiz_repo(), '00_comandos', 'SIMentidad.ado'))
     sub = ap.add_subparsers(dest='cmd', required=True)
     p = sub.add_parser('paginas'); p.add_argument('--check', action='store_true')
     p.add_argument('--sitio', default=os.path.join(raiz_repo(), '04_1_simuladorfiscal.ciep.mx', 'entidades'))

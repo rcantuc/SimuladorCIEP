@@ -26,6 +26,8 @@
 #      Gate 10 que CITATION.cff lleve la versión y la fecha del manifest.
 #   5c. (v8.15b-pre) Gate 11: manifest.json declara `baseline` (tag desde el que los números publicados son
 #      comparables; CUAD-0 §4 ter) y ese tag existe. Obligatorio desde v8.15.0; antes, informativo. También en --ci.
+#   5e. (limpieza 2026-11) Gate 13: la raíz no tiene ningún .ado ni .scheme (viven en 00_comandos/) y todo archivo
+#      que arma el adopath le agrega `00_comandos` al frente. También en --ci.
 #   5d. (limpieza 2026-11) Gate 12: cada ruta de archivo de simulador.stpr (el panel de Ricardo) existe en el repo
 #      (05_scripts/verificar-panel.py verificar). También en --ci.
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
@@ -263,9 +265,10 @@ try:
 except ImportError:
     print("PARSE_ERROR: tomllib no disponible (Python 3.11+)"); sys.exit(0)
 d = tomllib.load(open("05_scripts/manifest-endpoint.toml", "rb"))
-cmds = [os.path.basename(f)[:-4] for f in d["package"]["ado_files"]]
+ruta = {os.path.basename(f)[:-4]: f for f in d["package"]["ado_files"]}
+cmds = list(ruta)
 def calls(cmd):
-    s = open(cmd + ".ado", encoding="utf-8", errors="replace").read()
+    s = open(ruta[cmd], encoding="utf-8", errors="replace").read()
     return {c for c in cmds if c != cmd and
             re.search(r"(?m)^\s*(?:(?:noisily|quietly|capture|noi|qui)\s+)*" + re.escape(c) + r"\b", s)}
 def closure(cmd, seen):
@@ -805,7 +808,7 @@ sidecar_lista() {
     # NTA/*: los JSON y el reporte de texto; NO el microdato nta-persona.dta (el zip es de salidas publicadas y el
     # microdato se reproduce con la receta de DoD 1 / SIM.do; decisión de Ricardo, PR #50)
     ( cd "$REPO_ROOT/users/ricardo/NTA" 2>/dev/null && ls -1 | grep -v '\.dta$' | sed 's#^#NTA/#' ) || true
-    abrevs="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$REPO_ROOT/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
+    abrevs="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$REPO_ROOT/00_comandos/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
     for ab in $abrevs; do
         for f in sankey-quintil.json sankey-grupoedad.json sankey-sexo.json sankey-rural.json sankey-escol.json ciclo-vida.json tasas-efectivas.json neto-pibe.json meta.json; do
             echo "$ab/$f"
@@ -1050,6 +1053,48 @@ gate_stpr() {
     return 1
 }
 
+# Gate 13 — los comandos viven en 00_comandos/ (limpieza 2026-11, PR 2). (a) Ningún .ado ni .scheme versionado en la
+# raíz. (b) Todo archivo versionado que arma el adopath (`adopath ++…`/`adopath +…` en .do/.ado/.sh/.py, fuera de
+# 01_modulos/legacy/) lleva la entrada de 00_comandos en la misma línea (los preámbulos de printf) o en las dos
+# siguientes. Excepción declarada: un comentario `sin-00_comandos: <razón>` en la línea o en la anterior (p. ej. el
+# camino del usuario de net install, que recibe los .ado planos). Estático: corre también en --ci.
+gate_comandos() {
+    local out
+    out="$(cd "$REPO_ROOT" && python3 -I - <<'PYEOF'
+import re, subprocess
+fs = subprocess.run(['git', '-c', 'core.quotePath=false', 'ls-files'], capture_output=True, text=True).stdout.splitlines()
+fallas = ['raíz: %s (va en 00_comandos/)' % f for f in fs if '/' not in f and f.endswith(('.ado', '.scheme'))]
+n = 0
+for f in fs:
+    if not f.endswith(('.do', '.ado', '.sh', '.py')) or f.startswith('01_modulos/legacy/'):
+        continue
+    ls = open(f, encoding='utf-8', errors='replace').read().splitlines()
+    for i, l in enumerate(ls):
+        # sin-00_comandos: esta línea es el propio gate
+        if l.lstrip().startswith(('*', '//', '#')) or 'adopath +' not in l:
+            continue
+        n += 1
+        if '00_comandos' in l or any('adopath ++' in x and '00_comandos' in x for x in ls[i + 1:i + 3]):
+            continue
+        if 'sin-00_comandos:' in l or (i and 'sin-00_comandos:' in ls[i - 1]):
+            continue
+        fallas.append('%s:%d arma el adopath sin 00_comandos: %s' % (f, i + 1, l.strip()[:100]))
+print('OK' if not fallas else 'FALLA')
+for x in fallas:
+    print(x)
+print('%d líneas que arman el adopath revisadas; raíz sin .ado ni .scheme' % n)
+PYEOF
+)"
+    if [[ "$(head -n 1 <<< "$out")" == "OK" ]]; then
+        log_info "✓ Gate 13: comandos en 00_comandos/ — $(tail -n 1 <<< "$out")"
+        return 0
+    fi
+    log_error "Gate 13 FALLO: comandos fuera de 00_comandos/ o adopath sin su entrada:"
+    sed -n '2,$p' <<< "$out" | sed '$d' | sed 's/^/        /' >&2
+    log_error "        Agrega adopath ++ \"\${SIMROOT}/00_comandos\" (al frente, con ++) junto a la línea que arma el adopath."
+    return 1
+}
+
 # Gate 11 — baseline (v8.15b-pre, 2026-10-31; CUAD-0 §4 ter, decisión 14). 05_scripts/manifest.json declara `baseline`: el tag
 # desde el que los números publicados (output.txt, 10 sankeys, 32 entidades) son comparables con esta versión (la última
 # corrección de datos). El gate exige que el campo exista, que sea un tag (local o en origin: el checkout de CI puede venir
@@ -1231,14 +1276,15 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_baseline "$VERSION"       || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_stpr                      || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_comandos                  || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."   # también en --ci
         exit 1
     fi
     if [[ "$CI_MODE" == "true" ]]; then
-        log_info "--ci: los 10 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
+        log_info "--ci: los 11 gates sin Stata ni assets pasaron para $VERSION (Gates 2 y 9 omitidos)."
     else
-        log_info "--check: los 12 gates pasaron para $VERSION."
+        log_info "--check: los 13 gates pasaron para $VERSION."
     fi
     exit 0
 fi
@@ -1312,6 +1358,7 @@ gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_citation                  || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_baseline "$VERSION"       || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_stpr                      || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_comandos                  || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi

@@ -62,7 +62,7 @@ if [[ "$SIN_STATA" == "false" ]]; then
         echo "test-nta-identidad: no encuentro Stata en $STATA (usa --stata o --sin-stata)" >&2; exit 2
     fi
     TMP="$(mktemp -d)"
-    printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nadopath ++ "${SIMROOT}"\ncapture run "${SIMROOT}/set_token.do"\nglobal id "%s"\nscalar aniovp = 2024\nscalar anioenigh = 2024\nset scheme ciep\ndo "${SIMROOT}/05_scripts/test-nta-identidad.do" "%s"\n' "$REPO_ROOT" "$ID" "$DTA" > "$TMP/wrap.do"
+    printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nadopath ++ "${SIMROOT}"\nadopath ++ "${SIMROOT}/00_comandos"\ncapture run "${SIMROOT}/set_token.do"\nglobal id "%s"\nscalar aniovp = 2024\nscalar anioenigh = 2024\nset scheme ciep\ndo "${SIMROOT}/05_scripts/test-nta-identidad.do" "%s"\n' "$REPO_ROOT" "$ID" "$DTA" > "$TMP/wrap.do"
     ( cd "$TMP" && "$STATA" -b do "$TMP/wrap.do" < /dev/null )
     grep -E '^\s+(identidad|Σ intra|Σ S|Σ CpubInd|Σ ImpProd|Σ YA_d8|Σ TpubEf|Σ YA_base|nta-grupoedad)' "$TMP/wrap.log" | sed 's/^/  /'
     if grep -qE '^r\([0-9]+\);' "$TMP/wrap.log"; then

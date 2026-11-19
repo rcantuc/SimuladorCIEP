@@ -63,4 +63,5 @@ if "`c(os)'" == "Windows" {
 * ya no es lo que decide dónde se escriben los datos.
 
 adopath ++SITE
+adopath ++ "`c(sysdir_site)'00_comandos"
 cd "`c(sysdir_site)'"

@@ -88,7 +88,7 @@ comando publicado. El Gate 4 verifica que todos existan.
       desarrollo, descomenta `global nographs` y `global output` en `SIM.do` §0.4
       (o genera una copia con ellos, como hacen los scripts: §9.5) y corre en batch:
       ```bash
-      printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo SIM.do\n' "$PWD" "$PWD" > /tmp/wrap.do
+      printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\ncd "%s"\ndo SIM.do\n' "$PWD" "$PWD" "$PWD" > /tmp/wrap.do
       /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do /tmp/wrap.do   # ~11 min con cachés
       grep -c '^>' users/ricardo/output.txt      # debe ser 0
       ```
@@ -887,7 +887,7 @@ que las páginas piden; una página que pide un producto nuevo lo mete sola (lec
 en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y que
 `05_scripts/manifest.json` es idéntico al local); la Fase 6 da el clic «Calcular» real.
 
-**Inventario (2026-10-18)** — `grep -rnoE '\$\{?SIMROOT\}?/…' *.ado *.do 01_modulos/` excluyendo
+**Inventario (2026-10-18)** — `grep -rnoE '\$\{?SIMROOT\}?/…' 00_comandos/*.ado *.do 01_modulos/` excluyendo
 `master/`, `users/`, `raw/`:
 
 | Ruta bajo `${SIMROOT}/` | Quién la lee | Flujo | Decisión |
@@ -895,7 +895,7 @@ en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y q
 | `05_scripts/manifest.json` | `_precache_manifest.ado` | **web** y batch | **embarcar** (Fase 3a, v8.12.1) |
 | `master/<anioenigh>/cuadratura.do` (producto de `Households.do` §9.1: los diez `Cuad*`/`Cuad*PIB` en `%21x`) | `Web.Stata.do` §7.3 → `output.do` (`CUADRATURA`) | **web** (batch los calcula) | **embarcar**: viaja con `master/<anio>/` completo (Fase 3b) y está en `MOTOR_LECTURAS_VPS` (v8.15.1; incidente: `publicar-vps.sh` v8.15 revirtió por `r(111)` en el humo) |
 | `01_modulos/{ISR_Mod,IVA_Mod,output}.do`, `01_modulos/visualizations/SankeySF.do` | `Web.Stata.do` | **web** | ya embarcado (Fase 3a `01_modulos/***`) |
-| `*.ado`, `*.scheme` del root | `Web.Stata.do` vía SITE | **web** | ya embarcado (Fase 3a) |
+| `00_comandos/*.ado`, `00_comandos/*.scheme` (hasta 8.19, en el root) | `Web.Stata.do` vía `adopath ++ "${SIMROOT}/00_comandos"` | **web** | ya embarcado (Fase 3a) |
 | `01_modulos/PerfilesSim.do` | `GastoPC.ado`, `TasasEfectivas.ado` | solo si falta `master/perfiles<año>.dta` (en el VPS existe: Fase 3b) | ya embarcado; no debe correr en el VPS |
 | `01_modulos/{Expenditure,Households,PerfilesSim,…}.do`, `visualizations/{Graphs_*,CicloEntidad}.do`, `nodos/*.do` | `SIM.do`, batch | batch | embarcado por `01_modulos/***`; no se leen en web |
 | `set_token.do`, `simulador.stpr` | `SIM.do`, `profile.do` | batch / GUI local | **no se lee** en web; `set_token.do` es secreto y no viaja (correcto) |

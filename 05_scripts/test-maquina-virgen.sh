@@ -145,7 +145,7 @@ cobertura() {
 python3 - <<'PYEOF'
 import json, re, glob, os, sys
 m = json.load(open("05_scripts/manifest.json", encoding="utf-8"))
-fuentes = glob.glob("*.ado") + glob.glob("01_modulos/*.do") + ["SIM.do"]
+fuentes = glob.glob("00_comandos/*.ado") + glob.glob("01_modulos/*.do") + ["SIM.do"]
 por_nombre, por_dir = {}, {}
 for f in fuentes:
     if os.path.basename(f) == "ensure_asset.ado":
@@ -285,7 +285,7 @@ if [[ "$MODE" == "download" && -n "$VINTAGES" ]]; then
         udir="$RAIZ/users/$USUARIO-v$v"
         mkdir -p "$udir"
         wrap="$udir/vintage-aportaciones-wrap.do"
-        printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++ "%s"\ndo "%s/05_scripts/vintage-aportaciones.do" %s\n' "$RAIZ" "$RAIZ" "$RAIZ" "$v" > "$wrap"
+        printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++ "%s"\nadopath ++ "%s/00_comandos"\ndo "%s/05_scripts/vintage-aportaciones.do" %s\n' "$RAIZ" "$RAIZ" "$RAIZ" "$RAIZ" "$v" > "$wrap"
         t0=$(date +%s)
         ( cd "$udir" && "$STATA" -b do "$wrap" < /dev/null )
         secs=$(( $(date +%s) - t0 ))
@@ -386,7 +386,7 @@ if [[ "$MODE" == "zip" ]]; then
 
     # Humo: el setup de SIM.do 0 (global + adopath + scheme) y los .ado visibles tras un cd
     {
-        printf 'global SIMROOT "%s"\nadopath ++ "${SIMROOT}"\nset scheme ciep\n' "$ZIPDIR"
+        printf 'global SIMROOT "%s"\nadopath ++ "${SIMROOT}"\nadopath ++ "${SIMROOT}/00_comandos"\nset scheme ciep\n' "$ZIPDIR"
         printf 'capture mkdir "${SIMROOT}/raw"\ncapture mkdir "${SIMROOT}/raw/temp"\ncd "${SIMROOT}/raw/temp"\n'
         for a in ensure_asset Poblacion PIBDeflactor SCN LIF PEF TasasEfectivas GastoPC perfilpc Simulador FiscalGap escalar; do
             printf 'which %s\n' "$a"
@@ -430,7 +430,7 @@ fi
 
 SITE="$(mktemp -d /tmp/simulador-virgen.XXXXXX)"
 mkdir -p "$SITE/05_scripts" "$SITE/raw/temp"
-cp ensure_asset.ado "$SITE/"
+cp 00_comandos/ensure_asset.ado "$SITE/"
 cp 05_scripts/manifest.json "$SITE/05_scripts/"
 tag="$(python3 -c "import json;print(json.load(open('05_scripts/manifest.json'))['release_tag'])")"
 echo "SITE virgen: $SITE  (manifest $tag; raw/ vacio)"
@@ -442,6 +442,7 @@ echo "SITE virgen: $SITE  (manifest $tag; raw/ vacio)"
     # adopath (aqui la carpeta misma; en un usuario real, PLUS via net install) y
     # la raiz del proyecto es la global SIMROOT.
     echo "global SIMROOT \"$SITE\""
+    # sin-00_comandos: el usuario de net install recibe los .ado planos (aquí, en la carpeta misma)
     echo "adopath ++ \"$SITE\""
     echo "cd \"$SITE\""
     awk -F'\t' '$1!="TOTAL" && $3 ~ /\[dir\(/ {sub(/.*\[dir\(/,"",$3); sub(/\)\]$/,"",$3); print $3}' <<< "$cob" | sort -u \

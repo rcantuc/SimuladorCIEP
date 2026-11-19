@@ -20,7 +20,7 @@ INPC_ESTRUCTURA = '112001700070'
 
 
 def catalogo(root):
-    t = open(os.path.join(root, 'SIMentidad.ado'), encoding='utf-8').read()
+    t = open(os.path.join(root, '00_comandos', 'SIMentidad.ado'), encoding='utf-8').read()
     nombres = re.search(r'global entidadesL `"(.*?)"\'', t, re.S).group(1)
     nombres = re.findall(r'"([^"]+)"', nombres)
     abrevs = re.search(r'global entidadesC "([^"]+)"', t).group(1).split()

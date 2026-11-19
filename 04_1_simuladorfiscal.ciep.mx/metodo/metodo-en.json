@@ -74,13 +74,13 @@
    "modulo": "Poblacion",
    "archivos": [
     {
-     "ruta": "Poblacion.ado",
-     "sha256": "a60f57d2edf4",
+     "ruta": "00_comandos/Poblacion.ado",
+     "sha256": "70da38b28461",
      "lineas": 803
     }
    ],
    "orden_en_SIM": 1,
-   "sim_linea": 175,
+   "sim_linea": 176,
    "sim_seccion": "1. DEMOGRAPHY",
    "pagina": "",
    "desde_version": "8.0",
@@ -90,7 +90,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/Poblacion.sthlp “Descripción”; README.md “Programas disponibles” 1): `Poblacion` processes the demographic projections of the Consejo Nacional de Población (CONAPO, National Population Council): Conciliación Demográfica de México 1970–2019 and Proyecciones de la población de México y de las entidades federativas 2020–2070 (pry23, published on 11 September 2023): estimated mid-year population (1970–2070), by state, sex and single year of age. It also produces the population pyramid and demographic transition charts for the year of interest."
+      "Purpose (provenance: 00_comandos/Poblacion.sthlp “Descripción”; README.md “Programas disponibles” 1): `Poblacion` processes the demographic projections of the Consejo Nacional de Población (CONAPO, National Population Council): Conciliación Demográfica de México 1970–2019 and Proyecciones de la población de México y de las entidades federativas 2020–2070 (pry23, published on 11 September 2023): estimated mid-year population (1970–2070), by state, sex and single year of age. It also produces the population pyramid and demographic transition charts for the year of interest."
      ],
      "tablas": [],
      "lista": [],
@@ -99,7 +99,7 @@
     },
     "2": {
      "texto": [
-      "Inputs (provenance: 03_help/Stata/Poblacion.sthlp “Descripción”; CUAD-0 §2 row “Población a mitad de año”; manifest.json assets):"
+      "Inputs (provenance: 00_comandos/Poblacion.sthlp “Descripción”; CUAD-0 §2 row “Población a mitad de año”; manifest.json assets):"
      ],
      "tablas": [
       {
@@ -112,7 +112,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "Poblacion.ado l. 17–19",
+       "fuente": "00_comandos/Poblacion.ado l. 17–19",
        "filas": [
         [
          "Poblacion_Estimada_Mitad_Anio.zip (CSV)",
@@ -135,7 +135,7 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; Poblacion.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/Poblacion.ado",
        "filas": [
         [
          "Poblacion_Estimada_Mitad_Anio.zip",
@@ -144,7 +144,7 @@
          "sha256 e77873cd581b",
          "",
          "",
-         "Poblacion.ado l. 686; manifest.json assets"
+         "00_comandos/Poblacion.ado l. 686; manifest.json assets"
         ]
        ]
       }
@@ -186,21 +186,21 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "Poblacion.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/Poblacion.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "master/Poblacion.dta",
          "",
-         "PIBDeflactor.ado; Simulador.ado",
+         "00_comandos/PIBDeflactor.ado; 00_comandos/Simulador.ado",
          "no automatic protection — human gate",
-         "Poblacion.ado l. 789"
+         "00_comandos/Poblacion.ado l. 789"
         ],
         [
          "master/Poblaciontot.dta",
          "",
-         "01_modulos/PerfilesSim.do; SCN.ado",
+         "00_comandos/SCN.ado; 01_modulos/PerfilesSim.do",
          "gen-scn-celdas.py",
-         "Poblacion.ado l. 798"
+         "00_comandos/Poblacion.ado l. 798"
         ]
        ]
       }
@@ -235,7 +235,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "Poblacion.ado l. 20–22",
+       "fuente": "00_comandos/Poblacion.ado l. 20–22",
        "filas": [
         [
          "Population",
@@ -260,25 +260,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "Poblacion.ado",
+     "archivo": "00_comandos/Poblacion.ado",
      "lineas": "l. 13–16",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "Poblacion.ado",
+     "archivo": "00_comandos/Poblacion.ado",
      "lineas": "l. 17–19",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "Poblacion.ado",
+     "archivo": "00_comandos/Poblacion.ado",
      "lineas": "l. 20–22",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "Poblacion.ado",
+     "archivo": "00_comandos/Poblacion.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 23–803)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -286,7 +286,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in Poblacion.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/Poblacion.ado"
     },
     {
      "seccion": 6,
@@ -295,7 +295,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/Poblacion.sthlp “Descripción”; README.md “Programas disponibles” 1): `Poblacion` processes the demographic projections of the Consejo Nacional de Población (CONAPO, National Population Council): Conciliación Demográfica de México 1970–2019 and Proyecciones de la población de México y de las entidades federativas 2020–2070 (pry23, published on 11 September 2023): estimated mid-year population (1970–2070), by state, sex and single year of age. It also produces the population pyramid and demographic transition charts for the year of interest.",
+   "proposito": "Purpose (provenance: 00_comandos/Poblacion.sthlp “Descripción”; README.md “Programas disponibles” 1): `Poblacion` processes the demographic projections of the Consejo Nacional de Población (CONAPO, National Population Council): Conciliación Demográfica de México 1970–2019 and Proyecciones de la población de México y de las entidades federativas 2020–2070 (pry23, published on 11 September 2023): estimated mid-year population (1970–2070), by state, sex and single year of age. It also produces the population pyramid and demographic transition charts for the year of interest.",
    "entradas": [
     {
      "base": "Poblacion_Estimada_Mitad_Anio.zip (CSV)",
@@ -323,7 +323,7 @@
      "conserva": "",
      "lineas": "l. 30–35",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "0.2",
@@ -331,7 +331,7 @@
      "conserva": "",
      "lineas": "l. 36–48",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "1",
@@ -339,7 +339,7 @@
      "conserva": "",
      "lineas": "l. 49–52",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "1.1",
@@ -347,7 +347,7 @@
      "conserva": "",
      "lineas": "l. 53–62",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "2",
@@ -355,7 +355,7 @@
      "conserva": "",
      "lineas": "l. 63–94",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "2.1",
@@ -363,7 +363,7 @@
      "conserva": "",
      "lineas": "l. 95–211",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "3",
@@ -371,7 +371,7 @@
      "conserva": "",
      "lineas": "l. 212–460",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "4",
@@ -379,7 +379,7 @@
      "conserva": "",
      "lineas": "l. 461–558",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "5",
@@ -387,7 +387,7 @@
      "conserva": "",
      "lineas": "l. 559–684",
      "programa": "Poblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "1",
@@ -395,7 +395,7 @@
      "conserva": "",
      "lineas": "l. 685–696",
      "programa": "UpdatePoblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "2",
@@ -403,7 +403,7 @@
      "conserva": "",
      "lineas": "l. 697–742",
      "programa": "UpdatePoblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "3",
@@ -411,7 +411,7 @@
      "conserva": "",
      "lineas": "l. 743–760",
      "programa": "UpdatePoblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "1",
@@ -419,7 +419,7 @@
      "conserva": "",
      "lineas": "l. 761–769",
      "programa": "UpdatePoblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "2",
@@ -427,7 +427,7 @@
      "conserva": "",
      "lineas": "l. 770–781",
      "programa": "UpdatePoblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     },
     {
      "n": "3",
@@ -435,7 +435,7 @@
      "conserva": "",
      "lineas": "l. 782–803",
      "programa": "UpdatePoblacion",
-     "archivo": "Poblacion.ado"
+     "archivo": "00_comandos/Poblacion.ado"
     }
    ],
    "decisiones": [],
@@ -443,12 +443,12 @@
    "salidas": [
     {
      "archivo": "master/Poblacion.dta",
-     "consume": "PIBDeflactor.ado; Simulador.ado",
+     "consume": "00_comandos/PIBDeflactor.ado; 00_comandos/Simulador.ado",
      "check": "no automatic protection — human gate"
     },
     {
      "archivo": "master/Poblaciontot.dta",
-     "consume": "01_modulos/PerfilesSim.do; SCN.ado",
+     "consume": "00_comandos/SCN.ado; 01_modulos/PerfilesSim.do",
      "check": "gen-scn-celdas.py"
     }
    ],
@@ -475,13 +475,13 @@
    "modulo": "PIBDeflactor",
    "archivos": [
     {
-     "ruta": "PIBDeflactor.ado",
-     "sha256": "928697868fd4",
+     "ruta": "00_comandos/PIBDeflactor.ado",
+     "sha256": "362d075d9124",
      "lineas": 1281
     }
    ],
    "orden_en_SIM": 2,
-   "sim_linea": 212,
+   "sim_linea": 213,
    "sim_seccion": "2. ECONOMY",
    "pagina": "",
    "desde_version": "8.2.1",
@@ -491,7 +491,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/PIBDeflactor.sthlp “Descripción”): `PIBDeflactor` downloads, processes and projects Mexico's main macroeconomic indicators: GDP (PIB), price deflator, inflation and labor demographics. It is the base command of the Simulador Fiscal CIEP: it produces the deflator and the GDP that all other commands (LIF, PEF, SHRFSP, etc.) use to express values in real terms; the series are presented in three segments (observed history since 1993, SHCP CGPE estimates, CIEP projections with the growth globals of SIM.do §2)."
+      "Purpose (provenance: 00_comandos/PIBDeflactor.sthlp “Descripción”): `PIBDeflactor` downloads, processes and projects Mexico's main macroeconomic indicators: GDP (PIB), price deflator, inflation and labor demographics. It is the base command of the Simulador Fiscal CIEP: it produces the deflator and the GDP that all other commands (LIF, PEF, SHRFSP, etc.) use to express values in real terms; the series are presented in three segments (observed history since 1993, SHCP CGPE estimates, CIEP projections with the growth globals of SIM.do §2)."
      ],
      "tablas": [],
      "lista": [],
@@ -500,7 +500,7 @@
     },
     "2": {
      "texto": [
-      "Inputs (provenance: 03_help/Stata/PIBDeflactor.sthlp “Descripción”; runbook §9 “SCN frozen since v8.15b; the rest, live”; CUAD-0 §2 seal of the BIE series):"
+      "Inputs (provenance: 00_comandos/PIBDeflactor.sthlp “Descripción”; runbook §9 “SCN frozen since v8.15b; the rest, live”; CUAD-0 §2 seal of the BIE series):"
      ],
      "tablas": [
       {
@@ -513,7 +513,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "PIBDeflactor.ado l. 36–39",
+       "fuente": "00_comandos/PIBDeflactor.ado l. 36–39",
        "filas": [
         [
          "BIE (INEGI) via AccesoBIE: quarterly GDP, implicit price index, INPC and employment",
@@ -544,16 +544,16 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; PIBDeflactor.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/PIBDeflactor.ado",
        "filas": [
         [
          "master/$pais/Poblacion.dta",
-         "engine product (Poblacion.ado)",
+         "engine product (00_comandos/Poblacion.ado)",
          "2026-11-08",
          "",
          "",
          "",
-         "PIBDeflactor.ado l. 1197"
+         "00_comandos/PIBDeflactor.ado l. 1197"
         ]
        ]
       }
@@ -595,14 +595,14 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "PIBDeflactor.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/PIBDeflactor.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "master/PIBDeflactor`abrev'.dta",
          "",
          "",
          "pibe-32.py",
-         "PIBDeflactor.ado l. 1280"
+         "00_comandos/PIBDeflactor.ado l. 1280"
         ]
        ]
       }
@@ -637,7 +637,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "PIBDeflactor.ado l. 40–42",
+       "fuente": "00_comandos/PIBDeflactor.ado l. 40–42",
        "filas": [
         [
          "GDP and deflators",
@@ -662,25 +662,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "PIBDeflactor.ado",
+     "archivo": "00_comandos/PIBDeflactor.ado",
      "lineas": "l. 32–35",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "PIBDeflactor.ado",
+     "archivo": "00_comandos/PIBDeflactor.ado",
      "lineas": "l. 36–39",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "PIBDeflactor.ado",
+     "archivo": "00_comandos/PIBDeflactor.ado",
      "lineas": "l. 40–42",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "PIBDeflactor.ado",
+     "archivo": "00_comandos/PIBDeflactor.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 43–1281)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -688,7 +688,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in PIBDeflactor.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/PIBDeflactor.ado"
     },
     {
      "seccion": 6,
@@ -697,7 +697,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/PIBDeflactor.sthlp “Descripción”): `PIBDeflactor` downloads, processes and projects Mexico's main macroeconomic indicators: GDP (PIB), price deflator, inflation and labor demographics. It is the base command of the Simulador Fiscal CIEP: it produces the deflator and the GDP that all other commands (LIF, PEF, SHRFSP, etc.) use to express values in real terms; the series are presented in three segments (observed history since 1993, SHCP CGPE estimates, CIEP projections with the growth globals of SIM.do §2).",
+   "proposito": "Purpose (provenance: 00_comandos/PIBDeflactor.sthlp “Descripción”): `PIBDeflactor` downloads, processes and projects Mexico's main macroeconomic indicators: GDP (PIB), price deflator, inflation and labor demographics. It is the base command of the Simulador Fiscal CIEP: it produces the deflator and the GDP that all other commands (LIF, PEF, SHRFSP, etc.) use to express values in real terms; the series are presented in three segments (observed history since 1993, SHCP CGPE estimates, CIEP projections with the growth globals of SIM.do §2).",
    "entradas": [
     {
      "base": "BIE (INEGI) via AccesoBIE: quarterly GDP, implicit price index, INPC and employment",
@@ -719,7 +719,7 @@
     },
     {
      "base": "master/$pais/Poblacion.dta",
-     "fuente": "engine product (Poblacion.ado)",
+     "fuente": "engine product (00_comandos/Poblacion.ado)",
      "vintage": "2026-11-08",
      "variables": "",
      "llave": "",
@@ -734,7 +734,7 @@
      "conserva": "",
      "lineas": "l. 52–64",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1",
@@ -742,7 +742,7 @@
      "conserva": "",
      "lineas": "l. 65–66",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.1",
@@ -750,7 +750,7 @@
      "conserva": "",
      "lineas": "l. 67–86",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.2",
@@ -758,7 +758,7 @@
      "conserva": "",
      "lineas": "l. 87–92",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.3",
@@ -766,7 +766,7 @@
      "conserva": "",
      "lineas": "l. 93–100",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2",
@@ -774,7 +774,7 @@
      "conserva": "",
      "lineas": "l. 101–106",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.1",
@@ -782,7 +782,7 @@
      "conserva": "",
      "lineas": "l. 107–136",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.2",
@@ -790,7 +790,7 @@
      "conserva": "",
      "lineas": "l. 137–154",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.3",
@@ -798,7 +798,7 @@
      "conserva": "",
      "lineas": "l. 155–190",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.4",
@@ -806,7 +806,7 @@
      "conserva": "",
      "lineas": "l. 191–201",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3",
@@ -814,7 +814,7 @@
      "conserva": "",
      "lineas": "l. 202–206",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3.1",
@@ -822,7 +822,7 @@
      "conserva": "",
      "lineas": "l. 207–247",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3.2",
@@ -830,7 +830,7 @@
      "conserva": "",
      "lineas": "l. 248–279",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4",
@@ -838,7 +838,7 @@
      "conserva": "",
      "lineas": "l. 280–293",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4.1",
@@ -846,7 +846,7 @@
      "conserva": "",
      "lineas": "l. 294–345",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4.2",
@@ -854,7 +854,7 @@
      "conserva": "",
      "lineas": "l. 346–368",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5",
@@ -862,7 +862,7 @@
      "conserva": "",
      "lineas": "l. 369–390",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "6",
@@ -870,7 +870,7 @@
      "conserva": "",
      "lineas": "l. 391–459",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "7",
@@ -878,7 +878,7 @@
      "conserva": "",
      "lineas": "l. 460–466",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "7.1",
@@ -886,7 +886,7 @@
      "conserva": "",
      "lineas": "l. 467–554",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "7.2",
@@ -894,7 +894,7 @@
      "conserva": "",
      "lineas": "l. 555–562",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1",
@@ -902,7 +902,7 @@
      "conserva": "",
      "lineas": "l. 563–652",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2",
@@ -910,7 +910,7 @@
      "conserva": "",
      "lineas": "l. 653–753",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3",
@@ -918,7 +918,7 @@
      "conserva": "",
      "lineas": "l. 754–869",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4",
@@ -926,7 +926,7 @@
      "conserva": "",
      "lineas": "l. 870–989",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4",
@@ -934,7 +934,7 @@
      "conserva": "",
      "lineas": "l. 990–1057",
      "programa": "PIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1",
@@ -942,7 +942,7 @@
      "conserva": "",
      "lineas": "l. 1058–1061",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.1",
@@ -950,7 +950,7 @@
      "conserva": "",
      "lineas": "l. 1062–1110",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.2",
@@ -958,7 +958,7 @@
      "conserva": "",
      "lineas": "l. 1111–1117",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.3",
@@ -966,7 +966,7 @@
      "conserva": "",
      "lineas": "l. 1118–1130",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "1.5",
@@ -974,7 +974,7 @@
      "conserva": "",
      "lineas": "l. 1131–1140",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2",
@@ -982,7 +982,7 @@
      "conserva": "",
      "lineas": "l. 1141–1143",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.1",
@@ -990,7 +990,7 @@
      "conserva": "",
      "lineas": "l. 1144–1155",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.2",
@@ -998,7 +998,7 @@
      "conserva": "",
      "lineas": "l. 1156–1157",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.3",
@@ -1006,7 +1006,7 @@
      "conserva": "",
      "lineas": "l. 1158–1172",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5.3",
@@ -1014,7 +1014,7 @@
      "conserva": "",
      "lineas": "l. 1173–1180",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "2.5",
@@ -1022,7 +1022,7 @@
      "conserva": "",
      "lineas": "l. 1181–1190",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3",
@@ -1030,7 +1030,7 @@
      "conserva": "",
      "lineas": "l. 1191–1194",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3.1",
@@ -1038,7 +1038,7 @@
      "conserva": "",
      "lineas": "l. 1195–1206",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3.2",
@@ -1046,7 +1046,7 @@
      "conserva": "",
      "lineas": "l. 1207–1213",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "3.3",
@@ -1054,7 +1054,7 @@
      "conserva": "",
      "lineas": "l. 1214–1224",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4",
@@ -1062,7 +1062,7 @@
      "conserva": "",
      "lineas": "l. 1225–1236",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4.1",
@@ -1070,7 +1070,7 @@
      "conserva": "",
      "lineas": "l. 1237–1239",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "4.2",
@@ -1078,7 +1078,7 @@
      "conserva": "",
      "lineas": "l. 1240–1249",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5",
@@ -1086,7 +1086,7 @@
      "conserva": "",
      "lineas": "l. 1250–1264",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5.1",
@@ -1094,7 +1094,7 @@
      "conserva": "",
      "lineas": "l. 1265–1267",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5.2",
@@ -1102,7 +1102,7 @@
      "conserva": "",
      "lineas": "l. 1268–1271",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5.3",
@@ -1110,7 +1110,7 @@
      "conserva": "",
      "lineas": "l. 1272–1275",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     },
     {
      "n": "5.4",
@@ -1118,7 +1118,7 @@
      "conserva": "",
      "lineas": "l. 1276–1281",
      "programa": "UpdatePIBDeflactor",
-     "archivo": "PIBDeflactor.ado"
+     "archivo": "00_comandos/PIBDeflactor.ado"
     }
    ],
    "decisiones": [],
@@ -1153,13 +1153,13 @@
    "modulo": "SCN",
    "archivos": [
     {
-     "ruta": "SCN.ado",
-     "sha256": "5a2dd3c8a40c",
+     "ruta": "00_comandos/SCN.ado",
+     "sha256": "e27cfaca3898",
      "lineas": 3017
     }
    ],
    "orden_en_SIM": 3,
-   "sim_linea": 215,
+   "sim_linea": 216,
    "sim_seccion": "2. ECONOMY",
    "pagina": "",
    "desde_version": "8.7",
@@ -1169,7 +1169,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/SCN.sthlp “Descripción”; 02_governance/scn-celdas.md header): `SCN` downloads, processes and projects Mexico's Sistema de Cuentas Nacionales (SCN, national accounts), integrating two official INEGI sources: BIE (income, gross output, household consumption, government expenditure and GDP by economic activity) and CSI (accounts by institutional sector: mixed income, social security contributions, subsidies and operating surplus). It allows GDP to be decomposed by its three approaches and the functional distribution of income among labor, capital and depreciation to be obtained; it is an input to TasasEfectivas, GastoPC, Households and NTA. What the engine reads is master/SCN.dta, built by UpdateSCN from the 525 BIE series and the CSI tables frozen in raw/SCN/ (asset scn-congelado-2024.zip; anchors in anioenigh, Package framework from the last frozen year)."
+      "Purpose (provenance: 00_comandos/SCN.sthlp “Descripción”; 02_governance/scn-celdas.md header): `SCN` downloads, processes and projects Mexico's Sistema de Cuentas Nacionales (SCN, national accounts), integrating two official INEGI sources: BIE (income, gross output, household consumption, government expenditure and GDP by economic activity) and CSI (accounts by institutional sector: mixed income, social security contributions, subsidies and operating surplus). It allows GDP to be decomposed by its three approaches and the functional distribution of income among labor, capital and depreciation to be obtained; it is an input to TasasEfectivas, GastoPC, Households and NTA. What the engine reads is master/SCN.dta, built by UpdateSCN from the 525 BIE series and the CSI tables frozen in raw/SCN/ (asset scn-congelado-2024.zip; anchors in anioenigh, Package framework from the last frozen year)."
      ],
      "tablas": [],
      "lista": [],
@@ -1191,7 +1191,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "SCN.ado l. 18–21",
+       "fuente": "00_comandos/SCN.ado l. 18–21",
        "filas": [
         [
          "BIE, 525 SCN series (raw/SCN/bie/<serie>.csv → master/SCN.dta)",
@@ -1222,16 +1222,16 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; SCN.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/SCN.ado",
        "filas": [
         [
          "master/Poblaciontot.dta",
-         "engine product (Poblacion.ado)",
+         "engine product (00_comandos/Poblacion.ado)",
          "2026-11-08",
          "",
          "",
          "",
-         "SCN.ado l. 2663"
+         "00_comandos/SCN.ado l. 2663"
         ],
         [
          "scn-congelado-2024.zip",
@@ -1240,7 +1240,7 @@
          "sha256 2b243b4ebf22",
          "",
          "",
-         "SCN.ado l. 2936; manifest.json assets"
+         "00_comandos/SCN.ado l. 2936; manifest.json assets"
         ]
        ]
       }
@@ -2549,224 +2549,224 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "SCN.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/SCN.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "master/SCN.dta",
          "",
          "01_modulos/Households.do; 01_modulos/NTA.do",
          "gen-scn-celdas.py; refrescar-scn.sh; test-nta-identidad.sh",
-         "SCN.ado l. 94"
+         "00_comandos/SCN.ado l. 94"
         ],
         [
          "raw/temp/GenIng.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 1193"
+         "00_comandos/SCN.ado l. 1193"
         ],
         [
          "raw/temp/ProdBru.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 1233"
+         "00_comandos/SCN.ado l. 1233"
         ],
         [
          "raw/temp/IngNacDis.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 1263"
+         "00_comandos/SCN.ado l. 1263"
         ],
         [
          "raw/temp/ConHog.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 1339"
+         "00_comandos/SCN.ado l. 1339"
         ],
         [
          "raw/temp/GastPriv.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 1364"
+         "00_comandos/SCN.ado l. 1364"
         ],
         [
          "raw/temp/GovCons.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 1405"
+         "00_comandos/SCN.ado l. 1405"
         ],
         [
          "raw/temp/PIBAE1.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 1520"
+         "00_comandos/SCN.ado l. 1520"
         ],
         [
          "raw/temp/PIBAE2.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 1639"
+         "00_comandos/SCN.ado l. 1639"
         ],
         [
          "raw/temp/PIBAE3.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 1742"
+         "00_comandos/SCN.ado l. 1742"
         ],
         [
          "raw/temp/PIBAE4.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 1885"
+         "00_comandos/SCN.ado l. 1885"
         ],
         [
          "raw/temp/PIBAE5.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2016"
+         "00_comandos/SCN.ado l. 2016"
         ],
         [
          "raw/temp/SecExt.dta",
          "",
          "",
          "gen-scn-celdas.py",
-         "SCN.ado l. 2057"
+         "00_comandos/SCN.ado l. 2057"
         ],
         [
          "raw/temp/IngMixto.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2094"
+         "00_comandos/SCN.ado l. 2094"
         ],
         [
          "raw/temp/SSImputada.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2126"
+         "00_comandos/SCN.ado l. 2126"
         ],
         [
          "raw/temp/SubProductos.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2158"
+         "00_comandos/SCN.ado l. 2158"
         ],
         [
          "raw/temp/SubProduccion.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2190"
+         "00_comandos/SCN.ado l. 2190"
         ],
         [
          "raw/temp/DepMix.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2222"
+         "00_comandos/SCN.ado l. 2222"
         ],
         [
          "raw/temp/ExBOpNoFin.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2254"
+         "00_comandos/SCN.ado l. 2254"
         ],
         [
          "raw/temp/ExBOpFin.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2286"
+         "00_comandos/SCN.ado l. 2286"
         ],
         [
          "raw/temp/ExBOpISFLSH.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2318"
+         "00_comandos/SCN.ado l. 2318"
         ],
         [
          "raw/temp/ExBOpHog.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2350"
+         "00_comandos/SCN.ado l. 2350"
         ],
         [
          "raw/temp/ExBOpGob.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2382"
+         "00_comandos/SCN.ado l. 2382"
         ],
         [
          "raw/temp/ExNOpNoFin.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2414"
+         "00_comandos/SCN.ado l. 2414"
         ],
         [
          "raw/temp/ExNOpFin.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2446"
+         "00_comandos/SCN.ado l. 2446"
         ],
         [
          "raw/temp/ExNOpISFLSH.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2478"
+         "00_comandos/SCN.ado l. 2478"
         ],
         [
          "raw/temp/ExNOpHog.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2510"
+         "00_comandos/SCN.ado l. 2510"
         ],
         [
          "raw/temp/ExNOpGob.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2542"
+         "00_comandos/SCN.ado l. 2542"
         ],
         [
          "raw/temp/AhorroB.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2574"
+         "00_comandos/SCN.ado l. 2574"
         ],
         [
          "raw/temp/IngDisp.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2606"
+         "00_comandos/SCN.ado l. 2606"
         ],
         [
          "raw/temp/HogaresS14.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SCN.ado l. 2872"
+         "00_comandos/SCN.ado l. 2872"
         ]
        ]
       }
@@ -2801,7 +2801,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "SCN.ado l. 22–24",
+       "fuente": "00_comandos/SCN.ado l. 22–24",
        "filas": [
         [
          "National accounts by sector",
@@ -2826,25 +2826,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "SCN.ado",
+     "archivo": "00_comandos/SCN.ado",
      "lineas": "l. 11–17",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "SCN.ado",
+     "archivo": "00_comandos/SCN.ado",
      "lineas": "l. 18–21",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "SCN.ado",
+     "archivo": "00_comandos/SCN.ado",
      "lineas": "l. 22–24",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "SCN.ado",
+     "archivo": "00_comandos/SCN.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 25–3017)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -2852,7 +2852,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in SCN.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/SCN.ado"
     },
     {
      "seccion": 5,
@@ -2885,7 +2885,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/SCN.sthlp “Descripción”; 02_governance/scn-celdas.md header): `SCN` downloads, processes and projects Mexico's Sistema de Cuentas Nacionales (SCN, national accounts), integrating two official INEGI sources: BIE (income, gross output, household consumption, government expenditure and GDP by economic activity) and CSI (accounts by institutional sector: mixed income, social security contributions, subsidies and operating surplus). It allows GDP to be decomposed by its three approaches and the functional distribution of income among labor, capital and depreciation to be obtained; it is an input to TasasEfectivas, GastoPC, Households and NTA. What the engine reads is master/SCN.dta, built by UpdateSCN from the 525 BIE series and the CSI tables frozen in raw/SCN/ (asset scn-congelado-2024.zip; anchors in anioenigh, Package framework from the last frozen year).",
+   "proposito": "Purpose (provenance: 00_comandos/SCN.sthlp “Descripción”; 02_governance/scn-celdas.md header): `SCN` downloads, processes and projects Mexico's Sistema de Cuentas Nacionales (SCN, national accounts), integrating two official INEGI sources: BIE (income, gross output, household consumption, government expenditure and GDP by economic activity) and CSI (accounts by institutional sector: mixed income, social security contributions, subsidies and operating surplus). It allows GDP to be decomposed by its three approaches and the functional distribution of income among labor, capital and depreciation to be obtained; it is an input to TasasEfectivas, GastoPC, Households and NTA. What the engine reads is master/SCN.dta, built by UpdateSCN from the 525 BIE series and the CSI tables frozen in raw/SCN/ (asset scn-congelado-2024.zip; anchors in anioenigh, Package framework from the last frozen year).",
    "entradas": [
     {
      "base": "BIE, 525 SCN series (raw/SCN/bie/<serie>.csv → master/SCN.dta)",
@@ -2907,7 +2907,7 @@
     },
     {
      "base": "master/Poblaciontot.dta",
-     "fuente": "engine product (Poblacion.ado)",
+     "fuente": "engine product (00_comandos/Poblacion.ado)",
      "vintage": "2026-11-08",
      "variables": "",
      "llave": "",
@@ -2931,7 +2931,7 @@
      "conserva": "",
      "lineas": "l. 29–46",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1",
@@ -2939,7 +2939,7 @@
      "conserva": "",
      "lineas": "l. 47–54",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.1",
@@ -2947,7 +2947,7 @@
      "conserva": "",
      "lineas": "l. 55–101",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.1",
@@ -2955,7 +2955,7 @@
      "conserva": "",
      "lineas": "l. 102–110",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.2",
@@ -2963,7 +2963,7 @@
      "conserva": "",
      "lineas": "l. 111–138",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.3",
@@ -2971,7 +2971,7 @@
      "conserva": "",
      "lineas": "l. 139–406",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "2",
@@ -2979,7 +2979,7 @@
      "conserva": "",
      "lineas": "l. 407–408",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.17",
@@ -2987,7 +2987,7 @@
      "conserva": "",
      "lineas": "l. 409–1166",
      "programa": "SCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.1",
@@ -2995,7 +2995,7 @@
      "conserva": "",
      "lineas": "l. 1167–1170",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.2",
@@ -3003,7 +3003,7 @@
      "conserva": "",
      "lineas": "l. 1171–1184",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.3",
@@ -3011,7 +3011,7 @@
      "conserva": "",
      "lineas": "l. 1185–1190",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "1.5",
@@ -3019,7 +3019,7 @@
      "conserva": "",
      "lineas": "l. 1191–1196",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "2.1",
@@ -3027,7 +3027,7 @@
      "conserva": "",
      "lineas": "l. 1197–1200",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "2.2",
@@ -3035,7 +3035,7 @@
      "conserva": "",
      "lineas": "l. 1201–1224",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "2.3",
@@ -3043,7 +3043,7 @@
      "conserva": "",
      "lineas": "l. 1225–1230",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "2.5",
@@ -3051,7 +3051,7 @@
      "conserva": "",
      "lineas": "l. 1231–1236",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "3.1",
@@ -3059,7 +3059,7 @@
      "conserva": "",
      "lineas": "l. 1237–1240",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "3.2",
@@ -3067,7 +3067,7 @@
      "conserva": "",
      "lineas": "l. 1241–1254",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "3.3",
@@ -3075,7 +3075,7 @@
      "conserva": "",
      "lineas": "l. 1255–1260",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "3.5",
@@ -3083,7 +3083,7 @@
      "conserva": "",
      "lineas": "l. 1261–1266",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "4.1",
@@ -3091,7 +3091,7 @@
      "conserva": "",
      "lineas": "l. 1267–1271",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "4.2",
@@ -3099,7 +3099,7 @@
      "conserva": "",
      "lineas": "l. 1272–1330",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "4.3",
@@ -3107,7 +3107,7 @@
      "conserva": "",
      "lineas": "l. 1331–1336",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "4.5",
@@ -3115,7 +3115,7 @@
      "conserva": "",
      "lineas": "l. 1337–1342",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "5.1",
@@ -3123,7 +3123,7 @@
      "conserva": "",
      "lineas": "l. 1343–1346",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "5.2",
@@ -3131,7 +3131,7 @@
      "conserva": "",
      "lineas": "l. 1347–1355",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "5.3",
@@ -3139,7 +3139,7 @@
      "conserva": "",
      "lineas": "l. 1356–1361",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "5.5",
@@ -3147,7 +3147,7 @@
      "conserva": "",
      "lineas": "l. 1362–1367",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "6.1",
@@ -3155,7 +3155,7 @@
      "conserva": "",
      "lineas": "l. 1368–1372",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "6.2",
@@ -3163,7 +3163,7 @@
      "conserva": "",
      "lineas": "l. 1373–1396",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "6.3",
@@ -3171,7 +3171,7 @@
      "conserva": "",
      "lineas": "l. 1397–1402",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "6.5",
@@ -3179,7 +3179,7 @@
      "conserva": "",
      "lineas": "l. 1403–2019",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.1",
@@ -3187,7 +3187,7 @@
      "conserva": "",
      "lineas": "l. 2020–2024",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.2",
@@ -3195,7 +3195,7 @@
      "conserva": "",
      "lineas": "l. 2025–2048",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.3",
@@ -3203,7 +3203,7 @@
      "conserva": "",
      "lineas": "l. 2049–2054",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.5",
@@ -3211,7 +3211,7 @@
      "conserva": "",
      "lineas": "l. 2055–2059",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "9",
@@ -3219,7 +3219,7 @@
      "conserva": "",
      "lineas": "l. 2060–2097",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "10",
@@ -3227,7 +3227,7 @@
      "conserva": "",
      "lineas": "l. 2098–2129",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "11",
@@ -3235,7 +3235,7 @@
      "conserva": "",
      "lineas": "l. 2130–2161",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "12",
@@ -3243,7 +3243,7 @@
      "conserva": "",
      "lineas": "l. 2162–2193",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "13",
@@ -3251,7 +3251,7 @@
      "conserva": "",
      "lineas": "l. 2194–2225",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "14",
@@ -3259,7 +3259,7 @@
      "conserva": "",
      "lineas": "l. 2226–2257",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "15",
@@ -3267,7 +3267,7 @@
      "conserva": "",
      "lineas": "l. 2258–2289",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "16",
@@ -3275,7 +3275,7 @@
      "conserva": "",
      "lineas": "l. 2290–2321",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "17",
@@ -3283,7 +3283,7 @@
      "conserva": "",
      "lineas": "l. 2322–2353",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "18",
@@ -3291,7 +3291,7 @@
      "conserva": "",
      "lineas": "l. 2354–2385",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "19",
@@ -3299,7 +3299,7 @@
      "conserva": "",
      "lineas": "l. 2386–2417",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "20",
@@ -3307,7 +3307,7 @@
      "conserva": "",
      "lineas": "l. 2418–2449",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "21",
@@ -3315,7 +3315,7 @@
      "conserva": "",
      "lineas": "l. 2450–2481",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "22",
@@ -3323,7 +3323,7 @@
      "conserva": "",
      "lineas": "l. 2482–2513",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "23",
@@ -3331,7 +3331,7 @@
      "conserva": "",
      "lineas": "l. 2514–2545",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "24",
@@ -3339,7 +3339,7 @@
      "conserva": "",
      "lineas": "l. 2546–2577",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "25",
@@ -3347,7 +3347,7 @@
      "conserva": "",
      "lineas": "l. 2578–2616",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "26",
@@ -3355,7 +3355,7 @@
      "conserva": "",
      "lineas": "l. 2617–2705",
      "programa": "UpdateSCN",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.17",
@@ -3363,7 +3363,7 @@
      "conserva": "",
      "lineas": "l. 2706–2876",
      "programa": "SCNHogaresS14",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     },
     {
      "n": "8.17",
@@ -3371,7 +3371,7 @@
      "conserva": "",
      "lineas": "l. 2877–3017",
      "programa": "SCNSectores",
-     "archivo": "SCN.ado"
+     "archivo": "00_comandos/SCN.ado"
     }
    ],
    "decisiones": [],
@@ -4953,7 +4953,7 @@
     }
    ],
    "orden_en_SIM": 4,
-   "sim_linea": 225,
+   "sim_linea": 226,
    "sim_seccion": "3. HOUSEHOLDS: MACRO-MICRO HARMONIZATION",
    "pagina": "",
    "desde_version": "",
@@ -6675,7 +6675,7 @@
     {
      "seccion": 4,
      "archivo": "SIM.do",
-     "lineas": "§0.8–§0.8c (l. 85–121)",
+     "lineas": "§0.8–§0.8c (l. 86–122)",
      "nota": "signed parameters: value, document, who reads it"
     },
     {
@@ -7294,7 +7294,7 @@
      "firmado": "p3_s14",
      "documento": "CUAD-1 §4.0",
      "lee": "Expenditure §4; NTA §4; Sankey",
-     "sim_linea": 99,
+     "sim_linea": 100,
      "alternativas": "`conhog` (current)",
      "memo": "CUAD-1 §4"
     },
@@ -7307,7 +7307,7 @@
      "firmado": "purchaser",
      "documento": "CUAD-1 §4.0",
      "lee": "Expenditure §0",
-     "sim_linea": 100,
+     "sim_linea": 101,
      "alternativas": "`basicos`",
      "memo": "CUAD-1 §4"
     },
@@ -7320,7 +7320,7 @@
      "firmado": "divsim",
      "documento": "CUAD-1 §4.0",
      "lee": "Expenditure §1.2, §6",
-     "sim_linea": 108,
+     "sim_linea": 109,
      "alternativas": "`divciep` (current)",
      "memo": "CUAD-1 §4"
     }
@@ -7822,7 +7822,7 @@
     }
    ],
    "orden_en_SIM": 5,
-   "sim_linea": 228,
+   "sim_linea": 229,
    "sim_seccion": "3. HOUSEHOLDS: MACRO-MICRO HARMONIZATION",
    "pagina": "",
    "desde_version": "",
@@ -9972,7 +9972,7 @@
         [
          "master/`anioenigh'/households.dta",
          "",
-         "01_modulos/Expenditure.do; 01_modulos/ISR_Mod.do; 01_modulos/NTA.do; 01_modulos/PerfilesSim.do; 01_modulos/TasasEfectivasEntidad.do; GastoPC.ado; Precache.ado",
+         "00_comandos/GastoPC.ado; 00_comandos/Precache.ado; 01_modulos/Expenditure.do; 01_modulos/ISR_Mod.do; 01_modulos/NTA.do; 01_modulos/PerfilesSim.do; 01_modulos/TasasEfectivasEntidad.do",
          "correr-sim.sh; publicar-vps.sh; vintage-aportaciones.do",
          "01_modulos/Households.do l. 3239"
         ]
@@ -10663,7 +10663,7 @@
     {
      "seccion": 4,
      "archivo": "SIM.do",
-     "lineas": "§0.8–§0.8c (l. 85–121)",
+     "lineas": "§0.8–§0.8c (l. 86–122)",
      "nota": "signed parameters: value, document, who reads it"
     },
     {
@@ -11563,7 +11563,7 @@
      "firmado": "off",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §2.2, §3; NTA §4",
-     "sim_linea": 85,
+     "sim_linea": 86,
      "alternativas": "`on` (v8.14.0)",
      "memo": "CUAD-0 §4"
     },
@@ -11576,7 +11576,7 @@
      "firmado": "transf_negocios",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §2, §9; NTA §4",
-     "sim_linea": 86,
+     "sim_linea": 87,
      "alternativas": "`off` (v8.14.0)",
      "memo": "CUAD-0 §4"
     },
@@ -11589,7 +11589,7 @@
      "firmado": "b2n",
      "documento": "CUAD-3 §4.0 (CUAD-0 §4.0 said b3n)",
      "lee": "Households §2, §9",
-     "sim_linea": 87,
+     "sim_linea": 88,
      "alternativas": "`b3n`",
      "memo": "CUAD-0 §4"
     },
@@ -11611,7 +11611,7 @@
      "firmado": "proxy_propiedad",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9, §11.3",
-     "sim_linea": 89,
+     "sim_linea": 90,
      "alternativas": "`enigh`",
      "memo": "CUAD-0 §4"
     },
@@ -11624,7 +11624,7 @@
      "firmado": "b3n_d422",
      "documento": "CUAD-3 §4.0",
      "lee": "Households §9, §9.1; NTA §4",
-     "sim_linea": 90,
+     "sim_linea": 91,
      "alternativas": "`b3n` (v8.15b–v8.17.1)",
      "memo": "CUAD-3 §4"
     },
@@ -11637,7 +11637,7 @@
      "firmado": "1.45",
      "documento": "CUAD-3 §4.0 (ε* calibrated against ITAN 4T 2024)",
      "lee": "Households §9 (gap ∝ Y^ε in D.1 and B.3n; 1 = Altimir, 1.75 = del Castillo)",
-     "sim_linea": 91,
+     "sim_linea": 92,
      "alternativas": "`1` (Altimir, v8.17.1), `1.75` (del Castillo), any ε ∈ [1, 3]",
      "memo": "CUAD-3 §4"
     },
@@ -11650,7 +11650,7 @@
      "firmado": "b2n_b3n_d4",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9.1; NTA §4",
-     "sim_linea": 92,
+     "sim_linea": 93,
      "alternativas": "`actual` (v8.14.0)",
      "memo": "CUAD-0 §4"
     },
@@ -11663,7 +11663,7 @@
      "firmado": "fuera",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9",
-     "sim_linea": 93,
+     "sim_linea": 94,
      "alternativas": "`dentro` (v8.14.0)",
      "memo": "CUAD-0 §4"
     },
@@ -11676,7 +11676,7 @@
      "firmado": "off",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9; Sankey",
-     "sim_linea": 94,
+     "sim_linea": 95,
      "alternativas": "`on` (v8.14.0)",
      "memo": "CUAD-0 §4"
     },
@@ -11689,7 +11689,7 @@
      "firmado": "neto",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9; NTA §4; Sankey",
-     "sim_linea": 95,
+     "sim_linea": 96,
      "alternativas": "`actual`",
      "memo": "CUAD-0 §4"
     },
@@ -11702,7 +11702,7 @@
      "firmado": "off",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9; NTA §7; Sankey",
-     "sim_linea": 96,
+     "sim_linea": 97,
      "alternativas": "`on` (v8.14.0)",
      "memo": "CUAD-0 §4"
     },
@@ -11715,7 +11715,7 @@
      "firmado": "on",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §6; NTA §4; ISR_Mod",
-     "sim_linea": 101
+     "sim_linea": 102
     },
     {
      "parametro": "isrpm_incidencia",
@@ -11726,7 +11726,7 @@
      "firmado": "propiedad",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §10-§11; TasasEfectivas §4",
-     "sim_linea": 102
+     "sim_linea": 103
     },
     {
      "parametro": "isras_share",
@@ -11737,7 +11737,7 @@
      "firmado": "acotado",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §11",
-     "sim_linea": 104
+     "sim_linea": 105
     },
     {
      "parametro": "informalidad",
@@ -11748,7 +11748,7 @@
      "firmado": "corte",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §11.1",
-     "sim_linea": 106,
+     "sim_linea": 107,
      "alternativas": "`probabilistica` (8.16)",
      "memo": "CUAD-0 §4"
     },
@@ -11761,7 +11761,7 @@
      "firmado": "imss",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §11.1",
-     "sim_linea": 107
+     "sim_linea": 108
     },
     {
      "parametro": "obligacion_isrpf_ancla",
@@ -11772,18 +11772,18 @@
      "firmado": "itan_rangos",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §11.2",
-     "sim_linea": 105
+     "sim_linea": 106
     },
     {
      "parametro": "isr_personas_ancla",
      "default": "d51_s14",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 103",
+     "fuente": "SIM.do l. 104",
      "firmado": "d51_s14",
      "documento": "CUAD-1 §4.0",
      "lee": "NTA §4; Households §11",
-     "sim_linea": 103
+     "sim_linea": 104
     }
    ],
    "anclas": [
@@ -12496,7 +12496,7 @@
     },
     {
      "archivo": "master/`anioenigh'/households.dta",
-     "consume": "01_modulos/Expenditure.do; 01_modulos/ISR_Mod.do; 01_modulos/NTA.do; 01_modulos/PerfilesSim.do; 01_modulos/TasasEfectivasEntidad.do; GastoPC.ado; Precache.ado",
+     "consume": "00_comandos/GastoPC.ado; 00_comandos/Precache.ado; 01_modulos/Expenditure.do; 01_modulos/ISR_Mod.do; 01_modulos/NTA.do; 01_modulos/PerfilesSim.do; 01_modulos/TasasEfectivasEntidad.do",
      "check": "correr-sim.sh; publicar-vps.sh; vintage-aportaciones.do"
     }
    ],
@@ -12845,7 +12845,7 @@
     }
    ],
    "orden_en_SIM": 6,
-   "sim_linea": 231,
+   "sim_linea": 232,
    "sim_seccion": "3. HOUSEHOLDS: MACRO-MICRO HARMONIZATION",
    "pagina": "/NTA/",
    "desde_version": "",
@@ -15004,7 +15004,7 @@
     {
      "seccion": 4,
      "archivo": "SIM.do",
-     "lineas": "§0.8–§0.8c (l. 85–121)",
+     "lineas": "§0.8–§0.8c (l. 86–122)",
      "nota": "signed parameters: value, document, who reads it"
     },
     {
@@ -15456,7 +15456,7 @@
      "firmado": "inbd",
      "documento": "CUAD-2 §4",
      "lee": "NTA §7d",
-     "sim_linea": 112,
+     "sim_linea": 113,
      "alternativas": "`ing_nacional` (today)",
      "memo": "CUAD-2 §4"
     },
@@ -15469,7 +15469,7 @@
      "firmado": "on",
      "documento": "CUAD-2 §4",
      "lee": "NTA §4, §7d",
-     "sim_linea": 113,
+     "sim_linea": 114,
      "alternativas": "`on`",
      "memo": "CUAD-2 §4"
     },
@@ -15482,7 +15482,7 @@
      "firmado": "per_capita",
      "documento": "CUAD-2 §4",
      "lee": "NTA §4, §7d",
-     "sim_linea": 114,
+     "sim_linea": 115,
      "alternativas": "`per_capita`, `tau_menos`",
      "memo": "CUAD-2 §4"
     },
@@ -15495,7 +15495,7 @@
      "firmado": "sector",
      "documento": "CUAD-2 §4",
      "lee": "NTA §7d (only sector implemented)",
-     "sim_linea": 115,
+     "sim_linea": 116,
      "alternativas": "`hogares`, `d63_perfil`",
      "memo": "CUAD-2 §4"
     },
@@ -15508,7 +15508,7 @@
      "firmado": "neto",
      "documento": "CUAD-2 §4",
      "lee": "NTA §4, §7d",
-     "sim_linea": 116,
+     "sim_linea": 117,
      "alternativas": "`bruto`",
      "memo": "CUAD-2 §4"
     },
@@ -15521,7 +15521,7 @@
      "firmado": "si",
      "documento": "CUAD-2 §4",
      "lee": "NTA §7d",
-     "sim_linea": 117,
+     "sim_linea": 118,
      "alternativas": "`absorbido`",
      "memo": "CUAD-2 §4"
     },
@@ -15534,7 +15534,7 @@
      "firmado": "neto",
      "documento": "CUAD-2 §4",
      "lee": "NTA §7d (only neto implemented)",
-     "sim_linea": 118,
+     "sim_linea": 119,
      "alternativas": "`bruto`",
      "memo": "CUAD-2 §4"
     },
@@ -15547,7 +15547,7 @@
      "firmado": "un_nodo_4",
      "documento": "CUAD-2 §4",
      "lee": "NTA §7d",
-     "sim_linea": 119,
+     "sim_linea": 120,
      "alternativas": "`un_nodo_2` (household side), `por_sector`",
      "memo": "CUAD-2 §4"
     },
@@ -15560,7 +15560,7 @@
      "firmado": "fuera",
      "documento": "CUAD-2 §4",
      "lee": "NTA §7d (only fuera implemented)",
-     "sim_linea": 120,
+     "sim_linea": 121,
      "alternativas": "`nodo`",
      "memo": "CUAD-2 §4"
     },
@@ -15573,7 +15573,7 @@
      "firmado": "balance",
      "documento": "CUAD-2 §4",
      "lee": "NTA §4",
-     "sim_linea": 121,
+     "sim_linea": 122,
      "alternativas": "`enigh`: unscaled; the imbalance stays in the S gap",
      "memo": "CUAD-2 §4"
     },
@@ -15631,110 +15631,110 @@
      "default": "off",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 85",
+     "fuente": "SIM.do l. 86",
      "firmado": "off",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §2.2, §3; NTA §4",
-     "sim_linea": 85
+     "sim_linea": 86
     },
     {
      "parametro": "ing_mixto_depurado",
      "default": "transf_negocios",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 86",
+     "fuente": "SIM.do l. 87",
      "firmado": "transf_negocios",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §2, §9; NTA §4",
-     "sim_linea": 86
+     "sim_linea": 87
     },
     {
      "parametro": "ing_mixto_ancla",
      "default": "b3n_d422",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 90",
+     "fuente": "SIM.do l. 91",
      "firmado": "b3n_d422",
      "documento": "CUAD-3 §4.0",
      "lee": "Households §9, §9.1; NTA §4",
-     "sim_linea": 90
+     "sim_linea": 91
     },
     {
      "parametro": "yk_ancla",
      "default": "b2n_b3n_d4",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 92",
+     "fuente": "SIM.do l. 93",
      "firmado": "b2n_b3n_d4",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9.1; NTA §4",
-     "sim_linea": 92
+     "sim_linea": 93
     },
     {
      "parametro": "cuotas_d614",
      "default": "neto",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 95",
+     "fuente": "SIM.do l. 96",
      "firmado": "neto",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9; NTA §4; Sankey",
-     "sim_linea": 95
+     "sim_linea": 96
     },
     {
      "parametro": "oye_en_hub",
      "default": "off",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 96",
+     "fuente": "SIM.do l. 97",
      "firmado": "off",
      "documento": "CUAD-0 §4.0",
      "lee": "Households §9; NTA §7; Sankey",
-     "sim_linea": 96
+     "sim_linea": 97
     },
     {
      "parametro": "consumo_ancla",
      "default": "p3_s14",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 99",
+     "fuente": "SIM.do l. 100",
      "firmado": "p3_s14",
      "documento": "CUAD-1 §4.0",
      "lee": "Expenditure §4; NTA §4; Sankey",
-     "sim_linea": 99
+     "sim_linea": 100
     },
     {
      "parametro": "cuotas_por_sector",
      "default": "on",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 101",
+     "fuente": "SIM.do l. 102",
      "firmado": "on",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §6; NTA §4; ISR_Mod",
-     "sim_linea": 101
+     "sim_linea": 102
     },
     {
      "parametro": "isr_personas_ancla",
      "default": "d51_s14",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 103",
+     "fuente": "SIM.do l. 104",
      "firmado": "d51_s14",
      "documento": "CUAD-1 §4.0",
      "lee": "NTA §4; Households §11",
-     "sim_linea": 103
+     "sim_linea": 104
     },
     {
      "parametro": "ieps_relativo",
      "default": "micro",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 109",
+     "fuente": "SIM.do l. 110",
      "firmado": "micro",
      "documento": "CUAD-1 §4.0",
      "lee": "PerfilesSim §6; NTA §4",
-     "sim_linea": 109
+     "sim_linea": 110
     }
    ],
    "anclas": [
@@ -17363,7 +17363,7 @@
     }
    ],
    "orden_en_SIM": 7,
-   "sim_linea": 234,
+   "sim_linea": 235,
    "sim_seccion": "3. HOUSEHOLDS: MACRO-MICRO HARMONIZATION",
    "pagina": "",
    "desde_version": "",
@@ -17398,7 +17398,7 @@
        "filas": [
         [
          "master/Poblaciontot.dta",
-         "engine product (Poblacion.ado)",
+         "engine product (00_comandos/Poblacion.ado)",
          "2026-11-08",
          "",
          "",
@@ -17566,7 +17566,7 @@
     {
      "seccion": 4,
      "archivo": "SIM.do",
-     "lineas": "§0.8–§0.8c (l. 85–121)",
+     "lineas": "§0.8–§0.8c (l. 86–122)",
      "nota": "signed parameters: value, document, who reads it"
     },
     {
@@ -17592,7 +17592,7 @@
    "entradas": [
     {
      "base": "master/Poblaciontot.dta",
-     "fuente": "engine product (Poblacion.ado)",
+     "fuente": "engine product (00_comandos/Poblacion.ado)",
      "vintage": "2026-11-08",
      "variables": "",
      "llave": "",
@@ -17737,11 +17737,11 @@
      "default": "micro",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 109",
+     "fuente": "SIM.do l. 110",
      "firmado": "micro",
      "documento": "CUAD-1 §4.0",
      "lee": "PerfilesSim §6; NTA §4",
-     "sim_linea": 109
+     "sim_linea": 110
     }
    ],
    "anclas": [],
@@ -17789,13 +17789,13 @@
    "modulo": "LIF",
    "archivos": [
     {
-     "ruta": "LIF.ado",
-     "sha256": "d7f3f7e19505",
+     "ruta": "00_comandos/LIF.ado",
+     "sha256": "3039f12a1403",
      "lineas": 705
     }
    ],
    "orden_en_SIM": 8,
-   "sim_linea": 243,
+   "sim_linea": 244,
    "sim_seccion": "4. FISCAL SYSTEM: REVENUE",
    "pagina": "",
    "desde_version": "8.1",
@@ -17805,7 +17805,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/LIF.sthlp “Descripción”): `LIF` downloads and analyzes the federal government's budgetary revenue by combining three official sources: the Ley de Ingresos de la Federación (Federal Revenue Law; amounts approved by Congress), the SHCP's Estadísticas Oportunas (observed monthly revenue) and the BIE (GDP and deflator to express values as % of GDP). It allows querying historical revenue since 1993, comparing its evolution across years, analyzing the elasticity of each tax with respect to GDP and projecting the close of the current year."
+      "Purpose (provenance: 00_comandos/LIF.sthlp “Descripción”): `LIF` downloads and analyzes the federal government's budgetary revenue by combining three official sources: the Ley de Ingresos de la Federación (Federal Revenue Law; amounts approved by Congress), the SHCP's Estadísticas Oportunas (observed monthly revenue) and the BIE (GDP and deflator to express values as % of GDP). It allows querying historical revenue since 1993, comparing its evolution across years, analyzing the elasticity of each tax with respect to GDP and projecting the close of the current year."
      ],
      "tablas": [],
      "lista": [],
@@ -17814,7 +17814,7 @@
     },
     "2": {
      "texto": [
-      "Inputs (provenance: 03_help/Stata/LIF.sthlp “Descripción”; CUAD-0 §2 row “LIF / PEF”; manifest.json assets):"
+      "Inputs (provenance: 00_comandos/LIF.sthlp “Descripción”; CUAD-0 §2 row “LIF / PEF”; manifest.json assets):"
      ],
      "tablas": [
       {
@@ -17827,7 +17827,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "LIF.ado l. 6–9",
+       "fuente": "00_comandos/LIF.ado l. 6–9",
        "filas": [
         [
          "LIFs.xlsx (approved Ley de Ingresos, by year)",
@@ -17858,7 +17858,7 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; LIF.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/LIF.ado",
        "filas": [
         [
          "LIFs.xlsx",
@@ -17867,7 +17867,7 @@
          "sha256 7d9db942d6b2",
          "",
          "",
-         "LIF.ado l. 590; manifest.json assets"
+         "00_comandos/LIF.ado l. 590; manifest.json assets"
         ]
        ]
       }
@@ -17909,14 +17909,14 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "LIF.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/LIF.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "master/LIF.dta",
          "",
-         "01_modulos/Households.do; TasasEfectivas.ado",
+         "00_comandos/TasasEfectivas.ado; 01_modulos/Households.do",
          "perfilar-web.py; perfilar-web.sh; test-web-batch.sh",
-         "LIF.ado l. 704"
+         "00_comandos/LIF.ado l. 704"
         ]
        ]
       }
@@ -17951,7 +17951,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "LIF.ado l. 10–12",
+       "fuente": "00_comandos/LIF.ado l. 10–12",
        "filas": [
         [
          "Public revenue",
@@ -17976,25 +17976,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "LIF.ado",
+     "archivo": "00_comandos/LIF.ado",
      "lineas": "l. 2–5",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "LIF.ado",
+     "archivo": "00_comandos/LIF.ado",
      "lineas": "l. 6–9",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "LIF.ado",
+     "archivo": "00_comandos/LIF.ado",
      "lineas": "l. 10–12",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "LIF.ado",
+     "archivo": "00_comandos/LIF.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 13–705)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -18002,7 +18002,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in LIF.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/LIF.ado"
     },
     {
      "seccion": 6,
@@ -18011,7 +18011,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/LIF.sthlp “Descripción”): `LIF` downloads and analyzes the federal government's budgetary revenue by combining three official sources: the Ley de Ingresos de la Federación (Federal Revenue Law; amounts approved by Congress), the SHCP's Estadísticas Oportunas (observed monthly revenue) and the BIE (GDP and deflator to express values as % of GDP). It allows querying historical revenue since 1993, comparing its evolution across years, analyzing the elasticity of each tax with respect to GDP and projecting the close of the current year.",
+   "proposito": "Purpose (provenance: 00_comandos/LIF.sthlp “Descripción”): `LIF` downloads and analyzes the federal government's budgetary revenue by combining three official sources: the Ley de Ingresos de la Federación (Federal Revenue Law; amounts approved by Congress), the SHCP's Estadísticas Oportunas (observed monthly revenue) and the BIE (GDP and deflator to express values as % of GDP). It allows querying historical revenue since 1993, comparing its evolution across years, analyzing the elasticity of each tax with respect to GDP and projecting the close of the current year.",
    "entradas": [
     {
      "base": "LIFs.xlsx (approved Ley de Ingresos, by year)",
@@ -18048,7 +18048,7 @@
      "conserva": "",
      "lineas": "l. 20–29",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "0.2",
@@ -18056,7 +18056,7 @@
      "conserva": "",
      "lineas": "l. 30–38",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "1",
@@ -18064,7 +18064,7 @@
      "conserva": "",
      "lineas": "l. 39–50",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "1.1",
@@ -18072,7 +18072,7 @@
      "conserva": "",
      "lineas": "l. 51–59",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "1.2",
@@ -18080,7 +18080,7 @@
      "conserva": "",
      "lineas": "l. 60–69",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "1.3",
@@ -18088,7 +18088,7 @@
      "conserva": "",
      "lineas": "l. 70–75",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "1.4",
@@ -18096,7 +18096,7 @@
      "conserva": "",
      "lineas": "l. 76–83",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "2",
@@ -18104,7 +18104,7 @@
      "conserva": "",
      "lineas": "l. 84–86",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "2.1",
@@ -18112,7 +18112,7 @@
      "conserva": "",
      "lineas": "l. 87–100",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "2.2",
@@ -18120,7 +18120,7 @@
      "conserva": "",
      "lineas": "l. 101–113",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "2.3",
@@ -18128,7 +18128,7 @@
      "conserva": "",
      "lineas": "l. 114–121",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "3",
@@ -18136,7 +18136,7 @@
      "conserva": "",
      "lineas": "l. 122–130",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "3.1",
@@ -18144,7 +18144,7 @@
      "conserva": "",
      "lineas": "l. 131–139",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "3.2",
@@ -18152,7 +18152,7 @@
      "conserva": "",
      "lineas": "l. 140–153",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "4",
@@ -18160,7 +18160,7 @@
      "conserva": "",
      "lineas": "l. 154–177",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "4",
@@ -18168,7 +18168,7 @@
      "conserva": "",
      "lineas": "l. 178–186",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "4.1",
@@ -18176,7 +18176,7 @@
      "conserva": "",
      "lineas": "l. 187–249",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "4.2",
@@ -18184,7 +18184,7 @@
      "conserva": "",
      "lineas": "l. 250–331",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "4.3",
@@ -18192,7 +18192,7 @@
      "conserva": "",
      "lineas": "l. 332–411",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "5",
@@ -18200,7 +18200,7 @@
      "conserva": "",
      "lineas": "l. 412–587",
      "programa": "LIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "1",
@@ -18208,7 +18208,7 @@
      "conserva": "",
      "lineas": "l. 588–632",
      "programa": "UpdateLIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     },
     {
      "n": "2",
@@ -18216,7 +18216,7 @@
      "conserva": "",
      "lineas": "l. 633–705",
      "programa": "UpdateLIF",
-     "archivo": "LIF.ado"
+     "archivo": "00_comandos/LIF.ado"
     }
    ],
    "decisiones": [],
@@ -18224,7 +18224,7 @@
    "salidas": [
     {
      "archivo": "master/LIF.dta",
-     "consume": "01_modulos/Households.do; TasasEfectivas.ado",
+     "consume": "00_comandos/TasasEfectivas.ado; 01_modulos/Households.do",
      "check": "perfilar-web.py; perfilar-web.sh; test-web-batch.sh"
     }
    ],
@@ -18257,7 +18257,7 @@
     }
    ],
    "orden_en_SIM": 9,
-   "sim_linea": 338,
+   "sim_linea": 339,
    "sim_seccion": "4. FISCAL SYSTEM: REVENUE",
    "pagina": "",
    "desde_version": "",
@@ -18492,7 +18492,7 @@
     {
      "seccion": 4,
      "archivo": "SIM.do",
-     "lineas": "§0.8–§0.8c (l. 85–121)",
+     "lineas": "§0.8–§0.8c (l. 86–122)",
      "nota": "signed parameters: value, document, who reads it"
     },
     {
@@ -18560,11 +18560,11 @@
      "default": "on",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 101",
+     "fuente": "SIM.do l. 102",
      "firmado": "on",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §6; NTA §4; ISR_Mod",
-     "sim_linea": 101
+     "sim_linea": 102
     }
    ],
    "anclas": [],
@@ -18646,7 +18646,7 @@
     }
    ],
    "orden_en_SIM": 10,
-   "sim_linea": 388,
+   "sim_linea": 389,
    "sim_seccion": "4. FISCAL SYSTEM: REVENUE",
    "pagina": "",
    "desde_version": "",
@@ -18925,13 +18925,13 @@
    "modulo": "TasasEfectivas",
    "archivos": [
     {
-     "ruta": "TasasEfectivas.ado",
+     "ruta": "00_comandos/TasasEfectivas.ado",
      "sha256": "4080fd17e3bf",
      "lineas": 297
     }
    ],
    "orden_en_SIM": 11,
-   "sim_linea": 397,
+   "sim_linea": 398,
    "sim_seccion": "4. FISCAL SYSTEM: REVENUE",
    "pagina": "",
    "desde_version": "8.1",
@@ -19051,7 +19051,7 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; TasasEfectivas.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/TasasEfectivas.ado",
        "filas": [
         [
          "master/perfiles`anio'.dta",
@@ -19060,7 +19060,7 @@
          "",
          "",
          "",
-         "TasasEfectivas.ado l. 259"
+         "00_comandos/TasasEfectivas.ado l. 259"
         ]
        ]
       }
@@ -20062,14 +20062,14 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "TasasEfectivas.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/TasasEfectivas.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "users/$id/ingresos.dta",
          "",
-         "01_modulos/Households.do; 01_modulos/NTA.do; FiscalGap.ado",
+         "00_comandos/FiscalGap.ado; 01_modulos/Households.do; 01_modulos/NTA.do",
          "perfilar-web.py; vintage-aportaciones.do",
-         "TasasEfectivas.ado l. 282"
+         "00_comandos/TasasEfectivas.ado l. 282"
         ]
        ]
       }
@@ -20556,7 +20556,7 @@
     {
      "seccion": 4,
      "archivo": "SIM.do",
-     "lineas": "§0.8–§0.8c (l. 85–121)",
+     "lineas": "§0.8–§0.8c (l. 86–122)",
      "nota": "signed parameters: value, document, who reads it"
     },
     {
@@ -20621,7 +20621,7 @@
     },
     {
      "seccion": 3,
-     "archivo": "TasasEfectivas.ado",
+     "archivo": "00_comandos/TasasEfectivas.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 2–297)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -20629,7 +20629,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in TasasEfectivas.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/TasasEfectivas.ado"
     },
     {
      "seccion": 6,
@@ -20729,7 +20729,7 @@
      "conserva": "",
      "lineas": "l. 20–26",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "2",
@@ -20737,7 +20737,7 @@
      "conserva": "",
      "lineas": "l. 27–55",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "3",
@@ -20745,7 +20745,7 @@
      "conserva": "",
      "lineas": "l. 56–64",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "3.1",
@@ -20753,7 +20753,7 @@
      "conserva": "",
      "lineas": "l. 65–72",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "3.2",
@@ -20761,7 +20761,7 @@
      "conserva": "",
      "lineas": "l. 73–79",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "3.3",
@@ -20769,7 +20769,7 @@
      "conserva": "",
      "lineas": "l. 80–85",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "3.4",
@@ -20777,7 +20777,7 @@
      "conserva": "",
      "lineas": "l. 86–97",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "4",
@@ -20785,7 +20785,7 @@
      "conserva": "",
      "lineas": "l. 98–133",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "4.1",
@@ -20793,7 +20793,7 @@
      "conserva": "",
      "lineas": "l. 134–136",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "4.2",
@@ -20801,7 +20801,7 @@
      "conserva": "",
      "lineas": "l. 137–143",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "4.3",
@@ -20809,7 +20809,7 @@
      "conserva": "",
      "lineas": "l. 144–147",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "4.4",
@@ -20817,7 +20817,7 @@
      "conserva": "",
      "lineas": "l. 148–159",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "5",
@@ -20825,7 +20825,7 @@
      "conserva": "",
      "lineas": "l. 160–171",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "5.1",
@@ -20833,7 +20833,7 @@
      "conserva": "",
      "lineas": "l. 172–175",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "5.2",
@@ -20841,7 +20841,7 @@
      "conserva": "",
      "lineas": "l. 176–179",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "5.3",
@@ -20849,7 +20849,7 @@
      "conserva": "",
      "lineas": "l. 180–183",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "5.4",
@@ -20857,7 +20857,7 @@
      "conserva": "",
      "lineas": "l. 184–187",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "5.5",
@@ -20865,7 +20865,7 @@
      "conserva": "",
      "lineas": "l. 188–197",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6",
@@ -20873,7 +20873,7 @@
      "conserva": "",
      "lineas": "l. 198–222",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6.1",
@@ -20881,7 +20881,7 @@
      "conserva": "",
      "lineas": "l. 223–226",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6.2",
@@ -20889,7 +20889,7 @@
      "conserva": "",
      "lineas": "l. 227–230",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6.3",
@@ -20897,7 +20897,7 @@
      "conserva": "",
      "lineas": "l. 231–234",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6.4",
@@ -20905,7 +20905,7 @@
      "conserva": "",
      "lineas": "l. 235–238",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6.5",
@@ -20913,7 +20913,7 @@
      "conserva": "",
      "lineas": "l. 239–242",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "6.6",
@@ -20921,7 +20921,7 @@
      "conserva": "",
      "lineas": "l. 243–253",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "7",
@@ -20929,7 +20929,7 @@
      "conserva": "",
      "lineas": "l. 254–266",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "7.1",
@@ -20937,7 +20937,7 @@
      "conserva": "",
      "lineas": "l. 267–279",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     },
     {
      "n": "7.2",
@@ -20945,7 +20945,7 @@
      "conserva": "",
      "lineas": "l. 280–297",
      "programa": "TasasEfectivas",
-     "archivo": "TasasEfectivas.ado"
+     "archivo": "00_comandos/TasasEfectivas.ado"
     }
    ],
    "decisiones": [
@@ -20954,11 +20954,11 @@
      "default": "propiedad",
      "flag": "",
      "texto": "",
-     "fuente": "SIM.do l. 102",
+     "fuente": "SIM.do l. 103",
      "firmado": "propiedad",
      "documento": "CUAD-1 §4.0",
      "lee": "Households §10-§11; TasasEfectivas §4",
-     "sim_linea": 102,
+     "sim_linea": 103,
      "alternativas": "`negocios` (current; FLAG 19)",
      "memo": "CUAD-1 §4"
     }
@@ -21323,7 +21323,7 @@
     },
     {
      "archivo": "users/$id/ingresos.dta",
-     "consume": "01_modulos/Households.do; 01_modulos/NTA.do; FiscalGap.ado",
+     "consume": "00_comandos/FiscalGap.ado; 01_modulos/Households.do; 01_modulos/NTA.do",
      "check": "perfilar-web.py; vintage-aportaciones.do"
     }
    ],
@@ -21457,13 +21457,13 @@
    "modulo": "PEF",
    "archivos": [
     {
-     "ruta": "PEF.ado",
-     "sha256": "72ac1ff5ea64",
+     "ruta": "00_comandos/PEF.ado",
+     "sha256": "7a7048932083",
      "lineas": 1718
     }
    ],
    "orden_en_SIM": 12,
-   "sim_linea": 407,
+   "sim_linea": 408,
    "sim_seccion": "5. FISCAL SYSTEM: EXPENDITURE",
    "pagina": "",
    "desde_version": "8.1",
@@ -21473,7 +21473,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/PEF.sthlp “Descripción”): `PEF` downloads and analyzes federal public spending by combining, with an automatic priority hierarchy, the Cuenta Pública (spending executed), the approved PEF and the PPEF (draft budget), plus the BIE to express values as % of GDP. It lets you consult historical spending since 2013, compare its evolution across years, analyze the composition of spending by function (health, education, pensions, security, etc.) and assess its relation to GDP."
+      "Purpose (provenance: 00_comandos/PEF.sthlp “Descripción”): `PEF` downloads and analyzes federal public spending by combining, with an automatic priority hierarchy, the Cuenta Pública (spending executed), the approved PEF and the PPEF (draft budget), plus the BIE to express values as % of GDP. It lets you consult historical spending since 2013, compare its evolution across years, analyze the composition of spending by function (health, education, pensions, security, etc.) and assess its relation to GDP."
      ],
      "tablas": [],
      "lista": [],
@@ -21482,7 +21482,7 @@
     },
     "2": {
      "texto": [
-      "Inputs (provenance: 03_help/Stata/PEF.sthlp “Descripción”; CUAD-0 §2 row “LIF / PEF”; manifest.json assets raw/PEFs/):"
+      "Inputs (provenance: 00_comandos/PEF.sthlp “Descripción”; CUAD-0 §2 row “LIF / PEF”; manifest.json assets raw/PEFs/):"
      ],
      "tablas": [
       {
@@ -21495,7 +21495,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "PEF.ado l. 6–8",
+       "fuente": "00_comandos/PEF.ado l. 6–8",
        "filas": [
         [
          "CP <year>.xlsx (Cuenta Pública), PEF <year>.xlsx, PPEF <year>.xlsx, Diccionario.csv, CuotasISSSTE.xlsx",
@@ -21518,7 +21518,7 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; PEF.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/PEF.ado",
        "filas": [
         [
          "CP.2013.xlsx",
@@ -21527,7 +21527,7 @@
          "sha256 308190f140fc",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2014.xlsx",
@@ -21536,7 +21536,7 @@
          "sha256 f2032f14af61",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2015.xlsx",
@@ -21545,7 +21545,7 @@
          "sha256 33bad047cb58",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2016.xlsx",
@@ -21554,7 +21554,7 @@
          "sha256 43e5b3aeb9b0",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2017.xlsx",
@@ -21563,7 +21563,7 @@
          "sha256 60a95fb08c4c",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2018.xlsx",
@@ -21572,7 +21572,7 @@
          "sha256 4711f4f0dc3c",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2019.xlsx",
@@ -21581,7 +21581,7 @@
          "sha256 a738d62a3609",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2020.xlsx",
@@ -21590,7 +21590,7 @@
          "sha256 57a24d9e6f14",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2021.xlsx",
@@ -21599,7 +21599,7 @@
          "sha256 5ffaff85d460",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2022.xlsx",
@@ -21608,7 +21608,7 @@
          "sha256 1b4b85b3dbd7",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2023.xlsx",
@@ -21617,7 +21617,7 @@
          "sha256 96f610c6e45d",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2024.xlsx",
@@ -21626,7 +21626,7 @@
          "sha256 ebee62efe745",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CuotasISSSTE.xlsx",
@@ -21635,7 +21635,7 @@
          "sha256 68fa8f59960a",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "CP.2025.xlsx",
@@ -21644,7 +21644,7 @@
          "sha256 6330b2a06376",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "Diccionario.csv",
@@ -21653,7 +21653,7 @@
          "sha256 e6832d37746b",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "PEF.2026.xlsx",
@@ -21662,7 +21662,7 @@
          "sha256 deff16a0c70f",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ],
         [
          "PPEF.2027.xlsx",
@@ -21671,7 +21671,7 @@
          "sha256 8cb9cd83fc2e",
          "",
          "",
-         "PEF.ado l. 663; manifest.json assets"
+         "00_comandos/PEF.ado l. 663; manifest.json assets"
         ]
        ]
       }
@@ -21713,28 +21713,28 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "PEF.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/PEF.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "raw/temp/prePEF.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "PEF.ado l. 1007"
+         "00_comandos/PEF.ado l. 1007"
         ],
         [
          "master/GastoEstOpor.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "PEF.ado l. 1041"
+         "00_comandos/PEF.ado l. 1041"
         ],
         [
          "master/PEF.dta",
          "",
-         "FiscalGap.ado; GastoPC.ado; Precache.ado",
+         "00_comandos/FiscalGap.ado; 00_comandos/GastoPC.ado; 00_comandos/Precache.ado",
          "publicar-vps.sh",
-         "PEF.ado l. 1287"
+         "00_comandos/PEF.ado l. 1287"
         ]
        ]
       }
@@ -21769,7 +21769,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "PEF.ado l. 9–11",
+       "fuente": "00_comandos/PEF.ado l. 9–11",
        "filas": [
         [
          "Public spending by function",
@@ -21794,25 +21794,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "PEF.ado",
+     "archivo": "00_comandos/PEF.ado",
      "lineas": "l. 2–5",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "PEF.ado",
+     "archivo": "00_comandos/PEF.ado",
      "lineas": "l. 6–8",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "PEF.ado",
+     "archivo": "00_comandos/PEF.ado",
      "lineas": "l. 9–11",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "PEF.ado",
+     "archivo": "00_comandos/PEF.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 12–1718)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -21820,7 +21820,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in PEF.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/PEF.ado"
     },
     {
      "seccion": 6,
@@ -21829,7 +21829,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/PEF.sthlp “Descripción”): `PEF` downloads and analyzes federal public spending by combining, with an automatic priority hierarchy, the Cuenta Pública (spending executed), the approved PEF and the PPEF (draft budget), plus the BIE to express values as % of GDP. It lets you consult historical spending since 2013, compare its evolution across years, analyze the composition of spending by function (health, education, pensions, security, etc.) and assess its relation to GDP.",
+   "proposito": "Purpose (provenance: 00_comandos/PEF.sthlp “Descripción”): `PEF` downloads and analyzes federal public spending by combining, with an automatic priority hierarchy, the Cuenta Pública (spending executed), the approved PEF and the PPEF (draft budget), plus the BIE to express values as % of GDP. It lets you consult historical spending since 2013, compare its evolution across years, analyze the composition of spending by function (health, education, pensions, security, etc.) and assess its relation to GDP.",
    "entradas": [
     {
      "base": "CP <year>.xlsx (Cuenta Pública), PEF <year>.xlsx, PPEF <year>.xlsx, Diccionario.csv, CuotasISSSTE.xlsx",
@@ -22001,7 +22001,7 @@
      "conserva": "",
      "lineas": "l. 20–22",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "0.1",
@@ -22009,7 +22009,7 @@
      "conserva": "",
      "lineas": "l. 23–32",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "0.2",
@@ -22017,7 +22017,7 @@
      "conserva": "",
      "lineas": "l. 33–41",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1",
@@ -22025,7 +22025,7 @@
      "conserva": "",
      "lineas": "l. 42–60",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.1",
@@ -22033,7 +22033,7 @@
      "conserva": "",
      "lineas": "l. 61–67",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.2",
@@ -22041,7 +22041,7 @@
      "conserva": "",
      "lineas": "l. 68–77",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.3",
@@ -22049,7 +22049,7 @@
      "conserva": "",
      "lineas": "l. 78–83",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.4",
@@ -22057,7 +22057,7 @@
      "conserva": "",
      "lineas": "l. 84–92",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.5",
@@ -22065,7 +22065,7 @@
      "conserva": "",
      "lineas": "l. 93–99",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.4",
@@ -22073,7 +22073,7 @@
      "conserva": "",
      "lineas": "l. 100–112",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2",
@@ -22081,7 +22081,7 @@
      "conserva": "",
      "lineas": "l. 113–115",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.1",
@@ -22089,7 +22089,7 @@
      "conserva": "",
      "lineas": "l. 116–130",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.2",
@@ -22097,7 +22097,7 @@
      "conserva": "",
      "lineas": "l. 131–138",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3",
@@ -22105,7 +22105,7 @@
      "conserva": "",
      "lineas": "l. 139–148",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3.1",
@@ -22113,7 +22113,7 @@
      "conserva": "",
      "lineas": "l. 149–151",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3.2",
@@ -22121,7 +22121,7 @@
      "conserva": "",
      "lineas": "l. 152–155",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3.3",
@@ -22129,7 +22129,7 @@
      "conserva": "",
      "lineas": "l. 156–182",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3.4",
@@ -22137,7 +22137,7 @@
      "conserva": "",
      "lineas": "l. 183–195",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4",
@@ -22145,7 +22145,7 @@
      "conserva": "",
      "lineas": "l. 196–222",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5",
@@ -22153,7 +22153,7 @@
      "conserva": "",
      "lineas": "l. 223–229",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5.1",
@@ -22161,7 +22161,7 @@
      "conserva": "",
      "lineas": "l. 230–276",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5.2",
@@ -22169,7 +22169,7 @@
      "conserva": "",
      "lineas": "l. 277–338",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5.2",
@@ -22177,7 +22177,7 @@
      "conserva": "",
      "lineas": "l. 339–466",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5",
@@ -22185,7 +22185,7 @@
      "conserva": "",
      "lineas": "l. 467–651",
      "programa": "PEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1",
@@ -22193,7 +22193,7 @@
      "conserva": "",
      "lineas": "l. 652–653",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.1",
@@ -22201,7 +22201,7 @@
      "conserva": "",
      "lineas": "l. 654–696",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.1",
@@ -22209,7 +22209,7 @@
      "conserva": "",
      "lineas": "l. 697–727",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.2",
@@ -22217,7 +22217,7 @@
      "conserva": "",
      "lineas": "l. 728–739",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.3",
@@ -22225,7 +22225,7 @@
      "conserva": "",
      "lineas": "l. 740–744",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.4",
@@ -22233,7 +22233,7 @@
      "conserva": "",
      "lineas": "l. 745–747",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1.5",
@@ -22241,7 +22241,7 @@
      "conserva": "",
      "lineas": "l. 748–778",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2",
@@ -22249,7 +22249,7 @@
      "conserva": "",
      "lineas": "l. 779–782",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.1",
@@ -22257,7 +22257,7 @@
      "conserva": "",
      "lineas": "l. 783–791",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.2",
@@ -22265,7 +22265,7 @@
      "conserva": "",
      "lineas": "l. 792–816",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.3",
@@ -22273,7 +22273,7 @@
      "conserva": "",
      "lineas": "l. 817–860",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.4",
@@ -22281,7 +22281,7 @@
      "conserva": "",
      "lineas": "l. 861–872",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.5",
@@ -22289,7 +22289,7 @@
      "conserva": "",
      "lineas": "l. 873–894",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2.6",
@@ -22297,7 +22297,7 @@
      "conserva": "",
      "lineas": "l. 895–912",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3",
@@ -22305,7 +22305,7 @@
      "conserva": "",
      "lineas": "l. 913–921",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3.1",
@@ -22313,7 +22313,7 @@
      "conserva": "",
      "lineas": "l. 922–952",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3.2",
@@ -22321,7 +22321,7 @@
      "conserva": "",
      "lineas": "l. 953–1049",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4",
@@ -22329,7 +22329,7 @@
      "conserva": "",
      "lineas": "l. 1050–1057",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.0",
@@ -22337,7 +22337,7 @@
      "conserva": "",
      "lineas": "l. 1058–1122",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.1",
@@ -22345,7 +22345,7 @@
      "conserva": "",
      "lineas": "l. 1123–1136",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.2",
@@ -22353,7 +22353,7 @@
      "conserva": "",
      "lineas": "l. 1137–1153",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.3",
@@ -22361,7 +22361,7 @@
      "conserva": "",
      "lineas": "l. 1154–1163",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.4",
@@ -22369,7 +22369,7 @@
      "conserva": "",
      "lineas": "l. 1164–1172",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.5",
@@ -22377,7 +22377,7 @@
      "conserva": "",
      "lineas": "l. 1173–1181",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.6",
@@ -22385,7 +22385,7 @@
      "conserva": "",
      "lineas": "l. 1182–1193",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.7",
@@ -22393,7 +22393,7 @@
      "conserva": "",
      "lineas": "l. 1194–1226",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.8",
@@ -22401,7 +22401,7 @@
      "conserva": "",
      "lineas": "l. 1227–1238",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.9",
@@ -22409,7 +22409,7 @@
      "conserva": "",
      "lineas": "l. 1239–1245",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4.10",
@@ -22417,7 +22417,7 @@
      "conserva": "",
      "lineas": "l. 1246–1254",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5",
@@ -22425,7 +22425,7 @@
      "conserva": "",
      "lineas": "l. 1255–1276",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "6",
@@ -22433,7 +22433,7 @@
      "conserva": "",
      "lineas": "l. 1277–1308",
      "programa": "UpdatePEF",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1",
@@ -22441,7 +22441,7 @@
      "conserva": "",
      "lineas": "l. 1309–1324",
      "programa": "_PEFhomologa",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2",
@@ -22449,7 +22449,7 @@
      "conserva": "",
      "lineas": "l. 1325–1331",
      "programa": "_PEFhomologa",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3",
@@ -22457,7 +22457,7 @@
      "conserva": "",
      "lineas": "l. 1332–1409",
      "programa": "_PEFhomologa",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4",
@@ -22465,7 +22465,7 @@
      "conserva": "",
      "lineas": "l. 1410–1466",
      "programa": "_PEFhomologa",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "1",
@@ -22473,7 +22473,7 @@
      "conserva": "",
      "lineas": "l. 1467–1485",
      "programa": "_PEFlimpia",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "2",
@@ -22481,7 +22481,7 @@
      "conserva": "",
      "lineas": "l. 1486–1531",
      "programa": "_PEFlimpia",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "3",
@@ -22489,7 +22489,7 @@
      "conserva": "",
      "lineas": "l. 1532–1544",
      "programa": "_PEFlimpia",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "4",
@@ -22497,7 +22497,7 @@
      "conserva": "",
      "lineas": "l. 1545–1555",
      "programa": "_PEFlimpia",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     },
     {
      "n": "5",
@@ -22505,7 +22505,7 @@
      "conserva": "",
      "lineas": "l. 1556–1718",
      "programa": "_PEFlimpia",
-     "archivo": "PEF.ado"
+     "archivo": "00_comandos/PEF.ado"
     }
    ],
    "decisiones": [],
@@ -22523,7 +22523,7 @@
     },
     {
      "archivo": "master/PEF.dta",
-     "consume": "FiscalGap.ado; GastoPC.ado; Precache.ado",
+     "consume": "00_comandos/FiscalGap.ado; 00_comandos/GastoPC.ado; 00_comandos/Precache.ado",
      "check": "publicar-vps.sh"
     }
    ],
@@ -22550,13 +22550,13 @@
    "modulo": "Precache",
    "archivos": [
     {
-     "ruta": "Precache.ado",
+     "ruta": "00_comandos/Precache.ado",
      "sha256": "b591599ab1bd",
      "lineas": 156
     }
    ],
    "orden_en_SIM": 13,
-   "sim_linea": 464,
+   "sim_linea": 465,
    "sim_seccion": "5. FISCAL SYSTEM: EXPENDITURE",
    "pagina": "",
    "desde_version": "8.15.1",
@@ -22626,21 +22626,21 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "Precache.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/Precache.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "sellotmp",
          "",
          "",
          "no automatic protection — human gate",
-         "Precache.ado l. 68"
+         "00_comandos/Precache.ado l. 68"
         ],
         [
          "gitout",
          "",
          "",
          "no automatic protection — human gate",
-         "Precache.ado l. 79"
+         "00_comandos/Precache.ado l. 79"
         ]
        ]
       }
@@ -22681,25 +22681,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "Precache.ado",
+     "archivo": "00_comandos/Precache.ado",
      "lineas": "l. 2–12",
      "nota": "header"
     },
     {
      "seccion": 6,
-     "archivo": "Precache.ado",
+     "archivo": "00_comandos/Precache.ado",
      "lineas": "l. 13–35",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "Precache.ado",
+     "archivo": "00_comandos/Precache.ado",
      "lineas": "l. 36–39",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "Precache.ado",
+     "archivo": "00_comandos/Precache.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 40–156)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -22719,7 +22719,7 @@
      "conserva": "",
      "lineas": "l. 96–107",
      "programa": "Precache",
-     "archivo": "Precache.ado"
+     "archivo": "00_comandos/Precache.ado"
     },
     {
      "n": "2",
@@ -22727,7 +22727,7 @@
      "conserva": "",
      "lineas": "l. 108–115",
      "programa": "Precache",
-     "archivo": "Precache.ado"
+     "archivo": "00_comandos/Precache.ado"
     },
     {
      "n": "3",
@@ -22735,7 +22735,7 @@
      "conserva": "",
      "lineas": "l. 116–156",
      "programa": "Precache",
-     "archivo": "Precache.ado"
+     "archivo": "00_comandos/Precache.ado"
     }
    ],
    "decisiones": [],
@@ -22768,13 +22768,13 @@
    "modulo": "GastoPC",
    "archivos": [
     {
-     "ruta": "GastoPC.ado",
-     "sha256": "0cc52e6e3080",
+     "ruta": "00_comandos/GastoPC.ado",
+     "sha256": "78d47cee6b8e",
      "lineas": 1606
     }
    ],
    "orden_en_SIM": 14,
-   "sim_linea": 467,
+   "sim_linea": 468,
    "sim_seccion": "5. FISCAL SYSTEM: EXPENDITURE",
    "pagina": "",
    "desde_version": "8.0",
@@ -22784,7 +22784,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/GastoPC.sthlp “Descripción”; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` computes per capita public spending by function (education, health, pensions, energy, infrastructure and other), distributing it across ENIGH individuals according to their socioeconomic characteristics: total spending on each function is divided by the number of beneficiaries identified in the ENIGH, assigning each individual the per capita amount according to their status (whether they attend school, whether they have health insurance, whether they receive a pension)."
+      "Purpose (provenance: 00_comandos/GastoPC.sthlp “Descripción”; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` computes per capita public spending by function (education, health, pensions, energy, infrastructure and other), distributing it across ENIGH individuals according to their socioeconomic characteristics: total spending on each function is divided by the number of beneficiaries identified in the ENIGH, assigning each individual the per capita amount according to their status (whether they attend school, whether they have health insurance, whether they receive a pension)."
      ],
      "tablas": [],
      "lista": [],
@@ -22793,7 +22793,7 @@
     },
     "2": {
      "texto": [
-      "Inputs (provenance: 03_help/Stata/GastoPC.sthlp “Descripción”):"
+      "Inputs (provenance: 00_comandos/GastoPC.sthlp “Descripción”):"
      ],
      "tablas": [
       {
@@ -22806,7 +22806,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "GastoPC.ado l. 6–10",
+       "fuente": "00_comandos/GastoPC.ado l. 6–10",
        "filas": [
         [
          "master/PEF.dta (via PEF, Precache cache)",
@@ -22845,7 +22845,7 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; GastoPC.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/GastoPC.ado",
        "filas": [
         [
          "master/perfiles`aniope'.dta",
@@ -22854,7 +22854,7 @@
          "",
          "",
          "",
-         "GastoPC.ado l. 124"
+         "00_comandos/GastoPC.ado l. 124"
         ],
         [
          "master/`anioenigh'/households.dta",
@@ -22863,7 +22863,7 @@
          "",
          "",
          "",
-         "GastoPC.ado l. 129"
+         "00_comandos/GastoPC.ado l. 129"
         ]
        ]
       }
@@ -22905,14 +22905,14 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "GastoPC.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/GastoPC.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "users/$id/gastos.dta",
          "",
-         "FiscalGap.ado",
+         "00_comandos/FiscalGap.ado",
          "perfilar-web.py; vintage-aportaciones.do",
-         "GastoPC.ado l. 1551"
+         "00_comandos/GastoPC.ado l. 1551"
         ]
        ]
       }
@@ -22947,7 +22947,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "GastoPC.ado l. 11–15",
+       "fuente": "00_comandos/GastoPC.ado l. 11–15",
        "filas": [
         [
          "Pensions",
@@ -22982,25 +22982,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "GastoPC.ado",
+     "archivo": "00_comandos/GastoPC.ado",
      "lineas": "l. 2–5",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "GastoPC.ado",
+     "archivo": "00_comandos/GastoPC.ado",
      "lineas": "l. 6–10",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "GastoPC.ado",
+     "archivo": "00_comandos/GastoPC.ado",
      "lineas": "l. 11–15",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "GastoPC.ado",
+     "archivo": "00_comandos/GastoPC.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 16–1606)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -23008,7 +23008,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in GastoPC.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/GastoPC.ado"
     },
     {
      "seccion": 6,
@@ -23017,7 +23017,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/GastoPC.sthlp “Descripción”; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` computes per capita public spending by function (education, health, pensions, energy, infrastructure and other), distributing it across ENIGH individuals according to their socioeconomic characteristics: total spending on each function is divided by the number of beneficiaries identified in the ENIGH, assigning each individual the per capita amount according to their status (whether they attend school, whether they have health insurance, whether they receive a pension).",
+   "proposito": "Purpose (provenance: 00_comandos/GastoPC.sthlp “Descripción”; 03_help/manual-investigador-ciep.md §4.9): `GastoPC` computes per capita public spending by function (education, health, pensions, energy, infrastructure and other), distributing it across ENIGH individuals according to their socioeconomic characteristics: total spending on each function is divided by the number of beneficiaries identified in the ENIGH, assigning each individual the per capita amount according to their status (whether they attend school, whether they have health insurance, whether they receive a pension).",
    "entradas": [
     {
      "base": "master/PEF.dta (via PEF, Precache cache)",
@@ -23072,7 +23072,7 @@
      "conserva": "",
      "lineas": "l. 138–169",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.2",
@@ -23080,7 +23080,7 @@
      "conserva": "",
      "lineas": "l. 170–246",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.3",
@@ -23088,7 +23088,7 @@
      "conserva": "",
      "lineas": "l. 247–269",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.4",
@@ -23096,7 +23096,7 @@
      "conserva": "",
      "lineas": "l. 270–283",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.5",
@@ -23104,7 +23104,7 @@
      "conserva": "",
      "lineas": "l. 284–286",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.6",
@@ -23112,7 +23112,7 @@
      "conserva": "",
      "lineas": "l. 287–291",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.7",
@@ -23120,7 +23120,7 @@
      "conserva": "",
      "lineas": "l. 292–297",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.8",
@@ -23128,7 +23128,7 @@
      "conserva": "",
      "lineas": "l. 298–303",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "2.9",
@@ -23136,7 +23136,7 @@
      "conserva": "",
      "lineas": "l. 304–346",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3",
@@ -23144,7 +23144,7 @@
      "conserva": "",
      "lineas": "l. 347–352",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.1",
@@ -23152,7 +23152,7 @@
      "conserva": "",
      "lineas": "l. 353–382",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.2",
@@ -23160,7 +23160,7 @@
      "conserva": "",
      "lineas": "l. 383–403",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.3",
@@ -23168,7 +23168,7 @@
      "conserva": "",
      "lineas": "l. 404–424",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.4",
@@ -23176,7 +23176,7 @@
      "conserva": "",
      "lineas": "l. 425–445",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.5",
@@ -23184,7 +23184,7 @@
      "conserva": "",
      "lineas": "l. 446–466",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.6",
@@ -23192,7 +23192,7 @@
      "conserva": "",
      "lineas": "l. 467–491",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.7",
@@ -23200,7 +23200,7 @@
      "conserva": "",
      "lineas": "l. 492–512",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.8",
@@ -23208,7 +23208,7 @@
      "conserva": "",
      "lineas": "l. 513–549",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.9",
@@ -23216,7 +23216,7 @@
      "conserva": "",
      "lineas": "l. 550–559",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.10",
@@ -23224,7 +23224,7 @@
      "conserva": "",
      "lineas": "l. 560–580",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.11",
@@ -23232,7 +23232,7 @@
      "conserva": "",
      "lineas": "l. 581–614",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "3.12",
@@ -23240,7 +23240,7 @@
      "conserva": "",
      "lineas": "l. 615–621",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4",
@@ -23248,7 +23248,7 @@
      "conserva": "",
      "lineas": "l. 622–627",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.1",
@@ -23256,7 +23256,7 @@
      "conserva": "",
      "lineas": "l. 628–718",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.2",
@@ -23264,7 +23264,7 @@
      "conserva": "",
      "lineas": "l. 719–763",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.3",
@@ -23272,7 +23272,7 @@
      "conserva": "",
      "lineas": "l. 764–792",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.4",
@@ -23280,7 +23280,7 @@
      "conserva": "",
      "lineas": "l. 793–821",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.5",
@@ -23288,7 +23288,7 @@
      "conserva": "",
      "lineas": "l. 822–852",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.6",
@@ -23296,7 +23296,7 @@
      "conserva": "",
      "lineas": "l. 853–883",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.7",
@@ -23304,7 +23304,7 @@
      "conserva": "",
      "lineas": "l. 884–913",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.8",
@@ -23312,7 +23312,7 @@
      "conserva": "",
      "lineas": "l. 914–919",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.9",
@@ -23320,7 +23320,7 @@
      "conserva": "",
      "lineas": "l. 920–936",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.10",
@@ -23328,7 +23328,7 @@
      "conserva": "",
      "lineas": "l. 937–966",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "4.11",
@@ -23336,7 +23336,7 @@
      "conserva": "",
      "lineas": "l. 967–972",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5",
@@ -23344,7 +23344,7 @@
      "conserva": "",
      "lineas": "l. 973–977",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.1",
@@ -23352,7 +23352,7 @@
      "conserva": "",
      "lineas": "l. 978–998",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.2",
@@ -23360,7 +23360,7 @@
      "conserva": "",
      "lineas": "l. 999–1020",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.3",
@@ -23368,7 +23368,7 @@
      "conserva": "",
      "lineas": "l. 1021–1041",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.4",
@@ -23376,7 +23376,7 @@
      "conserva": "",
      "lineas": "l. 1042–1062",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.5",
@@ -23384,7 +23384,7 @@
      "conserva": "",
      "lineas": "l. 1063–1088",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.6",
@@ -23392,7 +23392,7 @@
      "conserva": "",
      "lineas": "l. 1089–1103",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.7",
@@ -23400,7 +23400,7 @@
      "conserva": "",
      "lineas": "l. 1104–1132",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "5.8",
@@ -23408,7 +23408,7 @@
      "conserva": "",
      "lineas": "l. 1133–1140",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6",
@@ -23416,7 +23416,7 @@
      "conserva": "",
      "lineas": "l. 1141–1150",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6.1",
@@ -23424,7 +23424,7 @@
      "conserva": "",
      "lineas": "l. 1151–1169",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6.2",
@@ -23432,7 +23432,7 @@
      "conserva": "",
      "lineas": "l. 1170–1186",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6.3",
@@ -23440,7 +23440,7 @@
      "conserva": "",
      "lineas": "l. 1187–1203",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6.4",
@@ -23448,7 +23448,7 @@
      "conserva": "",
      "lineas": "l. 1204–1220",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6.5",
@@ -23456,7 +23456,7 @@
      "conserva": "",
      "lineas": "l. 1221–1242",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "6.6",
@@ -23464,7 +23464,7 @@
      "conserva": "",
      "lineas": "l. 1243–1260",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "7",
@@ -23472,7 +23472,7 @@
      "conserva": "",
      "lineas": "l. 1261–1264",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "7.1",
@@ -23480,7 +23480,7 @@
      "conserva": "",
      "lineas": "l. 1265–1286",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "7.2",
@@ -23488,7 +23488,7 @@
      "conserva": "",
      "lineas": "l. 1287–1303",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "7.3",
@@ -23496,7 +23496,7 @@
      "conserva": "",
      "lineas": "l. 1304–1325",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "8.1",
@@ -23504,7 +23504,7 @@
      "conserva": "",
      "lineas": "l. 1326–1352",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "7.6",
@@ -23512,7 +23512,7 @@
      "conserva": "",
      "lineas": "l. 1353–1395",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "8",
@@ -23520,7 +23520,7 @@
      "conserva": "",
      "lineas": "l. 1396–1399",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "8.1",
@@ -23528,7 +23528,7 @@
      "conserva": "",
      "lineas": "l. 1400–1426",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "8.2",
@@ -23536,7 +23536,7 @@
      "conserva": "",
      "lineas": "l. 1427–1531",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "8",
@@ -23544,7 +23544,7 @@
      "conserva": "",
      "lineas": "l. 1532–1545",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     },
     {
      "n": "9",
@@ -23552,7 +23552,7 @@
      "conserva": "",
      "lineas": "l. 1546–1606",
      "programa": "GastoPC",
-     "archivo": "GastoPC.ado"
+     "archivo": "00_comandos/GastoPC.ado"
     }
    ],
    "decisiones": [],
@@ -23560,7 +23560,7 @@
    "salidas": [
     {
      "archivo": "users/$id/gastos.dta",
-     "consume": "FiscalGap.ado",
+     "consume": "00_comandos/FiscalGap.ado",
      "check": "perfilar-web.py; vintage-aportaciones.do"
     }
    ],
@@ -23599,13 +23599,13 @@
    "modulo": "SHRFSP",
    "archivos": [
     {
-     "ruta": "SHRFSP.ado",
-     "sha256": "3f8280f61f21",
+     "ruta": "00_comandos/SHRFSP.ado",
+     "sha256": "9637f066a253",
      "lineas": 1109
     }
    ],
    "orden_en_SIM": 15,
-   "sim_linea": 528,
+   "sim_linea": 529,
    "sim_seccion": "6. FISCAL SYSTEM: DEBT",
    "pagina": "",
    "desde_version": "8.0",
@@ -23615,7 +23615,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Purpose (provenance: 03_help/Stata/SHRFSP.sthlp “Descripción”): `SHRFSP` downloads and analyzes Mexico's public debt in its broadest measure, combining the SHCP Estadísticas Oportunas (debt stocks, financing requirements, fiscal balance and cost of debt) and the BIE (GDP and deflator). The Saldo Histórico de los Requerimientos Financieros del Sector Público (historical stock of public sector borrowing requirements) includes off-budget liabilities; stock and flow are related by the identity SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + exchange-rate adjustments(t)."
+      "Purpose (provenance: 00_comandos/SHRFSP.sthlp “Descripción”): `SHRFSP` downloads and analyzes Mexico's public debt in its broadest measure, combining the SHCP Estadísticas Oportunas (debt stocks, financing requirements, fiscal balance and cost of debt) and the BIE (GDP and deflator). The Saldo Histórico de los Requerimientos Financieros del Sector Público (historical stock of public sector borrowing requirements) includes off-budget liabilities; stock and flow are related by the identity SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + exchange-rate adjustments(t)."
      ],
      "tablas": [],
      "lista": [],
@@ -23624,7 +23624,7 @@
     },
     "2": {
      "texto": [
-      "Inputs (provenance: 03_help/Stata/SHRFSP.sthlp “Descripción”; runbook §9):"
+      "Inputs (provenance: 00_comandos/SHRFSP.sthlp “Descripción”; runbook §9):"
      ],
      "tablas": [
       {
@@ -23637,7 +23637,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "SHRFSP.ado l. 6–9",
+       "fuente": "00_comandos/SHRFSP.ado l. 6–9",
        "filas": [
         [
          "Estadísticas Oportunas de Finanzas Públicas (debt stocks, RFSP, balance, financial cost)",
@@ -23695,14 +23695,14 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "SHRFSP.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/SHRFSP.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "master/SHRFSP.dta",
          "",
          "",
          "no automatic protection — human gate",
-         "SHRFSP.ado l. 1104"
+         "00_comandos/SHRFSP.ado l. 1104"
         ]
        ]
       }
@@ -23737,7 +23737,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "SHRFSP.ado l. 10–12",
+       "fuente": "00_comandos/SHRFSP.ado l. 10–12",
        "filas": [
         [
          "Debt and balance",
@@ -23762,25 +23762,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "SHRFSP.ado",
+     "archivo": "00_comandos/SHRFSP.ado",
      "lineas": "l. 2–5",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "SHRFSP.ado",
+     "archivo": "00_comandos/SHRFSP.ado",
      "lineas": "l. 6–9",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "SHRFSP.ado",
+     "archivo": "00_comandos/SHRFSP.ado",
      "lineas": "l. 10–12",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "SHRFSP.ado",
+     "archivo": "00_comandos/SHRFSP.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 13–1109)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -23791,7 +23791,7 @@
      "nota": "which page requests each output; checks = scripts in 05_scripts/ and the workflow that name the file"
     }
    ],
-   "proposito": "Purpose (provenance: 03_help/Stata/SHRFSP.sthlp “Descripción”): `SHRFSP` downloads and analyzes Mexico's public debt in its broadest measure, combining the SHCP Estadísticas Oportunas (debt stocks, financing requirements, fiscal balance and cost of debt) and the BIE (GDP and deflator). The Saldo Histórico de los Requerimientos Financieros del Sector Público (historical stock of public sector borrowing requirements) includes off-budget liabilities; stock and flow are related by the identity SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + exchange-rate adjustments(t).",
+   "proposito": "Purpose (provenance: 00_comandos/SHRFSP.sthlp “Descripción”): `SHRFSP` downloads and analyzes Mexico's public debt in its broadest measure, combining the SHCP Estadísticas Oportunas (debt stocks, financing requirements, fiscal balance and cost of debt) and the BIE (GDP and deflator). The Saldo Histórico de los Requerimientos Financieros del Sector Público (historical stock of public sector borrowing requirements) includes off-budget liabilities; stock and flow are related by the identity SHRFSP(t) = SHRFSP(t−1) + RFSP(t) + exchange-rate adjustments(t).",
    "entradas": [
     {
      "base": "Estadísticas Oportunas de Finanzas Públicas (debt stocks, RFSP, balance, financial cost)",
@@ -23819,7 +23819,7 @@
      "conserva": "",
      "lineas": "l. 34–45",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "2",
@@ -23827,7 +23827,7 @@
      "conserva": "",
      "lineas": "l. 46–58",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "2.1",
@@ -23835,7 +23835,7 @@
      "conserva": "",
      "lineas": "l. 59–68",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "2.2",
@@ -23843,7 +23843,7 @@
      "conserva": "",
      "lineas": "l. 69–73",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "2.3",
@@ -23851,7 +23851,7 @@
      "conserva": "",
      "lineas": "l. 74–85",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "3",
@@ -23859,7 +23859,7 @@
      "conserva": "",
      "lineas": "l. 86–95",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "3.1",
@@ -23867,7 +23867,7 @@
      "conserva": "",
      "lineas": "l. 96–110",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "4",
@@ -23875,7 +23875,7 @@
      "conserva": "",
      "lineas": "l. 111–156",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "5",
@@ -23883,7 +23883,7 @@
      "conserva": "",
      "lineas": "l. 157–489",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "6",
@@ -23891,7 +23891,7 @@
      "conserva": "",
      "lineas": "l. 490–503",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "6.1",
@@ -23899,7 +23899,7 @@
      "conserva": "",
      "lineas": "l. 504–595",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "7",
@@ -23907,7 +23907,7 @@
      "conserva": "",
      "lineas": "l. 596–727",
      "programa": "SHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "1",
@@ -23915,7 +23915,7 @@
      "conserva": "",
      "lineas": "l. 728–814",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "2",
@@ -23923,7 +23923,7 @@
      "conserva": "",
      "lineas": "l. 815–868",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "3",
@@ -23931,7 +23931,7 @@
      "conserva": "",
      "lineas": "l. 869–900",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "4",
@@ -23939,7 +23939,7 @@
      "conserva": "",
      "lineas": "l. 901–936",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "4.1",
@@ -23947,7 +23947,7 @@
      "conserva": "",
      "lineas": "l. 937–972",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "5",
@@ -23955,7 +23955,7 @@
      "conserva": "",
      "lineas": "l. 973–1015",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "6",
@@ -23963,7 +23963,7 @@
      "conserva": "",
      "lineas": "l. 1016–1035",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     },
     {
      "n": "7",
@@ -23971,7 +23971,7 @@
      "conserva": "",
      "lineas": "l. 1036–1109",
      "programa": "UpdateSHRFSP",
-     "archivo": "SHRFSP.ado"
+     "archivo": "00_comandos/SHRFSP.ado"
     }
    ],
    "decisiones": [],
@@ -24006,13 +24006,13 @@
    "modulo": "Simulador",
    "archivos": [
     {
-     "ruta": "Simulador.ado",
+     "ruta": "00_comandos/Simulador.ado",
      "sha256": "9766c07975f7",
      "lineas": 1680
     }
    ],
    "orden_en_SIM": 16,
-   "sim_linea": 585,
+   "sim_linea": 586,
    "sim_seccion": "7. FISCAL LIFECYCLE",
    "pagina": "",
    "desde_version": "2.0.1",
@@ -24043,16 +24043,16 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; Simulador.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/Simulador.ado",
        "filas": [
         [
          "master/$pais/Poblacion.dta",
-         "engine product (Poblacion.ado)",
+         "engine product (00_comandos/Poblacion.ado)",
          "2026-11-08",
          "",
          "",
          "",
-         "Simulador.ado l. 409"
+         "00_comandos/Simulador.ado l. 409"
         ],
         [
          "users/$id/bootstraps/`bootstrap'/`varlist'PT.dta",
@@ -24061,7 +24061,7 @@
          "",
          "",
          "",
-         "Simulador.ado l. 460"
+         "00_comandos/Simulador.ado l. 460"
         ],
         [
          "users/$id/bootstraps/`bootstrap'/`varlist'REC.dta",
@@ -24070,7 +24070,7 @@
          "",
          "",
          "",
-         "Simulador.ado l. 1245"
+         "00_comandos/Simulador.ado l. 1245"
         ]
        ]
       }
@@ -24116,21 +24116,21 @@
         "CI check that protects it",
         "Source of the row"
        ],
-       "fuente": "Simulador.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
+       "fuente": "00_comandos/Simulador.ado; 05_scripts/manifiesto-default.py --tsv; grep in 05_scripts/",
        "filas": [
         [
          "users/$id/bootstraps/`bootstrap'/`varlist'REC",
          "",
          "",
          "no automatic protection — human gate",
-         "Simulador.ado l. 803"
+         "00_comandos/Simulador.ado l. 803"
         ],
         [
          "users/$id/aportaciones-nacional.json",
          "",
          "",
          "contrato-32.py; correr-sim.sh",
-         "Simulador.ado l. 1194"
+         "00_comandos/Simulador.ado l. 1194"
         ]
        ]
       }
@@ -24165,7 +24165,7 @@
         "What it requires generically",
         "Why Mexico solves it this way"
        ],
-       "fuente": "Simulador.ado l. 38–44",
+       "fuente": "00_comandos/Simulador.ado l. 38–44",
        "filas": [
         [
          "Survey sample design (PSUs and strata)",
@@ -24190,25 +24190,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "Simulador.ado",
+     "archivo": "00_comandos/Simulador.ado",
      "lineas": "l. 5–7",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "Simulador.ado",
+     "archivo": "00_comandos/Simulador.ado",
      "lineas": "l. 8–37",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "Simulador.ado",
+     "archivo": "00_comandos/Simulador.ado",
      "lineas": "l. 38–44",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "Simulador.ado",
+     "archivo": "00_comandos/Simulador.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 45–1680)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -24216,7 +24216,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in Simulador.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/Simulador.ado"
     },
     {
      "seccion": 6,
@@ -24229,7 +24229,7 @@
    "entradas": [
     {
      "base": "master/$pais/Poblacion.dta",
-     "fuente": "engine product (Poblacion.ado)",
+     "fuente": "engine product (00_comandos/Poblacion.ado)",
      "vintage": "2026-11-08",
      "variables": "",
      "llave": "",
@@ -24262,7 +24262,7 @@
      "conserva": "",
      "lineas": "l. 64–75",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "0.1",
@@ -24270,7 +24270,7 @@
      "conserva": "",
      "lineas": "l. 76–91",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "0.2",
@@ -24278,7 +24278,7 @@
      "conserva": "",
      "lineas": "l. 92–97",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "0.3",
@@ -24286,7 +24286,7 @@
      "conserva": "",
      "lineas": "l. 98–136",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1",
@@ -24294,7 +24294,7 @@
      "conserva": "",
      "lineas": "l. 137–152",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1.1",
@@ -24302,7 +24302,7 @@
      "conserva": "",
      "lineas": "l. 153–159",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1.2",
@@ -24310,7 +24310,7 @@
      "conserva": "",
      "lineas": "l. 160–199",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1.3",
@@ -24318,7 +24318,7 @@
      "conserva": "",
      "lineas": "l. 200–326",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1.4",
@@ -24326,7 +24326,7 @@
      "conserva": "",
      "lineas": "l. 327–477",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "2",
@@ -24334,7 +24334,7 @@
      "conserva": "",
      "lineas": "l. 478–483",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "2.1",
@@ -24342,7 +24342,7 @@
      "conserva": "",
      "lineas": "l. 484–498",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "2.2",
@@ -24350,7 +24350,7 @@
      "conserva": "",
      "lineas": "l. 499–530",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "3",
@@ -24358,7 +24358,7 @@
      "conserva": "",
      "lineas": "l. 531–536",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "3.1",
@@ -24366,7 +24366,7 @@
      "conserva": "",
      "lineas": "l. 537–543",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "3.2",
@@ -24374,7 +24374,7 @@
      "conserva": "",
      "lineas": "l. 544–643",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "4",
@@ -24382,7 +24382,7 @@
      "conserva": "",
      "lineas": "l. 644–655",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "4.1",
@@ -24390,7 +24390,7 @@
      "conserva": "",
      "lineas": "l. 656–676",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "4.2",
@@ -24398,7 +24398,7 @@
      "conserva": "",
      "lineas": "l. 677–695",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "4.3",
@@ -24406,7 +24406,7 @@
      "conserva": "",
      "lineas": "l. 696–741",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "5",
@@ -24414,7 +24414,7 @@
      "conserva": "",
      "lineas": "l. 742–756",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "5.1",
@@ -24422,7 +24422,7 @@
      "conserva": "",
      "lineas": "l. 757–763",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "6",
@@ -24430,7 +24430,7 @@
      "conserva": "",
      "lineas": "l. 764–808",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "7",
@@ -24438,7 +24438,7 @@
      "conserva": "",
      "lineas": "l. 809–853",
      "programa": "Simulador",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1",
@@ -24446,7 +24446,7 @@
      "conserva": "",
      "lineas": "l. 854–860",
      "programa": "poblaciongini",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "2",
@@ -24454,7 +24454,7 @@
      "conserva": "",
      "lineas": "l. 861–887",
      "programa": "poblaciongini",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "3",
@@ -24462,7 +24462,7 @@
      "conserva": "",
      "lineas": "l. 888–931",
      "programa": "poblaciongini",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "5",
@@ -24470,7 +24470,7 @@
      "conserva": "",
      "lineas": "l. 932–951",
      "programa": "poblaciongini",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "1",
@@ -24478,7 +24478,7 @@
      "conserva": "",
      "lineas": "l. 952–1016",
      "programa": "graphpiramide",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     },
     {
      "n": "2",
@@ -24486,7 +24486,7 @@
      "conserva": "",
      "lineas": "l. 1017–1680",
      "programa": "graphpiramide",
-     "archivo": "Simulador.ado"
+     "archivo": "00_comandos/Simulador.ado"
     }
    ],
    "decisiones": [],
@@ -24526,13 +24526,13 @@
    "modulo": "FiscalGap",
    "archivos": [
     {
-     "ruta": "FiscalGap.ado",
+     "ruta": "00_comandos/FiscalGap.ado",
      "sha256": "43dfbd1e4e4c",
      "lineas": 1304
     }
    ],
    "orden_en_SIM": 17,
-   "sim_linea": 603,
+   "sim_linea": 604,
    "sim_seccion": "7. FISCAL LIFECYCLE",
    "pagina": "",
    "desde_version": "",
@@ -24566,7 +24566,7 @@
         "Unique key",
         "Seal"
        ],
-       "fuente": "FiscalGap.ado l. 5–9",
+       "fuente": "00_comandos/FiscalGap.ado l. 5–9",
        "filas": [
         [
          "users/<idbase>/bootstraps/<bootstrap>/<var>RECprom.dta (PerfilesSim.do §8) and its collapse users/<idbase>/cache/REC_<var>.dta (Precache)",
@@ -24605,25 +24605,25 @@
         "Seal",
         "Source of the row"
        ],
-       "fuente": "05_scripts/manifest.json; FiscalGap.ado",
+       "fuente": "05_scripts/manifest.json; 00_comandos/FiscalGap.ado",
        "filas": [
         [
          "users/$id/ingresos.dta",
-         "engine product (TasasEfectivas.ado)",
+         "engine product (00_comandos/TasasEfectivas.ado)",
          "2026-11-08",
          "",
          "",
          "",
-         "FiscalGap.ado l. 110"
+         "00_comandos/FiscalGap.ado l. 110"
         ],
         [
          "users/$id/gastos.dta",
-         "engine product (GastoPC.ado)",
+         "engine product (00_comandos/GastoPC.ado)",
          "2026-11-08",
          "",
          "",
          "",
-         "FiscalGap.ado l. 111"
+         "00_comandos/FiscalGap.ado l. 111"
         ]
        ]
       }
@@ -24666,7 +24666,7 @@
         "Who consumes it",
         "CI check that protects it"
        ],
-       "fuente": "FiscalGap.ado l. 10–12",
+       "fuente": "00_comandos/FiscalGap.ado l. 10–12",
        "filas": [
         [
          "output.txt: PROYLABOR, PROYCONSU, PROYCAPIT, PROYORGAN, PROYEDUCA and the other PROY* (via log output)",
@@ -24713,25 +24713,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "FiscalGap.ado",
+     "archivo": "00_comandos/FiscalGap.ado",
      "lineas": "l. 2–4",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "FiscalGap.ado",
+     "archivo": "00_comandos/FiscalGap.ado",
      "lineas": "l. 5–9",
      "nota": "header"
     },
     {
      "seccion": 6,
-     "archivo": "FiscalGap.ado",
+     "archivo": "00_comandos/FiscalGap.ado",
      "lineas": "l. 10–12",
      "nota": "header"
     },
     {
      "seccion": 3,
-     "archivo": "FiscalGap.ado",
+     "archivo": "00_comandos/FiscalGap.ado",
      "lineas": "secciones «** N.N … **» del cuerpo (l. 13–1304)",
      "nota": "what it does = section title; lines = its length"
     },
@@ -24739,7 +24739,7 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derived: ensure_asset and use master/ in FiscalGap.ado"
+     "nota": "derived: ensure_asset and use master/ in 00_comandos/FiscalGap.ado"
     }
    ],
    "proposito": "Purpose (provenance: SIM.do §8.1 “Brecha fiscal”; CHANGELOG [v8.3.0]; 03_help/FiscalGap.md): fiscal gap: starting from the 2027 Economic Package it builds a closed annual trajectory by component (revenue, spending, financial cost, RFSP and SHRFSP) over the 2027–2032 horizon, displayed in a single table Proy_fiscal, with revenue and spending projected from the per-person profiles of the baseline scenario.",
@@ -24773,7 +24773,7 @@
     },
     {
      "base": "users/$id/ingresos.dta",
-     "fuente": "engine product (TasasEfectivas.ado)",
+     "fuente": "engine product (00_comandos/TasasEfectivas.ado)",
      "vintage": "2026-11-08",
      "variables": "",
      "llave": "",
@@ -24782,7 +24782,7 @@
     },
     {
      "base": "users/$id/gastos.dta",
-     "fuente": "engine product (GastoPC.ado)",
+     "fuente": "engine product (00_comandos/GastoPC.ado)",
      "vintage": "2026-11-08",
      "variables": "",
      "llave": "",
@@ -24797,7 +24797,7 @@
      "conserva": "",
      "lineas": "l. 42–60",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "2",
@@ -24805,7 +24805,7 @@
      "conserva": "",
      "lineas": "l. 61–71",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "3",
@@ -24813,7 +24813,7 @@
      "conserva": "",
      "lineas": "l. 72–138",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4",
@@ -24821,7 +24821,7 @@
      "conserva": "",
      "lineas": "l. 139–143",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4.1",
@@ -24829,7 +24829,7 @@
      "conserva": "",
      "lineas": "l. 144–164",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4.2",
@@ -24837,7 +24837,7 @@
      "conserva": "",
      "lineas": "l. 165–222",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4.3",
@@ -24845,7 +24845,7 @@
      "conserva": "",
      "lineas": "l. 223–293",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "1",
@@ -24853,7 +24853,7 @@
      "conserva": "",
      "lineas": "l. 294–317",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4.4",
@@ -24861,7 +24861,7 @@
      "conserva": "",
      "lineas": "l. 318–363",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4.5",
@@ -24869,7 +24869,7 @@
      "conserva": "",
      "lineas": "l. 364–412",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "4.6",
@@ -24877,7 +24877,7 @@
      "conserva": "",
      "lineas": "l. 413–428",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5",
@@ -24885,7 +24885,7 @@
      "conserva": "",
      "lineas": "l. 429–434",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.1",
@@ -24893,7 +24893,7 @@
      "conserva": "",
      "lineas": "l. 435–457",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.2",
@@ -24901,7 +24901,7 @@
      "conserva": "",
      "lineas": "l. 458–509",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.3",
@@ -24909,7 +24909,7 @@
      "conserva": "",
      "lineas": "l. 510–611",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.4",
@@ -24917,7 +24917,7 @@
      "conserva": "",
      "lineas": "l. 612–653",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.5",
@@ -24925,7 +24925,7 @@
      "conserva": "",
      "lineas": "l. 654–719",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.6",
@@ -24933,7 +24933,7 @@
      "conserva": "",
      "lineas": "l. 720–784",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.7",
@@ -24941,7 +24941,7 @@
      "conserva": "",
      "lineas": "l. 785–807",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.8",
@@ -24949,7 +24949,7 @@
      "conserva": "",
      "lineas": "l. 808–843",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.9",
@@ -24957,7 +24957,7 @@
      "conserva": "",
      "lineas": "l. 844–987",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.10",
@@ -24965,7 +24965,7 @@
      "conserva": "",
      "lineas": "l. 988–1070",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.11",
@@ -24973,7 +24973,7 @@
      "conserva": "",
      "lineas": "l. 1071–1088",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "5.12",
@@ -24981,7 +24981,7 @@
      "conserva": "",
      "lineas": "l. 1089–1106",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "7",
@@ -24989,7 +24989,7 @@
      "conserva": "",
      "lineas": "l. 1107–1133",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     },
     {
      "n": "6",
@@ -24997,7 +24997,7 @@
      "conserva": "",
      "lineas": "l. 1134–1304",
      "programa": "FiscalGap",
-     "archivo": "FiscalGap.ado"
+     "archivo": "00_comandos/FiscalGap.ado"
     }
    ],
    "decisiones": [],
@@ -25033,7 +25033,7 @@
     }
    ],
    "orden_en_SIM": 18,
-   "sim_linea": 607,
+   "sim_linea": 608,
    "sim_seccion": "7. FISCAL LIFECYCLE",
    "pagina": "",
    "desde_version": "",
@@ -25395,7 +25395,7 @@
     }
    ],
    "orden_en_SIM": 19,
-   "sim_linea": 613,
+   "sim_linea": 614,
    "sim_seccion": "7. FISCAL LIFECYCLE",
    "pagina": "/entidades/",
    "desde_version": "",
@@ -25865,7 +25865,7 @@
     }
    ],
    "orden_en_SIM": 20,
-   "sim_linea": 624,
+   "sim_linea": 625,
    "sim_seccion": "7. FISCAL LIFECYCLE",
    "pagina": "",
    "desde_version": "",

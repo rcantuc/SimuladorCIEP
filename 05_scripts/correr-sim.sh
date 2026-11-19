@@ -67,7 +67,7 @@ j = t.index('\n', j + 1) + 1
 t = t[:j] + "".join(g + "\n" for g in extra) + t[j:]
 open(dst, "w", encoding="utf-8").write(t)
 PYEOF
-printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\nrun "%s/SIM_run.do"\n' "$ROOT" "$ROOT" "$EVID" > "$EVID/wrap.do"
+printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\nrun "%s/SIM_run.do"\n' "$ROOT" "$ROOT" "$ROOT" "$EVID" > "$EVID/wrap.do"
 T0=$(date +%s)
 ( cd "$EVID" && "$STATA" -b "do" "$EVID/wrap.do" < /dev/null )
 echo "Stata: $((($(date +%s)-T0)/60)) min" | tee "$EVID/tiempo.txt"

@@ -23,6 +23,7 @@ else {
 	sysdir set SITE "/SIM/OUT/current/"
 }
 global SIMROOT = substr("`c(sysdir_site)'", 1, length("`c(sysdir_site)'") - 1)	// RAIZ DEL PROYECTO (sin diagonal final); SITE se conserva para el adopath
+adopath ++ "${SIMROOT}/00_comandos"				// los comandos del repo, al frente del adopath
 cd "${SIMROOT}/users/$id"
 
 
