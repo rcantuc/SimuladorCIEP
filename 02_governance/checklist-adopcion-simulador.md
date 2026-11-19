@@ -21,18 +21,18 @@
 
 ## Estado (2026-11-19)
 
-| # | SimuladorTabaco `v1.1.0` | SimuladorTenencia `v1.0.1` | HEEI (validación) |
+| # | SimuladorTabaco `v1.1.0` | SimuladorTenencia `v1.0.1` | HEEI `v1.0.2` |
 |---|---|---|---|
-| 1 | ✓ privado | ✓ privado | Privado ✓ · sin gitleaks ✗ |
-| 2 | ✓ | ✓ (con el sha256 de `tecnico_nacional.dta`, asset del Release, y el constructor que lo reproduce con su insumo fijado por sha256) | ✓ (`README.md` y «Dependencias externas» en `SIM/README.md`) |
-| 3 | ✓ | ✓ | ✗: sin CHANGELOG; dos tags ligeros con fecha en el nombre; `legado/<año>-<tema>/` |
-| 4 | ✓ cascada de cortesía | N/A: el motor no usa el token; `AccesoBIE.do` viejo (sin token) solo con `update`. Pendiente si se reactiva | ✓ usa el `AccesoBIE` del Simulador |
-| 5 | ✓ `deploy-web.sh`, `deploy-motor.sh` (por versión, con rollback) y `humo-web.sh` con compuerta de huellas (151 llaves contra la baseline; `v1.1.0` desplegada así) | ✓ `deploy-web.sh`, `deploy-motor.sh` y `humo-web.sh` con compuerta (7 de 7) | ✓ y más completo: árbol limpio y `HEAD == origin`, `git pull` en el servidor, manifiesto de artefactos pesados y humo como `www-data` |
-| 6 | ✓ `seguridad.php` (batería 253/253) | ✓ `seguridad.php` gemelo (170/170) | ✓ `heei_validar()` más `exec` con `escapeshellarg`, sesión generada por el servidor; `descarga.php` ancla con `^…$` (sin impacto: no hay shell ni rutas fuera de `users/`) |
-| 7 | ✓ | ✓ | ✗: el commit desplegado se puede leer en el servidor, pero no hay registro de cuándo ni de quién |
-| 8 | ✓ desde `v1.1.0` (producción corría en `float` y la baseline de `v1.0.0`, en `double`, no la reproducía; deploy pendiente) | ✗ pendiente | ✓ |
-| 9 | ✓ sin `update`, camino web y con `update`; `v1.0.1` reproduce la respuesta real del servidor en 151 de 151 llaves | ✓ resultados idénticos byte a byte a producción | ✓ (`WEB/referencia/` y la suite de humo) |
-| 10 | ✗ por revisar: literales inventariados el 2026-11-19 (divisor `12497.96` sin fuente, línea de pobreza `20713.89` de dic-2020, proporción `0.22386`) | ✗ el deflactor `0.9598823614` de los montos simulados sale de una serie vieja; corrección en `v1.1.0`, pendiente de aprobación | POR CONFIRMAR |
+| 1 | ✓ privado | ✓ privado | ✓ privado; gitleaks sobre toda la historia (131 commits) sin hallazgos; hook `pre-commit` |
+| 2 | ✓ | ✓ (con el sha256 de `tecnico_nacional.dta`, asset del Release, y el constructor que lo reproduce con su insumo fijado por sha256) | ✓ «Mapa de datos externos» del README (México con peso y sha256; la base del censo, solo con su peso) y `paises/RD/datos/LEEME.md` |
+| 3 | ✓ | ✓ | ✓ `CHANGELOG.md`; tags anotados `v1.0.0` (`7b1a6ff`, lo desplegado desde el 2026-11-14) y `v1.0.1`. `legado/<año>-<tema>/` y `WEB/PRE/<fecha>/` quedan documentados como histórico, no como versión (no se renombran, decisión de Ricardo) |
+| 4 | ✓ cascada de cortesía | N/A: el motor no usa el token; `AccesoBIE.do` viejo (sin token) solo con `update`. Pendiente si se reactiva | ✓ sin token en el repo; `set_token.do` ignorado; `AccesoBIE` 8.7 por `net install` desde `https://ciep.mx/simuladorfiscal/` (ya no desde la carpeta Dropbox del Simulador) |
+| 5 | ✓ `deploy-web.sh`, `deploy-motor.sh` (por versión, con rollback) y `humo-web.sh` con compuerta de huellas (151 llaves contra la baseline; `v1.1.0` desplegada así) | ✓ `deploy-web.sh`, `deploy-motor.sh` y `humo-web.sh` con compuerta (7 de 7) | ✓ `WEB/deploy.sh` (simulación por omisión, `--ejecutar`, manifiesto versionado de 11 artefactos, `HEAD` del VPS) y `WEB/humo.sh` con compuerta (151 de 151; `v1.0.1` y `v1.0.2` desplegadas así). Desde `v1.0.2` la referencia es la del VPS (§8b): el humo del servidor es byte a byte y el de la Mac usa la tolerancia documentada |
+| 6 | ✓ `seguridad.php` (batería 253/253) | ✓ `seguridad.php` gemelo (170/170) | ✓ `heei_validar()`, anclas `\A…\z`, id de sesión con `random_int`; batería 42 de 42, con control negativo (8 de 8 contra `v1.0.0`) |
+| 7 | ✓ | ✓ | ✓ `deploys/bitacora.md`, sembrada con el `clone` y los 27 `pull` del reflog del VPS (marcados como reconstruidos) |
+| 8 | ✓ desde `v1.1.0` (producción corría en `float` y la baseline de `v1.0.0`, en `double`, no la reproducía; deploy pendiente) | ✗ pendiente | ✓ (los `Geo/stata/*.do` que se corren solos no lo fijan; pendiente de decisión) |
+| 9 | ✓ sin `update`, camino web y con `update`; `v1.0.1` reproduce la respuesta real del servidor en 151 de 151 llaves | ✓ resultados idénticos byte a byte a producción | ✓ (`WEB/referencia/`, más `artefactos.sha256` con las huellas de los `datos.json` publicados de México y RD) |
+| 10 | ✗ por revisar: literales inventariados el 2026-11-19 (divisor `12497.96` sin fuente, línea de pobreza `20713.89` de dic-2020, proporción `0.22386`) | ✗ el deflactor `0.9598823614` de los montos simulados sale de una serie vieja; corrección en `v1.1.0`, pendiente de aprobación | ✗ por revisar: 8 literales inventariados en el README (divisor `0.8554382419` sin fuente, costos sin año, `demanda_efectiva` y `pib_batch` copiados a mano, `REGRESION_MEXICO` publicado en la metodología de RD); pendientes de Ricardo |
 
 ## Qué cambió al contrastar con HEEI
 
