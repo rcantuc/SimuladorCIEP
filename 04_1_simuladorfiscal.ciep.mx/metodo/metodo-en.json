@@ -26392,7 +26392,7 @@
   "columnas": [
    "File",
    "Title",
-   "Origin (download URL, 2026-10-31)",
+   "Official link (verified by sha256 on 2026-11-19)",
    "sha256",
    "Bytes"
   ],
@@ -26407,7 +26407,7 @@
    [
     "`S2300345_es.pdf`",
     "M. del Castillo Negrete, *La distribución del ingreso y la riqueza: nuevas aproximaciones conceptuales y metodológicas*, Documentos de Proyectos LC/TS.2023/44 – LC/MEX/TS.2023/8, CEPAL, Mexico City, 2023, 606 pp. (chapter III §3 “Propuesta de ajuste de la información”, pp. 230–240 of the PDF; table 69 p. 233; table 74 p. 241; §5 “El truncamiento”, pp. 268–273). Attachment from Ricardo (CUAD-3, 2026-11-08)",
-    "(not in repo) Ricardo attached the PDF on 2026-11-08 (file S2300345_es.pdf, United Nations publication S.23-00345); CEPAL URL to be confirmed",
+    "https://hdl.handle.net/11362/48821 · https://repositorio.cepal.org/server/api/core/bitstreams/137bcd3c-aa23-460e-89e0-d96a543b83c9/content",
     "`74c0c04869b507908aa479ae18ce6a172f8307c5296962256ff3a58a6ac5e4a7`",
     "10,364,197"
    ]
