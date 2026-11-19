@@ -115,7 +115,7 @@ Regla añadida el 2026-08-01 (Entrega 1.5, boceto Paquete 2027). El hallazgo que
 
 | Token | Servicio | Dueño (correo de registro) | Dónde vive | Designado | Estado |
 |---|---|---|---|---|---|
-| Token de cortesía de `AccesoBIE` | API de Indicadores del INEGI (BIE y BISE) | `info@ciep.mx` | Ver la constante `BIE_TOKEN_CORTESIA` en `AccesoBIE.ado`: es el único archivo que contiene el valor. Ni esta tabla, ni la plantilla, ni la ayuda lo repiten. | 2026-11-18, investigador principal | Activo. Prueba de vida 2026-11-18: 200 (control negativo: 401). Las reposiciones se registran en `CHANGELOG.md`. |
+| Token de cortesía de `AccesoBIE` | API de Indicadores del INEGI (BIE y BISE) | `info@ciep.mx` | Ver la constante `BIE_TOKEN_CORTESIA` en `AccesoBIE.ado`: es el único archivo de este repo que contiene el valor; en la familia lo trae además `motor/AccesoBIE.ado` del repo privado `SimuladorTabaco` (desde su `v1.0.0`, 2026-11-18). Ni esta tabla, ni la plantilla, ni la ayuda lo repiten. | 2026-11-18, investigador principal | Activo. Prueba de vida 2026-11-18: 200 (control negativo: 401). Las reposiciones se registran en `CHANGELOG.md`. |
 
 **Cómo se usa.** `AccesoBIE` busca el token en este orden y usa el primero que exista: opción `token()`, global `$BIE_API_TOKEN` (token personal, de `set_token.do`), token de cortesía. La consulta pública de exportación del BIE (.aspx) queda como respaldo en runtime de los tres niveles: si la API no entrega la serie, el comando la baja por ahí y lo avisa.
 
