@@ -38,7 +38,7 @@ tempname Ventas_pib2013
 matrix `Ventas_pib2013' = r(StatTotal)
 
 keep anio Ventas
-save XKC0106, replace
+save "${SIMROOT}/raw/temp/XKC0106.dta", replace
 
 ** 1.2. Otros ingresos **
 DatosAbiertos XKC0179, nog
@@ -54,7 +54,7 @@ tempname OtrosIngresos_pib2013
 matrix `OtrosIngresos_pib2013' = r(StatTotal)
 
 keep anio OtrosIngresos
-save XKC0179, replace
+save "${SIMROOT}/raw/temp/XKC0179.dta", replace
 
 ** 2.1. Derechos y enteros **
 DatosAbiertos XKC0113, nog
@@ -70,7 +70,7 @@ tempname Derechos_pib2013
 matrix `Derechos_pib2013' = r(StatTotal)
 
 keep anio Derechos
-save XKC0113, replace
+save "${SIMROOT}/raw/temp/XKC0113.dta", replace
 
 ** 2.2. Gasto programable **
 DatosAbiertos XKC0131, nog
@@ -86,7 +86,7 @@ tempname Programable_pib2013
 matrix `Programable_pib2013' = r(StatTotal)
 
 keep anio Programable
-save XKC0131, replace
+save "${SIMROOT}/raw/temp/XKC0131.dta", replace
 
 ** 2.2.1 Pensiones y jubilaciones **
 DatosAbiertos XKC0139, nog
@@ -102,7 +102,7 @@ tempname Pensiones_pib2013
 matrix `Pensiones_pib2013' = r(StatTotal)
 
 keep anio Pensiones
-save XKC0139, replace
+save "${SIMROOT}/raw/temp/XKC0139.dta", replace
 
 ** 2.2.2. Gastos de inversión **
 DatosAbiertos XKC0145, nog
@@ -118,7 +118,7 @@ tempname Inversion_pib2013
 matrix `Inversion_pib2013' = r(StatTotal)
 
 keep anio Inversion
-save XKC0145, replace
+save "${SIMROOT}/raw/temp/XKC0145.dta", replace
 
 ** 2.3. Gasto no programable **
 DatosAbiertos XKC0157, nog
@@ -134,7 +134,7 @@ tempname NoProgramable_pib2013
 matrix `NoProgramable_pib2013' = r(StatTotal)
 
 keep anio NoProgramable
-save XKC0157, replace
+save "${SIMROOT}/raw/temp/XKC0157.dta", replace
 
 
 ** 1.2. Información adicional **
@@ -350,8 +350,8 @@ forvalues anio = 2015(1)2024 {
 ***************************************
 
 ** 1.1. Ingresos propios **
-use XKC0106, clear
-append using XKC0179
+use "${SIMROOT}/raw/temp/XKC0106.dta", clear
+append using "${SIMROOT}/raw/temp/XKC0179.dta"
 
 merge m:1 anio using `PIBDeflactor', nogen
 
@@ -400,11 +400,11 @@ save `eje1'
 *** Eje 2: Gastos operativos, financieros e impuestos ***
 ***                                                   ***
 *********************************************************
-use XKC0113, clear
-append using XKC0131
-append using XKC0157
-append using XKC0139
-append using XKC0145
+use "${SIMROOT}/raw/temp/XKC0113.dta", clear
+append using "${SIMROOT}/raw/temp/XKC0131.dta"
+append using "${SIMROOT}/raw/temp/XKC0157.dta"
+append using "${SIMROOT}/raw/temp/XKC0139.dta"
+append using "${SIMROOT}/raw/temp/XKC0145.dta"
 
 merge m:1 anio using `PIBDeflactor', nogen
 
