@@ -225,6 +225,14 @@ Segundo punto del mismo tipo: `reconocimiento-vps.md:211` registra en julio un v
 
 La doctrina describe un hecho, no una decisión futura: las tres capas ya están publicadas. Lo que queda por decidir es el orden en que se cierra lo abierto, y L-1 va antes que todo lo demás porque no depende de este repo.
 
+### Deploy de tenencia e incidente del smoke test (2026-11-19)
+
+- **14:25, incidente.** El smoke test corrió con el sitio arriba y **sin el parche desplegado** (se omitió el paso 1 de `deploy-tenencia-2026-11-18/INSTRUCCIONES.md`). La petición sin `idSession` contra el `calculaStata.php` viejo hizo lo que el diagnóstico del 18-nov había documentado (caso 169 de la batería): `rm /SIM/OUT/Tenencia//* -f` borró `SIM_tenencia.do`, `input.txt` y `output.txt` del motor. Se bajó el sitio. `SIM/` (con `tecnico_nacional.dta`) no se afectó.
+- **14:29, restauración.** Los tres archivos se restauraron desde `diag-tenencia-v6-2026-11-18/motor/` con sus huellas originales (re-verificado a las 14:49 con `sha256sum -c`: 3 OK).
+- **Deploy.** 3 `OK` de huellas, docroot limpio (los cuatro archivos sueltos a `/SIM/retirados/`), sitio habilitado, smoke 7 de 7 y flujo completo en el navegador con recálculo. A las 14:49, `deploy-web.sh` (simulación) da 97 de 97 contra `SimuladorTenencia`.
+- **14:45, v6 retirado** a `/SIM/retirados/` junto con su línea de cron.
+- **Lección, ya convertida en regla:** un smoke test no envía ninguna petición hasta comprobar que lo desplegado tiene las huellas esperadas. Queda en el checklist de adopción y en los `humo-web.sh` de Tabaco y Tenencia.
+
 ## 4. POR CONFIRMAR
 
 Lo que esta sesión no pudo verificar, con la razón y cómo se confirma.
