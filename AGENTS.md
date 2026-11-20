@@ -26,7 +26,7 @@ Copia del 2026-11-20. El original lo mantiene Ricardo Cantú; cuando cambie, un 
    - Lo que pida contraseña o `sudo` lo corre Ricardo.
 8. Toda afirmación «no publicado» de un agente se verifica contra las fuentes.
 9. El prompt se entrega completo, sin corchetes ni condicionales, con el hash sustituido y sin calendario.
-10. El reporte del agente se pega en el chat del frente antes de cerrar el nivel.
+10. El reporte del agente se pega en el chat del proyecto antes de cerrar el nivel.
 11. Todo humo verifica primero las huellas de lo desplegado y no envía ninguna petición si no coinciden.
 12. Salidas con secretos: hash o prefijo de cuatro caracteres, nunca el valor.
 
