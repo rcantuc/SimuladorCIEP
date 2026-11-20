@@ -1,7 +1,7 @@
 # AGENTS.md — Simulador Fiscal CIEP
 
 - **Qué es:** el código del Simulador Fiscal CIEP, el motor de cálculo en Stata que corre detrás de `simuladorfiscal.ciep.mx` y que también se instala por `net install`; `SIM.do` es su panel de entrada y `profile.do` lo configura al arrancar.
-- **Comandos:** los `.ado`, los `.scheme` y la plantilla del `sysprofile` están en la raíz del repo; su ayuda (`.sthlp`) está en `03_help/Stata/`.
+- **Comandos:** los `.ado`, los `.scheme` y los `.sthlp` (su ayuda) están en `00_comandos/`; la plantilla del `sysprofile` sigue en la raíz del repo.
 - **Módulos:** `01_modulos/` trae un `.do` por módulo del pipeline (`Households.do`, `Expenditure.do`, `NTA.do`, `Web.Stata.do`, …), en el orden en que `SIM.do` los invoca.
 - **Sitio y scripts:** el sitio público está en `04_1_simuladorfiscal.ciep.mx/` (PHP, `css/`, `js/`) y los scripts de publicación, de prueba y de datos, en `05_scripts/`.
 - **Qué manda:** en `02_governance/`, `arquitectura.md`, `versionado-y-git.md`, `politicas-institucionales.md`, `runbook-deploys-ciep.md` y `checklist-adopcion-simulador.md`; el índice es `02_governance/README.md` y los cambios por versión, `CHANGELOG.md`.
