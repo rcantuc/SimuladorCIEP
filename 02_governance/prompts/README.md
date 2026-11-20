@@ -17,4 +17,6 @@
 
 **Regla desde 8.18:** ningún prompt pide «commit sobre master» ni push directo: todo cambio al repo, también los documentos y el release commit, entra por PR (`versionado-y-git.md` §2.1; runbook §14.1). Si un header de módulo, un memo CUAD o `metodo/` cambian, el prompt pide regenerar `/metodo` (`python3 -I 05_scripts/metodo.py`) en el mismo PR (runbook §16).
 
+**Reglas de operación:** toda sesión se rige además por las de [`AGENTS.md`](../../AGENTS.md) (raíz del repo; copia fechada del texto único de Ricardo): una sesión = un entregable (1), rojo significa parar y reportar (6) y el prompt se entrega completo, sin corchetes ni condicionales y sin calendario (9).
+
 Los bloques fijos no sustituyen al runbook. Lo citan: §14 (`ritual.sh` y lecciones), §10 (topología y baile), §11 (qué gate corre dónde). Desde 8.16b las tres plantillas llevan la regla §C de la firma CUAD-1-2 (el clon de Dropbox es intocable; el `baile` solo mueve `-datos`) y `implementacion.md` el estándar §D de los cuadros del log.
