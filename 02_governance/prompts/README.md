@@ -15,7 +15,7 @@
 3. Deja los bloques fijos como están. Si uno no aplica, escribe «no aplica» y la razón; no lo borres: el agente lee la ausencia como permiso.
 4. El cambio que aparezca en tres prompts seguidos sube a la plantilla en un PR, y este README dice de qué sesión salió.
 
-**Regla desde 8.18:** ningún prompt pide «commit sobre master» ni push directo: todo cambio al repo, también los documentos y el release commit, entra por PR (`versionado-y-git.md` §2.1; runbook §14.1). Si un header de módulo, un memo CUAD o `metodo/` cambian, el prompt pide regenerar `/metodo` (`python3 -I 05_scripts/metodo.py`) en el mismo PR (runbook §16).
+**Regla desde 8.18:** ningún prompt pide «commit sobre master» ni push directo: todo cambio al repo, también los documentos y el release commit, entra por PR (`versionado-y-git.md` §2.1; runbook §14.1). Si un header de módulo, un memo CUAD o `metodo/` cambian, el prompt pide regenerar `/metodo` (`python3 -I 05_scripts/publicar/metodo.py`) en el mismo PR (runbook §16).
 
 **Reglas de operación:** toda sesión se rige además por las de [`AGENTS.md`](../../AGENTS.md) (raíz del repo; copia fechada del texto único de Ricardo): una sesión = un entregable (1), rojo significa parar y reportar (6) y el prompt se entrega completo, sin corchetes ni condicionales y sin calendario (9).
 

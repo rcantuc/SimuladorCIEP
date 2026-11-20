@@ -1,0 +1,17 @@
+# .htaccess del endpoint Stata `net from` (https://ciep.mx/simuladorfiscal/) — v8.19.1.
+# Versionado en 05_scripts/endpoint/endpoint.htaccess; publicar-endpoint.sh lo sube como .htaccess de la carpeta
+# (manifiesto-endpoint.toml, [package] htaccess). Solo agrega cabeceras: no reescribe ni redirige, así que las
+# reglas del .htaccess de la raíz de ciep.mx siguen aplicando igual.
+#
+# Pide a navegadores, a Stata y a cualquier caché intermedia no guardar el código publicado: un usuario que
+# hace `net install` tiene que recibir lo que está en disco. OJO: el Varnish de Cloudways (perfil WordPress)
+# fija su TTL en 30 días sin mirar Cache-Control, así que estas cabeceras NO lo evitan; tras cada publicación
+# la purga por URL es obligatoria (runbook §3, «Caché del endpoint») y el gate de frescura de
+# publicar-endpoint.sh la comprueba.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(ado|toc|pkg|sthlp)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>

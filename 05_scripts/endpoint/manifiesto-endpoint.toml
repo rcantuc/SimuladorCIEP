@@ -1,0 +1,86 @@
+# manifiesto-endpoint.toml
+# Declara qué archivos del Código del Simulador forman parte del
+# paquete distribuible vía `net from https://ciep.mx/simuladorfiscal/`.
+#
+# Consumido por publicar-endpoint.sh.
+# Cada cambio a este archivo debe ir acompañado de bump de versión
+# en commits relacionados y entrada en bitácora correspondiente.
+
+[meta]
+manifest_version = "1.0"
+package_name = "simulador-fiscal-ciep"
+endpoint_url = "https://ciep.mx/simuladorfiscal/"
+description = "Sub-canal Stata del Simulador Fiscal CIEP — instalación remota vía net install"
+
+[package]
+# Archivos del repo que forman parte del paquete público (rutas relativas a la raíz;
+# desde la limpieza de 2026-11 viven en 00_comandos/). El endpoint los publica planos.
+
+ado_files = [
+    "00_comandos/AccesoBIE.ado",
+    "00_comandos/AccesoINPCEntidad.ado",
+    "00_comandos/DatosAbiertos.ado",
+    "00_comandos/LIF.ado",
+    "00_comandos/PEF.ado",
+    "00_comandos/PIBDeflactor.ado",
+    "00_comandos/Poblacion.ado",
+    "00_comandos/SCN.ado",
+    "00_comandos/SHRFSP.ado",
+    "00_comandos/_tabla_anclas.ado",
+    "00_comandos/ensure_asset.ado",
+    "00_comandos/escalar.ado",
+]
+
+sthlp_files = [
+    "00_comandos/AccesoBIE.sthlp",
+    "00_comandos/DatosAbiertos.sthlp",
+    "00_comandos/LIF.sthlp",
+    "00_comandos/PEF.sthlp",
+    "00_comandos/PIBDeflactor.sthlp",
+    "00_comandos/Poblacion.sthlp",
+    "00_comandos/SCN.sthlp",
+    "00_comandos/SHRFSP.sthlp",
+]
+
+# .htaccess de la carpeta del endpoint (v8.19.1): cabeceras de no-caché para .ado/.toc/.pkg/.sthlp.
+# publicar-endpoint.sh lo sube como .htaccess; el Gate 4 de publicar.sh exige que exista.
+htaccess = "05_scripts/endpoint/endpoint.htaccess"
+
+pkg_files = [
+    "05_scripts/endpoint/AccesoBIE.pkg",
+    "05_scripts/endpoint/DatosAbiertos.pkg",
+    "05_scripts/endpoint/LIF.pkg",
+    "05_scripts/endpoint/PEF.pkg",
+    "05_scripts/endpoint/PIBDeflactor.pkg",
+    "05_scripts/endpoint/Poblacion.pkg",
+    "05_scripts/endpoint/SCN.pkg",
+    "05_scripts/endpoint/SHRFSP.pkg",
+]
+
+[toc]
+# El stata.toc se GENERA por el script, no se conserva pre-generado en el repo.
+
+title = "Simulador Fiscal CIEP"
+description_template = "Simulador Fiscal CIEP versión {VERSION}, publicado {DATE}"
+
+[toc.packages]
+# Descripción corta de cada paquete, mostrada al usuario externo al hacer `net from`.
+
+AccesoBIE = "Acceso al Banco de Información Económica de INEGI"
+DatosAbiertos = "Series de datos abiertos del Simulador Fiscal CIEP"
+LIF = "Ley de Ingresos de la Federación"
+PEF = "Presupuesto de Egresos de la Federación"
+PIBDeflactor = "PIB y deflactor implícito de la economía mexicana"
+Poblacion = "Series de población de México"
+SCN = "Sistema de Cuentas Nacionales"
+SHRFSP = "Saldo Histórico de los Requerimientos Financieros del Sector Público"
+
+[exclude_explicit]
+# Archivos que SÍ existen en el repo pero NO se publican.
+# Lista declarativa para auto-documentar decisión.
+
+manifest_json = "05_scripts/manifest.json — manifiesto del data sidecar, no del sub-canal Stata"
+sim_do = "SIM.do — entrada del simulador local, no se distribuye vía net install"
+set_token_template_do = "set_token.template.do — plantilla local, no del paquete público"
+gastopc_ado = "00_comandos/GastoPC.ado y 00_comandos/GastoPC.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
+tasasefectivas_ado = "00_comandos/TasasEfectivas.ado y 00_comandos/TasasEfectivas.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"

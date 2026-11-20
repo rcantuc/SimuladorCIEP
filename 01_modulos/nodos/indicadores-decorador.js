@@ -28,7 +28,7 @@
    se decora; los slugs fuera del contrato o no disponibles quedan INTACTOS.
 
    Este archivo NO CALCULA y NO CONTIENE CIFRAS: todo número viene del
-   JSON. 05_scripts/verify_nodo.sh (regla 1) lo audita igual que a las
+   JSON. 05_scripts/pruebas/verificar-nodo.sh (regla 1) lo audita igual que a las
    páginas de los nodos.
    =========================================================================== */
 (function () {

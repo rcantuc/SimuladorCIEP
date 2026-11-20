@@ -35,7 +35,7 @@ Un módulo se replica si **todas** sus filas tienen equivalente con el mismo niv
 | Motor | Stata (licencia); `SIM.do` lineal; ningún número nace fuera del motor | Un motor reproducible con un punto de entrada único y un log que cuente la historia |
 | Ajuste encuesta–SCN | Vigente desde 8.15b (CUAD-0 firmado): Altimir por variable contra su celda (principio C); desde 8.17.2 (CUAD-3) la brecha de D.1 y B.3n se reparte ∝ Y^ε dentro de la celda (`altimir_elasticidad`, calibrada contra los registros fiscales por rango). Antecedente mexicano: del Castillo Negrete (CEPAL, LC/TS.2023/44, cap. III §3: tabla de equivalencias ENIGH ↔ S.14, cuadro 69; elasticidad 1.75) | Tabla de correspondencia encuesta → SCN **antes** de escribir código; una celda por variable; un parámetro de elasticidad del subreporte declarado y calibrado contra una fuente externa |
 | Reparto de sector a persona | Vigente desde 8.15b si se firma CUAD-0: reglas propiedad / incidencia / per cápita con sello (principio B) | Toda partida de sector lleva una regla declarada; per cápita es el default honesto |
-| Gates | `gate-numeros.sh`, identidad NTA, contrato-N, paridad web = batch | Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados |
+| Gates | `compuerta-numeros.sh`, identidad NTA, contrato-N, paridad web = batch | Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados |
 | Versionado y cita | Tags, sidecar `datos-<v>.zip` con sha256, `CITATION.cff` | Cada número publicado es rastreable a un commit y a un vintage |
 | Equipo | Una persona dueña del método + agentes para ejecución; un entregable por sesión | Separar quién decide (método) de quién ejecuta (código); decisión = parámetro + FLAG |
 

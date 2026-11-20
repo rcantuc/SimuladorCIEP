@@ -3011,7 +3011,7 @@ escalar pct CuadRemesasFactor = TaltimirROWTrans*100
 * usuario y al formulario, pero output.do la imprime (CUADRATURA) tambien en el flujo web, que no corre Households.do. Se
 * escribe aqui, una vez por corrida batch, como producto de master/ (viaja al VPS con master/<anio>/ completo, Gate 5-remoto de
 * publicar-vps.sh) y Web.Stata.do §7.3 lo carga antes de output.do. Los valores van en hexadecimal (%21x): el double exacto,
-* asi que el output.txt web es byte-identico al batch (test-web-batch.sh, 47 llaves). Incidente: publicar-vps.sh v8.15
+* asi que el output.txt web es byte-identico al batch (prueba-web-batch.sh, 47 llaves). Incidente: publicar-vps.sh v8.15
 * revirtio por «CuadYLPIB not found» r(111) en el «Calcular» de humo. *
 tempname fcuad
 file open `fcuad' using "${SIMROOT}/master/`anioenigh'/cuadratura.do", write text replace
@@ -3230,7 +3230,7 @@ else {
 capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
-* v8.15b: factores y parametros a la base, para NTA.do suelto, Sankey.do y test-nta-identidad.do (sin la sesion de SIM.do) *
+* v8.15b: factores y parametros a la base, para NTA.do suelto, Sankey.do y prueba-nta-identidad.do (sin la sesion de SIM.do) *
 char _dta[cuad_params] "$cuad_params"
 char _dta[TaltimirSal] "`=string(TaltimirSal, "%21.16g")'"
 char _dta[TaltimirSelf] "`=string(TaltimirSelf, "%21.16g")'"

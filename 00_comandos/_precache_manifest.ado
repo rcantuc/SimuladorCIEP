@@ -10,14 +10,14 @@
 * de assets.scn-congelado-2024.zip.regla, v8.15b E4). Regla desde 8.15.1:
 *   1. ninguna línea del manifest pasa por una macro de Stata: Mata la lee (fget),
 *      la recorta y la compara como cadena; ni macval() basta cuando el texto trae
-*      la secuencia `"' (lo vigila el caso A de 05_scripts/test-precache-manifest.sh);
+*      la secuencia `"' (lo vigila el caso A de 05_scripts/pruebas/prueba-precache-manifest.sh);
 *   2. solo se evalúa una línea cuyo inicio (sin blancos) sea "version",
 *      "data_updated" o "baseline" (la clave entre comillas: "version_regla" y
 *      "baseline_regla" no califican); las demás líneas no se tocan;
 *   3. la primera aparición de cada clave manda (las tres son de primer nivel y
 *      van al principio del archivo; una "version" anidada en assets no cuenta);
 *   4. los valores vuelven a Stata con st_local() y se devuelven con macval().
-* Regresión: 05_scripts/test-precache-manifest.sh (requiere Stata; no va en --ci).
+* Regresión: 05_scripts/pruebas/prueba-precache-manifest.sh (requiere Stata; no va en --ci).
 program define _precache_manifest, rclass
 	version 17
 	local m `"${SIMROOT}/05_scripts/manifest.json"'

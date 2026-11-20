@@ -10,7 +10,7 @@
 #     release lleva el manifest bumpeado ANTES de que exista el tag);
 #   - Gate 5 completo (SHA de los assets de raw/: aquí no hay raw/; solo corre su mitad
 #     estática: SIM.do sin `global rawwip` activo);
-#   - test-maquina-virgen.sh --download (1.3 GB de la Release) y los gates de publicar-vps.sh
+#   - prueba-maquina-virgen.sh --download (1.3 GB de la Release) y los gates de publicar-vps.sh
 #     que hablan con el VPS (credenciales, SSH).
 #
 # Cada job es un gate; el nombre del job es el nombre del check en el PR. Ricardo activa
@@ -36,17 +36,17 @@ jobs:
       - name: shellcheck -S error (bloquea)
         run: |
           shellcheck --version
-          shellcheck -S error 05_scripts/*.sh
+          shellcheck -S error 05_scripts/*/*.sh
       - name: shellcheck -S warning (informativo, no bloquea)
         continue-on-error: true
-        run: shellcheck -S warning 05_scripts/*.sh
+        run: shellcheck -S warning 05_scripts/*/*.sh
 
   gitignore:
     name: "verify_gitignore.sh (85 casos)"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/verify_gitignore.sh
+      - run: bash 05_scripts/pruebas/verificar-gitignore.sh
 
   php-lint:
     name: "php -l de los PHP del sitio"
@@ -68,17 +68,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/test-sitio-seguridad.sh
-      - run: bash 05_scripts/test-manifiesto-default.sh
-      - run: bash 05_scripts/test-humo-calcular.sh
+      - run: bash 05_scripts/pruebas/prueba-sitio-seguridad.sh
+      - run: bash 05_scripts/pruebas/prueba-manifiesto-default.sh
+      - run: bash 05_scripts/pruebas/prueba-humo-calcular.sh
 
   sitio-autocontenido:
     name: "sitio auto-contenido (docroot == git ls-files 04_1/)"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/verify_sitio_autocontenido.sh
-      - run: bash 05_scripts/verify_cronometro_unico.sh
+      - run: bash 05_scripts/pruebas/verificar-sitio-autocontenido.sh
+      - run: bash 05_scripts/pruebas/verificar-cronometro-unico.sh
 
   sitio-transitorios:
     # v8.12.3: los efectos de ~1 s (parpadeo de las tablas, refresco de los Sankeys, «Finalizando…»)
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/test-sitio-transitorios.sh
+      - run: bash 05_scripts/pruebas/prueba-sitio-transitorios.sh
 
   sitio-nta:
     # /NTA (sección de método): la ruta responde, jsonSankeyNTA.php valida el corte, la página no trae
@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/test-sitio-nta.sh
+      - run: bash 05_scripts/pruebas/prueba-sitio-nta.sh
 
   sitio-entidades:
     # /entidades y /entidades/<ABREV> (v8.13.0, template estatal): generado == commiteado (generar-entidades.py --check),
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/test-sitio-entidades.sh
+      - run: bash 05_scripts/pruebas/prueba-sitio-entidades.sh
 
   sitio-metodo:
     # /metodo (8.18): metodo.json y las páginas regenerados del repo == commiteados (metodo.py --check: el método publicado es el del
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/test-sitio-metodo.sh
+      - run: bash 05_scripts/pruebas/prueba-sitio-metodo.sh
 
   sitio-sellos:
     # Sellos de versión (`?v=`): ninguna página (portada, /metodo, /NTA, /entidades; es y en) carga un recurso propio de datos,
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/test-sitio-sellos.sh
+      - run: bash 05_scripts/pruebas/prueba-sitio-sellos.sh
 
   publicar-check:
     name: "publicar.sh --ci (gates 1, 3, 4, 5*, 6, 7, 8)"
@@ -136,4 +136,4 @@ jobs:
       GH_TOKEN: ${{ github.token }}   # Gate 8 lee la Release con gh (solo lectura)
     steps:
       - uses: actions/checkout@v4
-      - run: bash 05_scripts/publicar.sh --ci
+      - run: bash 05_scripts/publicar/publicar.sh --ci

@@ -55,4 +55,4 @@ Valor inicial del reloj por flujo (S2): principal 25, isr 40, iva 40, isr+iva 50
 
 ## 5. Dónde se ajusta, y el candado
 
-Un solo lugar: `04_1_simuladorfiscal.ciep.mx/js/config-tiempos.js` → `CIEP_TIEMPOS = { principal, isr, iva, isr_iva }`. Candado: `bash 05_scripts/verify_cronometro_unico.sh` (en CI, job `sitio-autocontenido`) falla si reaparece un literal de segundos (`startCountdown`, `#count … N`, `id="count">N`) fuera de ese archivo o si una página carga `stataCalcula*.js` sin `config-tiempos.js` antes. `js/pages/session.js` (`var sec = 10`, contador de inactividad) no es del «Calcular» y no se carga en ninguna página.
+Un solo lugar: `04_1_simuladorfiscal.ciep.mx/js/config-tiempos.js` → `CIEP_TIEMPOS = { principal, isr, iva, isr_iva }`. Candado: `bash 05_scripts/pruebas/verificar-cronometro-unico.sh` (en CI, job `sitio-autocontenido`) falla si reaparece un literal de segundos (`startCountdown`, `#count … N`, `id="count">N`) fuera de ese archivo o si una página carga `stataCalcula*.js` sin `config-tiempos.js` antes. `js/pages/session.js` (`var sec = 10`, contador de inactividad) no es del «Calcular» y no se carga en ninguna página.

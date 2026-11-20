@@ -24,7 +24,7 @@ Escrito en `metodo/plantilla-capitulo.md`. Añade tres cosas que pide el encargo
 | Marca | Origen |
 |---|---|
 | `H l.N` / `N l.N` / `S l.N` | `01_modulos/Households.do`, `01_modulos/NTA.do`, `SCN.ado` |
-| `I` | `05_scripts/fixtures/nta-identidad.txt` |
+| `I` | `05_scripts/pruebas/fixtures/nta-identidad.txt` |
 | `C1 §x` | `02_governance/historico/conc-1-scn-sankey-2026-10-30.md` (#47; archivado en 8.18a-2) |
 | `(no en repo)` | La cifra no está versionada. Se lee de la corrida canónica; el origen sigue a la marca: `T` = `diag-v8.15a-2026-10-30/tabla1.out`, `CSI f.N` = tabulado INEGI en `-datos/raw/temp/SCN/`, `L` = `diag-v8.14.0-2026-10-30/02-ritual/wrap.log` |
 
@@ -119,10 +119,10 @@ Ricardo firmó este memo (@ `14e6ba2`) el 2026-10-31 con un addendum de cuatro p
 - **Anclas en `anioenigh`:** las celdas S.14, el PIB y LIF/PEF del año ENIGH se leen en `anioenigh`; el marco 2025–2027 del pastcast de `SCN` §1.2 parte del último año congelado del asset (`scn-celdas.md`).
 - **Refresco deliberado:** nunca hay lectura en caliente. Un cambio de INEGI entra solo por PR de datos (`refrescar-scn.sh --congelar --todas`, `runbook-actualizar-assets.md` §2d).
 
-**Spec de `05_scripts/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; v8.15.2: `--todas` y serie completa; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde; sin asset `UpdateSCN` aborta, salvo `rawwip`, que descarga y lo declara, sello amarillo):**
+**Spec de `05_scripts/datos/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; v8.15.2: `--todas` y serie completa; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde; sin asset `UpdateSCN` aborta, salvo `rawwip`, que descarga y lo declara, sello amarillo):**
 
 ```text
-Uso: 05_scripts/refrescar-scn.sh --comparar [--series <lista>]
+Uso: 05_scripts/datos/refrescar-scn.sh --comparar [--series <lista>]
 1. Lee de manifest.json los assets SCN congelados (sha256, fecha de consulta, etiqueta).
 2. Descarga las mismas series del BIE por API a un directorio temporal, sin tocar raw/.
 3. Compara serie a serie contra el asset congelado, con tolerancia cero sobre el valor publicado.
@@ -236,9 +236,9 @@ Mismas reglas y sellos que la Tabla 1. Los valores CSI son de `C1 §1–§3` sal
 |---|---|---|---|
 | `master/<año>/households.dta` | Base por persona: `Yl`, `Yk`, `ing_*`, impuestos, consumo | `NTA.do`, `PerfilesSim.do`, `SankeySF.do`, `CicloEntidad.do`, resto del motor | Sin protección automática — gate humano |
 | Escalares `pctpib` de los pasos 0–4 | ENIGH vs macro y factores | Log de la corrida; módulos que los leen | Sin protección automática — gate humano |
-| `users/<id>/output.txt` | Default del sitio | Sitio; sidecar | Sin protección de sus números en CI: `gate-numeros.sh` corre en sesión. `sitio-transitorios` solo lo usa como Stata falso |
-| 5 `sankey-*.json` (fiscal) y 5 `SankeyNTA/sankey-*.json` | Flujos por corte | Portada; sidecar | Ídem: `gate-numeros.sh` en sesión |
-| `users/<id>/NTA/*`, `SankeyNTA/sankey-v3-grupoedad.json` | Cuenta NTA y v3 (vía `NTA.do`) | `/NTA`; sidecar | `/NTA: Sankey NTA idéntico al JSON del motor` (dibujo vs fixture). La identidad corre en sesión: `test-nta-identidad.sh` |
+| `users/<id>/output.txt` | Default del sitio | Sitio; sidecar | Sin protección de sus números en CI: `compuerta-numeros.sh` corre en sesión. `sitio-transitorios` solo lo usa como Stata falso |
+| 5 `sankey-*.json` (fiscal) y 5 `SankeyNTA/sankey-*.json` | Flujos por corte | Portada; sidecar | Ídem: `compuerta-numeros.sh` en sesión |
+| `users/<id>/NTA/*`, `SankeyNTA/sankey-v3-grupoedad.json` | Cuenta NTA y v3 (vía `NTA.do`) | `/NTA`; sidecar | `/NTA: Sankey NTA idéntico al JSON del motor` (dibujo vs fixture). La identidad corre en sesión: `prueba-nta-identidad.sh` |
 
 ## §7 Identidades verificadas
 
@@ -246,8 +246,8 @@ Mismas reglas y sellos que la Tabla 1. Los valores CSI son de `C1 §1–§3` sal
 
 | Identidad | Tolerancia | Resultado | Hash |
 |---|---|---|---|
-| `gate-numeros.sh`: `output.txt` = baseline v8.14.0 | byte a byte | **ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR) | `02156b2` |
-| `gate-numeros.sh`: 10 sankeys = baseline v8.14.0 | 1e-9 relativo por enlace | **ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas) | `02156b2` |
+| `compuerta-numeros.sh`: `output.txt` = baseline v8.14.0 | byte a byte | **ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR) | `02156b2` |
+| `compuerta-numeros.sh`: 10 sankeys = baseline v8.14.0 | 1e-9 relativo por enlace | **ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas) | `02156b2` |
 | Households: Σ `ing_subor` = D.1 S.14 (10,052.962) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
 | Households: Σ `ing_mixto` = B.3n S.14 (6,956.984) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
 | Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n S.14 (910.359) | 1e-9 relativo | VERDE, reldif 0.0e+00 | `02156b2` |
@@ -259,7 +259,7 @@ Mismas reglas y sellos que la Tabla 1. Los valores CSI son de `C1 §1–§3` sal
 | NTA: Σ intra nacional = 0 | 1e-9 relativo | VERDE, 0.00 MXN | `02156b2` |
 | NTA: Σ S = B.8n con ancla (multiplicativa; Σ S sin ancla 2,116.145, brecha +11.3 %) | 1e-9 relativo | VERDE, 0.00 MXN | `02156b2` |
 | NTA: factor YA = 1 (YA_motor = YAHogS14 − D.442 al peso) | 1e-9 relativo | VERDE, factor 1.000000 | `02156b2` |
-| Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`) | 1e-9 relativo | VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173) | `02156b2` |
+| Identidad NTA sin ancla y conservación del v3 (`prueba-nta-identidad.sh`) | 1e-9 relativo | VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173) | `02156b2` |
 | Contrato de las 32 (`contrato-32.sh`: paridad, aditividad Σ32, sellos) | 1e-9 relativo / byte | PASÓ paridad + aditividad (Σ32 neto reldif 0.0e+00; APORT* máx 0.000499); el testigo NL falla contra el fixture v8.14 (re-baseline pendiente) | `02156b2` |
 | Puente INBD → hub (`C1 §1.2`) | **Sin gate**: script de CONC-1 | superado por la identidad de sectores (fila anterior) | — |
 
@@ -314,11 +314,11 @@ La versión de cierre es **propuesta** de este memo.
 | §2 | `05_scripts/manifest.json` (assets); `01_modulos/Households.do` l. 114–134, 557–562; `SCN.ado` l. 60–79, 2128–2133; `Poblacion.ado` l. 650–678; `publicar.sh` l. 822–823 |
 | §3 | `Households.do` l. 378–550, 1056–1080, 1699–1745, 2085–2122, 2178–2253, 2306, 2415–2443, 2664–2670 |
 | §4 | `Households.do` l. 5–7, 16, 443, 1056, 2108–2121, 2448–2457; `NTA.do` l. 339–362, 386–387, 565; `C1 §4.4`, `§6.1`; `metodo/plantilla-capitulo.md` §4; `metodo/cap0-requerimientos.md` fila 12 |
-| §5 Tabla 1 | `Households.do` l. citadas en cada fila; `05_scripts/fixtures/nta-identidad.txt`; `C1 §1.2–§1.3`; `diag-v8.15a-2026-10-30/tabla1.py`, `tabla1.out`; CSI_115 f.69–71, 95–105, 133, 136, 138, 150; CSI_103 f.35; CSI_121 f.71 |
+| §5 Tabla 1 | `Households.do` l. citadas en cada fila; `05_scripts/pruebas/fixtures/nta-identidad.txt`; `C1 §1.2–§1.3`; `diag-v8.15a-2026-10-30/tabla1.py`, `tabla1.out`; CSI_115 f.69–71, 95–105, 133, 136, 138, 150; CSI_103 f.35; CSI_121 f.71 |
 | §4 (`rentas_celda = b2n`), §8 FLAG 18, §10 bis 7 (cierre, 2026-11-08) | `CUAD-3.md` §4.0 y §10; `02_governance/metodo/fuentes/S2300345_es.pdf` p. 232–233 (sha256 en `fuentes/README.md`); `Households.do` header §4 y §9 (v8.17.2) |
 | §5 Tabla 2 | `C1 §1.2`, `§2.2–§2.4`, `§3`, `§6`; `nta-identidad.txt`; `NTA.do` l. 79, 369 |
 | §6 | `.github/workflows/gates-sin-stata.yml`; `02_governance/runbook-deploys-ciep.md` §11; `SIM.do` l. 141–145, 518–535 |
-| §7 | `05_scripts/gate-numeros.sh`; `diag-v8.15a-2026-10-30/gate-numeros.txt`; `NTA.do` l. 128, 686–698; `05_scripts/test-nta-identidad.sh`; `02-ritual/commit.txt` |
+| §7 | `05_scripts/pruebas/compuerta-numeros.sh`; `diag-v8.15a-2026-10-30/gate-numeros.txt`; `NTA.do` l. 128, 686–698; `05_scripts/pruebas/prueba-nta-identidad.sh`; `02-ritual/commit.txt` |
 | §9 | `Households.do` l. 2106, 2178–2253; `Poblacion.ado` l. 650–655; `metodo/cap0-requerimientos.md`; `diag-v8.14.0-2026-10-30/02-ritual/wrap.log` l. 586–600, 1529–1537 |
 | Δ esperado | Aritmética de Tabla 1, `nta-identidad.txt` y CSI_115 f.114–171 |
 

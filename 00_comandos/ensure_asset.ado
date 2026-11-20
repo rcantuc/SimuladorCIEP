@@ -135,7 +135,7 @@ def _sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha, local_path,
         "      6. git add 05_scripts/manifest.json && git commit -m \"fix(assets): "
         + asset_name + " ...\" && git push\n"
         "      7. gh release delete-asset " + tag + " \"" + asset_name + "\" -y || true\n"
-        "         bash 05_scripts/publicar.sh " + tag + "\n"
+        "         bash 05_scripts/publicar/publicar.sh " + tag + "\n"
         "         (re-sube el asset al Release " + tag + " y verifica los "
         + str(len(manifest.get('assets', []))) + " assets)\n"
         "      8. Avisa a Ricardo: pull en la Carpeta de investigadores (solo el).\n"

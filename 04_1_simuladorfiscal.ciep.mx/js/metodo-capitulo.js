@@ -1,11 +1,11 @@
 // metodo-capitulo.js — pinta /metodo (índice, capítulo 0 y un capítulo por módulo) desde /metodo/metodo.json (8.18).
 //
 // Regla de la sección de método (la misma que /NTA y /entidades, arquitectura.md §6.3.1): la página no trae ni una
-// frase ni un número del método; todo viene del JSON que genera 05_scripts/metodo.py leyendo el repo (headers de los
+// frase ni un número del método; todo viene del JSON que genera 05_scripts/publicar/metodo.py leyendo el repo (headers de los
 // módulos, SIM.do §0.8, memos CUAD-*, scn-celdas.md, manifest.json, fixtures). Este archivo solo sabe PINTAR: títulos de
 // sección (los lee del JSON: vienen de plantilla-capitulo.md), tablas, listas y los rótulos de la interfaz. Cero literales
-// numéricos de 4+ dígitos aquí (test-sitio-metodo.sh lo exige). Lo cargado queda en window.metodoData (lo lee el gate
-// 05_scripts/test-sitio-metodo.js) y el contenedor marca data-metodo-estado="ok" cuando terminó de pintar.
+// numéricos de 4+ dígitos aquí (prueba-sitio-metodo.sh lo exige). Lo cargado queda en window.metodoData (lo lee el gate
+// 05_scripts/pruebas/prueba-sitio-metodo.js) y el contenedor marca data-metodo-estado="ok" cuando terminó de pintar.
 //
 // metodoCapitulo({url: '/metodo/metodo.json', pagina: 'indice' | 'capitulo' | 'cap0', capitulo: '<Modulo>'})
 //

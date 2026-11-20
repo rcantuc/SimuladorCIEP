@@ -1,7 +1,7 @@
 {
  "generador": "metodo.py v1.0 (8.18)",
  "plantilla": "02_governance/metodo/plantilla-capitulo.md",
- "version": "v8.19.1",
+ "version": "v8.19.2",
  "baseline": "v8.17.2",
  "data_updated": "2026-11-08",
  "enigh_vintage": "2024",
@@ -198,11 +198,11 @@
          "master/Poblaciontot.dta",
          "",
          "00_comandos/SCN.ado; 01_modulos/PerfilesSim.do",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/Poblacion.ado l. 798"
         ]
        ],
-       "fuente": "00_comandos/Poblacion.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/Poblacion.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -290,7 +290,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -449,7 +449,7 @@
     {
      "archivo": "master/Poblaciontot.dta",
      "consume": "00_comandos/SCN.ado; 01_modulos/PerfilesSim.do",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     }
    ],
    "identidades": [],
@@ -604,7 +604,7 @@
          "00_comandos/PIBDeflactor.ado l. 1280"
         ]
        ],
-       "fuente": "00_comandos/PIBDeflactor.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/PIBDeflactor.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -692,7 +692,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -1154,7 +1154,7 @@
    "archivos": [
     {
      "ruta": "00_comandos/SCN.ado",
-     "sha256": "e27cfaca3898",
+     "sha256": "094a08ace3bb",
      "lineas": 3017
     }
    ],
@@ -2554,49 +2554,49 @@
          "master/SCN.dta",
          "",
          "01_modulos/Households.do; 01_modulos/NTA.do",
-         "gen-scn-celdas.py; refrescar-scn.sh; test-nta-identidad.sh",
+         "generar-scn-celdas.py; prueba-nta-identidad.sh; refrescar-scn.sh",
          "00_comandos/SCN.ado l. 94"
         ],
         [
          "raw/temp/GenIng.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 1193"
         ],
         [
          "raw/temp/ProdBru.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 1233"
         ],
         [
          "raw/temp/IngNacDis.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 1263"
         ],
         [
          "raw/temp/ConHog.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 1339"
         ],
         [
          "raw/temp/GastPriv.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 1364"
         ],
         [
          "raw/temp/GovCons.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 1405"
         ],
         [
@@ -2638,7 +2638,7 @@
          "raw/temp/SecExt.dta",
          "",
          "",
-         "gen-scn-celdas.py",
+         "generar-scn-celdas.py",
          "00_comandos/SCN.ado l. 2057"
         ],
         [
@@ -2768,7 +2768,7 @@
          "00_comandos/SCN.ado l. 2872"
         ]
        ],
-       "fuente": "00_comandos/SCN.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/SCN.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -2880,7 +2880,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -4771,37 +4771,37 @@
     {
      "archivo": "master/SCN.dta",
      "consume": "01_modulos/Households.do; 01_modulos/NTA.do",
-     "check": "gen-scn-celdas.py; refrescar-scn.sh; test-nta-identidad.sh"
+     "check": "generar-scn-celdas.py; prueba-nta-identidad.sh; refrescar-scn.sh"
     },
     {
      "archivo": "raw/temp/GenIng.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/ProdBru.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/IngNacDis.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/ConHog.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/GastPriv.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/GovCons.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/PIBAE1.dta",
@@ -4831,7 +4831,7 @@
     {
      "archivo": "raw/temp/SecExt.dta",
      "consume": "",
-     "check": "gen-scn-celdas.py"
+     "check": "generar-scn-celdas.py"
     },
     {
      "archivo": "raw/temp/IngMixto.dta",
@@ -6036,13 +6036,13 @@
          "`users/<id>/ingresos.dta` (`*_Sim`), `isr_mod.dta`",
          "recaudación por persona por impuesto",
          "`INCI.ado` → `INCD*` de `output.txt`; `aportaciones.dta`; 32 entidades",
-         "`gate-numeros.sh` (en sesión); `contrato-32.sh`"
+         "`compuerta-numeros.sh` (en sesión); `contrato-32.sh`"
         ],
         [
          "`output.txt`: `INGRESOS` (LIF `anioPE` % PIB), `INGRESOSTEF` (TE), `IVA`, `ISRTASA`, `INCD/INCD2/INCD3`",
          "lo que el sitio muestra",
          "sitio; sidecar",
-         "`gate-numeros.sh` byte a byte (sesión); `test-web-batch.sh` 47/47"
+         "`compuerta-numeros.sh` byte a byte (sesión); `prueba-web-batch.sh` 47/47"
         ]
        ],
        "fuente": "02_governance/CUAD-1.md l. 274–280"
@@ -6135,7 +6135,7 @@
          "01_modulos/Expenditure.do l. 1317"
         ]
        ],
-       "fuente": "01_modulos/Expenditure.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/Expenditure.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -6752,7 +6752,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -7573,14 +7573,14 @@
      "archivo": "`users/<id>/ingresos.dta` (`*_Sim`), `isr_mod.dta`",
      "contiene": "recaudación por persona por impuesto",
      "consume": "`INCI.ado` → `INCD*` de `output.txt`; `aportaciones.dta`; 32 entidades",
-     "check": "`gate-numeros.sh` (en sesión); `contrato-32.sh`",
+     "check": "`compuerta-numeros.sh` (en sesión); `contrato-32.sh`",
      "tabla": "CUAD-1"
     },
     {
      "archivo": "`output.txt`: `INGRESOS` (LIF `anioPE` % PIB), `INGRESOSTEF` (TE), `IVA`, `ISRTASA`, `INCD/INCD2/INCD3`",
      "contiene": "lo que el sitio muestra",
      "consume": "sitio; sidecar",
-     "check": "`gate-numeros.sh` byte a byte (sesión); `test-web-batch.sh` 47/47",
+     "check": "`compuerta-numeros.sh` byte a byte (sesión); `prueba-web-batch.sh` 47/47",
      "tabla": "CUAD-1"
     },
     {
@@ -7817,7 +7817,7 @@
    "archivos": [
     {
      "ruta": "01_modulos/Households.do",
-     "sha256": "f15feebda66a",
+     "sha256": "e90058a7d201",
      "lineas": 3262
     }
    ],
@@ -8173,9 +8173,9 @@
         ],
         [
          "7",
-         "`NTA.do` ancla YA a YAHogS14 − D.442 − ⅔ D.422 y YL a D.1 + ⅔ (B.3n + D.422); `test-nta-identidad.do` igual",
+         "`NTA.do` ancla YA a YAHogS14 − D.442 − ⅔ D.422 y YL a D.1 + ⅔ (B.3n + D.422); `prueba-nta-identidad.do` igual",
          "Σ S de las personas = B.8n S.1; factor YA = 1",
-         "`N` §4.3b, cuadro 3; `05_scripts/test-nta-identidad.do`"
+         "`N` §4.3b, cuadro 3; `05_scripts/pruebas/prueba-nta-identidad.do`"
         ]
        ],
        "fuente": "02_governance/CUAD-3.md l. 44–53"
@@ -8226,8 +8226,8 @@
       "[CUAD-0 · §4.0 — La firma (Ricardo, 2026-10-31)] **A. Dos correcciones al memo.** 1. **Pensiones (`pensiones_en_yl`, Δ esperado).** v8.14.0 no duplica pensiones: las subcuenta. `ing_jubila` entra a `ing_subor`, absorbe parte del ancla RemSalSS, y `NTA.do` las resta después, dejando YL 751.330 bn por debajo de D.1 + ⅔ B.3n. Con `off`, el ancla D.1 se reparte solo sobre salarios y YL coincide con la celda. El +751 de la corrida alterna de v8.15b-pre es la corrección, no un efecto secundario. 2. **D.4 (Tabla 1, filas `*PM`, `cap6`, `cap8`).** La renta de la propiedad que recibe S.14 (D.41 544.940 + D.42 4,779.531 + D.44 735.471) no tiene contraparte utilizable en la ENIGH (intereses 19.335 + dividendos 2.368 crudos: <0.4 %). La partición pf/PM de honorarios y rentas (`H` l. 512–513, 522–523) era un proxy de propiedad presentado como celda; `ing_t4_cap3PM` negativo es el síntoma. Se separa lo que el principio C junta: **la celda del SCN fija el total; el relativo de reparto es un parámetro declarado**, con sello rojo cuando la encuesta no ve la partida.",
       "[CUAD-0 · §4.0 — La firma (Ricardo, 2026-10-31)] **C. Lo que 8.15b no cierra y se declara.** - Brecha de S residual (≈ +11 % sobre B.8n tras `cuotas_d614=neto`): D.5 LIF vs devengado (209), τ⁺ efectivo vs D.62 + D.7 (461), Cpriv vs P.3 (−438). Es Expenditures/TasasEfectivas → 8.16. El ancla multiplicativa de S se conserva con FLAG. - Subreporte de top incomes: `d4_relativo` lo nombra; la corrección es 9.x. - Informalidad: λ = 1.215 y 42.5 M formales implícitos vs 25.5 M cotizantes (v8.15b-pre 4c). La obligación estatutaria sobre ingreso con Altimir uniforme sale baja; **requisito de entrada de 8.16**: anclar la obligación de ISR PF a declaraciones SAT por rango de ingreso antes de descomponer informalidad/evasión.",
       "[CUAD-0 · §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)] - **Canal:** BIE por API, con respaldo en la consulta pública de exportación del BIE (`.aspx`) cuando la API no responde (HTTP 400 con el token desde 2026-10-31); la vía real queda declarada por serie en `manifest.json: scn_vintage.bie.<serie>.via`. - **Congelamiento:** cada descarga queda en `raw/` como asset del manifest, con sha256 y vintage (fecha de consulta + etiqueta INEGI preliminar/revisada) en el header del módulo y en `manifest.json`. El asset trae **la serie completa** que publica el BIE (las 525 series que `UpdateSCN` fusiona, no solo las 93 con consumidor: el pastcast proyecta todas), con la etiqueta INEGI en el periodo («2025 p1» = preliminar). `UpdateSCN` lee **solo** el asset (sin asset aborta; `rawwip` baja en caliente y lo declara). - **Anclas en `anioenigh`:** las celdas S.14, el PIB y LIF/PEF del año ENIGH se leen en `anioenigh`; el marco 2025–2027 del pastcast de `SCN` §1.2 parte del último año congelado del asset (`scn-celdas.md`). - **Refresco deliberado:** nunca hay lectura en caliente. Un cambio de INEGI entra solo por PR de datos (`refrescar-scn.sh --congelar --todas`, `runbook-actualizar-assets.md` §2d).",
-      "[CUAD-0 · §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)] **Spec de `05_scripts/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; v8.15.2: `--todas` y serie completa; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde; sin asset `UpdateSCN` aborta, salvo `rawwip`, que descarga y lo declara, sello amarillo):**",
-      "[CUAD-0 · §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)] ```text Uso: 05_scripts/refrescar-scn.sh --comparar [--series <lista>] 1. Lee de manifest.json los assets SCN congelados (sha256, fecha de consulta, etiqueta). 2. Descarga las mismas series del BIE por API a un directorio temporal, sin tocar raw/. 3. Compara serie a serie contra el asset congelado, con tolerancia cero sobre el valor publicado. 4. Sin diferencias: imprime «sin revisión INEGI» y sale con 0. 5. Con diferencias: imprime tabla serie/año/congelado/BIE/Δ y Δ % del PIB. 6. Si INEGI revisó: escribe el asset nuevo y su sha256 en una rama de datos. 7. Abre PR de datos que mueve data_updated y declara el Δ en el CHANGELOG. 8. Nunca se invoca desde el motor; SIM.do y los .ado solo leen assets congelados. 9. Salida distinta de 0 si el BIE no responde: «no comparado» nunca equivale a «sin revisión». ```",
+      "[CUAD-0 · §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)] **Spec de `05_scripts/datos/refrescar-scn.sh` (pasos 1–5: v8.15b-pre; pasos 6–7 = `--congelar`: v8.15b, E4; v8.15.2: `--todas` y serie completa; `SCN.ado`/`AccesoBIE.ado` leen el asset de `raw/SCN/` verificado por sha256 contra `manifest.json: scn_vintage`, sello verde; sin asset `UpdateSCN` aborta, salvo `rawwip`, que descarga y lo declara, sello amarillo):**",
+      "[CUAD-0 · §4 bis — Política de fuente SCN (firmada por Ricardo, 2026-10-30)] ```text Uso: 05_scripts/datos/refrescar-scn.sh --comparar [--series <lista>] 1. Lee de manifest.json los assets SCN congelados (sha256, fecha de consulta, etiqueta). 2. Descarga las mismas series del BIE por API a un directorio temporal, sin tocar raw/. 3. Compara serie a serie contra el asset congelado, con tolerancia cero sobre el valor publicado. 4. Sin diferencias: imprime «sin revisión INEGI» y sale con 0. 5. Con diferencias: imprime tabla serie/año/congelado/BIE/Δ y Δ % del PIB. 6. Si INEGI revisó: escribe el asset nuevo y su sha256 en una rama de datos. 7. Abre PR de datos que mueve data_updated y declara el Δ en el CHANGELOG. 8. Nunca se invoca desde el motor; SIM.do y los .ado solo leen assets congelados. 9. Salida distinta de 0 si el BIE no responde: «no comparado» nunca equivale a «sin revisión». ```",
       "[CUAD-0 · §4 ter — Campo `baseline`] `manifest-datos.json` y `manifest.json` ganan `baseline: \"<tag desde el que los números son comparables>\"`. El CHANGELOG lleva la línea «a partir de vX los números no comparan con ≤vY por…». Se llena por primera vez en 8.15b: `baseline = v8.15.0` (firma B.14). **Gate 11** de `publicar.sh` (v8.15b-pre) exige `baseline` desde v8.15.0.",
       "[CUAD-0 · §4 ter — Campo `baseline`] ---",
       "[CUAD-3] **Decisiones ya vivas que esta sesión toca sin cambiar** (CUAD-0, CUAD-1): `d4_relativo = proxy_propiedad` (D.4 sin ε, sello rojo), `cuotas_d614 = neto` (D.442 fuera de YA), `isras_share = acotado`, `informalidad = corte`, `ancla_formales = imss` (N = 25,500,447), `obligacion_isrpf_ancla = itan_rangos`. La única regla que se reescribe es la lectura del residuo de FLAG 27 (§8).",
@@ -9864,19 +9864,19 @@
          "`users/<id>/output.txt`",
          "Default del sitio",
          "Sitio; sidecar",
-         "Sin protección de sus números en CI: `gate-numeros.sh` corre en sesión. `sitio-transitorios` solo lo usa como Stata falso"
+         "Sin protección de sus números en CI: `compuerta-numeros.sh` corre en sesión. `sitio-transitorios` solo lo usa como Stata falso"
         ],
         [
          "5 `sankey-*.json` (fiscal) y 5 `SankeyNTA/sankey-*.json`",
          "Flujos por corte",
          "Portada; sidecar",
-         "Ídem: `gate-numeros.sh` en sesión"
+         "Ídem: `compuerta-numeros.sh` en sesión"
         ],
         [
          "`users/<id>/NTA/*`, `SankeyNTA/sankey-v3-grupoedad.json`",
          "Cuenta NTA y v3 (vía `NTA.do`)",
          "`/NTA`; sidecar",
-         "`/NTA: Sankey NTA idéntico al JSON del motor` (dibujo vs fixture). La identidad corre en sesión: `test-nta-identidad.sh`"
+         "`/NTA: Sankey NTA idéntico al JSON del motor` (dibujo vs fixture). La identidad corre en sesión: `prueba-nta-identidad.sh`"
         ]
        ],
        "fuente": "02_governance/CUAD-0.md l. 235–241"
@@ -9900,13 +9900,13 @@
          "`users/<id>/output.txt`",
          "`CUADRATURA` (YL/YA), `INCD*` ISR/Laboral/Aportaciones, `APORT*`, `PROY*`, `INGRESOSTEF` donde el denominador cambie",
          "sitio, sidecar",
-         "`gate-numeros.sh` ROJO esperado; `baseline = v8.17.2`"
+         "`compuerta-numeros.sh` ROJO esperado; `baseline = v8.17.2`"
         ],
         [
          "5 `SankeySF/*.json`, 5 `SankeyNTA/*.json`, `NTA/*`",
          "reparto por edad/decil de YL, YA, ISR",
          "portada, `/NTA`",
-         "`gate-numeros.sh`, `test-nta-identidad.sh`, `test-sitio-nta.sh`"
+         "`compuerta-numeros.sh`, `prueba-nta-identidad.sh`, `prueba-sitio-nta.sh`"
         ],
         [
          "32 entidades (`SIMentidad.ado`)",
@@ -9918,7 +9918,7 @@
          "Log de `Households`: cuadros «Brecha ∝ Y^ε por celda» y «Validación del ajuste»",
          "nuevos",
          "lectura humana; este memo",
-         "`test-log-ancho.sh`"
+         "`prueba-log-ancho.sh`"
         ]
        ],
        "fuente": "02_governance/CUAD-3.md l. 209–215"
@@ -9965,7 +9965,7 @@
          "master/`anioenigh'/cuadratura.do",
          "",
          "01_modulos/output.do",
-         "publicar-vps.sh; test-web-batch.sh",
+         "prueba-web-batch.sh; publicar-vps.sh",
          "01_modulos/Households.do l. 3017"
         ],
         [
@@ -9976,7 +9976,7 @@
          "01_modulos/Households.do l. 3239"
         ]
        ],
-       "fuente": "01_modulos/Households.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/Households.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -9999,13 +9999,13 @@
        ],
        "filas": [
         [
-         "`gate-numeros.sh`: `output.txt` = baseline v8.14.0",
+         "`compuerta-numeros.sh`: `output.txt` = baseline v8.14.0",
          "byte a byte",
          "**ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR)",
          "`02156b2`"
         ],
         [
-         "`gate-numeros.sh`: 10 sankeys = baseline v8.14.0",
+         "`compuerta-numeros.sh`: 10 sankeys = baseline v8.14.0",
          "1e-9 relativo por enlace",
          "**ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas)",
          "`02156b2`"
@@ -10077,7 +10077,7 @@
          "`02156b2`"
         ],
         [
-         "Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`)",
+         "Identidad NTA sin ancla y conservación del v3 (`prueba-nta-identidad.sh`)",
          "1e-9 relativo",
          "VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173)",
          "`02156b2`"
@@ -10113,7 +10113,7 @@
          "`00-gate-eps1-celdas-v8171/gate-numeros.txt`; `03-bitcheck-eps1-celdas-v8171`"
         ],
         [
-         "`gate-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1",
+         "`compuerta-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1",
          "byte a byte / 1e-9",
          "**ROJO esperado** (404 de 509 líneas; SankeySF decil 80/104 enlaces, Δ rel. máx 0.35; SankeyNTA decil 113/143, 0.33); fixtures re-baselineados → VERDE contra la corrida",
          "`01-sim-completo/gate-numeros.txt`"
@@ -10179,19 +10179,19 @@
          "l. 1196–1197"
         ],
         [
-         "`test-nta-identidad.sh`",
+         "`prueba-nta-identidad.sh`",
          "1e-9",
          "VERDE (v3 35/99, v4 57/134, panel 15 celdas; ajuste S.14 −19.4 bn)",
          "`diag-cuad-3-2026-11-08/test-nta-identidad.txt`"
         ],
         [
-         "`test-web-batch.sh` (paridad web = batch)",
+         "`prueba-web-batch.sh` (paridad web = batch)",
          "llaves N/N",
          "VERDE 47/47 (el «Calcular» default reproduce el `output.txt` del batch)",
          "`diag-cuad-3-2026-11-08/test-web-batch.txt`"
         ],
         [
-         "`test-log-ancho.sh` (110 columnas)",
+         "`prueba-log-ancho.sh` (110 columnas)",
          "0 líneas > 110",
          "VERDE en las 11 corridas de la sesión (la primera relectura de las series S.14 imprimía 122 líneas de 115 columnas: corregido con `quietly reshape`)",
          "`*/test-log-ancho.txt`"
@@ -10570,7 +10570,7 @@
         ],
         [
          "§5 Tabla 1",
-         "`Households.do` l. citadas en cada fila; `05_scripts/fixtures/nta-identidad.txt`; `C1 §1.2–§1.3`; `diag-v8.15a-2026-10-30/tabla1.py`, `tabla1.out`; CSI_115 f.69–71, 95–105, 133, 136, 138, 150; CSI_103 f.35; CSI_121 f.71"
+         "`Households.do` l. citadas en cada fila; `05_scripts/pruebas/fixtures/nta-identidad.txt`; `C1 §1.2–§1.3`; `diag-v8.15a-2026-10-30/tabla1.py`, `tabla1.out`; CSI_115 f.69–71, 95–105, 133, 136, 138, 150; CSI_103 f.35; CSI_121 f.71"
         ],
         [
          "§4 (`rentas_celda = b2n`), §8 FLAG 18, §10 bis 7 (cierre, 2026-11-08)",
@@ -10586,7 +10586,7 @@
         ],
         [
          "§7",
-         "`05_scripts/gate-numeros.sh`; `diag-v8.15a-2026-10-30/gate-numeros.txt`; `NTA.do` l. 128, 686–698; `05_scripts/test-nta-identidad.sh`; `02-ritual/commit.txt`"
+         "`05_scripts/pruebas/compuerta-numeros.sh`; `diag-v8.15a-2026-10-30/gate-numeros.txt`; `NTA.do` l. 128, 686–698; `05_scripts/pruebas/prueba-nta-identidad.sh`; `02-ritual/commit.txt`"
         ],
         [
          "§9",
@@ -10608,7 +10608,7 @@
        "filas": [
         [
          "Encabezado, §3",
-         "`SIM.do` §0.8 l. 98–102, §0.9; `01_modulos/Households.do` header §4, §0.0 (`cuad_params`, `altimir_elasticidad`), §0 (tras `local D4Hog`), §3 l. 1282, §9 (bloque `altimir == \"yes\"`), §9.1, §11.1, §11.5; `SCN.ado` l. 70, 79, 605–648, 2633, 2677, 2810; `01_modulos/NTA.do` l. 173–180, 228–250, §4.3b, cuadro 3, JSON `parametros`; `05_scripts/test-nta-identidad.do`"
+         "`SIM.do` §0.8 l. 98–102, §0.9; `01_modulos/Households.do` header §4, §0.0 (`cuad_params`, `altimir_elasticidad`), §0 (tras `local D4Hog`), §3 l. 1282, §9 (bloque `altimir == \"yes\"`), §9.1, §11.1, §11.5; `SCN.ado` l. 70, 79, 605–648, 2633, 2677, 2810; `01_modulos/NTA.do` l. 173–180, 228–250, §4.3b, cuadro 3, JSON `parametros`; `05_scripts/pruebas/prueba-nta-identidad.do`"
         ],
         [
          "§2",
@@ -10636,7 +10636,7 @@
         ],
         [
          "Δ esperado",
-         "aritmética de §4.1–§4.3; `01-sim-completo/output.txt` vs `05_scripts/fixtures/output-default.txt` (v8.17.1)"
+         "aritmética de §4.1–§4.3; `01-sim-completo/output.txt` vs `05_scripts/pruebas/fixtures/output-default.txt` (v8.17.1)"
         ]
        ],
        "fuente": "02_governance/CUAD-3.md l. 265–274"
@@ -10806,7 +10806,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -12417,21 +12417,21 @@
      "archivo": "`users/<id>/output.txt`",
      "contiene": "Default del sitio",
      "consume": "Sitio; sidecar",
-     "check": "Sin protección de sus números en CI: `gate-numeros.sh` corre en sesión. `sitio-transitorios` solo lo usa como Stata falso",
+     "check": "Sin protección de sus números en CI: `compuerta-numeros.sh` corre en sesión. `sitio-transitorios` solo lo usa como Stata falso",
      "tabla": "CUAD-0"
     },
     {
      "archivo": "5 `sankey-*.json` (fiscal) y 5 `SankeyNTA/sankey-*.json`",
      "contiene": "Flujos por corte",
      "consume": "Portada; sidecar",
-     "check": "Ídem: `gate-numeros.sh` en sesión",
+     "check": "Ídem: `compuerta-numeros.sh` en sesión",
      "tabla": "CUAD-0"
     },
     {
      "archivo": "`users/<id>/NTA/*`, `SankeyNTA/sankey-v3-grupoedad.json`",
      "contiene": "Cuenta NTA y v3 (vía `NTA.do`)",
      "consume": "`/NTA`; sidecar",
-     "check": "`/NTA: Sankey NTA idéntico al JSON del motor` (dibujo vs fixture). La identidad corre en sesión: `test-nta-identidad.sh`",
+     "check": "`/NTA: Sankey NTA idéntico al JSON del motor` (dibujo vs fixture). La identidad corre en sesión: `prueba-nta-identidad.sh`",
      "tabla": "CUAD-0"
     },
     {
@@ -12445,14 +12445,14 @@
      "archivo": "`users/<id>/output.txt`",
      "contiene": "`CUADRATURA` (YL/YA), `INCD*` ISR/Laboral/Aportaciones, `APORT*`, `PROY*`, `INGRESOSTEF` donde el denominador cambie",
      "consume": "sitio, sidecar",
-     "check": "`gate-numeros.sh` ROJO esperado; `baseline = v8.17.2`",
+     "check": "`compuerta-numeros.sh` ROJO esperado; `baseline = v8.17.2`",
      "tabla": "CUAD-3"
     },
     {
      "archivo": "5 `SankeySF/*.json`, 5 `SankeyNTA/*.json`, `NTA/*`",
      "contiene": "reparto por edad/decil de YL, YA, ISR",
      "consume": "portada, `/NTA`",
-     "check": "`gate-numeros.sh`, `test-nta-identidad.sh`, `test-sitio-nta.sh`",
+     "check": "`compuerta-numeros.sh`, `prueba-nta-identidad.sh`, `prueba-sitio-nta.sh`",
      "tabla": "CUAD-3"
     },
     {
@@ -12466,7 +12466,7 @@
      "archivo": "Log de `Households`: cuadros «Brecha ∝ Y^ε por celda» y «Validación del ajuste»",
      "contiene": "nuevos",
      "consume": "lectura humana; este memo",
-     "check": "`test-log-ancho.sh`",
+     "check": "`prueba-log-ancho.sh`",
      "tabla": "CUAD-3"
     },
     {
@@ -12492,7 +12492,7 @@
     {
      "archivo": "master/`anioenigh'/cuadratura.do",
      "consume": "01_modulos/output.do",
-     "check": "publicar-vps.sh; test-web-batch.sh"
+     "check": "prueba-web-batch.sh; publicar-vps.sh"
     },
     {
      "archivo": "master/`anioenigh'/households.dta",
@@ -12502,14 +12502,14 @@
    ],
    "identidades": [
     {
-     "nombre": "`gate-numeros.sh`: `output.txt` = baseline v8.14.0",
+     "nombre": "`compuerta-numeros.sh`: `output.txt` = baseline v8.14.0",
      "tolerancia": "byte a byte",
      "resultado": "**ROJO esperado** (baseline nuevo v8.15.0; Δ por llave en el PR)",
      "hash": "`02156b2`",
      "tabla": "CUAD-0"
     },
     {
-     "nombre": "`gate-numeros.sh`: 10 sankeys = baseline v8.14.0",
+     "nombre": "`compuerta-numeros.sh`: 10 sankeys = baseline v8.14.0",
      "tolerancia": "1e-9 relativo por enlace",
      "resultado": "**ROJO esperado** (nodos nuevos: Otros sectores, Empresas públicas)",
      "hash": "`02156b2`",
@@ -12593,7 +12593,7 @@
      "tabla": "CUAD-0"
     },
     {
-     "nombre": "Identidad NTA sin ancla y conservación del v3 (`test-nta-identidad.sh`)",
+     "nombre": "Identidad NTA sin ancla y conservación del v3 (`prueba-nta-identidad.sh`)",
      "tolerancia": "1e-9 relativo",
      "resultado": "VERDE (`diag-v8.15b-2026-10-31/test-nta-identidad.txt`; v3 35 nodos / 99 enlaces; v2 52/173)",
      "hash": "`02156b2`",
@@ -12621,7 +12621,7 @@
      "tabla": "CUAD-3"
     },
     {
-     "nombre": "`gate-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1",
+     "nombre": "`compuerta-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1",
      "tolerancia": "byte a byte / 1e-9",
      "resultado": "**ROJO esperado** (404 de 509 líneas; SankeySF decil 80/104 enlaces, Δ rel. máx 0.35; SankeyNTA decil 113/143, 0.33); fixtures re-baselineados → VERDE contra la corrida",
      "hash": "`01-sim-completo/gate-numeros.txt`",
@@ -12698,21 +12698,21 @@
      "tabla": "CUAD-3"
     },
     {
-     "nombre": "`test-nta-identidad.sh`",
+     "nombre": "`prueba-nta-identidad.sh`",
      "tolerancia": "1e-9",
      "resultado": "VERDE (v3 35/99, v4 57/134, panel 15 celdas; ajuste S.14 −19.4 bn)",
      "hash": "`diag-cuad-3-2026-11-08/test-nta-identidad.txt`",
      "tabla": "CUAD-3"
     },
     {
-     "nombre": "`test-web-batch.sh` (paridad web = batch)",
+     "nombre": "`prueba-web-batch.sh` (paridad web = batch)",
      "tolerancia": "llaves N/N",
      "resultado": "VERDE 47/47 (el «Calcular» default reproduce el `output.txt` del batch)",
      "hash": "`diag-cuad-3-2026-11-08/test-web-batch.txt`",
      "tabla": "CUAD-3"
     },
     {
-     "nombre": "`test-log-ancho.sh` (110 columnas)",
+     "nombre": "`prueba-log-ancho.sh` (110 columnas)",
      "tolerancia": "0 líneas > 110",
      "resultado": "VERDE en las 11 corridas de la sesión (la primera relectura de las series S.14 imprimía 122 líneas de 115 columnas: corregido con `quietly reshape`)",
      "hash": "`*/test-log-ancho.txt`",
@@ -12840,7 +12840,7 @@
    "archivos": [
     {
      "ruta": "01_modulos/NTA.do",
-     "sha256": "59a1b9ac8bae",
+     "sha256": "3641ae5f990a",
      "lineas": 2634
     }
    ],
@@ -14414,53 +14414,53 @@
          "`dirnta'/nta-identidad.txt",
          "",
          "01_modulos/Households.do; NTA/index.php",
-         "check-solo-display.py; test-humo-calcular.sh; test-manifiesto-default.sh; test-sitio-nta.sh; verificar-identidad-valores.py",
+         "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-sitio-nta.sh; verificar-identidad-valores.py; verificar-solo-display.py",
          "01_modulos/NTA.do l. 1231"
         ],
         [
          "`dirnta'/nta-grupoedad.json",
          "",
          "NTA/index.php",
-         "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.do; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
+         "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.do; prueba-nta-identidad.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar.sh",
          "01_modulos/NTA.do l. 1345"
         ],
         [
          "`dirnta'/nta-quinquenio-sexo.json",
          "",
          "",
-         "manifiesto-default.py; publicar-vps.sh; test-manifiesto-default.sh",
+         "manifiesto-default.py; prueba-manifiesto-default.sh; publicar-vps.sh",
          "01_modulos/NTA.do l. 1392"
         ],
         [
          "users/$id/SankeyNTA/sankey-v2-grupoedad.json",
          "",
          "",
-         "test-manifiesto-default.sh; test-nta-identidad.sh",
+         "prueba-manifiesto-default.sh; prueba-nta-identidad.sh",
          "01_modulos/NTA.do l. 1638"
         ],
         [
          "users/$id/SankeyNTA/sankey-v3-grupoedad.json",
          "",
          "NTA/index.php",
-         "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.sh; test-sitio-seguridad.sh",
+         "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar.sh",
          "01_modulos/NTA.do l. 1935"
         ],
         [
          "users/$id/SankeyNTA/sankey-v4-economia.json",
          "",
          "NTA/index.php",
-         "manifiesto-default.py; publicar-vps.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
+         "manifiesto-default.py; prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar-vps.sh",
          "01_modulos/NTA.do l. 2359"
         ],
         [
          "`dirnta'/nta-panel-grupoedad-sexo.json",
          "",
          "NTA/index.php",
-         "test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
+         "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh",
          "01_modulos/NTA.do l. 2491"
         ]
        ],
-       "fuente": "01_modulos/NTA.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/NTA.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [
@@ -14476,7 +14476,7 @@
     },
     "7": {
      "texto": [
-      "Identidades verificadas — IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):",
+      "Identidades verificadas — IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/pruebas/prueba-nta-identidad.do la exige a 1e-9 relativo):",
       "C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S)     con   τ⁺ − τ⁻ = τ⁺púb(efectivo + especie + colectivo) − τ⁻púb + τ⁺inter − τ⁻inter + intra",
       "y en la forma que exige el gate:  C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0.",
       "YL + YA + ImpProd es ingreso a PRECIOS DE MERCADO (ImpProd = impuestos netos a los productos como ingreso), C a precios de comprador."
@@ -14582,37 +14582,37 @@
        ],
        "filas": [
         [
-         "gate-numeros.sh: SankeyNTA/decil: 143 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeyNTA/decil: 143 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeyNTA/grupoedad: 88 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeyNTA/grupoedad: 88 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeyNTA/sexo: 55 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeyNTA/sexo: 55 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeyNTA/rural: 66 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeyNTA/rural: 66 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeyNTA/escol: 88 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeyNTA/escol: 88 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: gate de números VERDE",
+         "compuerta-numeros.sh: gate de números VERDE",
          "byte a byte",
          "RESULTADO — gate de números VERDE (output.txt byte-idéntico; 10 sankeys dentro de 1e-9)",
          "beffa2a"
@@ -14756,7 +14756,7 @@
          "beffa2a"
         ]
        ],
-       "fuente": "05_scripts/fixtures/gate-numeros.txt; 05_scripts/fixtures/nta-identidad.txt"
+       "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt; 05_scripts/pruebas/fixtures/nta-identidad.txt"
       }
      ],
      "lista": [],
@@ -15047,7 +15047,7 @@
      "seccion": 7,
      "archivo": "02_governance/CUAD-2.md",
      "lineas": "l. 301–318",
-     "nota": "§7 Identidades verificadas (8.17: medidas en la corrida de la sesión; cuadro 5 y gates de `nta-identidad.txt`, `SCN.ado` cuadro de celdas por sector, `test-nta-identidad.sh` D)"
+     "nota": "§7 Identidades verificadas (8.17: medidas en la corrida de la sesión; cuadro 5 y gates de `nta-identidad.txt`, `SCN.ado` cuadro de celdas por sector, `prueba-nta-identidad.sh` D)"
     },
     {
      "seccion": 8,
@@ -15081,13 +15081,13 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     },
     {
      "seccion": 7,
-     "archivo": "05_scripts/fixtures/gate-numeros.txt; 05_scripts/fixtures/nta-identidad.txt",
+     "archivo": "05_scripts/pruebas/fixtures/gate-numeros.txt; 05_scripts/pruebas/fixtures/nta-identidad.txt",
      "lineas": "GATE / OK / RESULTADO",
      "nota": "resultado de la última corrida completa, con su commit"
     }
@@ -16970,37 +16970,37 @@
     {
      "archivo": "`dirnta'/nta-identidad.txt",
      "consume": "01_modulos/Households.do; NTA/index.php",
-     "check": "check-solo-display.py; test-humo-calcular.sh; test-manifiesto-default.sh; test-sitio-nta.sh; verificar-identidad-valores.py"
+     "check": "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-sitio-nta.sh; verificar-identidad-valores.py; verificar-solo-display.py"
     },
     {
      "archivo": "`dirnta'/nta-grupoedad.json",
      "consume": "NTA/index.php",
-     "check": "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.do; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
+     "check": "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.do; prueba-nta-identidad.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar.sh"
     },
     {
      "archivo": "`dirnta'/nta-quinquenio-sexo.json",
      "consume": "",
-     "check": "manifiesto-default.py; publicar-vps.sh; test-manifiesto-default.sh"
+     "check": "manifiesto-default.py; prueba-manifiesto-default.sh; publicar-vps.sh"
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v2-grupoedad.json",
      "consume": "",
-     "check": "test-manifiesto-default.sh; test-nta-identidad.sh"
+     "check": "prueba-manifiesto-default.sh; prueba-nta-identidad.sh"
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v3-grupoedad.json",
      "consume": "NTA/index.php",
-     "check": "publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.sh; test-sitio-seguridad.sh"
+     "check": "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar.sh"
     },
     {
      "archivo": "users/$id/SankeyNTA/sankey-v4-economia.json",
      "consume": "NTA/index.php",
-     "check": "manifiesto-default.py; publicar-vps.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
+     "check": "manifiesto-default.py; prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar-vps.sh"
     },
     {
      "archivo": "`dirnta'/nta-panel-grupoedad-sexo.json",
      "consume": "NTA/index.php",
-     "check": "test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
+     "check": "prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh"
     },
     {
      "archivo": "/NTA/",
@@ -17102,207 +17102,207 @@
      "tabla": "CUAD-2"
     },
     {
-     "nombre": "gate-numeros.sh: SankeyNTA/decil: 143 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeyNTA/decil: 143 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeyNTA/grupoedad: 88 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeyNTA/grupoedad: 88 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeyNTA/sexo: 55 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeyNTA/sexo: 55 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeyNTA/rural: 66 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeyNTA/rural: 66 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeyNTA/escol: 88 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeyNTA/escol: 88 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: gate de números VERDE",
+     "nombre": "compuerta-numeros.sh: gate de números VERDE",
      "tolerancia": "byte a byte",
      "resultado": "RESULTADO — gate de números VERDE (output.txt byte-idéntico; 10 sankeys dentro de 1e-9)",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
      "nombre": "residual máximo por persona (MXN)",
      "tolerancia": "1e-9",
      "resultado": "2.00e-07",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 92"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 92"
     },
     {
      "nombre": "Σ intra-hogar nacional (MXN)",
      "tolerancia": "1e-9",
      "resultado": "-0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 93"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 93"
     },
     {
      "nombre": "Σ S − B.8n S.14 con ancla (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 94"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 94"
     },
     {
      "nombre": "Σ Cpriv − P.3 S.14 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 95"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 95"
     },
     {
      "nombre": "Σ ISR de personas − D.51 S.14 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "-0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 96"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 96"
     },
     {
      "nombre": "Σ ISR PM − D.51 S.11 + S.12 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 97"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 97"
     },
     {
      "nombre": "Σ cuotas a S.13 − D.61 receptor S.13 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 98"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 98"
     },
     {
      "nombre": "Σ cuotas a S.12 − D.61 receptor S.12 − D.614 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 99"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 99"
     },
     {
      "nombre": "Σ cuotas a S.11 − D.61 receptor S.11 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 100"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 100"
     },
     {
      "nombre": "Σ cuotas a S.15 − D.61 receptor S.15 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 101"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 101"
     },
     {
      "nombre": "nta-identidad.txt: resultado de los gates",
      "tolerancia": "",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 102"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 102"
     },
     {
      "nombre": "hub = INBD BIE 724037 − CCF (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 244"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 244"
     },
     {
      "nombre": "hub = B.5n S.1 CSI + ROWTrans BIE + vintage NNI (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 245"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 245"
     },
     {
      "nombre": "Hogares → hub = B.5n S.14 CSI f.110 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.12",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 246"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 246"
     },
     {
      "nombre": "Hogares ingreso disponible − D.8 = B.6n S.14 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.12",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 247"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 247"
     },
     {
      "nombre": "Gobierno: entradas − financiamiento − pagadas = B.6n S.13 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 248"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 248"
     },
     {
      "nombre": "Sociedades: entradas − financiamiento − pagadas = B.6n S.11 + S.12 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "-0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 249"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 249"
     },
     {
      "nombre": "ISFLSH: entradas − financiamiento − pagadas = B.6n S.15 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 250"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 250"
     },
     {
      "nombre": "Σ B.6n por sector = B.6n S.1 CSI (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 251"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 251"
     },
     {
      "nombre": "Usos: Σ B.6n = Σ P.3 + Σ B.8n CSI (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 253"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 253"
     },
     {
      "nombre": "Futuro − Financiamiento + ajuste S.14 = B.8n S.1 (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.18",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 254"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 254"
     },
     {
      "nombre": "Financiamiento CSI: Σ B.9 < 0 = Σ B.9 > 0 + Mundo (MXN)",
      "tolerancia": "1e-9",
      "resultado": "0.00",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 255"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 255"
     },
     {
      "nombre": "conservación en los 35 nodos intermedios (reldif máx)",
      "tolerancia": "1e-9",
      "resultado": "2.24e-14",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/nta-identidad.txt l. 256"
+     "fuente": "05_scripts/pruebas/fixtures/nta-identidad.txt l. 256"
     }
    ],
    "limites": [],
@@ -17485,11 +17485,11 @@
          "master/perfiles`1'.dta",
          "",
          "",
-         "perfilar-web.sh; publicar-vps.sh; test-web-batch.sh",
+         "perfilar-web.sh; prueba-web-batch.sh; publicar-vps.sh",
          "01_modulos/PerfilesSim.do l. 615"
         ]
        ],
-       "fuente": "01_modulos/PerfilesSim.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/PerfilesSim.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -17583,7 +17583,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -17763,7 +17763,7 @@
     {
      "archivo": "master/perfiles`1'.dta",
      "consume": "",
-     "check": "perfilar-web.sh; publicar-vps.sh; test-web-batch.sh"
+     "check": "perfilar-web.sh; prueba-web-batch.sh; publicar-vps.sh"
     }
    ],
    "identidades": [],
@@ -17914,11 +17914,11 @@
          "master/LIF.dta",
          "",
          "00_comandos/TasasEfectivas.ado; 01_modulos/Households.do",
-         "perfilar-web.py; perfilar-web.sh; test-web-batch.sh",
+         "perfilar-web.py; perfilar-web.sh; prueba-web-batch.sh",
          "00_comandos/LIF.ado l. 704"
         ]
        ],
-       "fuente": "00_comandos/LIF.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/LIF.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -18006,7 +18006,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -18225,7 +18225,7 @@
     {
      "archivo": "master/LIF.dta",
      "consume": "00_comandos/TasasEfectivas.ado; 01_modulos/Households.do",
-     "check": "perfilar-web.py; perfilar-web.sh; test-web-batch.sh"
+     "check": "perfilar-web.py; perfilar-web.sh; prueba-web-batch.sh"
     }
    ],
    "identidades": [],
@@ -18380,7 +18380,7 @@
          "01_modulos/ISR_Mod.do l. 282"
         ]
        ],
-       "fuente": "01_modulos/ISR_Mod.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/ISR_Mod.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -18509,7 +18509,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -18778,7 +18778,7 @@
          "01_modulos/IVA_Mod.do l. 93"
         ]
        ],
-       "fuente": "01_modulos/IVA_Mod.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/IVA_Mod.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -18866,7 +18866,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -20042,13 +20042,13 @@
          "`users/<id>/ingresos.dta` (`*_Sim`), `isr_mod.dta`",
          "recaudación por persona por impuesto",
          "`INCI.ado` → `INCD*` de `output.txt`; `aportaciones.dta`; 32 entidades",
-         "`gate-numeros.sh` (en sesión); `contrato-32.sh`"
+         "`compuerta-numeros.sh` (en sesión); `contrato-32.sh`"
         ],
         [
          "`output.txt`: `INGRESOS` (LIF `anioPE` % PIB), `INGRESOSTEF` (TE), `IVA`, `ISRTASA`, `INCD/INCD2/INCD3`",
          "lo que el sitio muestra",
          "sitio; sidecar",
-         "`gate-numeros.sh` byte a byte (sesión); `test-web-batch.sh` 47/47"
+         "`compuerta-numeros.sh` byte a byte (sesión); `prueba-web-batch.sh` 47/47"
         ]
        ],
        "fuente": "02_governance/CUAD-1.md l. 274–280"
@@ -20071,7 +20071,7 @@
          "00_comandos/TasasEfectivas.ado l. 282"
         ]
        ],
-       "fuente": "00_comandos/TasasEfectivas.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/TasasEfectivas.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -20633,7 +20633,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -21311,14 +21311,14 @@
      "archivo": "`users/<id>/ingresos.dta` (`*_Sim`), `isr_mod.dta`",
      "contiene": "recaudación por persona por impuesto",
      "consume": "`INCI.ado` → `INCD*` de `output.txt`; `aportaciones.dta`; 32 entidades",
-     "check": "`gate-numeros.sh` (en sesión); `contrato-32.sh`",
+     "check": "`compuerta-numeros.sh` (en sesión); `contrato-32.sh`",
      "tabla": "CUAD-1"
     },
     {
      "archivo": "`output.txt`: `INGRESOS` (LIF `anioPE` % PIB), `INGRESOSTEF` (TE), `IVA`, `ISRTASA`, `INCD/INCD2/INCD3`",
      "contiene": "lo que el sitio muestra",
      "consume": "sitio; sidecar",
-     "check": "`gate-numeros.sh` byte a byte (sesión); `test-web-batch.sh` 47/47",
+     "check": "`compuerta-numeros.sh` byte a byte (sesión); `prueba-web-batch.sh` 47/47",
      "tabla": "CUAD-1"
     },
     {
@@ -21736,7 +21736,7 @@
          "00_comandos/PEF.ado l. 1287"
         ]
        ],
-       "fuente": "00_comandos/PEF.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/PEF.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -21824,7 +21824,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -22642,7 +22642,7 @@
          "00_comandos/Precache.ado l. 79"
         ]
        ],
-       "fuente": "00_comandos/Precache.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/Precache.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -22705,7 +22705,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -22914,7 +22914,7 @@
          "00_comandos/GastoPC.ado l. 1551"
         ]
        ],
-       "fuente": "00_comandos/GastoPC.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/GastoPC.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -23012,7 +23012,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -23704,7 +23704,7 @@
          "00_comandos/SHRFSP.ado l. 1104"
         ]
        ],
-       "fuente": "00_comandos/SHRFSP.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/SHRFSP.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -23786,7 +23786,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -24132,7 +24132,7 @@
          "00_comandos/Simulador.ado l. 1194"
         ]
        ],
-       "fuente": "00_comandos/Simulador.ado; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "00_comandos/Simulador.ado; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -24220,7 +24220,7 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
@@ -24527,7 +24527,7 @@
    "archivos": [
     {
      "ruta": "00_comandos/FiscalGap.ado",
-     "sha256": "43dfbd1e4e4c",
+     "sha256": "a1102bd2a5b2",
      "lineas": 1304
     }
    ],
@@ -24671,7 +24671,7 @@
          "output.txt: PROYLABOR, PROYCONSU, PROYCAPIT, PROYORGAN, PROYEDUCA y las demás PROY* (vía log output)",
          "trayectoria proyectada por componente, en % del PIB",
          "sitio (cargaDefault.php); sidecar datos-<v>.zip",
-         "gate-numeros.sh byte a byte (sesión); test-web-batch.sh web = batch"
+         "compuerta-numeros.sh byte a byte (sesión); prueba-web-batch.sh web = batch"
         ]
        ],
        "fuente": "00_comandos/FiscalGap.ado l. 10–12"
@@ -25007,7 +25007,7 @@
      "archivo": "output.txt: PROYLABOR, PROYCONSU, PROYCAPIT, PROYORGAN, PROYEDUCA y las demás PROY* (vía log output)",
      "contiene": "trayectoria proyectada por componente, en % del PIB",
      "consume": "sitio (cargaDefault.php); sidecar datos-<v>.zip",
-     "check": "gate-numeros.sh byte a byte (sesión); test-web-batch.sh web = batch",
+     "check": "compuerta-numeros.sh byte a byte (sesión); prueba-web-batch.sh web = batch",
      "tabla": ""
     }
    ],
@@ -25028,7 +25028,7 @@
    "archivos": [
     {
      "ruta": "01_modulos/visualizations/SankeySF.do",
-     "sha256": "ac2507dda172",
+     "sha256": "5eaad5d5debd",
      "lineas": 507
     }
    ],
@@ -25107,7 +25107,7 @@
     },
     "6": {
      "texto": [
-      "Salidas (procedencia: runbook §9.7; 05_scripts/manifiesto-default.py (portada); 05_scripts/fixtures/sankeys-default/SankeySF):"
+      "Salidas (procedencia: runbook §9.7; 05_scripts/datos/manifiesto-default.py (portada); 05_scripts/pruebas/fixtures/sankeys-default/SankeySF):"
      ],
      "tablas": [
       {
@@ -25123,13 +25123,13 @@
          "users/<id>/sankey-<corte>.json (decil, grupoedad, sexo, rural, escol)",
          "nodos y enlaces del Sankey fiscal nacional (SankeySumSim)",
          "portada del sitio (jsonSankey*.php); sidecar",
-         "gate-numeros.sh: 5 sankeys dentro de 1e-9 contra fixtures/sankeys-default/SankeySF (sesión)"
+         "compuerta-numeros.sh: 5 sankeys dentro de 1e-9 contra fixtures/sankeys-default/SankeySF (sesión)"
         ],
         [
          "users/<id>/<ABREV>/sankey-<corte>.json (quintil, grupoedad, sexo, rural, escol)",
          "Sankey de la entidad con banda de vintages (bmin, bmax, v<t>) y sellos n/top1 por enlace",
          "/entidades/<ABREV> (jsonEntidad.php)",
-         "contrato-32.sh (paridad, aditividad Σ32, testigo NL); test-sitio-entidades.sh (fixtures NL, Jal, Col)"
+         "contrato-32.sh (paridad, aditividad Σ32, testigo NL); prueba-sitio-entidades.sh (fixtures NL, Jal, Col)"
         ]
        ],
        "fuente": "01_modulos/visualizations/SankeySF.do l. 8–11"
@@ -25148,11 +25148,11 @@
          "users/$id/sankey-`1'.json",
          "",
          "01_modulos/NTA.do; NTA/index.php; entidades/NL (_entidad.php); index.php (js/stataCalcula.js)",
-         "compuertas-entidad.py; manifiesto-default.py; publicar-vps.sh; publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-entidades.js; test-sitio-entidades.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh",
+         "compuertas-entidad.py; manifiesto-default.py; prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-entidades.js; prueba-sitio-entidades.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar-vps.sh; publicar.sh",
          "01_modulos/visualizations/SankeySF.do l. 503"
         ]
        ],
-       "fuente": "01_modulos/visualizations/SankeySF.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "01_modulos/visualizations/SankeySF.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [],
@@ -25172,43 +25172,43 @@
        ],
        "filas": [
         [
-         "gate-numeros.sh: SankeySF/decil: 104 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeySF/decil: 104 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeySF/grupoedad: 60 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeySF/grupoedad: 60 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeySF/sexo: 40 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeySF/sexo: 40 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeySF/rural: 48 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeySF/rural: 48 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: SankeySF/escol: 64 enlaces dentro de 1e-9",
+         "compuerta-numeros.sh: SankeySF/escol: 64 enlaces dentro de 1e-9",
          "1e-9 relativo",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: gate de números VERDE",
+         "compuerta-numeros.sh: gate de números VERDE",
          "byte a byte",
          "RESULTADO — gate de números VERDE (output.txt byte-idéntico; 10 sankeys dentro de 1e-9)",
          "beffa2a"
         ]
        ],
-       "fuente": "05_scripts/fixtures/gate-numeros.txt"
+       "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
       }
      ],
      "lista": [],
@@ -25264,13 +25264,13 @@
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     },
     {
      "seccion": 7,
-     "archivo": "05_scripts/fixtures/gate-numeros.txt; 05_scripts/fixtures/nta-identidad.txt",
+     "archivo": "05_scripts/pruebas/fixtures/gate-numeros.txt; 05_scripts/pruebas/fixtures/nta-identidad.txt",
      "lineas": "GATE / OK / RESULTADO",
      "nota": "resultado de la última corrida completa, con su commit"
     }
@@ -25304,64 +25304,64 @@
      "archivo": "users/<id>/sankey-<corte>.json (decil, grupoedad, sexo, rural, escol)",
      "contiene": "nodos y enlaces del Sankey fiscal nacional (SankeySumSim)",
      "consume": "portada del sitio (jsonSankey*.php); sidecar",
-     "check": "gate-numeros.sh: 5 sankeys dentro de 1e-9 contra fixtures/sankeys-default/SankeySF (sesión)",
+     "check": "compuerta-numeros.sh: 5 sankeys dentro de 1e-9 contra fixtures/sankeys-default/SankeySF (sesión)",
      "tabla": ""
     },
     {
      "archivo": "users/<id>/<ABREV>/sankey-<corte>.json (quintil, grupoedad, sexo, rural, escol)",
      "contiene": "Sankey de la entidad con banda de vintages (bmin, bmax, v<t>) y sellos n/top1 por enlace",
      "consume": "/entidades/<ABREV> (jsonEntidad.php)",
-     "check": "contrato-32.sh (paridad, aditividad Σ32, testigo NL); test-sitio-entidades.sh (fixtures NL, Jal, Col)",
+     "check": "contrato-32.sh (paridad, aditividad Σ32, testigo NL); prueba-sitio-entidades.sh (fixtures NL, Jal, Col)",
      "tabla": ""
     },
     {
      "archivo": "users/$id/sankey-`1'.json",
      "consume": "01_modulos/NTA.do; NTA/index.php; entidades/NL (_entidad.php); index.php (js/stataCalcula.js)",
-     "check": "compuertas-entidad.py; manifiesto-default.py; publicar-vps.sh; publicar.sh; test-humo-calcular.sh; test-manifiesto-default.sh; test-nta-identidad.sh; test-sitio-entidades.js; test-sitio-entidades.sh; test-sitio-nta.js; test-sitio-nta.sh; test-sitio-seguridad.sh"
+     "check": "compuertas-entidad.py; manifiesto-default.py; prueba-humo-calcular.sh; prueba-manifiesto-default.sh; prueba-nta-identidad.sh; prueba-sitio-entidades.js; prueba-sitio-entidades.sh; prueba-sitio-nta.js; prueba-sitio-nta.sh; prueba-sitio-seguridad.sh; publicar-vps.sh; publicar.sh"
     }
    ],
    "identidades": [
     {
-     "nombre": "gate-numeros.sh: SankeySF/decil: 104 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeySF/decil: 104 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeySF/grupoedad: 60 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeySF/grupoedad: 60 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeySF/sexo: 40 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeySF/sexo: 40 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeySF/rural: 48 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeySF/rural: 48 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: SankeySF/escol: 64 enlaces dentro de 1e-9",
+     "nombre": "compuerta-numeros.sh: SankeySF/escol: 64 enlaces dentro de 1e-9",
      "tolerancia": "1e-9 relativo",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: gate de números VERDE",
+     "nombre": "compuerta-numeros.sh: gate de números VERDE",
      "tolerancia": "byte a byte",
      "resultado": "RESULTADO — gate de números VERDE (output.txt byte-idéntico; 10 sankeys dentro de 1e-9)",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     }
    ],
    "limites": [],
@@ -25379,18 +25379,18 @@
    "modulo": "Entidades",
    "archivos": [
     {
-     "ruta": "05_scripts/contrato-32.do",
-     "sha256": "cc1d80006cf0",
+     "ruta": "05_scripts/pruebas/contrato-32.do",
+     "sha256": "44f3c73f2acc",
      "lineas": 244
     },
     {
      "ruta": "01_modulos/TasasEfectivasEntidad.do",
-     "sha256": "13aa645b7cd4",
+     "sha256": "7a9f69f00ccf",
      "lineas": 124
     },
     {
      "ruta": "01_modulos/visualizations/CicloEntidad.do",
-     "sha256": "0c5b7e9e4081",
+     "sha256": "3890687aa67c",
      "lineas": 304
     }
    ],
@@ -25405,7 +25405,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito — QUÉ HACE (corre DENTRO de la sesión de SIM.do, con sus escalares y users/$id/aportaciones.dta vivos, después de §8.2; lo invoca 05_scripts/contrato-32.sh). Recorre el catálogo SIMentidad y, para cada entidad, produce en users/$id/<ABREV>/ lo que el motor produce para $entidad:"
+      "Propósito — QUÉ HACE (corre DENTRO de la sesión de SIM.do, con sus escalares y users/$id/aportaciones.dta vivos, después de §8.2; lo invoca 05_scripts/pruebas/contrato-32.sh). Recorre el catálogo SIMentidad y, para cada entidad, produce en users/$id/<ABREV>/ lo que el motor produce para $entidad:"
      ],
      "tablas": [],
      "lista": [],
@@ -25414,7 +25414,7 @@
     },
     "2": {
      "texto": [
-      "Entradas (procedencia: 05_scripts/contrato-32.sh «Bases precedentes (runbook §13)»; runbook §13.1): users/$id/aportaciones.dta y los escalares de la sesión nacional de SIM.do; las 5 bases de vintages users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta (banda bmin/bmax; sin ellas aborta);",
+      "Entradas (procedencia: 05_scripts/pruebas/contrato-32.sh «Bases precedentes (runbook §13)»; runbook §13.1): users/$id/aportaciones.dta y los escalares de la sesión nacional de SIM.do; las 5 bases de vintages users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta (banda bmin/bmax; sin ellas aborta);",
       "master/PIBDeflactor<ABREV>.dta de las 32 (pibe-32.sh, sello pibe-32 en master/PIBDeflactor<ABREV>.meta); el catálogo SIMentidad.ado."
      ],
      "tablas": [
@@ -25449,7 +25449,7 @@
          "01_modulos/visualizations/CicloEntidad.do l. 87"
         ]
        ],
-       "fuente": "05_scripts/manifest.json; 05_scripts/contrato-32.do; 01_modulos/TasasEfectivasEntidad.do; 01_modulos/visualizations/CicloEntidad.do"
+       "fuente": "05_scripts/manifest.json; 05_scripts/pruebas/contrato-32.do; 01_modulos/TasasEfectivasEntidad.do; 01_modulos/visualizations/CicloEntidad.do"
       }
      ],
      "lista": [],
@@ -25508,7 +25508,7 @@
     },
     "6": {
      "texto": [
-      "Salidas (procedencia: este header; runbook §13; 05_scripts/generar-entidades.py meta): por entidad, en users/$id/<ABREV>/:",
+      "Salidas (procedencia: este header; runbook §13; 05_scripts/publicar/generar-entidades.py meta): por entidad, en users/$id/<ABREV>/:",
       "§1  Poblacion if entidad == \"<nombre>\"          (escalares pobtot<ABREV>…; pirámide)",
       "§2  PIBDeflactor if entidad == \"<nombre>\"       SOLO si existe master/PIBDeflactor<ABREV>.dta (construirla baja series del BISE con token: no se hace aquí; se registra \"sin base\" + receta)",
       "§8.2 SankeySF.do × 5 cortes (quintil estatal, grupoedad, sexo, rural, escol), con banda de",
@@ -25553,14 +25553,14 @@
          "",
          "",
          "contrato-32.do; contrato-32.py; contrato-32.sh",
-         "05_scripts/contrato-32.do l. 145"
+         "05_scripts/pruebas/contrato-32.do l. 145"
         ],
         [
          "`evidencia'/entidades/`abrev'.log",
          "",
          "",
          "sin protección automática — gate humano",
-         "05_scripts/contrato-32.do l. 157"
+         "05_scripts/pruebas/contrato-32.do l. 157"
         ],
         [
          "json",
@@ -25570,7 +25570,7 @@
          "01_modulos/TasasEfectivasEntidad.do l. 90"
         ]
        ],
-       "fuente": "05_scripts/contrato-32.do; 01_modulos/TasasEfectivasEntidad.do; 01_modulos/visualizations/CicloEntidad.do; 05_scripts/manifiesto-default.py --tsv; grep en 05_scripts/"
+       "fuente": "05_scripts/pruebas/contrato-32.do; 01_modulos/TasasEfectivasEntidad.do; 01_modulos/visualizations/CicloEntidad.do; 05_scripts/datos/manifiesto-default.py --tsv; grep en 05_scripts/"
       }
      ],
      "lista": [
@@ -25604,7 +25604,7 @@
     "9": {
      "texto": [
       "Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 14): Tolerante a fallos: cada paso va en `capture noisily`; el rc, el tiempo y la nota se registran por entidad en <evidencia>/contrato-32.tsv y el recorrido sigue con la siguiente. Un reporte parcial vale más que nada. El log de cada entidad queda en <evidencia>/entidades/<ABREV>.log. No toca el flujo nacional: los productos nacionales ya están escritos cuando esto corre.",
-      "USO: do \"${SIMROOT}/05_scripts/contrato-32.do\" \"<carpeta de evidencia>\" OJO: destruye los datos en memoria."
+      "USO: do \"${SIMROOT}/05_scripts/pruebas/contrato-32.do\" \"<carpeta de evidencia>\" OJO: destruye los datos en memoria."
      ],
      "tablas": [
       {
@@ -25621,7 +25621,7 @@
          "32 entidades; contrato-32: celdas n<100 selladas, participaciones, PIBE, Ley de Ingresos estatal (9.x)"
         ]
        ],
-       "fuente": "05_scripts/contrato-32.do l. 25–34"
+       "fuente": "05_scripts/pruebas/contrato-32.do l. 25–34"
       }
      ],
      "lista": [],
@@ -25639,25 +25639,25 @@
    "procedencia": [
     {
      "seccion": 1,
-     "archivo": "05_scripts/contrato-32.do",
+     "archivo": "05_scripts/pruebas/contrato-32.do",
      "lineas": "l. 3–5",
      "nota": "header"
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/contrato-32.do",
+     "archivo": "05_scripts/pruebas/contrato-32.do",
      "lineas": "l. 6–21",
      "nota": "header"
     },
     {
      "seccion": 2,
-     "archivo": "05_scripts/contrato-32.do",
+     "archivo": "05_scripts/pruebas/contrato-32.do",
      "lineas": "l. 22–24",
      "nota": "header"
     },
     {
      "seccion": 9,
-     "archivo": "05_scripts/contrato-32.do",
+     "archivo": "05_scripts/pruebas/contrato-32.do",
      "lineas": "l. 25–34",
      "nota": "header"
     },
@@ -25707,16 +25707,16 @@
      "seccion": 2,
      "archivo": "05_scripts/manifest.json",
      "lineas": "assets, scn_vintage, enigh_vintage, data_updated",
-     "nota": "derivado: ensure_asset y use master/ en 05_scripts/contrato-32.do, 01_modulos/TasasEfectivasEntidad.do, 01_modulos/visualizations/CicloEntidad.do"
+     "nota": "derivado: ensure_asset y use master/ en 05_scripts/pruebas/contrato-32.do, 01_modulos/TasasEfectivasEntidad.do, 01_modulos/visualizations/CicloEntidad.do"
     },
     {
      "seccion": 6,
-     "archivo": "05_scripts/manifiesto-default.py",
+     "archivo": "05_scripts/datos/manifiesto-default.py",
      "lineas": "--tsv",
      "nota": "qué página pide cada salida; checks = scripts de 05_scripts/ y el workflow que nombran el archivo"
     }
    ],
-   "proposito": "Propósito — QUÉ HACE (corre DENTRO de la sesión de SIM.do, con sus escalares y users/$id/aportaciones.dta vivos, después de §8.2; lo invoca 05_scripts/contrato-32.sh). Recorre el catálogo SIMentidad y, para cada entidad, produce en users/$id/<ABREV>/ lo que el motor produce para $entidad:",
+   "proposito": "Propósito — QUÉ HACE (corre DENTRO de la sesión de SIM.do, con sus escalares y users/$id/aportaciones.dta vivos, después de §8.2; lo invoca 05_scripts/pruebas/contrato-32.sh). Recorre el catálogo SIMentidad y, para cada entidad, produce en users/$id/<ABREV>/ lo que el motor produce para $entidad:",
    "entradas": [
     {
      "base": "master/perfiles`anio'.dta",
@@ -25860,7 +25860,7 @@
    "archivos": [
     {
      "ruta": "01_modulos/output.do",
-     "sha256": "b09a97e6b900",
+     "sha256": "acbc28da5aef",
      "lineas": 405
     }
    ],
@@ -25875,7 +25875,7 @@
    "secciones": {
     "1": {
      "texto": [
-      "Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del flujo canónico SIM.do (gate test-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga."
+      "Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del flujo canónico SIM.do (gate prueba-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga."
      ],
      "tablas": [],
      "lista": [],
@@ -25914,7 +25914,7 @@
     },
     "6": {
      "texto": [
-      "Salidas (procedencia: CUAD-0 §6 fila «users/<id>/output.txt»; runbook §14.1 lección 7; 05_scripts/gate-numeros.sh header):"
+      "Salidas (procedencia: CUAD-0 §6 fila «users/<id>/output.txt»; runbook §14.1 lección 7; 05_scripts/pruebas/compuerta-numeros.sh header):"
      ],
      "tablas": [
       {
@@ -25930,7 +25930,7 @@
          "users/<id>/output.txt (INCD*, APORT*, PROY*, INGRESOS*, GASTOS*, PIBY, CRECPIB*, CRECDEF*, DEUDA*, CUADRATURA, …: 47 llaves)",
          "default del sitio: lo que cargaDefault.php devuelve y Web.Stata.do reproduce",
          "sitio (cargaDefault.php, checkStataStatus.php); sidecar datos-<v>.zip",
-         "gate-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); test-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso"
+         "compuerta-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); prueba-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso"
         ]
        ],
        "fuente": "01_modulos/output.do l. 8–10"
@@ -25953,19 +25953,19 @@
        ],
        "filas": [
         [
-         "gate-numeros.sh: output.txt byte-idéntico al baseline",
+         "compuerta-numeros.sh: output.txt byte-idéntico al baseline",
          "byte a byte",
          "OK",
          "beffa2a"
         ],
         [
-         "gate-numeros.sh: gate de números VERDE",
+         "compuerta-numeros.sh: gate de números VERDE",
          "byte a byte",
          "RESULTADO — gate de números VERDE (output.txt byte-idéntico; 10 sankeys dentro de 1e-9)",
          "beffa2a"
         ]
        ],
-       "fuente": "05_scripts/fixtures/gate-numeros.txt"
+       "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
       }
      ],
      "lista": [],
@@ -25995,7 +25995,7 @@
         [
          "Gates",
          "Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados",
-         "gate-numeros.sh, identidad NTA, contrato-N, paridad web = batch"
+         "compuerta-numeros.sh, identidad NTA, contrato-N, paridad web = batch"
         ]
        ],
        "fuente": "01_modulos/output.do l. 11–13"
@@ -26046,12 +26046,12 @@
     },
     {
      "seccion": 7,
-     "archivo": "05_scripts/fixtures/gate-numeros.txt; 05_scripts/fixtures/nta-identidad.txt",
+     "archivo": "05_scripts/pruebas/fixtures/gate-numeros.txt; 05_scripts/pruebas/fixtures/nta-identidad.txt",
      "lineas": "GATE / OK / RESULTADO",
      "nota": "resultado de la última corrida completa, con su commit"
     }
    ],
-   "proposito": "Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del flujo canónico SIM.do (gate test-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga.",
+   "proposito": "Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del flujo canónico SIM.do (gate prueba-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga.",
    "entradas": [],
    "pasos": [
     {
@@ -26070,24 +26070,24 @@
      "archivo": "users/<id>/output.txt (INCD*, APORT*, PROY*, INGRESOS*, GASTOS*, PIBY, CRECPIB*, CRECDEF*, DEUDA*, CUADRATURA, …: 47 llaves)",
      "contiene": "default del sitio: lo que cargaDefault.php devuelve y Web.Stata.do reproduce",
      "consume": "sitio (cargaDefault.php, checkStataStatus.php); sidecar datos-<v>.zip",
-     "check": "gate-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); test-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso",
+     "check": "compuerta-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); prueba-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso",
      "tabla": ""
     }
    ],
    "identidades": [
     {
-     "nombre": "gate-numeros.sh: output.txt byte-idéntico al baseline",
+     "nombre": "compuerta-numeros.sh: output.txt byte-idéntico al baseline",
      "tolerancia": "byte a byte",
      "resultado": "OK",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     },
     {
-     "nombre": "gate-numeros.sh: gate de números VERDE",
+     "nombre": "compuerta-numeros.sh: gate de números VERDE",
      "tolerancia": "byte a byte",
      "resultado": "RESULTADO — gate de números VERDE (output.txt byte-idéntico; 10 sankeys dentro de 1e-9)",
      "hash": "beffa2a",
-     "fuente": "05_scripts/fixtures/gate-numeros.txt"
+     "fuente": "05_scripts/pruebas/fixtures/gate-numeros.txt"
     }
    ],
    "limites": [],
@@ -26095,7 +26095,7 @@
     {
      "elemento": "Gates",
      "requerimiento": "Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados",
-     "por_que_mx": "gate-numeros.sh, identidad NTA, contrato-N, paridad web = batch",
+     "por_que_mx": "compuerta-numeros.sh, identidad NTA, contrato-N, paridad web = batch",
      "tabla": ""
     }
    ],
@@ -26289,7 +26289,7 @@
        ],
        [
         "Gates",
-        "`gate-numeros.sh`, identidad NTA, contrato-N, paridad web = batch",
+        "`compuerta-numeros.sh`, identidad NTA, contrato-N, paridad web = batch",
         "Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados"
        ],
        [
@@ -26385,7 +26385,7 @@
    }
   ],
   "archivo": "02_governance/metodo/cap0-requerimientos.md",
-  "sha256": "5b49c3f215a4"
+  "sha256": "fbb480b51251"
  },
  "bibliografia": {
   "fuente": "02_governance/metodo/fuentes/README.md",

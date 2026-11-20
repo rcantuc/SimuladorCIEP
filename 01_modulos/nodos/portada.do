@@ -55,7 +55,7 @@
 *
 * USO:  do "${SIMROOT}/01_modulos/nodos/portada.do"
 * Requiere: aniovp (profile.do), master/ poblado, LIF y PEF invocables.
-* Override de destino para verify_nodo.sh (regla 3): global nodo_saving.
+* Override de destino para verificar-nodo.sh (regla 3): global nodo_saving.
 
 *** 0 PRELIMINARES ***
 local site `"${SIMROOT}"'

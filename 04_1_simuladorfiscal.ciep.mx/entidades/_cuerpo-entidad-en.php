@@ -1,7 +1,7 @@
 <?php
 // entidades/_cuerpo-entidad-en.php — cuerpo de cada página estatal de /entidades en inglés (el idioma original de la página). Lo incluye entidades/_entidad.php según metodo_lang(); su hermano
 // entidades/_cuerpo-entidad-es.php es la traducción al español y debe llevar exactamente los mismos ids, data-* y endpoints. Usa las variables del
-// archivo que lo incluye ($h, $nombre, $abrev, $ent, $cortes). Sin números: todo valor llega en runtime (test-sitio-entidades.sh lo exige).
+// archivo que lo incluye ($h, $nombre, $abrev, $ent, $cortes). Sin números: todo valor llega en runtime (prueba-sitio-entidades.sh lo exige).
 ?>
 		<section class="metodo-texto ent-cabecera" id="ent-cabecera">
 			<p class="ent-datos">

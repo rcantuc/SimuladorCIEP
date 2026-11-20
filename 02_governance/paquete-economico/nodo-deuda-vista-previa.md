@@ -25,7 +25,7 @@ La portada (`/nodos/`) presenta la ecuación fundamental — gasto = ingresos +
 financiamiento, cifras del motor vía su propio contrato
 `ciep.nodo.portada/v1` — y el término Financiamiento enlaza al nodo de deuda.
 Su driver corre LIF y PEF y deriva los tres totales; verificación:
-`bash 05_scripts/verify_nodo.sh portada`.
+`bash 05_scripts/pruebas/verificar-nodo.sh portada`.
 
 Es el mismo estatus que los `statalatex_*.tex` de `06_libro/images`: se
 versiona lo que **produce** el artefacto, no el artefacto. La copia de la
@@ -96,7 +96,7 @@ correcto — `scalarjson` no calcula y la página tampoco.
 ## Antes de publicar
 
 ```bash
-bash 05_scripts/verify_nodo.sh
+bash 05_scripts/pruebas/verificar-nodo.sh
 ```
 
 Seis reglas, exit ≠ 0 si alguna falla. Audita la **fuente** de la página

@@ -121,12 +121,12 @@ program define scalarlatex
 		* Resumen de cobertura: el drift de escalares sin tipo es fallo
 		* suave silencioso (typo scalar/escalar) — hacerlo visible.
 		* Los sin-registrar se comparan contra el BASELINE AUDITADO
-		* (05_scripts/fixtures/scalarlatex-baseline.txt): dentro del baseline
+		* (05_scripts/pruebas/fixtures/scalarlatex-baseline.txt): dentro del baseline
 		* -> linea informativa; nombres NUEVOS -> aviso en rojo. Sin el
 		* baseline la lista completa (228 nombres) ahogaria la senal. *
 		noisily di in g "scalarlatex (`logname'): " in y `nreg' in g " registrados, " in y `nsin' in g " sin registrar (as-is)"
 		if `nsin' > 0 {
-			local basefile "${SIMROOT}/05_scripts/fixtures/scalarlatex-baseline.txt"
+			local basefile "${SIMROOT}/05_scripts/pruebas/fixtures/scalarlatex-baseline.txt"
 			capture confirm file "`basefile'"
 			if _rc == 0 {
 				local baseline ""
@@ -144,11 +144,11 @@ program define scalarlatex
 				local nuevos : list sinlist - baseline
 				local nbase : word count `baseline'
 				if `"`nuevos'"' == "" {
-					noisily di in g "  sin registrar: todos dentro del baseline auditado (`nbase' nombres; ver 05_scripts/fixtures/scalarlatex-baseline.txt)"
+					noisily di in g "  sin registrar: todos dentro del baseline auditado (`nbase' nombres; ver 05_scripts/pruebas/fixtures/scalarlatex-baseline.txt)"
 				}
 				else {
 					noisily di as err "  ATENCION: sin registrar NUEVOS respecto al baseline auditado (drift real — typo scalar/escalar o scalar sin migrar):`nuevos'"
-					noisily di as err "  Si el alta es legitima, actualizar 05_scripts/fixtures/scalarlatex-baseline.txt (procedimiento en su header)."
+					noisily di as err "  Si el alta es legitima, actualizar 05_scripts/pruebas/fixtures/scalarlatex-baseline.txt (procedimiento en su header)."
 				}
 			}
 			else {

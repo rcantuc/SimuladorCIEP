@@ -1,8 +1,8 @@
 <?php
 // entidades/_catalogo.php — catálogo de las 32 entidades federativas del sitio.
-// GENERADO por 05_scripts/generar-entidades.py desde SIMentidad.ado (única fuente de verdad del
+// GENERADO por 05_scripts/publicar/generar-entidades.py desde SIMentidad.ado (única fuente de verdad del
 // catálogo: posición = clave INEGI, abreviatura = la de Poblacion.ado). No editar a mano: el gate
-// «generado == commiteado» (test-sitio-entidades.sh, CI) lo regenera y compara byte a byte.
+// «generado == commiteado» (prueba-sitio-entidades.sh, CI) lo regenera y compara byte a byte.
 // Lo leen entidades/_entidad.php (nombre, clave y validación de $ENTIDAD_ABREV), entidades/index.php
 // (las 32 filas) y jsonEntidad.php (lista blanca estricta de abrev: harness de seguridad).
 return array(

@@ -298,7 +298,7 @@ Identidad de usos: Σ B.6n 27,369.071 = P.3 S.14 23,381.329 + S.15 388.320 + S.1
 
 Escalares nuevos de `SCN.ado` (lector `SCNHogaresS14`, mismo `specs` con rótulo y año): filas 110, 114, 117, 131, 139, 153, 157, 166, 168, 169, 171, 189, 265 de CSI_106/109/112/118; filas 66, 139, 172, 265 de CSI_121; ya existen B5n* (f.110), D442Hog, RemesasHogS14, ImpIngHog, OtrasTransfHogR/U, B.1b y P.51c de S.1.
 
-## §7 Identidades verificadas (8.17: medidas en la corrida de la sesión; cuadro 5 y gates de `nta-identidad.txt`, `SCN.ado` cuadro de celdas por sector, `test-nta-identidad.sh` D)
+## §7 Identidades verificadas (8.17: medidas en la corrida de la sesión; cuadro 5 y gates de `nta-identidad.txt`, `SCN.ado` cuadro de celdas por sector, `prueba-nta-identidad.sh` D)
 
 | Identidad | Hoy (v8.15.3) | 8.17 (v8.17.0, medido) | Tolerancia |
 |---|---|---|---|

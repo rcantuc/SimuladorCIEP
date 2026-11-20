@@ -8,7 +8,7 @@
 // Página estática de lectura: la gráfica se lee en runtime de /jsonSankeyNTA.php?corte=v4-economia (default), el corte v3 de ?corte=v3-grupoedad,
 // el panel de ?cuenta=panel-grupoedad-sexo y las cifras de «Anchoring and residual» de ?cuenta=grupoedad (users/<id>/NTA/nta-grupoedad.json,
 // NTA.do §6.2; bloques nacional_pctpib y v3_mxn del panel para el % del PIB y los totales en MXN de los dos Sankeys).
-// Sin números en este archivo: todo valor viene de esos JSON (<span data-nta>, <span data-pib>); test-sitio-nta.sh lo exige.
+// Sin números en este archivo: todo valor viene de esos JSON (<span data-nta>, <span data-pib>); prueba-sitio-nta.sh lo exige.
 // Historia: v8.12.5 (NTA-2) retiró el v1; v8.12.6 (NTA-3) el v2; v8.13.0 (NTA-4) dibujó el v3 en % del PIB con un solo Desahorro / Futuro / ajuste;
 // v8.17.0 (8.17) dibuja la economía completa y deja el v3 como corte.
 require_once dirname(__DIR__) . '/plantilla-metodo.php';

@@ -132,9 +132,11 @@ wp-salt.php
 set_token.do
 
 # Credenciales del endpoint Stata `net from` — valores reales del servidor.
-# Cada operador copia endpoint-credentials.template.sh como endpoint-credentials.sh
+# Cada operador copia 05_scripts/publicar/credenciales-endpoint.template.sh como credenciales-endpoint.sh (desde la
+# limpieza de 2026-11; antes 05_scripts/endpoint-credentials.sh, que sigue ignorado por los clones que aún lo tengan)
 # y rellena SSH_ALIAS, REMOTE_PATH, ENDPOINT_URL. Consumido por publicar-endpoint.sh.
 endpoint-credentials.sh
+credenciales-endpoint.sh
 
 
 # -----------------------------------------------------------------------------
@@ -203,6 +205,7 @@ endpoint-credentials.sh
 
 # Credenciales del pipeline VPS (deployment a IONOS)
 05_scripts/publicar-vps-credentials.sh
+05_scripts/publicar/credenciales-vps.sh
 
 # Marker del clon de DESARROLLO (guard de identidad de publicar.sh, 2026-09-09).
 # Existe solo en el clon desde el que se publica; git no lo propaga, así que la

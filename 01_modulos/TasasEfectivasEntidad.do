@@ -7,7 +7,7 @@
 * Llamada (SIM.do §4.7, solo con global entidad definido):
 *   run TasasEfectivasEntidad.do <anioPE> "<entidad>"
 * Con el global vacío SIM.do no llega a esta línea: cero efecto en la corrida nacional.
-* También lo llama 05_scripts/contrato-32.do para cada una de las 32.
+* También lo llama 05_scripts/pruebas/contrato-32.do para cada una de las 32.
 *
 * §3 Procedimiento — QUÉ HACE (unificación, no invención — la metodología es la de TasasEfectivasMicro.ado):
 *   1. Si no existe el espejo nacional micro/micro (escalares *TEnac), lo calcula una vez

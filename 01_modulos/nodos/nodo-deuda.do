@@ -243,7 +243,7 @@ foreach f of local fams {
 }
 
 *** 6 EXPORTACIÓN ***
-* Override de destino para 05_scripts/verify_nodo.sh (regla 3): la prueba de
+* Override de destino para 05_scripts/pruebas/verificar-nodo.sh (regla 3): la prueba de
 * determinismo exporta dos veces a un temporal y NO puede pisar el contrato
 * versionado. Vacío = destino normal
 * (CIEP_Micrositios/Paquete Económico/public_html/nodos/statajson_<nodo>.json).

@@ -1,0 +1,1520 @@
+#!/usr/bin/env bash
+# =============================================================================
+# publicar-vps.sh — Pipeline de deployment al VPS de simuladorfiscal.ciep.mx
+# =============================================================================
+#
+# Qué hace: respalda la config Apache del VPS (Fase 0, vía respaldar-vps.sh),
+# propaga el código local (PHP del sitio + motor Stata + .dta procesados)
+# al VPS IONOS, hace cutover atómico vía symlink `current`, verifica el
+# sitio con un health check y hace rollback automático si falla.
+#
+# Diseño registrado en 02_governance/arquitectura.md §7.1-§7.2
+# (decisiones D.1-D.9, bitácoras v1.20-v1.21). Estructura del VPS ANTERIOR al
+# cutover a /var/www/html/current en 02_governance/historico/reconocimiento-vps.md;
+# la vigente (vN.M + symlink current) en runbook-deploys-ciep.md §4.
+#
+# Uso:
+#   ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health]
+#   ./publicar-vps.sh <version-deployment> --limpiar-master-vps
+#
+# Ejemplos:
+#   ./publicar-vps.sh v8.0            # deploy real, con confirmación
+#   ./publicar-vps.sh v8.0 --dry-run  # simula: muestra qué haría, no cambia nada
+#   ./publicar-vps.sh v8.1 --force    # deploy real sin pausa de confirmación
+#   ./publicar-vps.sh v8.0 --limpiar-master-vps  # propone (NO ejecuta) la
+#                                     # limpieza de años/perfiles no vigentes
+#
+# La versión es de DEPLOYMENT (v8.0, v8.1), no de código (v8.0.6 se rechaza).
+# Un deployment agrupa múltiples releases del código; el commit exacto queda
+# registrado en el archivo DEPLOYED_COMMIT que este script escribe en el VPS.
+#
+# Precondición de infraestructura (convención asimétrica de paths: sitio CON
+# "v", canon SIN "v"). Desde I.4 (2026-10-01) el Gate 4 la crea solo si el VPS
+# tiene /usr/local/sbin/crear-deployment + sudoers NOPASSWD para ese comando
+# (05_scripts/publicar/vps/); si no, el operador la crea UNA vez por versión:
+#   sudo mkdir /var/www/html/vN.M /SIM/OUT/N.M
+#   sudo chown ciepmx:ciepmx /var/www/html/vN.M /SIM/OUT/N.M
+#
+# Credenciales: viven en credenciales-vps.sh (gitignored), junto a
+# este script. Plantilla: credenciales-vps.template.sh.
+# =============================================================================
+
+set -euo pipefail
+
+# =============================================================================
+# CONVENCIÓN INSTITUCIONAL DE PATHS EN EL VPS
+# =============================================================================
+# El VPS de IONOS tiene inconsistencia histórica preservada por decisión firme
+# del investigador principal el 2026-07-10:
+#   - /var/www/html/ usa nombres CON "v" (v6/, v7/, v8.0/, ...)
+#   - /SIM/OUT/ usa nombres SIN "v" (7/, 8.0/, ...)
+#
+# Este script traduce el argumento del usuario (vN.M) a los 2 formatos:
+#   VPS_HTML_VERSION="${VERSION_ARG}"      # v8.0 (para el sitio)
+#   VPS_SIM_VERSION="${VERSION_ARG#v}"     # 8.0 (para el canon)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Constantes y setup
+# -----------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CREDENTIALS_FILE="${SCRIPT_DIR}/credenciales-vps.sh"
+LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
+
+# -----------------------------------------------------------------------------
+# Whitelist del canon web (decisión 2026-07-09, bitácora v1.27)
+# -----------------------------------------------------------------------------
+# El flujo WEB solo consume el año ENIGH vigente (master/2024/) y el perfil
+# vigente (perfiles<anioPE>.dta). Los años previos (2014-2022) y sus perfiles son
+# insumos SOLO-LOCALES (trabajo del investigador en su Mac): no viajan al VPS.
+# El VPS solo aloja lo que el web sirve.
+#
+# ACTUALIZAR ESTAS 2 VARIABLES cuando avance el ENIGH vigente (~cada 2 años)
+# y WEB_PERFIL con CADA Paquete Económico (anioPE de Web.Stata.do): si el
+# perfil del año no viaja, TasasEfectivas §7 no lo encuentra y corre
+# PerfilesSim.do completo EN PRODUCCIÓN en cada sesión (~8 min por
+# simulación; incidente v8.3.0, 2026-09-12).
+# Es intencional que la regla viva explícita aquí, no en symlinks ni en
+# infraestructura: un cambio de vigencia es una decisión editable en el código
+# y auditable en Git. Las leen la Fase 3b (deploy) y el modo
+# --limpiar-master-vps (limpieza), de la MISMA fuente: nunca se contradicen.
+#
+# INVARIANTE (bitácora v1.36 — leer antes de tocar esta whitelist): el VPS
+# NUNCA debe arrancar con master/ vacío. Los Update* de los .ado se disparan
+# solos cuando master/ está vacío (o con la global $update, que el VPS jamás
+# setea): si esta whitelist dejara de garantizar los master/*.dta, el motor
+# reconstruiría EN PRODUCCIÓN (descargas en vivo de SHCP/INEGI a media
+# petición web). El guard c(console) que antes bloqueaba eso por accidente se
+# retiró en v8.0.11 por redundante con ESTA garantía — quien modifique la
+# whitelist hereda la responsabilidad de mantenerla.
+WEB_MASTER_YEAR="2024"
+WEB_PERFIL="perfiles2027.dta"
+
+# Colores solo si stdout es una terminal
+if [[ -t 1 ]]; then
+    RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[0;33m'
+    BLUE=$'\033[0;34m'; NC=$'\033[0m'
+else
+    RED=""; GREEN=""; YELLOW=""; BLUE=""; NC=""
+fi
+
+# -----------------------------------------------------------------------------
+# Helpers de logging (pantalla + archivo de log)
+# -----------------------------------------------------------------------------
+log()       { printf '%s\n' "$*" | tee -a "$LOG_FILE"; }
+log_info()  { log "${BLUE}[INFO]${NC} $*"; }
+log_ok()    { log "${GREEN}[OK]${NC}   $*"; }
+log_warn()  { log "${YELLOW}[WARN]${NC} $*"; }
+log_error() { log "${RED}[ERROR]${NC} $*"; }
+die()       { log_error "$*"; exit 1; }
+# v8.15a: lo que el operador tiene que ver (pregunta del cutover, línea de rollback) va directo a /dev/tty, para que
+# un `| tee | grep` no lo esconda; sin tty, a stdout. Al log siempre.
+hay_tty()   { { : > /dev/tty; } 2>/dev/null; }
+tty_o_out() { if hay_tty; then printf '%s' "$*" > /dev/tty; else printf '%s' "$*"; fi; }
+log_tty()   { tty_o_out "$*"$'\n'; printf '%s\n' "$*" >> "$LOG_FILE"; }
+
+usage() {
+    cat <<'EOF'
+Uso:
+  ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health] [--skip-humo] [--sin-espera-realpath]
+  ./publicar-vps.sh <version-deployment> --limpiar-master-vps
+
+Argumentos:
+  <version-deployment>  Requerido. Formato vN.M (semver de deployment: v8.0,
+                        v8.1). NO es la versión de código (v8.0.6 se rechaza).
+
+Opciones:
+  --dry-run             Simula todo sin ejecutar cambios. Los rsync corren con
+                        su propio --dry-run (muestran qué transferirían); el
+                        swap del symlink y el health check solo se imprimen.
+  --force               Salta la confirmación interactiva antes del swap del
+                        symlink.
+  --skip-health         Salta la verificación post-deploy (el rollback
+                        automático también se salta). Solo para debugging,
+                        NUNCA en producción real.
+  --skip-humo           Salta SOLO el «Calcular» de humo de la Fase 6 (v8.12.1);
+                        health check y esqueleto siguen. Para el primer deploy
+                        de una máquina sin Stata o para debugging.
+  --sin-espera-realpath Fase 6: no espera los 125 s del caché de realpath de
+                        PHP antes del humo (solo si Apache/PHP-FPM se
+                        reiniciaron a mano o realpath_cache_ttl es 0).
+  --limpiar-master-vps  NO despliega. Inspecciona master/ en el VPS y propone
+                        (imprime, NUNCA ejecuta) los comandos rm para borrar
+                        años y perfiles que NO están en la whitelist vigente
+                        (WEB_MASTER_YEAR / WEB_PERFIL). Borrar en producción
+                        es acción manual del operador.
+EOF
+    exit 1
+}
+
+# -----------------------------------------------------------------------------
+# Parseo de argumentos
+# -----------------------------------------------------------------------------
+VERSION_ARG=""
+DRY_RUN=0
+FORCE=0
+SKIP_HEALTH=0
+SKIP_HUMO=0
+ESPERA_REALPATH=1
+LIMPIAR_MASTER=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run)     DRY_RUN=1 ;;
+        --force)       FORCE=1 ;;
+        --skip-health) SKIP_HEALTH=1 ;;
+        --skip-humo)   SKIP_HUMO=1 ;;
+        --sin-espera-realpath) ESPERA_REALPATH=0 ;;
+        --limpiar-master-vps) LIMPIAR_MASTER=1 ;;
+        --help|-h)     usage ;;
+        -*)            log_error "Opción desconocida: $arg"; usage ;;
+        *)
+            if [[ -n "$VERSION_ARG" ]]; then
+                log_error "Solo se acepta un argumento de versión (recibido: '$VERSION_ARG' y '$arg')."
+                usage
+            fi
+            VERSION_ARG="$arg"
+            ;;
+    esac
+done
+
+[[ -n "$VERSION_ARG" ]] || usage
+
+# Gate 3 (adelantado al parseo) — Formato de versión válido: vN.M exactamente.
+# Se valida antes que las credenciales para que el error de formato sea
+# siempre el primero que ve el operador (no depende del entorno).
+if [[ ! "$VERSION_ARG" =~ ^v[0-9]+\.[0-9]+$ ]]; then
+    die "Versión inválida: '$VERSION_ARG'. El formato es vN.M (ej. v8.0, v8.1).
+        Recuerda: es la versión de DEPLOYMENT, no la del código.
+        v8.0.6 es versión de código; el deployment que la sirve es v8.0."
+fi
+
+# Traducción a los 2 formatos de la convención asimétrica del VPS (ver bloque
+# de comentario al inicio del script): sitio CON "v", canon Stata SIN "v".
+VPS_HTML_VERSION="${VERSION_ARG}"      # v8.0 -> /var/www/html/v8.0/
+VPS_SIM_VERSION="${VERSION_ARG#v}"     # 8.0  -> /SIM/OUT/8.0/
+
+log_info "Log de esta corrida: $LOG_FILE"
+log_info "Deployment solicitado: $VERSION_ARG (motor Stata: $VPS_SIM_VERSION)"
+[[ $DRY_RUN -eq 1 ]] && log_warn "MODO DRY-RUN: ningún cambio se aplicará al VPS."
+
+# -----------------------------------------------------------------------------
+# Gate 1 — Credenciales cargadas
+# -----------------------------------------------------------------------------
+if [[ ! -f "$CREDENTIALS_FILE" ]]; then
+    die "No existe $CREDENTIALS_FILE.
+        Crea el archivo copiando la plantilla y llenando tus valores:
+          cp '${SCRIPT_DIR}/credenciales-vps.template.sh' '$CREDENTIALS_FILE'
+        El archivo real está gitignored: nunca entra a Git."
+fi
+# shellcheck source=/dev/null
+source "$CREDENTIALS_FILE"
+
+for var in VPS_USER VPS_HOST VPS_HTML_ROOT VPS_SIM_ROOT VPS_HEALTH_URL LOCAL_SITE_ROOT LOCAL_REPO_ROOT; do
+    [[ -n "${!var:-}" ]] || die "La variable $var no está definida en $CREDENTIALS_FILE."
+done
+log_ok "Gate 1: credenciales cargadas ($VPS_USER@$VPS_HOST)."
+
+# Opciones SSH compartidas por TODAS las conexiones (ssh y rsync).
+# ControlMaster reusa una sola conexión autenticada: si la autenticación es
+# por password, se teclea una vez y las demás llamadas la reutilizan.
+SSH_CONTROL_PATH="/tmp/publicar-vps-ssh-%C"
+SSH_OPTS=(
+    -o ConnectTimeout=10
+    -o ControlMaster=auto
+    -o "ControlPath=$SSH_CONTROL_PATH"
+    -o ControlPersist=10m
+)
+[[ -n "${SSH_KEY_PATH:-}" ]] && SSH_OPTS+=(-i "$SSH_KEY_PATH")
+
+ssh_vps() {
+    ssh "${SSH_OPTS[@]}" "${VPS_USER}@${VPS_HOST}" "$@"
+}
+
+# rsync usando las mismas opciones SSH (misma conexión maestra)
+RSYNC_SSH="ssh $(printf '%q ' "${SSH_OPTS[@]}")"
+
+cleanup() {
+    # Cierra la conexión SSH maestra si quedó abierta
+    ssh -O exit -o "ControlPath=$SSH_CONTROL_PATH" "${VPS_USER}@${VPS_HOST}" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# =============================================================================
+# MODO --limpiar-master-vps — propone la limpieza de años/perfiles no vigentes
+# =============================================================================
+# Contexto (bitácora v1.27): la Fase 3b recursiva original subió TODOS los
+# años (2014-2024) y TODOS los perfiles*.dta al VPS. La whitelist de la Fase
+# 3b previene FUTURAS subidas, pero no borra lo ya presente. Este modo lista
+# lo sobrante y propone los rm exactos — NUNCA los ejecuta: borrar en
+# producción es acción manual del operador (mismo principio que el cutover).
+#
+# Qué CONSERVAR se deriva de las MISMAS variables que usa el deploy
+# (WEB_MASTER_YEAR, WEB_PERFIL): limpieza y deploy no pueden contradecirse.
+# Los .dta planos de la raíz jamás se proponen: los patrones solo capturan
+# subdirectorios de 4 dígitos y archivos perfiles*.dta.
+if [[ $LIMPIAR_MASTER -eq 1 ]]; then
+    MASTER_REMOTO="$VPS_SIM_ROOT/$VPS_SIM_VERSION/master"
+    log_info "Modo limpieza: inspeccionando $MASTER_REMOTO/ en el VPS."
+    log_info "Whitelist vigente: año $WEB_MASTER_YEAR, perfil $WEB_PERFIL."
+
+    # ls -1p: una entrada por línea; los directorios llevan '/' al final.
+    LISTADO_MASTER=$(ssh_vps "ls -1p '$MASTER_REMOTO/'") \
+        || die "No se pudo listar $MASTER_REMOTO/ en el VPS.
+        Verifica que la versión exista (¿ya corriste un deploy de $VERSION_ARG?)
+        y que el VPS responda: ssh ${VPS_USER}@${VPS_HOST} ls '$MASTER_REMOTO/'"
+
+    PROPUESTA_RM=()
+    while IFS= read -r entrada; do
+        [[ -n "$entrada" ]] || continue
+        # GUARD: el año y el perfil VIGENTES jamás entran a la propuesta,
+        # aunque los patrones de abajo cambien en el futuro.
+        case "$entrada" in
+            "${WEB_MASTER_YEAR}/"|"$WEB_PERFIL") continue ;;
+        esac
+        if [[ "$entrada" =~ ^[0-9]{4}/$ ]]; then
+            PROPUESTA_RM+=("rm -rf '$MASTER_REMOTO/${entrada%/}'")
+        elif [[ "$entrada" =~ ^perfiles.*\.dta$ ]]; then
+            PROPUESTA_RM+=("rm -f '$MASTER_REMOTO/$entrada'")
+        fi
+    done <<< "$LISTADO_MASTER"
+
+    if [[ ${#PROPUESTA_RM[@]} -eq 0 ]]; then
+        log_ok "Nada que limpiar: master/ en el VPS ya coincide con la whitelist."
+    else
+        log_warn "Encontrados ${#PROPUESTA_RM[@]} sobrantes (años/perfiles NO vigentes)."
+        log ""
+        log "Ejecuta estos comandos por SSH para limpiar:"
+        for cmd_rm in "${PROPUESTA_RM[@]}"; do
+            log "  $cmd_rm"
+        done
+        log ""
+        log_info "Este modo NUNCA borra por sí mismo. Copia los comandos en una"
+        log_info "sesión SSH (ssh ${VPS_USER}@${VPS_HOST}) tras verificarlos."
+    fi
+    exit 0
+fi
+
+# -----------------------------------------------------------------------------
+# Gate 2 — Working tree limpio
+# -----------------------------------------------------------------------------
+if ! git -C "$LOCAL_REPO_ROOT" diff --quiet || ! git -C "$LOCAL_REPO_ROOT" diff --cached --quiet; then
+    die "El working tree del repo tiene cambios sin commit.
+        No se despliega código no versionado: commitea o descarta los cambios
+        y vuelve a correr el script.
+        Revisa con: git -C '$LOCAL_REPO_ROOT' status"
+fi
+log_ok "Gate 2: working tree limpio."
+
+# -----------------------------------------------------------------------------
+# Candado del ritual (v8.14, 2026-10-30) — sin corridas vivas y con el último log de corrida cerrado
+# -----------------------------------------------------------------------------
+# El deploy embarca lo que SIM.do dejó en users/ricardo/ (Fases 3b-bis y 3b-ter): con una corrida a
+# medias (pgrep) o muerta en r(###) (su wrap*.log / SIM*.log no termina en «end of do-file») se
+# embarcaría un escenario base incompleto. Misma regla que publicar.sh; corre también en dry-run.
+# SIM_EVIDENCIA (default ~/CIEP_Simuladores) es la carpeta donde viven las corridas de evidencia.
+_vivos="$(pgrep -fl 'correr-sim\.sh|contrato-32\.sh|compuertas-entidad\.sh|pibe-32\.sh|test-maquina-virgen\.sh|vintage-aportaciones|stata-(se|mp) -b' 2>/dev/null | grep -v "$$" || true)"
+if [[ -n "$_vivos" ]]; then
+    die "Candado del ritual: hay corridas de Stata/evidencia vivas; no se despliega con una corrida a medias:
+$_vivos"
+fi
+_raiz_ev="${SIM_EVIDENCIA:-$HOME/CIEP_Simuladores}"
+_ultimo_log=""
+if [[ -d "$_raiz_ev" ]]; then
+    _ultimo_log="$( { find "$_raiz_ev" -maxdepth 3 -type f \( -name 'wrap*.log' -o -name 'SIM*.log' \) -print0 2>/dev/null; find "$LOCAL_REPO_ROOT" -maxdepth 1 -type f \( -name 'wrap*.log' -o -name 'SIM*.log' \) -print0 2>/dev/null; } | xargs -0 ls -t 2>/dev/null | head -n 1)"
+fi
+if [[ -n "$_ultimo_log" ]]; then
+    _fin="$(grep -v '^[[:space:]]*$' "$_ultimo_log" | tail -n 1)"
+    [[ "$_fin" == *"end of do-file"* ]] || die "Candado del ritual: el log de corrida más reciente no termina en «end of do-file» (termina en: ${_fin:0:80}).
+        $_ultimo_log
+        Si la corrida sigue viva, espera; si murió, repítela antes de desplegar (runbook §1)."
+    log_ok "Candado del ritual: sin corridas vivas; último log de corrida cerrado ($_ultimo_log)."
+else
+    log_ok "Candado del ritual: sin corridas vivas (sin logs de corrida bajo $_raiz_ev)."
+fi
+
+# -----------------------------------------------------------------------------
+# Gate 6 — El manifest del commit local corresponde al deployment solicitado
+# -----------------------------------------------------------------------------
+# Lección del deploy v8.8 (2026-10-07): se corrió `publicar-vps.sh v8.8` desde
+# un árbol cuyo manifest decía v8.7.2 y el VPS sirvió código v8.7.2 bajo el
+# letrero v8.8. La regla es la del runbook §0: el deployment vN.M sirve código
+# vN.M.x — el `version` de 05_scripts/manifest.json (la misma fuente que la
+# Fase 4 escribe en DEPLOYED_COMMIT) debe empezar por el deployment pedido.
+# Si el manifest no se puede leer, también aborta: sin manifest no hay forma
+# de saber qué se está desplegando. Corre en dry-run (precondición local).
+MANIFEST_LOCAL="$LOCAL_REPO_ROOT/05_scripts/manifest.json"
+MANIFEST_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("version", ""))' "$MANIFEST_LOCAL" 2>/dev/null || true)"
+if [[ -z "$MANIFEST_VERSION" ]]; then
+    die "Gate 6: no pude leer 'version' de $MANIFEST_LOCAL.
+        Sin manifest legible no se sabe qué versión del código se desplegaría.
+        Revisa que exista, sea JSON válido y tenga el campo 'version' (vN.M.P)."
+fi
+if [[ ! "$MANIFEST_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    die "Gate 6: manifest.json declara version '$MANIFEST_VERSION', que no es vN.M.P.
+        El Gate 3 de publicar.sh exige ese formato; corrige el manifest antes de desplegar."
+fi
+if [[ "${MANIFEST_VERSION%.*}" != "$VERSION_ARG" ]]; then
+    die "Gate 6: el código local es $MANIFEST_VERSION (manifest.json), que corresponde al
+        deployment ${MANIFEST_VERSION%.*}, pero pediste desplegar $VERSION_ARG.
+        Un deployment vN.M sirve código vN.M.x (runbook §0): así el VPS no vuelve a
+        anunciar una versión y servir otra (deploy v8.8 que shipeó v8.7.2, 2026-10-07).
+        Opciones: (a) si el código es el correcto, corre: $0 ${MANIFEST_VERSION%.*}
+                  (b) si querías desplegar $VERSION_ARG, haz checkout del commit/tag
+                      cuyo manifest diga $VERSION_ARG.x y vuelve a correr."
+fi
+log_ok "Gate 6: manifest $MANIFEST_VERSION ↔ deployment $VERSION_ARG (código ${MANIFEST_VERSION%.*}.x)."
+
+# -----------------------------------------------------------------------------
+# Gate 5 — Fuente local existe (antes que el gate remoto: falla rápido y barato)
+# -----------------------------------------------------------------------------
+[[ -d "$LOCAL_SITE_ROOT" ]]         || die "No existe LOCAL_SITE_ROOT: $LOCAL_SITE_ROOT"
+[[ -d "$LOCAL_REPO_ROOT" ]]         || die "No existe LOCAL_REPO_ROOT: $LOCAL_REPO_ROOT"
+[[ -d "$LOCAL_REPO_ROOT/master" ]]  || die "No existe $LOCAL_REPO_ROOT/master (los .dta procesados). ¿Corriste el pipeline local?"
+[[ -d "$LOCAL_REPO_ROOT/users/ricardo/bootstraps" ]] || die "No existe $LOCAL_REPO_ROOT/users/ricardo/bootstraps (el escenario base que consume el motor web). Sin él, el motor truena con r(601) — falla 6 del debugging 2026-07-09."
+# v8.10.0: FiscalGap lee users/ricardo/bootstraps/<B>/<var>RECprom.dta (promedio de las B
+# réplicas, PerfilesSim.do §8) con B = global bootstrap de Web.Stata.do. Sin ellos, r(601).
+_B_WEB="$(sed -nE 's/^global bootstrap "([0-9]+)".*/\1/p' "$LOCAL_REPO_ROOT/01_modulos/Web.Stata.do" | head -1)"
+[[ -n "$_B_WEB" ]] || die "Web.Stata.do no define 'global bootstrap \"<B>\"' (lo lee FiscalGap para ubicar el escenario base)."
+_N_PROM="$(find "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/$_B_WEB" -maxdepth 1 -name '*RECprom.dta' 2>/dev/null | wc -l | tr -d ' ')"
+[[ "$_N_PROM" -gt 0 ]] || die "No hay users/ricardo/bootstraps/$_B_WEB/*RECprom.dta (escenario base de FiscalGap, v8.10.0). Corre SIM.do con global bootstrap \"$_B_WEB\" (PerfilesSim.do §8 los escribe)."
+log_info "Gate 5: escenario base: $_N_PROM archivo(s) *RECprom.dta en users/ricardo/bootstraps/$_B_WEB/ (B = $_B_WEB, Web.Stata.do)."
+# v8.12 fase 2a: el motor web exige además users/ricardo/cache/ (Precache, SIM.do §5.1b):
+# sello.txt + cada item que el sello declara. Sin él, GastoPC/FiscalGap abortan con r(601).
+_CACHE_DIR="$LOCAL_REPO_ROOT/users/ricardo/cache"
+[[ -f "$_CACHE_DIR/sello.txt" ]] || die "No hay $_CACHE_DIR/sello.txt (cache de lo invariante, v8.12). Corre SIM.do (§5.1b Precache) o, con master/ y bootstraps hechos, Precache en Stata."
+_CACHE_FALTAN="$(awk -F'\t' '$1=="item" {print $3}' "$_CACHE_DIR/sello.txt" | while IFS= read -r _f; do [[ -f "$_CACHE_DIR/$_f" ]] || echo "$_f"; done)"
+[[ -z "$_CACHE_FALTAN" ]] || die "El sello de users/ricardo/cache/ declara items que no existen: $(echo "$_CACHE_FALTAN" | tr '\n' ' ')"
+_CACHE_DU="$(awk -F'\t' '$1=="sello" && $2=="data_updated" {print $3}' "$_CACHE_DIR/sello.txt")"
+_MAN_DU="$(sed -nE 's/^[[:space:]]*"data_updated"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/05_scripts/manifest.json" | head -1)"
+[[ "$_CACHE_DU" == "$_MAN_DU" ]] || die "users/ricardo/cache/sello.txt se generó con data_updated=$_CACHE_DU y manifest.json dice $_MAN_DU: regenera el cache (Precache) antes de publicar."
+log_info "Gate 5: cache de lo invariante: $(awk -F'\t' '$1=="item"' "$_CACHE_DIR/sello.txt" | wc -l | tr -d ' ') item(s) en users/ricardo/cache/ (sello: data_updated $_CACHE_DU, commit $(awk -F'\t' '$1=="sello" && $2=="commit" {print $3}' "$_CACHE_DIR/sello.txt"))."
+[[ -f "$LOCAL_SITE_ROOT/health.php" ]] || die "No existe $LOCAL_SITE_ROOT/health.php. El health check post-deploy depende de él."
+log_ok "Gate 5: fuentes locales verificadas."
+
+# -----------------------------------------------------------------------------
+# Gate 7 — Sitio auto-contenido: el docroot local trae TODO lo que git versiona
+# -----------------------------------------------------------------------------
+# Incidente del deploy v8.10 (2026-10-16): se desplegó desde un worktree cuyo
+# 04_1_simuladorfiscal.ciep.mx/ solo tenía lo copiado a mano; la Fase 2 subió
+# un sitio sin css/, js/ ni plugins/ y la Fase 6 lo declaró sano porque solo
+# miraba health.php. Desde v8.11a el sitio completo vive en git, así que la
+# fuente de verdad de "qué debe haber en el docroot" es `git ls-files`: cada
+# archivo versionado bajo 04_1/ debe existir en LOCAL_SITE_ROOT, y cada archivo
+# que la Fase 2 subiría debe estar versionado (un fantasma nuevo se detecta
+# aquí, no en producción). Si LOCAL_SITE_ROOT no es el 04_1 del repo (credentials
+# apuntando a otro clon del sitio), solo se verifica la existencia.
+SITE_REL="04_1_simuladorfiscal.ciep.mx"
+# -c core.quotePath=false: sin ella git escapa los nombres no ASCII
+# ("Educaci\303\263n_2025.png") y el test -f no los encuentra.
+_site_tracked="$(git -C "$LOCAL_REPO_ROOT" -c core.quotePath=false ls-files -- "$SITE_REL")"
+[[ -n "$_site_tracked" ]] || die "Gate 7: git no versiona nada bajo $SITE_REL/ en $LOCAL_REPO_ROOT. ¿Checkout anterior a v8.11a?"
+_faltan=()
+while IFS= read -r _f; do
+    [[ -f "$LOCAL_REPO_ROOT/$_f" ]] || _faltan+=("$_f")
+done <<< "$_site_tracked"
+if (( ${#_faltan[@]} > 0 )); then
+    die "Gate 7: ${#_faltan[@]} archivo(s) versionado(s) del sitio NO existen en el checkout:
+        $(printf '          %s\n' "${_faltan[@]:0:10}")$( (( ${#_faltan[@]} > 10 )) && echo "          … y $(( ${#_faltan[@]} - 10 )) más")
+        Un deploy desde aquí subiría un sitio incompleto. Restaura con:
+          git -C '$LOCAL_REPO_ROOT' checkout -- '$SITE_REL'"
+fi
+_n_tracked="$(printf '%s\n' "$_site_tracked" | wc -l | tr -d ' ')"
+if [[ "$(cd "$LOCAL_SITE_ROOT" && pwd -P)" == "$(cd "$LOCAL_REPO_ROOT/$SITE_REL" && pwd -P)" ]]; then
+    # Lo que la Fase 2 subiría (mismas exclusiones) y git no versiona = fantasma.
+    # --exclude-per-directory=.gitignore (no --exclude-standard): solo cuentan las
+    # reglas versionadas del repo, no .git/info/exclude ni el gitignore global
+    # de la máquina — un exclude local ocultaría fantasmas que otro clon sí vería.
+    _fantasmas="$(cd "$LOCAL_REPO_ROOT" && git -c core.quotePath=false ls-files --others --exclude-per-directory=.gitignore -- "$SITE_REL" \
+        | grep -vE '(^|/)(\.DS_Store|DEPLOYED_COMMIT|calcular_clicks\.log)$|/(ssl|logs)/|/0[^/]*/' || true)"
+    if [[ -n "$_fantasmas" ]]; then
+        die "Gate 7: el docroot trae archivo(s) que la Fase 2 subiría pero git NO versiona:
+$(printf '%s\n' "$_fantasmas" | head -10 | sed 's/^/          /')
+        El sitio debe ser auto-contenido desde un checkout fresco (v8.11a): agrégalos a git
+        (git add <archivo>, explícito) o, si son runtime, añádelos al .gitignore y a las
+        exclusiones de la Fase 2 en este script."
+    fi
+    log_ok "Gate 7: sitio auto-contenido — $_n_tracked archivos versionados presentes, ningún fantasma en el docroot."
+else
+    log_warn "Gate 7: LOCAL_SITE_ROOT ($LOCAL_SITE_ROOT) no es el $SITE_REL del repo; se verificó solo que los $_n_tracked archivos versionados existan en el repo."
+fi
+
+# Activos de humo del sitio: uno por clase (css, js, plugin, imagen, favicon,
+# PHP de datos, ruta de la sección de método). Los lee la Fase 6 contra el VPS
+# (HTTP 200) — hoy el health check de PHPs declaró sano un sitio sin esqueleto —
+# y aquí se exige que existan en el docroot local, para que la lista no
+# envejezca en silencio si un archivo se renombra. Una entrada sin extensión
+# (NTA) es una RUTA servida por <entrada>/index.php: local se exige ese
+# index.php; remoto, curl -L sigue el 301 de Apache a /NTA/ y pide 200.
+SITE_SMOKE_ASSETS=(
+    css/custom.css
+    css/admin2.css
+    js/stataCalcula.js
+    js/config-tiempos.js
+    js/connect.js
+    plugins/bootstrap/css/bootstrap.min.css
+    plugins/font-awesome/css/fontawesome.min.css
+    plugins/font-awesome/css/solid.min.css
+    plugins/jquery/jquery-3.4.1.min.js
+    plugins/apexcharts/dist/apexcharts.min.js
+    images/ciep-logo1.png
+    images/TE_Trabajo.png
+    favicon.ico
+    cargaDefault.php
+    jsonSankey.php
+    NTA
+    metodo
+    metodo/cap0
+    metodo/Households
+    entidades
+    entidades/NL
+    entidades/Jal
+    entidades/Col
+)
+for _a in "${SITE_SMOKE_ASSETS[@]}"; do
+    [[ -f "$LOCAL_SITE_ROOT/$_a" || -f "$LOCAL_SITE_ROOT/$_a/index.php" ]] || die "Gate 7: el activo de humo $_a no existe en $LOCAL_SITE_ROOT.
+        Si se renombró, actualiza SITE_SMOKE_ASSETS en este script; si falta, el sitio está incompleto."
+done
+log_ok "Gate 7: ${#SITE_SMOKE_ASSETS[@]} activos de humo presentes en el docroot local."
+
+# -----------------------------------------------------------------------------
+# Gate 4 — Estructura VPS existe
+# -----------------------------------------------------------------------------
+# En dry-run la verificación remota se intenta igual (es de solo lectura),
+# pero si el VPS no es alcanzable se degrada a warning para poder simular
+# el resto del pipeline sin red.
+check_vps_structure() {
+    ssh_vps "test -d '$VPS_HTML_ROOT/$VPS_HTML_VERSION' && test -d '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
+}
+# Creación con privilegio mínimo (I.4, 2026-10-01): si el deployment no existe
+# y el VPS tiene instalado /usr/local/sbin/crear-deployment (05_scripts/publicar/vps/)
+# con su regla NOPASSWD en /etc/sudoers.d/ciepmx-deploy, se crea desde aquí
+# con `sudo -n` (nunca pide contraseña: si no está autorizado, falla limpio
+# y se cae a la receta manual). El operador no comparte su contraseña de sudo.
+crear_vps_structure() {
+    [[ $DRY_RUN -eq 1 ]] && return 1
+    ssh_vps "test -x /usr/local/sbin/crear-deployment" || return 1
+    log_info "Gate 4: deployment inexistente; creándolo con crear-deployment $VPS_HTML_VERSION (sudo sin contraseña, solo ese comando)."
+    ssh_vps "sudo -n /usr/local/sbin/crear-deployment '$VPS_HTML_VERSION'" 2>&1 | tee -a "$LOG_FILE"
+    check_vps_structure
+}
+if check_vps_structure; then
+    log_ok "Gate 4: estructura del VPS verificada ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
+elif crear_vps_structure; then
+    log_ok "Gate 4: estructura del VPS creada por crear-deployment ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Gate 4: no se pudo verificar la estructura del VPS (¿sin red o no existe aún?). Dry-run continúa."
+    else
+        die "Estructura VPS faltante (o el VPS no responde). Si el VPS tiene
+        instalado crear-deployment (05_scripts/vps/, ver runbook §4b), revisa
+        la salida de arriba; si no, ejecuta en el VPS:
+          sudo mkdir '$VPS_HTML_ROOT/$VPS_HTML_VERSION'
+          sudo mkdir '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
+          sudo chown ${VPS_USER}:${VPS_USER} '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
+        y vuelve a correr el script.
+        Ojo con la convención asimétrica: sitio CON 'v' ($VPS_HTML_VERSION), canon SIN 'v' ($VPS_SIM_VERSION)."
+    fi
+fi
+
+# =============================================================================
+# FASE 0 — Backup pre-deploy (config Apache, vía respaldar-vps.sh)
+# =============================================================================
+# Regla institucional (D.3 del diseño de backup, §7.2): sin backup exitoso no
+# hay deploy. El backup automático cubre SOLO la config Apache; las llaves SSL
+# se respaldan manualmente con respaldar-vps.sh --llaves cuando rotan (I.1).
+log_info "Fase 0: backup pre-deploy (config Apache)."
+
+BACKUP_SCRIPT="${SCRIPT_DIR}/respaldar-vps.sh"
+[[ -x "$BACKUP_SCRIPT" ]] || die "No existe o no es ejecutable: $BACKUP_SCRIPT
+        El backup pre-deploy es obligatorio (sin backup no hay deploy).
+        Verifica el repo o restaura el archivo: git checkout -- 05_scripts/publicar/respaldar-vps.sh"
+
+BACKUP_ARGS=()
+[[ $DRY_RUN -eq 1 ]] && BACKUP_ARGS+=(--dry-run)
+
+if "$BACKUP_SCRIPT" ${BACKUP_ARGS[@]+"${BACKUP_ARGS[@]}"} 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "Fase 0: backup pre-deploy completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 0: el backup simulado falló. Dry-run continúa, pero revisa
+el mensaje de arriba — en un deploy real esto ABORTARÍA el pipeline."
+    else
+        die "Fase 0: el backup pre-deploy falló. SIN BACKUP EXITOSO NO HAY DEPLOY.
+        Nada se ha transferido ni activado. Revisa el mensaje del backup arriba
+        (causas típicas: BACKUP_ROOT sin definir en el credentials, VPS sin red,
+        ningún .conf descargado) y vuelve a correr el script."
+    fi
+fi
+
+# =============================================================================
+# FASE 1 — Snapshot pre-deploy
+# =============================================================================
+log_info "Fase 1: snapshot pre-deploy."
+
+CURRENT_COMMIT=$(git -C "$LOCAL_REPO_ROOT" rev-parse HEAD)
+CURRENT_COMMIT_SHORT=$(git -C "$LOCAL_REPO_ROOT" rev-parse --short HEAD)
+log_info "Commit local a desplegar: $CURRENT_COMMIT_SHORT ($CURRENT_COMMIT)"
+
+# Deployment previo = destino actual del symlink `current` en el VPS.
+# En el PRIMER deploy el symlink no existe todavía: no habrá rollback posible
+# y el vhost de Apache seguirá sirviendo la versión vieja hasta que apunte
+# a `current` (cutover del vhost: tarea manual documentada, Fase 5 del roadmap).
+PREVIOUS_DEPLOYMENT=""
+if PREVIOUS_DEPLOYMENT=$(ssh_vps "readlink '$VPS_HTML_ROOT/current'" 2>/dev/null); then
+    PREVIOUS_DEPLOYMENT="$(basename "$PREVIOUS_DEPLOYMENT")"
+    log_info "Deployment previo (destino de rollback): $PREVIOUS_DEPLOYMENT"
+else
+    PREVIOUS_DEPLOYMENT=""
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "No se pudo leer el symlink current (¿sin red o primer deploy?). Dry-run continúa."
+    else
+        log_warn "No existe symlink current en el VPS: este es el PRIMER deploy."
+        log_warn "No habrá rollback automático posible (no hay deployment previo)."
+        log_warn "Recuerda: el sitio público NO cambia hasta que el vhost de Apache apunte a $VPS_HTML_ROOT/current."
+    fi
+fi
+PREVIOUS_SIM="${PREVIOUS_DEPLOYMENT#v}"
+
+# =============================================================================
+# FASE 1b — Gráficas históricas del sitio desde users/ricardo/graphs/
+# =============================================================================
+# index.php e index-en.php enlazan (lightbox) images/TE_*.png desde los
+# encabezados "Tasas Efectivas" e images/GastoPC_*.png desde los encabezados
+# "Per cápita" de las 6 tablas de gasto. Las produce la corrida completa de
+# SIM.do (01_modulos/visualizations/Graphs_TE.do y Graphs_PC.do) en
+# users/ricardo/graphs/ — la MISMA fuente local de verdad que el default de la
+# Fase 3b-ter. Esta fase las copia al docroot local ANTES del rsync de la
+# Fase 2, para que el sitio no dependa de un cp a mano (las TE_* del sitio
+# eran de mayo 2025 hasta v8.3.2). Regla: si la gráfica existe en
+# users/ricardo/graphs/ manda ella; si no existe ahí pero sí en el sitio, se
+# conserva la del sitio con aviso; si no existe en ninguno, el enlace del
+# index quedaría roto → aborta.
+# Desde v8.11a images/ vive en git (snapshot de las 10), así que un checkout
+# fresco siempre cae en "se conserva la del sitio": el deploy no aborta por
+# ellas, pero la gráfica publicada es la del snapshot hasta que una corrida
+# con la receta la refresque (y ese refresco se commitea: Gate 7 exige que el
+# docroot y git coincidan). Receta: runbook-deploys-ciep.md §1 "Gráficas del sitio".
+GRAPHS_RECETA="Receta (runbook §1 'Gráficas del sitio'): en SIM.do descomenta
+        'do \"\${SIMROOT}/01_modulos/visualizations/Graphs_TE.do\"' (§4.6, antes de 4.7)
+        y 'do \"\${SIMROOT}/01_modulos/visualizations/Graphs_PC.do\"' (§5.1; tardado),
+        corre SIM.do completo SIN 'global nographs' → escribe users/<id>/graphs/TE_*.png
+        y GastoPC_*.png; vuelve a comentar las dos líneas antes de commitear."
+SITE_GRAPHS=(
+    TE_Trabajo.png
+    TE_Capital.png
+    TE_Consumo.png
+    TE_Organismos.png
+    GastoPC_Educacion.png
+    GastoPC_Salud.png
+    GastoPC_Pensiones.png
+    GastoPC_Energia.png
+    GastoPC_Otros.png
+    GastoPC_Transferencias.png
+)
+LOCAL_GRAPHS_DIR="$LOCAL_REPO_ROOT/users/ricardo/graphs"
+log_info "Fase 1b: gráficas del sitio (${#SITE_GRAPHS[@]}) ← $LOCAL_GRAPHS_DIR/"
+_g_copiadas=0
+_g_conservadas=0
+for _g in "${SITE_GRAPHS[@]}"; do
+    if [[ -f "$LOCAL_GRAPHS_DIR/$_g" ]]; then
+        if [[ $DRY_RUN -eq 0 ]]; then
+            cp -p "$LOCAL_GRAPHS_DIR/$_g" "$LOCAL_SITE_ROOT/images/$_g" \
+                || die "Fase 1b: no pude copiar $_g a $LOCAL_SITE_ROOT/images/."
+        fi
+        _g_copiadas=$((_g_copiadas + 1))
+    elif [[ -f "$LOCAL_SITE_ROOT/images/$_g" ]]; then
+        log_warn "Fase 1b: $_g no está en users/ricardo/graphs/ — se conserva la del sitio (snapshot en git, mtime $(date -r "$LOCAL_SITE_ROOT/images/$_g" +%Y-%m-%d))."
+        _g_conservadas=$((_g_conservadas + 1))
+    else
+        die "Fase 1b: $_g no existe ni en users/ricardo/graphs/ ni en $LOCAL_SITE_ROOT/images/ —
+        index.php la enlaza y quedaría rota. Desde v8.11a images/$_g está versionada: si el
+        checkout la perdió, restáurala con
+          git -C '$LOCAL_REPO_ROOT' checkout -- '04_1_simuladorfiscal.ciep.mx/images/$_g'
+        Para regenerarla con datos frescos en lugar del snapshot:
+        $GRAPHS_RECETA"
+    fi
+done
+if (( _g_conservadas > 0 )); then
+    log_warn "Fase 1b: $_g_conservadas gráfica(s) salen del snapshot versionado, no de una corrida fresca. Para refrescarlas:"
+    log_warn "        $GRAPHS_RECETA"
+fi
+# Si la copia refrescó gráficas, el docroot ya no coincide con git: lo publicado
+# debe quedar versionado (el Gate 2 del próximo deploy lo exigiría igual).
+_g_modificadas="$(git -C "$LOCAL_REPO_ROOT" status --porcelain -- "04_1_simuladorfiscal.ciep.mx/images" 2>/dev/null | wc -l | tr -d ' ')"
+if (( _g_modificadas > 0 )); then
+    log_warn "Fase 1b: $_g_modificadas gráfica(s) del docroot difieren de git tras la copia. Al terminar el deploy, commitea lo publicado:"
+    log_warn "        git -C '$LOCAL_REPO_ROOT' add 04_1_simuladorfiscal.ciep.mx/images && git -C '$LOCAL_REPO_ROOT' commit -m 'chore(sitio): gráficas TE_/GastoPC_ de la corrida <fecha>'"
+fi
+log_ok "Fase 1b: $_g_copiadas copiada(s) desde users/ricardo/graphs/, $_g_conservadas conservada(s) del sitio$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+
+# =============================================================================
+# FASE 2 — Rsync del sitio PHP
+# =============================================================================
+log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
+
+# Exclusiones (revisadas contra el diff local↔remoto de historico/reconocimiento-vps.md §6,
+# hecho sobre /var/www/html/v7/ antes del cutover a current):
+#   ssl/                 el clon local aún contiene material SSL de renovación;
+#                        NUNCA se propaga (incidente registrado en
+#                        politicas-institucionales.md §6)
+#   logs/                bitácoras de runtime del servidor, no código
+#   calcular_clicks.log  log suelto en la raíz del clon local
+#   .DS_Store            basura de Finder
+#   DEPLOYED_COMMIT      lo escribe la Fase 4, no el rsync
+#   0*/                  sesiones web efímeras, por si existieran en el docroot
+#
+# --chmod (SIEMPRE después de -a, para que gane sobre el -p implícito de -a):
+# declara directorios 775 y archivos 664 en el destino, sin importar los
+# permisos del origen (Mac/Dropbox). Es la protección contra el HTTP 403 del
+# primer deploy (2026-07-09), cuando rsync preservó permisos 700/600 y Apache
+# (www-data) no pudo leer el sitio — mismo patrón ya documentado en
+# arquitectura.md §troubleshooting "Permisos rsync --chmod".
+# DOS advertencias del rsync de macOS (que en realidad es openrsync de Apple,
+# anunciado como "2.6.9 compatible"; verificado con pruebas locales 2026-07-09):
+#   1. La sintaxis octal (D775,F664) la rechaza con "invalid argument";
+#      por eso se usa la forma simbólica.
+#   2. openrsync ACEPTA la forma simbólica pero la IGNORA en silencio.
+#      Por eso la garantía real contra el 403 es la Fase 3c (chmod remoto
+#      post-transferencia). El --chmod se conserva declarativo: aplica si el
+#      cliente es un rsync 3.x real (p. ej. Homebrew) y no estorba en openrsync.
+RSYNC_SITE_OPTS=(
+    -avz
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --delete
+    --exclude='.DS_Store'
+    --exclude='ssl/'
+    --exclude='logs/'
+    --exclude='calcular_clicks.log'
+    --exclude='DEPLOYED_COMMIT'
+    --exclude='0*/'
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_SITE_OPTS+=(--dry-run)
+
+run_rsync_site() {
+    rsync "${RSYNC_SITE_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_SITE_ROOT/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$VPS_HTML_VERSION/" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_site; then
+    log_ok "Fase 2: rsync del sitio completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 2: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 2: rsync del sitio falló. Nada se ha activado (el symlink no se ha tocado)."
+    fi
+fi
+
+# =============================================================================
+# FASE 3 — Rsync del motor Stata y de los .dta procesados
+# =============================================================================
+log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
+
+# Alcance del motor (aprobado 2026-07-10): árbol completo que el canal web
+# necesita para correr — los .do del root (SIM.do, profile.do), 00_comandos/ (los .ado y .scheme;
+# desde la limpieza de 2026-11 ya no están en el root) + 01_modulos/
+# (incluye Web.Stata.do y output.do). NO se propaga governance, help, sitio,
+# users/ ni raw/. De 05_scripts/ viaja SOLO manifest.json (v8.12.1): es lo que
+# _precache_manifest.ado lee en ${SIMROOT}/05_scripts/manifest.json para el
+# candado 2 del cache (data_updated). Incidente 2026-10-18: el deploy v8.12 no
+# lo embarcó y «Calcular» abortó con r(601) hasta copiarlo a mano. Regla
+# (runbook §12): un .ado del motor solo lee lo que esta fase embarca; el
+# inventario de lecturas bajo ${SIMROOT}/ está en MOTOR_LECTURAS_VPS (Gate 5-remoto).
+# --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
+# Fase 2; la garantía real es la Fase 3c porque openrsync ignora --chmod).
+# Los --exclude explícitos de abajo son redundantes con el catch-all final
+# (--exclude='*' ya protege todo lo no incluido de la transferencia Y del
+# --delete), pero se listan para autodocumentar qué vive en el destino sin
+# venir de este rsync: users/ (sesiones + escenario base, Fase 3b-bis, y el
+# default de la página, Fase 3b-ter), raw/ (temporales de runtime), master/
+# (Fase 3b) y DEPLOYED_COMMIT (Fase 4).
+RSYNC_ENGINE_OPTS=(
+    -avz
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --delete
+    --exclude='/users/'
+    --exclude='/raw/'
+    --exclude='/master/'
+    --exclude='/DEPLOYED_COMMIT'
+    --include='/*.do'
+    --include='/00_comandos/***'
+    --include='/01_modulos/***'
+    --include='/05_scripts/'
+    --include='/05_scripts/manifest.json'
+    --exclude='*'
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_ENGINE_OPTS+=(--dry-run)
+
+run_rsync_engine() {
+    rsync "${RSYNC_ENGINE_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_REPO_ROOT/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_engine; then
+    log_ok "Fase 3a: rsync del motor completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 3a: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 3a: rsync del motor falló. Nada se ha activado."
+    fi
+fi
+
+log_info "Fase 3b: rsync de .dta procesados → $VPS_SIM_ROOT/$VPS_SIM_VERSION/master/"
+
+# Alcance WHITELIST (refinado 2026-07-09, bitácora v1.27): el alcance
+# recursivo total (fix de la falla 5) sobre-aprovisionaba — subía TODAS las
+# subcarpetas de año (2014-2024) y TODOS los perfiles*.dta, pero el flujo web
+# solo consume el año ENIGH vigente y su perfil (hoy: master/2024/ y
+# perfiles2026.dta; ver WEB_MASTER_YEAR/WEB_PERFIL al inicio del script).
+# Los años previos son insumos solo-locales: el VPS solo aloja lo que el web
+# sirve. La Mac sigue siendo la fuente de verdad (D.3, R.5).
+#
+# LOS FILTROS SE EVALÚAN EN ORDEN, PRIMER MATCH GANA — los --include
+# específicos van ANTES de los --exclude generales:
+#   1. /$WEB_MASTER_YEAR/***   el año vigente completo SÍ viaja
+#   2. /[0-9][0-9][0-9][0-9]/  los demás años NO (el vigente ya matcheó arriba)
+#   3. /$WEB_PERFIL            el perfil vigente SÍ
+#   4. /perfiles*.dta          los demás perfiles NO
+#   5. /*.dta                  los .dta PLANOS de la raíz SÍ (DatosAbiertos,
+#                              PEF, Poblacion, Poblaciontot, SCN, SHRFSP, LIF,
+#                              Deflactor, PIBDeflactor — ninguno matchea los
+#                              patrones de años ni de perfiles)
+#   6. *                       catch-all: nada más viaja, y protege del
+#                              --delete lo excluido en el receptor (los años
+#                              viejos ya subidos NO se borran: para eso está
+#                              el modo --limpiar-master-vps)
+# --progress (no --info=progress2): el rsync de macOS es 2.6.9 y no conoce
+# la sintaxis moderna. --progress funciona en ambos extremos.
+# --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
+# Fase 2; la garantía real es la Fase 3c porque openrsync ignora --chmod).
+RSYNC_MASTER_OPTS=(
+    -az
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --progress
+    --delete
+    --exclude='.DS_Store'
+    --include="/${WEB_MASTER_YEAR}/***"
+    --exclude='/[0-9][0-9][0-9][0-9]/'
+    --include="/${WEB_PERFIL}"
+    --exclude='/perfiles*.dta'
+    --include='/*.dta'
+    --exclude='*'
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_MASTER_OPTS+=(--dry-run)
+
+run_rsync_master() {
+    rsync "${RSYNC_MASTER_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_REPO_ROOT/master/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/master/" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_master; then
+    log_ok "Fase 3b: rsync de master/ completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 3b: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 3b: rsync de master/ falló. Nada se ha activado."
+    fi
+fi
+
+# =============================================================================
+# FASE 3b-bis — Rsync del escenario base (users/ricardo/bootstraps/)
+# =============================================================================
+# Falla 6 del debugging 2026-07-09: users/ricardo/bootstraps/1/ (~5 MB, 217
+# archivos: CFEREC.dta etc.) es el ESCENARIO BASE que el motor web consume en
+# cada simulación — NO son datos de sesión, son un asset de deployment que el
+# pipeline no llevaba (el motor tronaba con r(601)). Convención v8: el motor
+# busca users/ricardo/ (el snapshot v7 usaba users/ciepmx/).
+# v8.10.0: el motor (FiscalGap) lee SOLO users/ricardo/bootstraps/<B>/*RECprom.dta
+# (promedio de las B réplicas; global idbase/bootstrap de Web.Stata.do). Las
+# réplicas crudas (*REC.dta, ~0.8 GB con B = 250) no viajan: include/exclude.
+# Tras el rsync: chmod -R con o=rX sobre users/ricardo/ — www-data solo LEE
+# el escenario base (las sesiones de escritura viven en users/0*/, no aquí).
+log_info "Fase 3b-bis: rsync del escenario base → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps/"
+
+RSYNC_BOOTSTRAPS_OPTS=(
+    -az
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --progress
+    --delete
+    --exclude='.DS_Store'
+    --include='*/'
+    --include='*RECprom.dta'
+    --exclude='*'
+    --prune-empty-dirs
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_BOOTSTRAPS_OPTS+=(--dry-run)
+
+run_rsync_bootstraps() {
+    # rsync no crea los directorios padre del destino: se garantizan primero.
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps'" || return 1
+    fi
+    rsync "${RSYNC_BOOTSTRAPS_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps/" 2>&1 | tee -a "$LOG_FILE"
+}
+# v8.12 fase 2a: users/ricardo/cache/ (sello.txt + items de Precache, ~210 MB) viaja con el
+# escenario base: FiscalGap/GastoPC lo exigen con el mismo candado que los *RECprom.
+RSYNC_CACHE_OPTS=(
+    -az
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --progress
+    --delete
+    --exclude='.DS_Store'
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_CACHE_OPTS+=(--dry-run)
+run_rsync_cache() {
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/cache'" || return 1
+    fi
+    rsync "${RSYNC_CACHE_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_REPO_ROOT/users/ricardo/cache/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/cache/" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_bootstraps && run_rsync_cache; then
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo'"
+    fi
+    log_ok "Fase 3b-bis: escenario base + cache de lo invariante propagados$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 3b-bis: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 3b-bis: rsync del escenario base o del cache falló. Nada se ha activado."
+    fi
+fi
+
+# =============================================================================
+# FASE 3b-ter — Manifiesto del escenario default (users/ciepmx/)
+# =============================================================================
+# Hallazgo 2026-07-19 (bitácoras v1.42 y v1.44): la vista inicial de la página
+# se sirve COMPLETA desde users/ciepmx/ del deployment del motor — y ninguna
+# fase del pipeline la actualizaba desde el cambio de convención ciepmx→ricardo
+# (reorg v1.12): la página abría con números fósiles aunque el motor calculara
+# bien (divergencia display-vs-cálculo), verificado en vivo contra producción.
+#
+# CONTRATO DEFAULT (dos lectores, rutas distintas):
+#   - el motor Stata lee users/ricardo/bootstraps/  (escenario base, Fase 3b-bis)
+#   - el PHP lee users/ciepmx/                      (vista inicial, ESTA fase)
+#
+# v8.17.1 (2026-11-08): el manifiesto YA NO es una lista escrita aquí. Lo deriva
+# 05_scripts/datos/manifiesto-default.py de lo que las páginas piden y de cómo cada
+# endpoint lo resuelve (portada: js/stataCalcula.js → cargaDefault.php y los
+# jsonSankey*.php → users/ciepmx/<archivo>; /NTA: NTA/index.php →
+# jsonSankeyNTA.php?corte=…|cuenta=… → SankeyNTA/ y NTA/; /entidades:
+# entidades/index.php y _entidad.php → jsonEntidad.php → <ABREV>/… ×32 y
+# entidades.json, con el catálogo de SIMentidad.ado). La misma derivación la
+# lee humo-calcular.sh tras el swap (GET a cada endpoint → 200 con su archivo).
+# Incidente que lo motiva: la lista a mano no se actualizó cuando /NTA pasó a
+# dibujar el v4 (v8.17.0) y el deploy habría dejado /NTA sin
+# users/ciepmx/SankeyNTA/sankey-v4-economia.json (runbook §14.1 lección 20).
+# Regla de diseño (Fase 3b): el VPS solo aloja lo que el web sirve — viaja
+# SOLO este manifiesto, NUNCA users/ricardo/ completo (trabajo local del
+# investigador). El contrato del PHP no se toca: se publica EN users/ciepmx/.
+# Lo que ninguna página pide no viaja aunque el endpoint lo admita (el v2 y los
+# cortes v1 del Sankey NTA, nta-quinquenio-sexo.json): a mano responden 404
+# con pista. nta-persona.dta (130 MB) tampoco: el web no lo lee.
+#
+# Fuente local de verdad: la corrida completa de SIM.do escribe todo en
+# users/ricardo/ — output.txt vía el log que llena 01_modulos/output.do, los
+# sankey-*.json vía SankeySF.do→SankeySumSim, SankeyNTA/ y NTA/ vía
+# 01_modulos/NTA.do (SIM.do §3.2b), y <ABREV>/ + entidades.json vía
+# contrato-32.sh. Una entrada con subcarpeta viaja a users/ciepmx/<subcarpeta>/
+# (misma ruta relativa que local).
+MANIFIESTO_PY="$SCRIPT_DIR/../datos/manifiesto-default.py"
+[[ -f "$MANIFIESTO_PY" ]] || die "Fase 3b-ter: no existe $MANIFIESTO_PY (la derivación del manifiesto default)."
+_MANIF_ERR="$(mktemp -t manifiesto-default.XXXXXX)"
+if ! _MANIF_OUT="$(python3 -I "$MANIFIESTO_PY" --root "$LOCAL_REPO_ROOT" --archivos 2>"$_MANIF_ERR")"; then
+    die "Fase 3b-ter: manifiesto-default.py no pudo derivar el manifiesto del default:
+$(cat "$_MANIF_ERR")
+        El contrato de una página o de un endpoint cambió: actualiza la derivación en 05_scripts/datos/manifiesto-default.py."
+fi
+rm -f "$_MANIF_ERR"
+DEFAULT_MANIFEST=()
+while IFS= read -r _l; do [[ -n "$_l" ]] && DEFAULT_MANIFEST+=("$_l"); done <<< "$_MANIF_OUT"
+(( ${#DEFAULT_MANIFEST[@]} > 0 )) || die "Fase 3b-ter: manifiesto-default.py no devolvió ningún archivo."
+# El catálogo de abreviaturas se lee de SIMentidad.ado (global entidadesC, sin «Nac»), la única fuente de verdad:
+# lo usa el health check de la Fase 6 (un HEAD por entidad). La derivación lo lee igual y exige 32.
+ENTIDADES_ABREV="$(sed -nE 's/^[[:space:]]*global entidadesC "([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/00_comandos/SIMentidad.ado" | head -1 | sed -E 's/ Nac$//')"
+[[ -n "$ENTIDADES_ABREV" ]] || die "Fase 3b-ter: no pude leer 'global entidadesC' de SIMentidad.ado (el catálogo de las 32 entidades)."
+_n_ent=0; for _ab in $ENTIDADES_ABREV; do _n_ent=$((_n_ent+1)); done
+[[ $_n_ent -eq 32 ]] || die "Fase 3b-ter: el catálogo de SIMentidad.ado trae $_n_ent entidades; esperaba 32."
+_n_sin_ent=0; for _art in "${DEFAULT_MANIFEST[@]}"; do [[ "$_art" == */* && "${_art%%/*}" != "SankeyNTA" && "${_art%%/*}" != "NTA" ]] || _n_sin_ent=$((_n_sin_ent+1)); done
+log_info "Fase 3b-ter: manifiesto del default DERIVADO por manifiesto-default.py (${#DEFAULT_MANIFEST[@]} archivos: $_n_sin_ent de portada, /NTA e índice + las $_n_ent entidades × $(( (${#DEFAULT_MANIFEST[@]} - _n_sin_ent) / _n_ent ))) → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/"
+
+LOCAL_DEFAULT_DIR="$LOCAL_REPO_ROOT/users/ricardo"
+LOCAL_PEF_DTA="$LOCAL_REPO_ROOT/master/PEF.dta"
+
+# Gate de frescura sobre el CONJUNTO: cada archivo debe existir y NO ser más
+# viejo que el master/PEF.dta local — si el master se reprocesó después de la
+# última corrida completa de SIM.do, el default describiría datos que ya no
+# son los del master que esta misma corrida sube en la Fase 3b. -ot compara
+# mtime; mtimes iguales pasan (ni -ot ni -nt). El gate muere también en
+# dry-run: es una precondición local, como los Gates 1-5.
+for _art in "${DEFAULT_MANIFEST[@]}"; do
+    if [[ ! -f "$LOCAL_DEFAULT_DIR/$_art" ]]; then
+        die "Fase 3b-ter: no existe $LOCAL_DEFAULT_DIR/$_art (parte del manifiesto default).
+        corre SIM.do completo antes de desplegar (regenera el default)."
+    fi
+    if [[ -f "$LOCAL_PEF_DTA" && "$LOCAL_DEFAULT_DIR/$_art" -ot "$LOCAL_PEF_DTA" ]]; then
+        die "Fase 3b-ter: users/ricardo/$_art es más VIEJO que master/PEF.dta —
+        el default describiría datos que ya no son los del master que este
+        deploy sube (la divergencia display-vs-cálculo que esta fase existe
+        para impedir). corre SIM.do completo antes de desplegar (regenera el
+        default)."
+    fi
+done
+log_ok "Fase 3b-ter: manifiesto local fresco (${#DEFAULT_MANIFEST[@]}/${#DEFAULT_MANIFEST[@]} archivos, mtime >= master/PEF.dta)."
+
+# Gate de CONTENIDO del output.txt (2026-10-01, deploy v8.4). El gate de
+# frescura solo mira mtime: el default del 28-sep era de una corrida que se
+# quedó en Perfiles (11 llaves: INCD/APORT*/PROY) y la página abrió con los
+# valores vacíos del JS (GASTOS[40] undefined). Se exige que estén las llaves
+# que escriben FiscalGap/output.do y Perfiles; si falta una, la corrida de
+# SIM.do no llegó al final (global output activa, §4-§8 completos).
+_llaves_req=(GASTOS INGRESOS GASTOSPC PIBY DEUDAPARAM CRECPIB CRECDEF PROYSHRFSP1 PROYSHRFSP2 PROYSHRFSP3 PROYMAX INCD APORTHIV IVA ISRTASA)
+_llaves_faltan=()
+for _k in "${_llaves_req[@]}"; do
+    grep -qE "^${_k} *[:=]" "$LOCAL_DEFAULT_DIR/output.txt" || _llaves_faltan+=("$_k")
+done
+if (( ${#_llaves_faltan[@]} > 0 )); then
+    die "Fase 3b-ter: users/ricardo/output.txt está INCOMPLETO — faltan ${#_llaves_faltan[@]} llave(s): ${_llaves_faltan[*]}.
+        La corrida de SIM.do que lo generó no llegó a FiscalGap/output.do (o
+        corrió sin 'global output'). Corre SIM.do completo con output activo
+        y revisa que termine en TOUCH-DOWN antes de desplegar."
+fi
+log_ok "Fase 3b-ter: output.txt completo (${#_llaves_req[@]}/${#_llaves_req[@]} llaves obligatorias presentes)."
+
+# Continuaciones de Stata en output.txt (2026-10-01, deploy v8.4). output.txt
+# es el log de output.do; si la corrida local tuvo linesize angosto, Stata
+# parte las líneas largas y sigue en la siguiente con "> ". cargaDefault.php
+# las une desde hoy, pero el archivo publicado debe ir limpio: se sube una
+# copia normalizada (no se toca el archivo del investigador) y se avisa cómo
+# evitarlo en la próxima corrida.
+DEFAULT_OUTPUT_SRC="$LOCAL_DEFAULT_DIR/output.txt"
+if grep -q '^>' "$DEFAULT_OUTPUT_SRC"; then
+    _nwrap="$(grep -c '^>' "$DEFAULT_OUTPUT_SRC")"
+    _tmpdir="$(mktemp -d -t output-default.XXXXXX)"
+    DEFAULT_OUTPUT_SRC="$_tmpdir/output.txt"          # mismo nombre: rsync lo deposita como output.txt
+    perl -0pe 's/\n>\s*//g' "$LOCAL_DEFAULT_DIR/output.txt" > "$DEFAULT_OUTPUT_SRC"
+    log_warn "Fase 3b-ter: users/ricardo/output.txt trae $_nwrap continuación(es) de Stata ('> '); se publica una copia con las líneas unidas. Para que no ocurra: 'set linesize 255' antes del log en SIM.do, o corre SIM.do en batch."
+fi
+
+RSYNC_DEFAULT_OPTS=(
+    -az
+    --chmod=Fu=rw,Fg=rw,Fo=r
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_DEFAULT_OPTS+=(--dry-run)
+
+run_rsync_default() {
+    # rsync no crea los directorios padre del destino: se garantizan primero —
+    # users/ciepmx/ y cada subcarpeta que aparezca en el manifiesto (SankeyNTA/).
+    # Las entradas se agrupan por subcarpeta y cada grupo va a su destino, sin
+    # depender de --relative (openrsync de macOS no lo garantiza).
+    local _dest_base="$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx"
+    local _subdirs=() _art _sub _d
+    for _art in "${DEFAULT_MANIFEST[@]}"; do
+        _sub="$(dirname "$_art")"
+        [[ "$_sub" == "." ]] && continue
+        local _ya=0; for _d in ${_subdirs[@]+"${_subdirs[@]}"}; do [[ "$_d" == "$_sub" ]] && _ya=1; done
+        (( _ya )) || _subdirs+=("$_sub")
+    done
+    if [[ $DRY_RUN -eq 0 ]]; then
+        local _mk="mkdir -p '$_dest_base'"
+        for _sub in ${_subdirs[@]+"${_subdirs[@]}"}; do _mk+=" '$_dest_base/$_sub'"; done
+        ssh_vps "$_mk" || return 1
+    fi
+    for _sub in . ${_subdirs[@]+"${_subdirs[@]}"}; do
+        local _srcs=()
+        for _art in "${DEFAULT_MANIFEST[@]}"; do
+            [[ "$(dirname "$_art")" == "$_sub" ]] || continue
+            if [[ "$_art" == "output.txt" ]]; then
+                _srcs+=("$DEFAULT_OUTPUT_SRC")
+            else
+                _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
+            fi
+        done
+        (( ${#_srcs[@]} > 0 )) || continue
+        local _dest="$_dest_base"; [[ "$_sub" != "." ]] && _dest="$_dest_base/$_sub"
+        rsync "${RSYNC_DEFAULT_OPTS[@]}" -e "$RSYNC_SSH" \
+            "${_srcs[@]}" \
+            "${VPS_USER}@${VPS_HOST}:$_dest/" 2>&1 | tee -a "$LOG_FILE" || return 1
+    done
+}
+if run_rsync_default; then
+    if [[ $DRY_RUN -eq 0 ]]; then
+        # Gotcha de permisos de la casa (patrón raíz del debugging 2026-07-09):
+        # todo lo creado en el VPS después de la normalización nace ilegible
+        # para Apache (www-data lee como "others"). chmod explícito,
+        # independiente del cliente rsync (openrsync ignora --chmod en
+        # silencio) y del orden de fases: o=rx en los directorios (ciepmx/ y
+        # sus subcarpetas del manifiesto), o=r en los archivos — la X
+        # mayúscula da la x solo a directorios. (La Fase 3c corre después y
+        # también lo cubriría — la garantía explícita evita depender del
+        # orden, como con DEPLOYED_COMMIT en la Fase 4.)
+        ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx'"
+    fi
+    log_ok "Fase 3b-ter: manifiesto default propagado y legible para Apache$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+    # Verificación funcional: aquí NO se puede — el symlink current todavía
+    # apunta al deployment anterior (un curl a cargaDefault.php probaría el
+    # default viejo) y en dry-run nada viajó. Queda para el gate humano
+    # post-deploy, junto con la prueba de humo en navegador:
+    log_info "Post-swap (v8.12.1): la Fase 6 corre el «Calcular» de humo automático (humo-calcular.sh); el clic humano ya no es el gate."
+    log_info "(deben regresar JSON con los números de la corrida local fresca, no los fósiles)."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 3b-ter: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 3b-ter: rsync del manifiesto default falló. Nada se ha activado."
+    fi
+fi
+
+# =============================================================================
+# FASE 3c — Normalización de permisos en el VPS (garantía anti-403)
+# =============================================================================
+# El rsync de macOS (openrsync) ignora --chmod en silencio (verificado con
+# transferencias locales el 2026-07-09), así que los permisos restrictivos del
+# origen pueden llegar intactos (700/600) y Apache no podría leer — el HTTP 403
+# del primer deploy. Este chmod remoto replica el fix manual que dejó a v8.0
+# sirviendo en producción y es determinista sin importar el cliente rsync.
+#
+# SOLO SOBRE LO QUE EL DEPLOY POSEE (fix 2026-07-09, segundo re-deploy): el
+# chmod -R ciego original tronaba con "Operation not permitted" — el árbol
+# mezcla dos poblaciones con dueños distintos: las fuentes que sube el deploy
+# (${VPS_USER}) y el runtime que crea Apache (www-data: sesiones en users/0*,
+# sankeys, logs, raw/temp). ${VPS_USER} no puede chmodear lo de www-data, y
+# con set -e el deploy abortaba a medias ANTES del swap. El find -user filtra
+# por dueño: solo toca lo de ${VPS_USER} y es autoajustable — cualquier
+# archivo runtime futuro queda excluido por ownership, sin mantener listas.
+# Con -exec … {} + no se invoca chmod si no hay matches (exit 0 limpio).
+FASE3C_CHMOD_CMD="find '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION' -user '$VPS_USER' -exec chmod u=rwX,g=rwX,o=rX {} +"
+log_info "Fase 3c: normalización de permisos en el VPS (u=rwX,g=rwX,o=rX, solo archivos de ${VPS_USER})."
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Se ejecutaría:"
+    log_info "  $FASE3C_CHMOD_CMD"
+else
+    ssh_vps "$FASE3C_CHMOD_CMD"
+    log_ok "Fase 3c: permisos normalizados (runtime de www-data intacto por diseño)."
+fi
+
+# Lista de ESCRITURA de www-data (fallas 1-3 del debugging 2026-07-09).
+# Patrón raíz: todo lo creado en el VPS después del chmod de arriba nace
+# ilegible o inescribible para Apache (www-data corre como "others": o=rX).
+# Estos son los ÚNICOS directorios donde www-data escribe, y se re-fuerzan
+# 777 al final de la fase para que el orden de operaciones no importe:
+#   $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/    sesiones web (mkdir de calculaStata.php)
+#   $VPS_SIM_ROOT/$VPS_SIM_VERSION/raw/temp/ temporales de .ado (AccesoBIE, DatosAbiertos)
+#   $VPS_HTML_ROOT/$VPS_HTML_VERSION/logs/   bitácoras de runtime (logCalcular.php)
+# El 777 de users/ NO es recursivo: users/ricardo/ (escenario base, solo
+# lectura) conserva el o=rX que le dejó la Fase 3b-bis.
+WWWDATA_WRITE_DIRS_CMD="mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/raw/temp' '$VPS_HTML_ROOT/$VPS_HTML_VERSION/logs' && chmod 777 '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/raw/temp' '$VPS_HTML_ROOT/$VPS_HTML_VERSION/logs'"
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Se ejecutaría (directorios de escritura de www-data):"
+    log_info "  $WWWDATA_WRITE_DIRS_CMD"
+else
+    ssh_vps "$WWWDATA_WRITE_DIRS_CMD"
+    log_ok "Fase 3c: directorios de escritura de www-data garantizados (users/, raw/temp/, logs/)."
+fi
+
+# =============================================================================
+# Gate 5-remoto — Lo que el motor LEE existe en el deployment, ANTES del swap
+# =============================================================================
+# (v8.12.1, incidente 2026-10-18.) Las fases 3/3b/3b-bis dejan en el VPS el
+# motor, master/ y users/ricardo/; este gate comprueba, en el destino y antes de
+# tocar `current`, que cada ruta que el motor web lee bajo ${SIMROOT}/ está
+# puesta. La lista es el inventario del motor (grep de ${SIMROOT}/ en .ado/.do
+# del flujo web; tabla en el runbook §12). Si falta algo, el deploy muere aquí
+# con el código en el VPS pero sin activar: el candado de _precache_usa habría
+# tronado igual, pero en la cara del usuario.
+MOTOR_LECTURAS_VPS=(
+    "05_scripts/manifest.json"                       # _precache_manifest.ado (candado 2 del cache)
+    "01_modulos/Web.Stata.do"                        # calculaStata.php: la plantilla del .do
+    "01_modulos/ISR_Mod.do"                          # Web.Stata.do §3.1
+    "01_modulos/IVA_Mod.do"
+    "01_modulos/output.do"                           # Web.Stata.do §8
+    "01_modulos/visualizations/SankeySF.do"          # Web.Stata.do §7.2
+    "00_comandos/Precache.ado" "00_comandos/_precache_usa.ado" "00_comandos/_precache_bytes.ado" "00_comandos/_precache_manifest.ado"
+    "00_comandos/FiscalGap.ado" "00_comandos/GastoPC.ado" "00_comandos/PEF.ado" "00_comandos/TasasEfectivas.ado" "00_comandos/Simulador.ado" "00_comandos/PIBDeflactor.ado"
+    "00_comandos/scheme-ciep.scheme"
+    "master/PEF.dta"                                 # PEF.ado §1 (use in 1) + insumo del sello
+    "master/${WEB_PERFIL}"                           # insumo del sello (GastoPC_base)
+    "master/${WEB_MASTER_YEAR}/households.dta"       # insumo del sello
+    "master/${WEB_MASTER_YEAR}/cuadratura.do"        # Web.Stata.do §7.3: Cuad*PIB para output.do CUADRATURA (v8.15.1; producto de Households.do §9.1)
+    "users/ricardo/cache/sello.txt"                  # Fase 3b-bis: cache de lo invariante
+    "users/ricardo/bootstraps/${_B_WEB}"             # Fase 3b-bis: *RECprom (insumos del sello)
+    # users/ciepmx/… (Fase 3b-ter): las entradas del manifiesto derivado se añaden abajo, una por archivo
+)
+for _art in "${DEFAULT_MANIFEST[@]}"; do MOTOR_LECTURAS_VPS+=("users/ciepmx/$_art"); done   # v8.17.1: el manifiesto derivado completo (portada, /NTA, las 32), no una lista a mano
+_GATE5R_CMD="cd '$VPS_SIM_ROOT/$VPS_SIM_VERSION' 2>/dev/null || { echo 'NO-EXISTE-DEPLOYMENT'; exit 0; }; for f in"
+for _f in "${MOTOR_LECTURAS_VPS[@]}"; do _GATE5R_CMD+=" '$_f'"; done
+_GATE5R_CMD+="; do [ -e \"\$f\" ] || echo \"FALTA \$f\"; done; sha256sum 05_scripts/manifest.json 2>/dev/null | cut -c1-64"
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Gate 5-remoto: se verificarían ${#MOTOR_LECTURAS_VPS[@]} rutas que el motor lee bajo $VPS_SIM_ROOT/$VPS_SIM_VERSION/ (y el sha256 de 05_scripts/manifest.json == local)."
+else
+    _G5R_OUT="$(ssh_vps "$_GATE5R_CMD" 2>&1 || true)"
+    _G5R_FALTAN="$(printf '%s
+' "$_G5R_OUT" | grep '^FALTA ' || true)"
+    _G5R_SHA="$(printf '%s
+' "$_G5R_OUT" | grep -E '^[0-9a-f]{64}$' | tail -1 || true)"
+    _LOCAL_SHA="$(shasum -a 256 "$LOCAL_REPO_ROOT/05_scripts/manifest.json" | cut -c1-64)"
+    if printf '%s
+' "$_G5R_OUT" | grep -q 'NO-EXISTE-DEPLOYMENT'; then
+        die "Gate 5-remoto: no existe $VPS_SIM_ROOT/$VPS_SIM_VERSION en el VPS (¿falló la Fase 3?)."
+    elif [[ -n "$_G5R_FALTAN" ]]; then
+        log_error "Gate 5-remoto: el motor leería rutas que NO están en $VPS_SIM_ROOT/$VPS_SIM_VERSION/:"
+        printf '%s
+' "$_G5R_FALTAN" | while IFS= read -r _l; do log_error "  $_l"; done
+        die "Gate 5-remoto FALLÓ. Nada se ha activado (current intacto). Revisa las fases 3/3b/3b-bis/3b-ter y la regla del runbook §12."
+    elif [[ "$_G5R_SHA" != "$_LOCAL_SHA" ]]; then
+        die "Gate 5-remoto: 05_scripts/manifest.json del deployment (sha ${_G5R_SHA:-ausente}) ≠ local ($_LOCAL_SHA). Nada se ha activado."
+    fi
+    log_ok "Gate 5-remoto: las ${#MOTOR_LECTURAS_VPS[@]} rutas que el motor lee existen en el deployment; manifest.json idéntico al local."
+fi
+
+# =============================================================================
+# FASE 4 — Escribir DEPLOYED_COMMIT en el VPS
+# =============================================================================
+log_info "Fase 4: escribir DEPLOYED_COMMIT."
+
+# Versión del MOTOR (bitácora v1.30) y fecha de los DATOS (bitácora v1.31):
+# ambas salen de 05_scripts/manifest.json — la fuente de verdad que valida el
+# Gate 3 de publicar.sh. `version` → línea "Version:" (el hero y el footer la
+# pintan como "Versión del simulador": "qué versión del modelo produjo estos
+# números"). `data_updated` (ISO YYYY-MM-DD) → línea "DataUpdated:" (el hero
+# la pinta como "Última actualización", reformateada por idioma: frescura de
+# los DATOS precargados; se bumpea solo al reprocesar datos, no en releases
+# de código). "Qué deploy es este" lo siguen diciendo Commit: y Deployment:.
+# Parseo con python3 + json (patrón de casa, mismo del Gate 3): parser real,
+# inmune a formato/orden de campos. Cualquier falla (archivo ausente, JSON
+# inválido, campo faltante) colapsa a cadena vacía SIN abortar el deploy —
+# el sitio no pinta versión y usa su fecha de respaldo; nunca rompe.
+# `enigh_vintage` (año de la ENIGH precargada) → línea "EnighVintage:" (la pinta
+# la sección de método: /NTA cita "ENIGH <vintage>" sin un literal en el PHP).
+# `baseline` (v8.15b-pre; CUAD-0 §4 ter) → línea "Baseline:" (tag desde el que los números publicados son comparables;
+# health.php la vuelca y el sidecar manifest-datos.json lleva el mismo valor).
+# Una sola pasada: imprime cinco líneas (version, data_updated, release_url_prefix, enigh_vintage, baseline).
+MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n\n\n\n'
+import json, sys
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        m = json.load(f)
+except Exception:
+    m = {}
+print(m.get("version", "") or "")
+print(m.get("data_updated", "") or "")
+print(m.get("release_url_prefix", "") or "")
+print(m.get("enigh_vintage", "") or "")
+print(m.get("baseline", "") or "")
+PYEOF
+)
+ENGINE_VERSION=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '1p')
+DATA_UPDATED=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '2p')
+RELEASE_PREFIX=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '3p')
+ENIGH_VINTAGE=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '4p')
+BASELINE_TAG=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '5p')
+
+# URL del GitHub Release de la versión del motor (bitácora v1.32): el número
+# de versión del hero/footer enlaza a su release exacto — señal de código
+# abierto. Derivada de release_url_prefix (que el Gate 3 de publicar.sh
+# garantiza terminado en /<version>/): se recorta el sufijo
+# 'releases/download/<version>/' y se arma 'releases/tag/<version>' — el tag
+# real de los releases usa el MISMO formato que manifest.version (con 'v';
+# publicar.sh hace gh release create "$version"). Si el prefix no tiene la
+# forma esperada, queda vacía: el sitio pinta la versión como texto plano,
+# nunca un link roto.
+RELEASE_URL=""
+if [[ -n "$ENGINE_VERSION" && "$RELEASE_PREFIX" == https://github.com/*/releases/download/* ]]; then
+    RELEASE_URL="${RELEASE_PREFIX%releases/download/*}releases/tag/${ENGINE_VERSION}"
+elif [[ -n "$ENGINE_VERSION" ]]; then
+    log_warn "Fase 4: release_url_prefix del manifest no tiene la forma esperada
+(https://github.com/<owner>/<repo>/releases/download/…) — la línea ReleaseUrl:
+queda VACÍA y el sitio mostrará la versión sin link. El deploy continúa."
+fi
+
+# Formato: la línea "Version:" convive con las demás — health.php vuelca el
+# archivo completo (no parsea por claves) y health_commit_matches() busca el
+# substring "Commit: <hash>", así que ningún consumidor se rompe.
+DEPLOYED_COMMIT_TMP=$(mktemp /tmp/DEPLOYED_COMMIT.XXXXXX)
+cat > "$DEPLOYED_COMMIT_TMP" <<EOF
+Commit: $CURRENT_COMMIT
+Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+Deployment: $VERSION_ARG
+Version: $ENGINE_VERSION
+DataUpdated: $DATA_UPDATED
+ReleaseUrl: $RELEASE_URL
+EnighVintage: $ENIGH_VINTAGE
+Baseline: $BASELINE_TAG
+Deployed by: ${VPS_USER} via publicar-vps.sh
+EOF
+
+if [[ -z "$ENGINE_VERSION" ]]; then
+    log_warn "Fase 4: no pude leer 'version' de 05_scripts/manifest.json — la línea
+Version: queda VACÍA (el sitio no pintará versión). El deploy continúa, pero
+revisa el manifest: ¿existe, es JSON válido, tiene el campo 'version'?"
+fi
+if [[ -z "$DATA_UPDATED" ]]; then
+    log_warn "Fase 4: no pude leer 'data_updated' de 05_scripts/manifest.json — la línea
+DataUpdated: queda VACÍA (el hero usará su fecha de respaldo hardcodeada, que
+puede estar VIEJA). El deploy continúa, pero revisa el campo en el manifest."
+fi
+if [[ -z "$ENIGH_VINTAGE" ]]; then
+    log_warn "Fase 4: no pude leer 'enigh_vintage' de 05_scripts/manifest.json — la línea
+EnighVintage: queda VACÍA (/NTA citará la ENIGH sin año). El deploy continúa."
+fi
+if [[ -z "$BASELINE_TAG" ]]; then
+    log_warn "Fase 4: no pude leer 'baseline' de 05_scripts/manifest.json — la línea
+Baseline: queda VACÍA (health.php no dirá desde qué tag comparan los números). El deploy continúa."
+fi
+
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Se escribiría en $VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT y $VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT:"
+    tee -a "$LOG_FILE" < "$DEPLOYED_COMMIT_TMP"
+else
+    # Se escribe en ambos directorios de deployment (D.7): el del sitio (lo lee
+    # health.php) y el del motor (trazabilidad del lado Stata).
+    rsync -az -e "$RSYNC_SSH" "$DEPLOYED_COMMIT_TMP" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
+    rsync -az -e "$RSYNC_SSH" "$DEPLOYED_COMMIT_TMP" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
+    # chmod explícito (falla 1 del debugging 2026-07-09): este archivo se
+    # escribe DESPUÉS del chmod masivo de la Fase 3c, así que nació 600 (el
+    # mktemp local es 600 y rsync -a preserva permisos) → health.php no pudo
+    # leerlo y el health check disparó un rollback falso. La garantía es este
+    # chmod explícito, independiente del orden de fases.
+    ssh_vps "chmod 664 '$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT'"
+    if [[ -n "$ENGINE_VERSION" && -n "$DATA_UPDATED" ]]; then
+        log_ok "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT, motor $ENGINE_VERSION, datos $DATA_UPDATED)."
+    else
+        log_warn "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT) — [WARN] motor '${ENGINE_VERSION:-VACÍA}', datos '${DATA_UPDATED:-VACÍA}' (manifest.json ilegible o campo faltante)."
+    fi
+fi
+rm -f "$DEPLOYED_COMMIT_TMP"
+
+# =============================================================================
+# FASE 5 — Swap del symlink (cutover atómico)
+# =============================================================================
+log_info "Fase 5: swap del symlink current."
+
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Se ejecutaría:"
+    log_info "  ln -sfn '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_HTML_ROOT/current'"
+    log_info "  ln -sfn '$VPS_SIM_ROOT/$VPS_SIM_VERSION' '$VPS_SIM_ROOT/current'"
+else
+    if [[ $FORCE -eq 0 ]]; then
+        log_tty "${YELLOW}[WARN]${NC} A punto de cambiar el symlink current: ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"} → $VERSION_ARG"
+        answer=""
+        tty_o_out "¿Continuar con el cutover? [y/N] "
+        read -r answer || true
+        if [[ ! "$answer" =~ ^[yY]$ ]]; then
+            die "Cutover cancelado por el operador. El código ya está en el VPS pero NO activado (symlink intacto)."
+        fi
+    fi
+    # ln -sfn (no -sf): sin -n, si current ya es symlink a un directorio, ln
+    # crearía el symlink nuevo DENTRO del directorio apuntado en vez de
+    # reemplazar el symlink. -n trata el destino como el symlink mismo.
+    ssh_vps "ln -sfn '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$VPS_SIM_VERSION' '$VPS_SIM_ROOT/current'"
+    log_ok "Fase 5: symlinks current → $VERSION_ARG activados."
+fi
+
+# =============================================================================
+# FASE 6 — Verificación post-deploy (health check)
+# =============================================================================
+# HEALTH_LAST_CODE guarda el último código HTTP visto, para que el mensaje de
+# fallo distinga entre "no conecta" (000) y "el servidor respondió con error"
+# (403/404/500). En el primer deploy (2026-07-09) el curl con -f colapsó un
+# 403 real (permisos) a 000 y el diagnóstico se fue por red/SSL: bug corregido.
+HEALTH_LAST_CODE="000"
+health_check() {
+    # Reintentos: 3 intentos con 2s de espera (da margen a Apache/caché).
+    # curl SIN -f (para capturar el código real en vez de colapsar a 000) y
+    # con -L (el puerto 80 hace 301 a HTTPS).
+    local attempt http_code
+    for attempt in 1 2 3; do
+        http_code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 10 "$VPS_HEALTH_URL" 2>/dev/null || echo "000")
+        HEALTH_LAST_CODE="$http_code"
+        if [[ "$http_code" == "200" ]]; then
+            return 0
+        fi
+        log_warn "Health check intento $attempt/3: HTTP $http_code (esperaba 200)."
+        sleep 2
+    done
+    return 1
+}
+
+health_commit_matches() {
+    curl -sL --max-time 10 "$VPS_HEALTH_URL" 2>/dev/null | grep -q "Commit: $CURRENT_COMMIT"
+}
+
+# Esqueleto del sitio (v8.11a): health.php y el commit solo prueban que el PHP
+# corre y que el deploy escribió su marca; el deploy v8.10 (2026-10-16) pasó
+# ambos sirviendo un sitio sin css/, js/ ni plugins/. Cada activo de
+# SITE_SMOKE_ASSETS (una muestra por clase, verificada en el docroot local por
+# el Gate 7) debe responder 200 bajo la misma base que el health check.
+SITE_SMOKE_FALLAS=()
+health_assets_check() {
+    local base="${VPS_HEALTH_URL%/*}" a code
+    SITE_SMOKE_FALLAS=()
+    for a in "${SITE_SMOKE_ASSETS[@]}"; do
+        code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$base/$a" 2>/dev/null || echo "000")
+        [[ "$code" == "200" ]] || SITE_SMOKE_FALLAS+=("$a → HTTP $code")
+    done
+    (( ${#SITE_SMOKE_FALLAS[@]} == 0 ))
+}
+
+ENTIDADES_FALLAS=()
+health_entidades_check() {
+    local base="${VPS_HEALTH_URL%/*}" ab code
+    ENTIDADES_FALLAS=()
+    for ab in $ENTIDADES_ABREV; do
+        code=$(curl -sIL -o /dev/null -w "%{http_code}" --max-time 15 "$base/jsonEntidad.php?abrev=$ab&producto=meta" 2>/dev/null || echo "000")
+        [[ "$code" == "200" ]] || ENTIDADES_FALLAS+=("$ab → HTTP $code")
+    done
+    (( ${#ENTIDADES_FALLAS[@]} == 0 ))
+}
+
+HEALTH_PASSED=1
+if [[ $SKIP_HEALTH -eq 1 ]]; then
+    log_warn "Fase 6: SALTADA por --skip-health. El rollback automático también queda saltado."
+    log_warn "Verifica el sitio manualmente: $VPS_HEALTH_URL"
+elif [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Fase 6: se verificaría HTTP 200 y 'Commit: ${CURRENT_COMMIT_SHORT}...' en $VPS_HEALTH_URL"
+    log_info "[dry-run] Fase 6: y HTTP 200 en ${#SITE_SMOKE_ASSETS[@]} activos del esqueleto bajo ${VPS_HEALTH_URL%/*}/: ${SITE_SMOKE_ASSETS[*]}"
+    log_info "[dry-run] Fase 6: y HTTP 200 (HEAD) en ${VPS_HEALTH_URL%/*}/jsonEntidad.php?abrev=<ABREV>&producto=meta para las $_n_ent entidades"
+    log_info "[dry-run] Fase 6: y, tras $( [[ $ESPERA_REALPATH -eq 1 ]] && echo '125 s de espera (caché de realpath)' || echo '0 s' ), el «Calcular» de humo: bash 05_scripts/pruebas/humo-calcular.sh ${VPS_HEALTH_URL%/*} --timeout 120$( [[ $SKIP_HUMO -eq 1 ]] && echo ' (SALTADO por --skip-humo)' ) (incluye, v8.17.1, un GET a cada endpoint del default que las páginas piden —manifiesto-default.py, entidades: NL— y al default de jsonSankeyNTA.php: 200 con su archivo de users/ciepmx/, o rollback)"
+else
+    log_info "Fase 6: verificación post-deploy contra $VPS_HEALTH_URL"
+    if health_check; then
+        log_ok "Health check: HTTP 200."
+        if health_commit_matches; then
+            log_ok "Health check: el sitio reporta el commit desplegado ($CURRENT_COMMIT_SHORT)."
+        else
+            log_error "El sitio responde 200 pero NO reporta el commit esperado."
+            log_error "Posibles causas: DEPLOYED_COMMIT no se propagó, o el vhost de Apache no apunta a current todavía."
+            HEALTH_PASSED=0
+        fi
+        if health_assets_check; then
+            log_ok "Health check: esqueleto del sitio completo (${#SITE_SMOKE_ASSETS[@]}/${#SITE_SMOKE_ASSETS[@]} activos css/js/plugins/imágenes/PHP responden 200)."
+        else
+            log_error "Health check: ${#SITE_SMOKE_FALLAS[@]} activo(s) del esqueleto NO responden 200 bajo ${VPS_HEALTH_URL%/*}/:"
+            for _f in "${SITE_SMOKE_FALLAS[@]}"; do log_error "  $_f"; done
+            log_error "El sitio cargaría sin estilos/JS (incidente v8.10, 2026-10-16). Revisa la Fase 2 (rsync del sitio) y los permisos (Fase 3c)."
+            HEALTH_PASSED=0
+        fi
+        # --- las 32 entidades (v8.13.0): un HEAD al endpoint de cada una -------------------------
+        # /entidades/<ABREV> lee /jsonEntidad.php?abrev=<ABREV>&producto=meta (users/ciepmx/<ABREV>/meta.json,
+        # Fase 3b-ter). El esqueleto cubre tres páginas muestra; aquí se exige que el endpoint responda 200
+        # para las 32 (si una no viajó, su página abriría con «could not be loaded»).
+        if health_entidades_check; then
+            log_ok "Health check: jsonEntidad.php responde 200 (HEAD) para las $_n_ent entidades."
+        else
+            log_error "Health check: ${#ENTIDADES_FALLAS[@]} entidad(es) sin endpoint 200 bajo ${VPS_HEALTH_URL%/*}/jsonEntidad.php:"
+            for _f in "${ENTIDADES_FALLAS[@]}"; do log_error "  $_f"; done
+            log_error "Revisa la Fase 3b-ter (users/ricardo/<ABREV>/ para las 32 → users/ciepmx/) y los permisos (Fase 3c)."
+            HEALTH_PASSED=0
+        fi
+        # --- «Calcular» de humo real (v8.12.1) -----------------------------------------
+        # health.php, el commit y el esqueleto no prueban el motor: el deploy v8.12
+        # (2026-10-18) pasó los tres y «Calcular» abortaba con r(601). Desde aquí el
+        # clic lo da humo-calcular.sh: POST del escenario default a calculaStata.php
+        # (como el JS), números en la respuesta y los 5 sankeys de la sesión; y,
+        # desde v8.17.1, un GET a cada endpoint del default que las páginas piden
+        # (el mismo manifiesto derivado de la Fase 3b-ter, entidades solo NL) y al
+        # default de jsonSankeyNTA.php: 200 con el archivo de users/ciepmx/ (el
+        # incidente v8.17: /NTA sin sankey-v4-economia.json). Si algo falla,
+        # HEALTH_PASSED=0 → la Fase 7 hace el rollback.
+        if [[ $HEALTH_PASSED -eq 1 && $SKIP_HUMO -eq 0 ]]; then
+            if [[ $ESPERA_REALPATH -eq 1 ]]; then
+                # PHP cachea realpath() 120 s (realpath_cache_ttl): tras el swap de
+                # `current`, los workers de Apache pueden seguir resolviendo el
+                # deployment ANTERIOR hasta 2 min; un humo antes de eso probaría el
+                # motor viejo. 125 s = TTL + margen.
+                log_info "Fase 6: esperando 125 s el caché de realpath de PHP antes del «Calcular» de humo (--sin-espera-realpath lo salta)…"
+                sleep 125
+            fi
+            HUMO_ID="humo$(date +%Y%m%d%H%M%S)"
+            HUMO_EVID="$(dirname "$LOG_FILE")/humo-$VERSION_ARG-$HUMO_ID"
+            _t_humo0=$(date +%s)
+            # (set -e: el rc se captura con ||, y el tee no decide nada)
+            _rc_humo=0
+            bash "$LOCAL_REPO_ROOT/05_scripts/pruebas/humo-calcular.sh" "${VPS_HEALTH_URL%/*}" --timeout 120 --id "$HUMO_ID" --evidencia "$HUMO_EVID" > "$HUMO_EVID.out" 2>&1 || _rc_humo=$?
+            tee -a "$LOG_FILE" < "$HUMO_EVID.out"
+            if [[ $_rc_humo -eq 0 ]]; then
+                log_ok "Fase 6: «Calcular» de humo VERDE en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID; evidencia $HUMO_EVID)."
+            else
+                log_error "Fase 6: «Calcular» de humo ROJO en $(( $(date +%s) - _t_humo0 )) s (sesión $HUMO_ID). El motor del deployment $VERSION_ARG no produce números o sankeys, o un endpoint del default (manifiesto-default.py) no sirve su archivo de users/ciepmx/."
+                log_error "Cola del log de Stata de la sesión ($VPS_SIM_ROOT/$VPS_SIM_VERSION/users/$HUMO_ID/$HUMO_ID.log):"
+                { ssh_vps "tail -n 40 '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/$HUMO_ID/$HUMO_ID.log' 2>/dev/null || echo '(sin log de sesión: Stata no llegó a arrancar o la sesión no se creó)'" 2>&1 || true; } | sed 's/^/    /' | tee -a "$LOG_FILE" || true
+                HEALTH_PASSED=0
+            fi
+        elif [[ $SKIP_HUMO -eq 1 ]]; then
+            log_warn "Fase 6: «Calcular» de humo SALTADO por --skip-humo. Da el clic a mano: ${VPS_HEALTH_URL%/*}/ → Calcular."
+        fi
+    else
+        if [[ "$HEALTH_LAST_CODE" == "000" ]]; then
+            log_error "Health check falló: no se pudo conectar (red, SSL o timeout). Verifica conectividad y el certificado."
+        else
+            log_error "Health check falló: el sitio respondió HTTP $HEALTH_LAST_CODE. Revisa permisos y contenido del deployment en $VPS_HTML_ROOT/$VPS_HTML_VERSION."
+            log_error "(El bug de permisos del 2026-07-09 daba exactamente 403.)"
+        fi
+        HEALTH_PASSED=0
+    fi
+fi
+
+# =============================================================================
+# FASE 7 — Rollback automático si la verificación falló
+# =============================================================================
+if [[ $HEALTH_PASSED -eq 0 ]]; then
+    if [[ -n "$PREVIOUS_DEPLOYMENT" ]]; then
+        log_warn "Fase 7: rollback automático al deployment anterior ($PREVIOUS_DEPLOYMENT) — health check, esqueleto o «Calcular» de humo fallaron."
+        ssh_vps "ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'"
+        if health_check; then
+            log_ok "Rollback verificado: el sitio responde HTTP 200 con $PREVIOUS_DEPLOYMENT."
+        else
+            log_error "El sitio NO responde tras el rollback. INTERVENCIÓN MANUAL REQUERIDA."
+            log_error "Revisa por SSH: readlink $VPS_HTML_ROOT/current ; systemctl status apache2"
+        fi
+        die "Deploy de $VERSION_ARG revertido. Revisa el log: $LOG_FILE"
+    else
+        # Primer deploy: no hay deployment anterior al cual regresar. Los
+        # symlinks recién creados se dejan como están para inspección manual.
+        log_warn "ADVERTENCIA: No hay deployment anterior. Rollback imposible."
+        log_warn "El sitio queda en estado post-fallo. Investigación manual requerida."
+        die "Health check falló en el primer deploy (sin rollback posible).
+        Nota: si el vhost de Apache aún no apunta a $VPS_HTML_ROOT/current,
+        el health check por dominio NO puede pasar todavía (ver bitácora v1.21).
+        Opciones: ajustar el vhost (cutover, Fase 5 del roadmap) o correr con
+        --skip-health y verificar manualmente. Log: $LOG_FILE"
+    fi
+fi
+
+# =============================================================================
+# FASE 8 — Reporte de éxito
+# =============================================================================
+log ""
+log_ok "=============================================="
+log_ok " Deployment $VERSION_ARG completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (DRY-RUN: nada se aplicó)' )"
+log_ok "=============================================="
+log_ok " Commit desplegado:  $CURRENT_COMMIT_SHORT"
+log_ok " Deployment previo:  ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"}"
+log_ok " Health check URL:   $VPS_HEALTH_URL"
+log_ok " Log de la corrida:  $LOG_FILE"
+log_info "Gate humano del default (Fase 3b-ter): curl -s '${VPS_HEALTH_URL%/*}/cargaDefault.php' | head -c 300"
+log_info "                                       curl -s '${VPS_HEALTH_URL%/*}/jsonSankey.php' | head -c 300"
+log_info "(JSON con los números de la corrida local fresca, no los fósiles)."
+if [[ -n "$PREVIOUS_DEPLOYMENT" && $DRY_RUN -eq 0 ]]; then
+    if [[ "$PREVIOUS_DEPLOYMENT" == "$VPS_HTML_VERSION" ]]; then
+        # 8.18 (runbook §14.1 lección 23): redeploy dentro del mismo minor. El symlink current ya apuntaba a este deployment y la
+        # Fase 2/3 lo sobrescribieron: mover current «al anterior» es moverlo al mismo sitio y no deshace nada.
+        log_tty "${YELLOW}[WARN]${NC} Rollback manual: NO existe por symlink. Este deploy rehízo el deployment $VPS_HTML_VERSION (current ya apuntaba ahí),"
+        log_tty "${YELLOW}[WARN]${NC}   así que «ln -sfn … $PREVIOUS_DEPLOYMENT current» apunta al mismo directorio. El respaldo real es el de la Fase 0"
+        log_tty "${YELLOW}[WARN]${NC}   (respaldar-vps.sh: config Apache en BACKUP_ROOT/<timestamp>/) y, para el sitio y el motor, volver a publicar la"
+        log_tty "${YELLOW}[WARN]${NC}   Release anterior con publicar-vps.sh (misma versión de deployment)."
+    else
+        log_tty "${BLUE}[INFO]${NC} Rollback manual si lo necesitas después:"
+        log_tty "${BLUE}[INFO]${NC}   ssh ${VPS_USER}@${VPS_HOST} \"ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'\""
+    fi
+fi
+exit 0
