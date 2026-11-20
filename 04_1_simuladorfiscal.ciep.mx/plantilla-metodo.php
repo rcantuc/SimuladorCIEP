@@ -251,7 +251,7 @@ function metodo_pie(array $p = array()) {
 		array('salud', 'Salud en México', 'Health in Mexico'), array('gastoeducativo', 'Educación en México', 'Education in Mexico'),
 		array('energiaenmexico', 'Energía en México', 'Energy in Mexico'), array('subnacional', 'Finanzas Subnacionales', 'Subnational Finances'),
 		array('inversion', 'Inversión en México', 'Investment in Mexico'), array('desarrollosostenible', 'Desarrollo Sostenible', 'Sustainable Development'),
-		array('cuidados', 'Cuidados', 'Care Economy'), array('vacuna', 'Vacuna contra la Desigualdad', 'Vaccine against Inequality'),
+		array('cuidados', 'Cuidados', 'Care Economy'), array('vacuna', 'Vacuna contra la Desigualdad', 'Vacuna contra la Desigualdad'),
 	);
 	$col_mic = array('', '');
 	foreach ($mic as $i => $m) {

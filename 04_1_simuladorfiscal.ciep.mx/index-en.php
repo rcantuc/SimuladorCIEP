@@ -2732,7 +2732,7 @@ if ($deployed_version !== "") {
 												<li><a class="icon-link" href="https://inversion.ciep.mx/" target="_blank" rel="noopener">Investment in Mexico</a></li>
 												<li><a class="icon-link" href="https://desarrollosostenible.ciep.mx/" target="_blank" rel="noopener">Sustainable Development</a></li>
 												<li><a class="icon-link" href="https://cuidados.ciep.mx/" target="_blank" rel="noopener">Care Economy</a></li>
-												<li><a class="icon-link" href="https://vacuna.ciep.mx/" target="_blank" rel="noopener">Vaccine against Inequality</a></li>
+												<li><a class="icon-link" href="https://vacuna.ciep.mx/" target="_blank" rel="noopener">Vacuna contra la Desigualdad</a></li>
 											</ul>
 										</div>
 									</div>
