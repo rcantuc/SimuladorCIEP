@@ -52,7 +52,7 @@ for f in args:
             if PRINT.match(s) or IDENT.match(s) or s.startswith(SIMCI_SYNTAX) or 'SCN_CONGELADO_RES' in s or 'SCN_CONGELADO_DET' in s or s.startswith('res = f"') or f.endswith('_tabla_anclas.ado'): impresion += 1; continue
             if any(s.startswith(d[1]) for d in DECLARADAS): declaradas.append((f,'+',s)); continue
             calculo.append((f,'+',s))
-print(f'check-solo-display vs {ref}: {total} enunciados cambiados; {impresion} de impresión; {len(declaradas)} declarados (prefijo/opción de impresión sobre un comando); {len(calculo)} de cálculo')
+print(f'verificar-solo-display vs {ref}: {total} enunciados cambiados; {impresion} de impresión; {len(declaradas)} declarados (prefijo/opción de impresión sobre un comando); {len(calculo)} de cálculo')
 for f,s,b in declaradas: print(f'  declarado {s} {f}: {b[:140]}')
 for f,s,b in calculo: print(f'  CALCULO   {s} {f}: {b[:160]}')
 sys.exit(1 if calculo else 0)

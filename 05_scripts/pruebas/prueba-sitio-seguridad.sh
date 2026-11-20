@@ -75,7 +75,7 @@ p, fake = sys.argv[1], sys.argv[2]
 t = open(p, encoding='utf-8', newline='').read()
 t2 = re.sub(r"/Applications/StataNow/StataSE\.app/Contents/MacOS/stata-se", fake, t)
 if t2 == t:
-    sys.exit("test-sitio-seguridad: no se encontró la ruta de StataNow en config.php (cambió la detección de Stata)")
+    sys.exit("prueba-sitio-seguridad: no se encontró la ruta de StataNow en config.php (cambió la detección de Stata)")
 open(p, 'w', encoding='utf-8', newline='').write(t2)
 PYEOF
 

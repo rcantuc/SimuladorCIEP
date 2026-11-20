@@ -49,14 +49,14 @@ SIN_STATA=0
 for arg in "$@"; do
 	case "$arg" in
 		--sin-stata) SIN_STATA=1 ;;
-		-*) echo "verify_nodo: opción desconocida: $arg" >&2; exit 2 ;;
+		-*) echo "verificar-nodo: opción desconocida: $arg" >&2; exit 2 ;;
 		*)  NODO="$arg" ;;
 	esac
 done
 
 # --- contexto -----------------------------------------------------------------
 if [ ! -f "05_scripts/pruebas/verificar-nodo.sh" ] || [ ! -d "01_modulos/nodos" ]; then
-	echo "verify_nodo: ejecútalo desde la raíz del repo (donde viven 01_modulos/nodos/ y 05_scripts/)." >&2
+	echo "verificar-nodo: ejecútalo desde la raíz del repo (donde viven 01_modulos/nodos/ y 05_scripts/)." >&2
 	exit 2
 fi
 
@@ -99,22 +99,22 @@ ok()   { printf '  \033[0;32m[OK]\033[0m    %s\n' "$1"; }
 fail() { printf '  \033[0;31m[FALLA]\033[0m %s\n' "$1"; FALLAS=$((FALLAS+1)); }
 info() { printf '         %s\n' "$1"; }
 
-echo "verify_nodo — nodo: ${NODO}"
+echo "verificar-nodo — nodo: ${NODO}"
 echo "  contrato: ${JSON}"
 echo "  página:   ${PAGINA}"
 echo
 
 if [ ! -f "$JSON" ]; then
-	echo "verify_nodo: no existe $JSON" >&2
+	echo "verificar-nodo: no existe $JSON" >&2
 	echo "  Es una SALIDA generada, no vive en git (${NODOS_DIR}/ está ignorada)." >&2
 	echo "  Prodúcela corriendo el driver en Stata:" >&2
 	echo "    do \"\$(pwd)/${DRIVER}\"" >&2
 	exit 2
 fi
-if [ ! -f "$PAGINA" ]; then echo "verify_nodo: no existe la fuente $PAGINA" >&2; exit 2; fi
+if [ ! -f "$PAGINA" ]; then echo "verificar-nodo: no existe la fuente $PAGINA" >&2; exit 2; fi
 
 PY=$(command -v python3 || true)
-if [ -z "$PY" ]; then echo "verify_nodo: se requiere python3 para leer el JSON." >&2; exit 2; fi
+if [ -z "$PY" ]; then echo "verificar-nodo: se requiere python3 para leer el JSON." >&2; exit 2; fi
 
 # =============================================================================
 echo "REGLA 1 — la página no contiene cifras propias"
@@ -190,7 +190,7 @@ done
 if [ "$SIN_STATA" -eq 1 ]; then
 	info "SALTADA por --sin-stata (declarado explícitamente)."
 elif [ -z "$STATA" ]; then
-	echo "verify_nodo: no encontré Stata y no pasaste --sin-stata." >&2
+	echo "verificar-nodo: no encontré Stata y no pasaste --sin-stata." >&2
 	echo "  El determinismo no se puede saltar en silencio: o corre con Stata," >&2
 	echo "  o declara la omisión con --sin-stata." >&2
 	exit 2
@@ -458,9 +458,9 @@ fi
 # =============================================================================
 echo
 if [ "$FALLAS" -eq 0 ]; then
-	printf '\033[0;32mverify_nodo: todas las reglas pasan.\033[0m\n'
+	printf '\033[0;32mverificar-nodo: todas las reglas pasan.\033[0m\n'
 	exit 0
 else
-	printf '\033[0;31mverify_nodo: %s regla(s) con falla. NO publicar.\033[0m\n' "$FALLAS"
+	printf '\033[0;31mverificar-nodo: %s regla(s) con falla. NO publicar.\033[0m\n' "$FALLAS"
 	exit 1
 fi

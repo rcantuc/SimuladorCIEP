@@ -474,7 +474,7 @@ Esto importa por una razón: garantiza que los números que ve un usuario extern
 | Cálculo | números contra el baseline (`05_scripts/pruebas/compuerta-numeros.sh` y sus fixtures) | rojo, no se publica |
 | Registro | línea base de nombres auditados (`05_scripts/pruebas/fixtures/scalarlatex-baseline.txt`) | alerta de deriva |
 | Exportación | procedencia en cada JSON (`scalarjson.ado`, `.meta` de las entidades) | no se genera el archivo |
-| Publicación web | todo valor en pantalla tiene origen en un archivo exportado (`test-sitio-*.sh`: la página no trae números) | no se publica |
+| Publicación web | todo valor en pantalla tiene origen en un archivo exportado (`prueba-sitio-*.sh`: la página no trae números) | no se publica |
 
 ### 6.4 Versionado alineado
 
