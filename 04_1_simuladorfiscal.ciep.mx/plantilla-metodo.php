@@ -240,9 +240,9 @@ function metodo_pie(array $p = array()) {
 	$tit_sim = $es ? 'Simuladores:' : 'Simulators:';
 	$tit_mic = $es ? 'Micrositios:' : 'Microsites:';
 	$tit_con = $es ? 'Contacto:' : 'Contact:';
-	$sim_fiscal = $es ? 'Simulador Fiscal' : 'Fiscal Simulator';
 	$sim_tenencia = $es ? 'Simulador de Tenencia' : 'Vehicle Tax Simulator';
 	$sim_tabaco = $es ? 'IEPS al Tabaco' : 'Tobacco Excise Tax';
+	$sim_hospedaje = $es ? 'Simulador de Hospedaje' : 'Lodging Simulator';
 	$dir2 = $es ? 'Del. Cuauhtémoc, CDMX' : 'Cuauhtémoc, Mexico City';
 	// micrositios: nombre en español (como en index.php) y en inglés (como en index-en.php)
 	$mic = array(
@@ -251,15 +251,16 @@ function metodo_pie(array $p = array()) {
 		array('salud', 'Salud en México', 'Health in Mexico'), array('gastoeducativo', 'Educación en México', 'Education in Mexico'),
 		array('energiaenmexico', 'Energía en México', 'Energy in Mexico'), array('subnacional', 'Finanzas Subnacionales', 'Subnational Finances'),
 		array('inversion', 'Inversión en México', 'Investment in Mexico'), array('desarrollosostenible', 'Desarrollo Sostenible', 'Sustainable Development'),
-		array('cuidados', 'Cuidados', 'Care Economy'),
+		array('cuidados', 'Cuidados', 'Care Economy'), array('vacuna', 'Vacuna contra la Desigualdad', 'Vaccine against Inequality'),
 	);
 	$col_mic = array('', '');
 	foreach ($mic as $i => $m) {
 		$col_mic[$i < 6 ? 0 : 1] .= "\n\t\t\t\t\t\t\t\t\t<li><a href=\"https://{$m[0]}.ciep.mx/\" target=\"_blank\" rel=\"noopener\">" . ($es ? $m[1] : $m[2]) . '</a></li>';
 	}
 	$social = '<ul class="metodo-social metodo-social-pie">'
-		. '<li><a href="http://facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img src="/images/f-icon-facebook.svg" alt=""></a></li>'
+		. '<li><a href="https://www.facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img src="/images/f-icon-facebook.svg" alt=""></a></li>'
 		. '<li><a href="https://twitter.com/ciepmx" target="_blank" rel="noopener" aria-label="X"><img src="/images/f-icon-twitter.svg" alt=""></a></li>'
+		. '<li><a href="https://www.instagram.com/ciep.mx/" target="_blank" rel="noopener" aria-label="Instagram"><img src="/images/f-icon-instagram.svg" alt=""></a></li>'
 		. '<li><a href="https://www.youtube.com/user/CIEPMX" target="_blank" rel="noopener" aria-label="YouTube"><img src="/images/f-icon-youtube.svg" alt=""></a></li>'
 		. '</ul>';
 	echo <<<HTML
@@ -267,18 +268,18 @@ function metodo_pie(array $p = array()) {
 		<div class="metodo-pie-fila-2">
 			<div class="container">
 				<div class="row">
-					<div class="col-sm-2">
+					<div class="col-sm-2 metodo-pie-col-logo">
 						<a class="metodo-pie-logo" href="{$inicio}" aria-label="Simulador Fiscal CIEP"><img src="/images/logo-sim-fiscal-ciep-b.png" alt="Simulador Fiscal CIEP" width="150" height="52"></a>
 					</div>
-					<div class="col-sm-2 mt-4 mt-sm-0">
+					<div class="col-sm-2 mt-4 mt-sm-0 metodo-pie-col-sim">
 						<p class="metodo-pie-titulo"><small>{$tit_sim}</small></p>
 						<ul class="list-unstyled mb-0">
-							<li><a href="https://simuladorfiscal.ciep.mx/" target="_blank" rel="noopener">{$sim_fiscal}</a></li>
 							<li><a href="https://tenencia.ciep.mx/" target="_blank" rel="noopener">{$sim_tenencia}</a></li>
 							<li><a href="https://iepsaltabaco.ciep.mx/" target="_blank" rel="noopener">{$sim_tabaco}</a></li>
+							<li><a href="https://simuladorhospedaje.ciep.mx/" target="_blank" rel="noopener">{$sim_hospedaje}</a></li>
 						</ul>
 					</div>
-					<div class="col-sm-5 mt-4 mt-sm-0">
+					<div class="col-sm-5 mt-4 mt-sm-0 metodo-pie-col-mic">
 						<p class="metodo-pie-titulo"><small>{$tit_mic}</small></p>
 						<div class="row">
 							<div class="col-sm-6">
@@ -293,7 +294,7 @@ function metodo_pie(array $p = array()) {
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-3 mt-4 mt-sm-0">
+					<div class="col-sm-3 mt-4 mt-sm-0 metodo-pie-col-con">
 						<p class="metodo-pie-titulo"><small>{$tit_con}</small></p>
 						<ul class="list-unstyled mb-0">
 							<li>Puebla 151 Letra O, Col. Roma Norte,</li>

@@ -2513,6 +2513,25 @@ body .btn-lg {
 .footer-box .row-2 {
      background-color: #28323C !important;
  }
+
+.footer-box .pie-col-sim a.icon-link {
+	white-space: nowrap;
+}
+/* Pie a anchos intermedios: las cuatro columnas solo caben desde 1200 px; entre 576 y 1199 px bajan de renglón
+   (logo y Simuladores, luego Micrositios, luego Contacto). Menos de 576 px ya iba apilado; desde 1200 px no cambia. */
+@media (min-width: 576px) and (max-width: 1199.98px) {
+	.footer-box .pie-col-logo,
+	.footer-box .pie-col-sim {
+		flex: 0 0 50%;
+		max-width: 50%;
+	}
+	.footer-box .pie-col-mic,
+	.footer-box .pie-col-con {
+		flex: 0 0 100%;
+		max-width: 100%;
+		margin-top: 3rem !important;
+	}
+}
 /*//////////////////*/
 /*//////////////////*/
 
