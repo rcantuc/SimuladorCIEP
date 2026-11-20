@@ -793,6 +793,7 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | Sitio auto-contenido (`verify_sitio_autocontenido.sh`: docroot == `git ls-files 04_1/`, sin fantasmas, activos referenciados existen; roturas conocidas en `05_scripts/sitio-referencias-rotas-conocidas.txt`) | **sí** | el Gate 7 de `publicar-vps.sh` lo repite sobre el worktree de publicación antes del rsync | estático; en CI protege contra el enlace a un archivo que no viaja en git |
 | `/NTA` (`test-sitio-nta.sh`: `php -S` + el Sankey v2 y la cuenta del motor como fixtures; la ruta responde, `jsonSankeyNTA.php` sirve el v2 por default y valida `corte`/`cuenta`, mismo conteo de nodos/enlaces que el origen (52/174 con el fixture), la página no trae números, lo que FusionCharts dibuja es idéntico, como cadena, al JSON de origen y las cifras de «Anchoring and residual» se llenan desde `?cuenta=grupoedad`; `--png` exporta la captura) | **sí** (Chrome headless) | sin argumentos toma `users/ricardo/SankeyNTA/sankey-v2-grupoedad.json` y `users/ricardo/NTA/nta-grupoedad.json` de la corrida local (o `--json`/`--cuenta`), antes de desplegar | no necesita Stata: lee los JSON ya emitidos |
 | `/metodo` (`test-sitio-metodo.sh`, 8.18: `metodo.py --check` regenera del repo y exige bytes idénticos a `04_1/metodo/`; `php -l`; `php -S`: índice, cap0, `metodo.json` y cada capítulo responden 200; cero literales de 4+ dígitos en PHP/JS/CSS; Chrome headless: cada página pinta desde `metodo.json`, 10 secciones por capítulo con tabla o párrafo o su FLAG, índice con el sello del JSON, cap0 con la columna «Otro país» vacía, sin errores de JS, enlaces internos 200) | **sí** (Chrome headless) | lo mismo, localmente, antes del PR; `metodo.py --reporte` para leer sellos y secciones vacías | no necesita Stata: lee el repo (§16) |
+| Sellos de versión (`test-sitio-sellos.sh`: Chrome headless sobre `php -S` abre la portada, `/metodo` (índice, cap0 y un capítulo), `/NTA`, `/entidades` y una entidad, en español y en inglés; todo GET propio de datos, CSS o JS lleva `?v=`: sha1 del contenido (10 hex) si es un archivo del docroot, sha1 de `DEPLOYED_COMMIT` si lo sirve un PHP; `plugins/`, los POST de la portada, imágenes y fuentes quedan fuera; control negativo incluido) | **sí** (Chrome headless) | lo mismo, localmente, antes del PR; `--json <archivo>` deja el censo de peticiones | sin Stata; ver `04_1/sellos.php` (`sello_url()`) y `selloUrl()` en `js/metodo-sankey.js` |
 | `publicar.sh` Gate 1 (CHANGELOG tiene la versión del manifest) | **sí** (`--ci`) | — | estático |
 | `publicar.sh` Gate 2 (tag anotado) | **no** | `publicar.sh vX.Y.Z --check` en el worktree de publicación, tras crear el tag | el tag lo crea el ritual; un PR de release lleva el manifest bumpeado antes del tag |
 | `publicar.sh` Gate 3 (manifest sincronizado) | **sí** | — | estático |
@@ -840,9 +841,9 @@ bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
-Branches → `master` → *Require status checks to pass before merging* → marcar los **diez** checks de
+Branches → `master` → *Require status checks to pass before merging* → marcar los **once** checks de
 `gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`,
-`sitio-transitorios`, `sitio-nta`, `sitio-entidades`, `sitio-metodo`, `publicar-check`). El nombre del check es el `name:` del job
+`sitio-transitorios`, `sitio-nta`, `sitio-entidades`, `sitio-metodo`, `sitio-sellos`, `publicar-check`). El nombre del check es el `name:` del job
 (no su id): cambiarlo rompe la protección. Por línea de comandos (v8.14 añadió `sitio-entidades`; 8.18 añade `sitio-metodo`: el JSON completo con los diez está en el reporte del PR de 8.18 y abajo):
 ```bash
 gh api -X PATCH repos/rcantuc/SimuladorCIEP/branches/master/protection/required_status_checks \
@@ -857,6 +858,7 @@ gh api -X PATCH repos/rcantuc/SimuladorCIEP/branches/master/protection/required_
   "/NTA: Sankey NTA idéntico al JSON del motor (Chrome headless)",
   "/entidades: 32 páginas generadas, 4 productos y sellos = JSON del motor (Chrome headless)",
   "/metodo: capítulos generados del repo = publicados (Chrome headless)",
+  "sellos de versión: todo recurso propio de datos, CSS y JS (Chrome headless)",
   "publicar.sh --ci (gates 1, 3, 4, 5*, 6, 7, 8)"
 ]}
 JSON
