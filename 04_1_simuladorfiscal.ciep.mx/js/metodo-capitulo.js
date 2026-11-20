@@ -261,7 +261,7 @@
 		var cont = document.getElementById('metodo-contenido');
 		if (!cont) return;
 		var src = LANG === 'en' ? cfg.url.replace(/metodo\.json$/, 'metodo-en.json') : cfg.url;
-		fetch(src, {credentials: 'same-origin'}).then(function (r) {
+		fetch(selloUrl(src), {credentials: 'same-origin'}).then(function (r) {
 			if (!r.ok) throw new Error('HTTP ' + r.status);
 			return r.json();
 		}).then(function (d) {
