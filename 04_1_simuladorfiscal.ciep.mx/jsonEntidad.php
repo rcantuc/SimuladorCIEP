@@ -20,7 +20,7 @@
 //                                    sellos con su n; PIBE y neto transcritos de neto-pibe.json)               byte a byte
 //   ?producto=indice                 users/<id>/entidades.json (entidades-indice/v1: la tabla de las 32)      byte a byte
 //
-// Harness de seguridad (test-sitio-entidades.sh, test-sitio-seguridad.sh): abrev se valida ESTRICTO contra el
+// Harness de seguridad (prueba-sitio-entidades.sh, prueba-sitio-seguridad.sh): abrev se valida ESTRICTO contra el
 // catálogo generado entidades/_catalogo.php (clave exacta, mayúsculas incluidas; forma la ruta) → 400 si no está;
 // producto y corte en lista blanca → 400; idSession inválido o ausente → escenario default 'ciepmx'
 // (lee_idSession de config.php, como los otros jsonSankey*.php). Archivo ausente → 404 con la pista del deploy

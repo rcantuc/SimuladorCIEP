@@ -11,7 +11,7 @@
 //
 // metodoSankeys([{renderAt: 'sankey-nta', url: '/jsonSankeyNTA.php?corte=v3-grupoedad'}, …])
 //   Dibuja cada Sankey y deja el dataSource recibido en window.metodoSankeyData[renderAt]
-//   (lo lee el gate 05_scripts/test-sitio-nta.js para comparar contra el JSON de origen).
+//   (lo lee el gate 05_scripts/pruebas/prueba-sitio-nta.js para comparar contra el JSON de origen).
 //   NTA-4 (v8.13.0): si el chart declara unidad = pctpib y todos los enlaces traen pctpib (NTA.do §7b: value / PIB × 100,
 //   dividido en Stata), el Sankey se dibuja con pctpib como value del enlace (FusionCharts suma los nodos en esa unidad:
 //   «% of GDP») y cada enlace lleva un tooltext con ambas unidades; el MXN del motor queda en el campo mxn del enlace.
@@ -150,7 +150,7 @@ function metodoCifras(cfg) {
 // para LEER la cuenta por grupo. Se dibujan con SVG propio: una columna de barras de entradas a la izquierda, la barra
 // del grupo al centro, una columna de salidas a la derecha y una cinta por flujo; etiquetas completas (las del JSON)
 // sobre las cintas y el valor en el tooltip (<title>). Cada cinta lleva data-from / data-to / data-value con el valor
-// del JSON tal cual (lo lee el gate 05_scripts/test-sitio-nta.js). Paleta: la del tema «fusion» del Sankey principal.
+// del JSON tal cual (lo lee el gate 05_scripts/pruebas/prueba-sitio-nta.js). Paleta: la del tema «fusion» del Sankey principal.
 var METODO_PALETA = ['#5d62b5', '#29c3be', '#f2726f', '#ffc533', '#62b58f', '#bc95df', '#67cdf2', '#8d95c7', '#f7a35c'];
 
 function metodoEscapa(s) {

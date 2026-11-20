@@ -305,7 +305,7 @@ Reemplaza al patrón fósil `noisily di %fmt = scalar(...)` + relectura de log.
   garantiza que cada valor del libro tiene precisión completa y tipo semántico
   declarado. Corolario operativo: los sin-registrar de cada corrida se
   comparan AUTOMÁTICAMENTE contra el **baseline auditado**
-  `05_scripts/fixtures/scalarlatex-baseline.txt` (228 en v8.0.13: 211 scalars de
+  `05_scripts/pruebas/fixtures/scalarlatex-baseline.txt` (228 en v8.0.13: 211 scalars de
   trabajo que el libro no referencia + 17 consumidos as-is numéricos, ver
   CHANGELOG v8.0.13). Dentro del baseline → línea informativa (sin dump);
   nombres NUEVOS → aviso en rojo con esos nombres: drift real (typo
@@ -445,7 +445,7 @@ enero–trimestre, millones de pesos) con `import excel`.
 
 **Sintaxis:** `AccesoITAN [, validar nographs]`. `validar` compara los totales por tipo con la
 captura manual `ISRInformesTrimestrales.xlsx` y devuelve `r(maxdelta)`. El catálogo lo regenera
-`05_scripts/itan-catalogo.py`; el refresco es `refrescar-scn.sh --itan [--congelar]`
+`05_scripts/datos/itan-catalogo.py`; el refresco es `refrescar-scn.sh --itan [--congelar]`
 (runbook-actualizar-assets §2e). Desde v8.16.0 el motor lo lee: `Households.do` §11.2 ancla la
 obligación de ISR de personas físicas por rango (`obligacion_isrpf_ancla = itan_rangos`) y
 `DatosAbiertos.ado` §4.1 toma de aquí los totales por tipo de contribuyente desde 2019-1 (la captura

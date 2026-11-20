@@ -20,7 +20,7 @@ program define AccesoITAN, rclass
 	local cat "${SIMROOT}/05_scripts/itan-catalogo.json"
 	capture confirm file "`cat'"
 	if _rc != 0 {
-		di as err "AccesoITAN: no existe `cat' (lo genera 05_scripts/itan-catalogo.py; se regenera con refrescar-scn.sh --itan --congelar)."
+		di as err "AccesoITAN: no existe `cat' (lo genera 05_scripts/datos/itan-catalogo.py; se regenera con refrescar-scn.sh --itan --congelar)."
 		exit 601
 	}
 	capture mkdir "${SIMROOT}/raw"

@@ -1,5 +1,5 @@
 # CITATION.cff — cómo citar el Simulador Fiscal CIEP (lo lee GitHub: botón «Cite this repository»).
-# GENERADO por 05_scripts/publicar.sh --citation desde 05_scripts/manifest.json (version y data_updated);
+# GENERADO por 05_scripts/publicar/publicar.sh --citation desde 05_scripts/manifest.json (version y data_updated);
 # el Gate 10 de publicar.sh (--check y --ci) exige que esté sincronizado. No editar a mano version, date-released
 # ni la URL de la Release: cambia el manifest y regenera.
 cff-version: 1.2.0

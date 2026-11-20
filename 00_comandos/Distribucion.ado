@@ -11,7 +11,7 @@
 *   v8.13 describía un programa que nunca existió (corregida en v8.14; Gini vive en Gini.ado).
 * Usuarios: Households.do (anclas SCN/LIF: ImpNetProductos_*, gasto_anualGobierno, ing_capitalROW, ISAN,
 *   Importaciones…), PerfilesSim.do (re-ancla a LIF/PEF/SCN del año PE), ISR_Mod.do, NTA.do, GastoPC.ado,
-*   TasasEfectivas.ado, TasasEfectivasMicro.ado. No forma parte del paquete público (manifest-endpoint.toml):
+*   TasasEfectivas.ado, TasasEfectivasMicro.ado. No forma parte del paquete público (manifiesto-endpoint.toml):
 *   ningún .pkg lo lista porque ningún .ado publicado lo invoca.
 * Decisión v8.14 (DoD 4, «gemelo»): el único gemelo encontrado es documental (la ayuda de PROGRAMAS_AUXILIARES.md)
 *   más una copia idéntica sin versionar en .devin/backups/; el .ado no se retira (siete módulos dependen de él),

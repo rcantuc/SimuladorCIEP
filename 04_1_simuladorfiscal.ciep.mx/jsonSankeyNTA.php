@@ -119,7 +119,7 @@ fclose($gestor);
 
 // Nodos que conservan flujo: un toolText local que declara la conservación (entradas = salidas; $nodeValue es
 // ese total, macro de FusionCharts). v3: los cuatro hubs; v2: los nodos de grupo («Ingreso <g>», «Consumo <g>»).
-// Solo texto de presentación: la etiqueta y el orden de los nodos no cambian (05_scripts/test-sitio-nta.js lo exige).
+// Solo texto de presentación: la etiqueta y el orden de los nodos no cambian (05_scripts/pruebas/prueba-sitio-nta.js lo exige).
 // Unidad de presentación (NTA-4): el v3 se dibuja en % del PIB (js/metodo-sankey.js pone pctpib como value del enlace y
 // deja el MXN en el tooltip); el v2 y los v1 siguen en MXN. El chart lo declara en `unidad` (FusionCharts la ignora).
 $unidad = ($corte === 'v3-grupoedad' || $corte === 'v4-economia') ? 'pctpib' : 'mxn';

@@ -19,7 +19,7 @@
 ## Reglas de código
 
 - Todo número nace en Stata (`arquitectura.md` §6.3.1): ni Python ni PHP calculan lo que se publica.
-- Tocar `output.do` exige `test-web-batch.sh` N/N antes de cerrar la rama (runbook §14.1, lección 7). Tocar un texto de `manifest.json` o un lector `.ado` de archivos externos exige `Precache` o `test-precache-manifest.sh` con Stata.
+- Tocar `output.do` exige `prueba-web-batch.sh` N/N antes de cerrar la rama (runbook §14.1, lección 7). Tocar un texto de `manifest.json` o un lector `.ado` de archivos externos exige `Precache` o `prueba-precache-manifest.sh` con Stata.
 - Un commit por punto, con mensajes `tipo(<id>/<punto>): …`.
 - Si es un hotfix o un PR de datos que se publica, el **release commit va en el PR** (CHANGELOG `[vX.Y.Z]`, manifest `version`/`release_tag`/`release_url_prefix`, `publicar.sh --citation`): el hash que se fusiona es el que se tagea (runbook §14.1, lección 8).
 
@@ -29,11 +29,11 @@
 
 ## Corrida (una sola, completa, al final, anunciada)
 
-**Una corrida de `correr-sim.sh` por sesión** (runbook §14.1, lección 13); la de `contrato-32.sh` es propia y no cuenta. Avisa antes de lanzarla. `bash 05_scripts/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `test-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
+**Una corrida de `correr-sim.sh` por sesión** (runbook §14.1, lección 13); la de `contrato-32.sh` es propia y no cuenta. Avisa antes de lanzarla. `bash 05_scripts/pruebas/correr-sim.sh <tu worktree> <diag>/<n>-sim-completo` en un worktree desechable con `raw/` y `master/` de `-datos` (memoria `corridas-worktree-desechable`; nunca en `-datos`); después `prueba-web-batch.sh --root <worktree>` y, si la sesión toca entidades, `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/<n>-sim-completo`. Corridas cortas de una rama alterna (`global hasta`) solo si un entregable lo pide, y nunca en paralelo con la completa.
 
 **Los tres árboles (firma CUAD-1-2 §C, 8.16b).** El clon de Dropbox es **intocable**: nada de `stash`, `reset`, `checkout`, `switch`, `pull` ni `merge` ahí, ni archivos escritos ahí; lo que tenga es de Ricardo. Trabajas en tu worktree y, si la sesión termina en ritual, en `-datos`; el paso `baile` de `ritual.sh` solo actualiza `-datos`.
 
-**El log (firma CUAD-1-2 §D ampliado; runbook §15).** Toda impresión pasa por `_log.ado` (`modulo`, `seccion`, `linea`, `aviso`, `gate`, `modelo`, `cuadro`, `anclas`): 110 columnas máximo, una unidad por cuadro declarada en el encabezado (miles de millones; nunca MXN completos), rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, gates debajo en una línea, avisos de una línea con prefijo fijo y referencia al documento. `test-log-ancho.sh` es gate de `correr-sim.sh`; `check-solo-display.py` separa impresión de cálculo. Adjunta en el reporte el cuadro principal tal como sale.
+**El log (firma CUAD-1-2 §D ampliado; runbook §15).** Toda impresión pasa por `_log.ado` (`modulo`, `seccion`, `linea`, `aviso`, `gate`, `modelo`, `cuadro`, `anclas`): 110 columnas máximo, una unidad por cuadro declarada en el encabezado (miles de millones; nunca MXN completos), rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, gates debajo en una línea, avisos de una línea con prefijo fijo y referencia al documento. `prueba-log-ancho.sh` es gate de `correr-sim.sh`; `verificar-solo-display.py` separa impresión de cálculo. Adjunta en el reporte el cuadro principal tal como sale.
 
 ## Evidencia
 

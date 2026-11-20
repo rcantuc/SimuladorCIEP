@@ -539,8 +539,8 @@ El mismo motor de Stata que usas tú se publica hacia afuera por dos canales, ca
 
 | Canal | Qué publica | Script | Dónde vive |
 |---|---|---|---|
-| Endpoint Stata (`net install`) | Los comandos para investigadores externos | `05_scripts/publicar.sh` | Servidor Cloudways |
-| Sitio web + motor de simulación | [simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx) completo | `05_scripts/publicar-vps.sh` | Servidor VPS de IONOS |
+| Endpoint Stata (`net install`) | Los comandos para investigadores externos | `05_scripts/publicar/publicar.sh` | Servidor Cloudways |
+| Sitio web + motor de simulación | [simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx) completo | `05_scripts/publicar/publicar-vps.sh` | Servidor VPS de IONOS |
 
 En el VPS, la versión activa se decide con un **symlink** llamado `current` — un symlink es un acceso directo: un nombre fijo que apunta a una carpeta que puedes cambiar. Apache siempre sirve `current`; publicar una versión nueva es apuntar `current` a la carpeta nueva (instantáneo), y regresar a la anterior es apuntarlo de vuelta (el "rollback").
 
@@ -555,7 +555,7 @@ En el VPS, la versión activa se decide con un **symlink** llamado `current` —
 
 **Antes de correrlo necesitas:**
 
-- El archivo `05_scripts/publicar-vps-credentials.sh` con tus variables (usuario y host del VPS, rutas locales y remotas, URL del health check y `BACKUP_ROOT`). Está fuera de Git a propósito; la plantilla `publicar-vps-credentials.template.sh` trae cada variable con ejemplo.
+- El archivo `05_scripts/publicar/credenciales-vps.sh` con tus variables (usuario y host del VPS, rutas locales y remotas, URL del health check y `BACKUP_ROOT`). Está fuera de Git a propósito; la plantilla `credenciales-vps.template.sh` trae cada variable con ejemplo.
 - Working tree limpio (todo commiteado): el script se niega a desplegar código no versionado.
 
 **Cómo se corre:**
@@ -572,7 +572,7 @@ La versión es de *deployment* (`v8.0`, `v8.1`), no de código (`v8.0.7` la rech
 
 | Fase | Qué hace |
 |---|---|
-| 0 | Backup de la config Apache (vía `backup-vps.sh`). **Si el backup falla, no hay deploy.** |
+| 0 | Backup de la config Apache (vía `respaldar-vps.sh`). **Si el backup falla, no hay deploy.** |
 | 1 | Snapshot: anota el commit local y el deployment previo (destino del rollback) |
 | 2 | Sube el sitio PHP |
 | 3a-3b | Sube el motor Stata y los `.dta` de `master/` que el web consume: los planos de la raíz + SOLO el año ENIGH vigente y su perfil (hoy `2024/` y `perfiles2026.dta`; los años previos son insumos solo-locales y no viajan) |
@@ -599,7 +599,7 @@ La versión es de *deployment* (`v8.0`, `v8.1`), no de código (`v8.0.7` la rech
 ./publicar-vps.sh v8.0 --limpiar-master-vps   # imprime los rm exactos; tú decides
 ```
 
-### 10.3 `backup-vps.sh`: el respaldo del VPS
+### 10.3 `respaldar-vps.sh`: el respaldo del VPS
 
 Corre solo como Fase 0 de cada deploy, y también a mano:
 

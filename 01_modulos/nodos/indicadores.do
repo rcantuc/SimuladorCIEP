@@ -54,7 +54,7 @@
 *   El mu-plugin se instala UNA vez a mano en wp-content/mu-plugins/.
 *
 * USO:  do "${SIMROOT}/01_modulos/nodos/indicadores.do"
-* Override de destino para verify_nodo.sh (regla 3): global nodo_saving.
+* Override de destino para verificar-nodo.sh (regla 3): global nodo_saving.
 
 *** 0 PRELIMINARES ***
 local site `"${SIMROOT}"'

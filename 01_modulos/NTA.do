@@ -41,7 +41,7 @@
 * §1 Propósito (procedencia: este header l. 3–4 y 41–44; CUAD-2 §1): NTA.do — Cuenta de Transferencias Nacionales por individuo (Lee–Mason), cerrada por
 *   grupo de edad y por quinquenio×sexo; cumple por persona, por grupo y a nivel nacional la identidad C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S) y emite la
 *   cuenta, el Sankey de la economía completa (v4) y el panel grupo × sexo que publica /NTA.
-* §7 Identidades verificadas — IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/test-nta-identidad.do la exige a 1e-9 relativo):
+* §7 Identidades verificadas — IDENTIDAD (por persona, por grupo y nacional; el gate 05_scripts/pruebas/prueba-nta-identidad.do la exige a 1e-9 relativo):
 *     C − YL − ImpProd = (τ⁺ − τ⁻) + (YA − S)     con   τ⁺ − τ⁻ = τ⁺púb(efectivo + especie + colectivo) − τ⁻púb + τ⁺inter − τ⁻inter + intra
 *   y en la forma que exige el gate:  C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − S) − intra = 0.
 *   YL + YA + ImpProd es ingreso a PRECIOS DE MERCADO (ImpProd = impuestos netos a los productos como ingreso), C a precios de comprador.
@@ -1430,7 +1430,7 @@ restore
 * grupo → Gobierno / Familias / Activos; τ⁺ efectivo, inter recibido + remesas, intra y desahorro salen por
 * grupo hacia Consumo por grupo; la especie sale de Gobierno a las categorías públicas) → Usos (categorías
 * privadas y públicas) → Sinks (grupos como consumidores, Futuro por grupo, Resto del gasto público).
-* Todo flujo ≥ 0; cada nodo intermedio conserva entradas = salidas (lo verifica test-nta-identidad.sh).
+* Todo flujo ≥ 0; cada nodo intermedio conserva entradas = salidas (lo verifica prueba-nta-identidad.sh).
 * Intra-hogar y S van NETOS por grupo (brutos entre grupos: un grupo entra o sale de Familias/Activos);
 * los brutos por persona (IntraPos/IntraNeg) quedan en nta-grupoedad.json. El ajuste del ancla de S (solo con
 * nta_anclaS = aditivo) es un tipo de ingreso aparte ("Ajuste ancla S.14"), no se esconde en el capital; con el
@@ -1439,7 +1439,7 @@ restore
 * «Derechos de pensión D8» (YA_d8); «Ing capital» es YA sin D.8, sin ajuste y sin alquiler. Las categorías públicas
 * son «Educación pública», «Salud pública», «Otros en especie» (las tres suman D.63: en especie con edad) y
 * «Colectivo per cápita» (ConGob − D.63). Con ISR_PM y OTROSK fuera de τ⁻, el balance del gobierno suele ser
-* negativo: entra como fuente «Déficit público». test-nta-identidad.sh exige estos nodos.
+* negativo: entra como fuente «Déficit público». prueba-nta-identidad.sh exige estos nodos.
 * Compras netas de no residentes: ya restadas de C (gasto_anualComprasN), por eso no hay nodo "Turistas".
 local BF = scalar(NTAInterRec0) + scalar(NTAOtrosRec0) - scalar(NTAInterOtor0) - scalar(NTAOtrosOtor0)	// 8.17: + indemnizaciones D.72 − D.7 pagada a otros sectores
 if abs(`BF') < 1 local BF = 0	// 8.17: con inter_hogar = balance el neto es 0 salvo el ultimo bit; un enlace de 0.001 MXN rompe la tolerancia de pctpib
@@ -1673,10 +1673,10 @@ noisily _log linea "Sankey v2 (bn): balance Familias `=strtrim(string(`BF'/1e9, 
 * Balances como en v2: «Déficit público» → Gobierno si τ⁻ + OyE < τ⁺ efectivo + Cpub (si no Gobierno → «Resto del gasto
 * público»); «Otras transferencias privadas» → Ing nacional si inter recibido > otorgado (si no Ing nacional → «Transferencias
 * privadas netas»). Ancla multiplicativa declarada (d_g = S sin ancla − S anclado): recorte = Σ_g max(d_g, 0), complemento =
-* Σ_g max(−d_g, 0); el nodo lleva el neto. Conservación en todo nodo intermedio en ambas unidades; test-nta-identidad.sh C lo exige.
+* Σ_g max(−d_g, 0); el nodo lleva el neto. Conservación en todo nodo intermedio en ambas unidades; prueba-nta-identidad.sh C lo exige.
 * v8.14b (punto 14, 2026-10-30): orden vertical EXPLÍCITO. SankeySumSim emite los nodos por primera aparición (eje por eje, fila por
 * fila) y los enlaces en el orden de las filas, y FusionCharts coloca los nodos de cada columna en el orden del arreglo nodes
-* (verificado con la captura de test-sitio-nta.sh --png; no hace falta atributo de la librería). Cada eje f1..f5 se ordena por
+* (verificado con la captura de prueba-sitio-nta.sh --png; no hace falta atributo de la librería). Cada eje f1..f5 se ordena por
 * (rango del origen, rango del destino) con _nta_v3rank: col. 1 El mundo, grupos de edad, OyE públicas, Desahorro, Otras
 * transferencias privadas, Déficit público, Ajuste S14 (si es fuente); col. 2 Remesas, Impuestos a productos, Ing capital, Ing
 * laboral, Alquiler propio, Derechos de pensión D8; Ing nacional; Gobierno, Activos; Transferencias en efectivo, Colectivo, Futuro;
@@ -1965,7 +1965,7 @@ noisily _log linea "Sankey v3 (bn): ajuste S.14 neto `=strtrim(string(`ajuste_ne
 * las categorías (menos el desahorro de los grupos que desahorran, que financia Financiamiento) y S⁺ a Futuro, con el S micro SIN ancla; la diferencia
 * con B.8n S.14 es el nodo «Ajuste a cuentas nacionales S14» (sink si la CSI ahorra más que el micro; fuente si menos): declarado, nunca absorbido.
 * Todo valor nace aquí de escalares de SCN.ado (celdas CSI y BIE) o de las sumas por grupo de la cuenta por persona; cada enlace viaja con value (MXN)
-* y pctpib (% del PIB BIE del año). Cada nodo intermedio conserva a 1e-9 (cuadro 5 de nta-identidad.txt; test-nta-identidad.sh D lo exige).
+* y pctpib (% del PIB BIE del año). Cada nodo intermedio conserva a 1e-9 (cuadro 5 de nta-identidad.txt; prueba-nta-identidad.sh D lo exige).
 capture program drop _nta_v4add
 program define _nta_v4add
 	args f t v
@@ -2627,7 +2627,7 @@ quietly {
 noisily _log aviso, tipo(Salida) texto("users/$id/NTA/: nta-persona.dta, nta-grupoedad.json, nta-quinquenio-sexo.json, nta-identidad.txt, nta-panel-grupoedad-sexo.json")
 noisily _log aviso, tipo(Salida) texto("users/$id/SankeyNTA/: sankey-v2-grupoedad.json, sankey-v3-grupoedad.json, sankey-v4-economia.json") ref("runbook §12")
 if `ok' == 0 {
-	noisily _log aviso, tipo(GATE) texto("NTA: algún gate interno quedó ROJO (ver arriba); 05_scripts/test-nta-identidad.sh lo confirma") rojo
+	noisily _log aviso, tipo(GATE) texto("NTA: algún gate interno quedó ROJO (ver arriba); 05_scripts/pruebas/prueba-nta-identidad.sh lo confirma") rojo
 }
 timer off 14
 timer list 14

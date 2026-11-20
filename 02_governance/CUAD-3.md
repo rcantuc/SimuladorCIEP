@@ -50,7 +50,7 @@ Escalar el ingreso por persona de la ENIGH a las celdas del sector hogares del S
 | 4 | §9 imprime el cuadro «Brecha ENIGH–SCN repartida ∝ Y^ε por celda» (ε, ancla, Σ ENIGH, brecha, g medio, g en p50/p90/p99 de Y) | — | `H` §9 |
 | 5 | §11.1 recalcula la obligación de asalariados sobre la base ajustada (la tarifa, el share acotado y el corte `imss` no cambian); el residuo Σ obligación(formales) − LIF se imprime como **evasión identificable** si ≥ 0 y como subreporte residual (FLAG 27, sello rojo) si < 0; cuadro de validación (Gini y top shares de YL, salario de SINCO 1, base gravable / salarios) | Σ ISR_asalariados de los formales → LIF al repartir (TasasEfectivas/PerfilesSim), como antes | `H` §11.1 |
 | 6 | §11.2 ancla la obligación de PF por rango del ITAN como en 8.16b; la calibración de ε compara la **obligación estatutaria por rango** (Σ motor del cuadro «ISR de personas físicas por rango») con el ITAN | Σ ISR_PF = ITAN PF (gate) | `H` §11.2 |
-| 7 | `NTA.do` ancla YA a YAHogS14 − D.442 − ⅔ D.422 y YL a D.1 + ⅔ (B.3n + D.422); `test-nta-identidad.do` igual | Σ S de las personas = B.8n S.1; factor YA = 1 | `N` §4.3b, cuadro 3; `05_scripts/test-nta-identidad.do` |
+| 7 | `NTA.do` ancla YA a YAHogS14 − D.442 − ⅔ D.422 y YL a D.1 + ⅔ (B.3n + D.422); `prueba-nta-identidad.do` igual | Σ S de las personas = B.8n S.1; factor YA = 1 | `N` §4.3b, cuadro 3; `05_scripts/pruebas/prueba-nta-identidad.do` |
 
 ## §4 Decisiones: cada cambio de 8.17.2 como parámetro
 
@@ -209,10 +209,10 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 | Archivo / JSON / figura | Qué cambia en 8.17.2 | Quién lo consume | Check |
 |---|---|---|---|
 | `master/2024/households.dta` | `ing_subor`, `ing_mixto*`, `ing_t4_cap3`, `exen_*`, `ing_capital`, `Yl`, `Yk`, `ISR*`; char `cuad_params` con los tres parámetros | todo el motor posterior | gate humano |
-| `users/<id>/output.txt` | `CUADRATURA` (YL/YA), `INCD*` ISR/Laboral/Aportaciones, `APORT*`, `PROY*`, `INGRESOSTEF` donde el denominador cambie | sitio, sidecar | `gate-numeros.sh` ROJO esperado; `baseline = v8.17.2` |
-| 5 `SankeySF/*.json`, 5 `SankeyNTA/*.json`, `NTA/*` | reparto por edad/decil de YL, YA, ISR | portada, `/NTA` | `gate-numeros.sh`, `test-nta-identidad.sh`, `test-sitio-nta.sh` |
+| `users/<id>/output.txt` | `CUADRATURA` (YL/YA), `INCD*` ISR/Laboral/Aportaciones, `APORT*`, `PROY*`, `INGRESOSTEF` donde el denominador cambie | sitio, sidecar | `compuerta-numeros.sh` ROJO esperado; `baseline = v8.17.2` |
+| 5 `SankeySF/*.json`, 5 `SankeyNTA/*.json`, `NTA/*` | reparto por edad/decil de YL, YA, ISR | portada, `/NTA` | `compuerta-numeros.sh`, `prueba-nta-identidad.sh`, `prueba-sitio-nta.sh` |
 | 32 entidades (`SIMentidad.ado`) | `INCD*` por entidad | `/entidades` | `contrato-32.sh` (c32 del ritual; fixtures en PR corto, como 8.16b) |
-| Log de `Households`: cuadros «Brecha ∝ Y^ε por celda» y «Validación del ajuste» | nuevos | lectura humana; este memo | `test-log-ancho.sh` |
+| Log de `Households`: cuadros «Brecha ∝ Y^ε por celda» y «Validación del ajuste» | nuevos | lectura humana; este memo | `prueba-log-ancho.sh` |
 
 ## §7 Identidades verificadas
 
@@ -221,7 +221,7 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 | Identidad | Tolerancia | Resultado | Fuente |
 |---|---|---|---|
 | Gate de la sesión: con `rentas_celda = b3n`, `ing_mixto_ancla = b3n`, `altimir_elasticidad = 1` el motor reproduce v8.17.1 | byte a byte (`output.txt`), 1e-9 (sankeys) | **VERDE**: `output.txt` byte-idéntico (51,892 bytes); 10 sankeys ≤ 3.0e-14 | `00-gate-eps1-celdas-v8171/gate-numeros.txt`; `03-bitcheck-eps1-celdas-v8171` |
-| `gate-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1 | byte a byte / 1e-9 | **ROJO esperado** (404 de 509 líneas; SankeySF decil 80/104 enlaces, Δ rel. máx 0.35; SankeyNTA decil 113/143, 0.33); fixtures re-baselineados → VERDE contra la corrida | `01-sim-completo/gate-numeros.txt` |
+| `compuerta-numeros.sh`: `output.txt` y 10 sankeys = baseline v8.17.1 | byte a byte / 1e-9 | **ROJO esperado** (404 de 509 líneas; SankeySF decil 80/104 enlaces, Δ rel. máx 0.35; SankeyNTA decil 113/143, 0.33); fixtures re-baselineados → VERDE contra la corrida | `01-sim-completo/gate-numeros.txt` |
 | Households: Σ `ing_subor` = D.1 S.14 (10,052.962) con g_i ∝ Y^ε | 1e-9 | VERDE, reldif 0.0e+00 | `wrap.log` l. 844 |
 | Households: Σ `ing_mixto` = B.3n + D.422 (7,606.727); componentes = agregado | 1e-9 | VERDE, reldif 1.3e-16 | l. 845, 848 |
 | Households: Σ `ing_estim_alqu` + `ing_t4_cap3` = B.2n (910.359) | 1e-9 | VERDE, 0.0e+00 | l. 846 |
@@ -232,9 +232,9 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 | NTA: residual por persona; Σ intra nacional = 0; Σ S personas = B.8n S.1 (−308.425); factor YA = 1 | 1e-9 | VERDE (máx 2.0e-07 MXN por persona) | l. 1158–1159; `nta-identidad.txt` |
 | NTA: Σ Cpriv = P.3 S.14; Σ ISR personas = D.51 S.14; cuotas por sector; IEPS; D.5; D.7; P.32; S_ret, S_def, S_isflsh | 1e-9 | VERDE (todos) | l. 1161–1200 |
 | NTA: Sankey v4 57 nodos / 134 enlaces, conservación; panel 15 celdas | 1e-9 | VERDE (2.2e-14; 1.1e-14) | l. 1196–1197 |
-| `test-nta-identidad.sh` | 1e-9 | VERDE (v3 35/99, v4 57/134, panel 15 celdas; ajuste S.14 −19.4 bn) | `diag-cuad-3-2026-11-08/test-nta-identidad.txt` |
-| `test-web-batch.sh` (paridad web = batch) | llaves N/N | VERDE 47/47 (el «Calcular» default reproduce el `output.txt` del batch) | `diag-cuad-3-2026-11-08/test-web-batch.txt` |
-| `test-log-ancho.sh` (110 columnas) | 0 líneas > 110 | VERDE en las 11 corridas de la sesión (la primera relectura de las series S.14 imprimía 122 líneas de 115 columnas: corregido con `quietly reshape`) | `*/test-log-ancho.txt` |
+| `prueba-nta-identidad.sh` | 1e-9 | VERDE (v3 35/99, v4 57/134, panel 15 celdas; ajuste S.14 −19.4 bn) | `diag-cuad-3-2026-11-08/test-nta-identidad.txt` |
+| `prueba-web-batch.sh` (paridad web = batch) | llaves N/N | VERDE 47/47 (el «Calcular» default reproduce el `output.txt` del batch) | `diag-cuad-3-2026-11-08/test-web-batch.txt` |
+| `prueba-log-ancho.sh` (110 columnas) | 0 líneas > 110 | VERDE en las 11 corridas de la sesión (la primera relectura de las series S.14 imprimía 122 líneas de 115 columnas: corregido con `quietly reshape`) | `*/test-log-ancho.txt` |
 | Σ S sin ancla vs B.8n S.14 | informativo | −19.4 bn (−1.0 %), igual que v8.17.1 | `nta-identidad.txt` nota 1 |
 | Contrato de las 32 (`contrato-32.sh`) | — | **no corrió en la sesión**: los fixtures de `/entidades` (banda de vintages) salen del paso `c32` del ritual y entran en un PR corto, como en 8.16b | — |
 
@@ -264,14 +264,14 @@ Nota: `ing_d4_rel` (proxy de D.4) sigue siendo cap6 + cap8 + cap3 + alquiler imp
 
 | Sección | Archivo y líneas |
 |---|---|
-| Encabezado, §3 | `SIM.do` §0.8 l. 98–102, §0.9; `01_modulos/Households.do` header §4, §0.0 (`cuad_params`, `altimir_elasticidad`), §0 (tras `local D4Hog`), §3 l. 1282, §9 (bloque `altimir == "yes"`), §9.1, §11.1, §11.5; `SCN.ado` l. 70, 79, 605–648, 2633, 2677, 2810; `01_modulos/NTA.do` l. 173–180, 228–250, §4.3b, cuadro 3, JSON `parametros`; `05_scripts/test-nta-identidad.do` |
+| Encabezado, §3 | `SIM.do` §0.8 l. 98–102, §0.9; `01_modulos/Households.do` header §4, §0.0 (`cuad_params`, `altimir_elasticidad`), §0 (tras `local D4Hog`), §3 l. 1282, §9 (bloque `altimir == "yes"`), §9.1, §11.1, §11.5; `SCN.ado` l. 70, 79, 605–648, 2633, 2677, 2810; `01_modulos/NTA.do` l. 173–180, 228–250, §4.3b, cuadro 3, JSON `parametros`; `05_scripts/pruebas/prueba-nta-identidad.do` |
 | §2 | CSI_115.xlsx f.59–71, 95–105 (asset congelado, `manifest.json: scn_vintage.csi`); `master/itan-isr-rangos.dta`; `raw/ENIGH/2024/Documentos/Descriptor de archivos.pdf` (rubros #45 `utilidad`, #46 `arrenda`; claves P023–P031 e INGRESOS POR RENTA DE LA PROPIEDAD) |
 | §4.1 | CUAD-0 §10 bis 7 y Tabla 1; `L` l. 659–676; `dC` pp. 232–233; SNA 2008 §24.55 |
 | §4.2 | CSI_115 f.95–105 (leídos con pandas desde `-datos/raw/SCN/CSI_115.xlsx`, columna AS = 2024 R/P); `dC` pp. 232, 236 (cuadro 71); INEGI 2014 p. 12 (CUAD-0 §10 bis 2) |
 | §4.3 | `dC` pp. 237–241 (ecs. 3–4, gráfico 77, cuadro 74); `R0`, `Rε` (`wrap.log`: cuadros «Brecha ENIGH–SCN repartida ∝ Y^ε», «Validación del ajuste por subreporte», «ISR de personas físicas por rango de ingreso anual declarado», «ISR anual del motor vs LIF»); `diag-cuad-3-2026-11-08/analisis-eps.py` y `analisis-eps.out` |
 | §4.4 | `dC` pp. 233, 241–242, 268–271 (cuadros 69, 74, 92); CUAD-1 §8 bis ficha 6; CUAD-2 §4.0 bis |
 | §7 | `R0/gate-numeros.txt`, `R0/wrap.log` (gates de `Households` §9.1 y §11.5); `01-sim-completo/` (`gate-numeros.txt` ROJO esperado, `test-web-batch.md`, `test-nta-identidad.txt`, `test-log-ancho.txt`) |
-| Δ esperado | aritmética de §4.1–§4.3; `01-sim-completo/output.txt` vs `05_scripts/fixtures/output-default.txt` (v8.17.1) |
+| Δ esperado | aritmética de §4.1–§4.3; `01-sim-completo/output.txt` vs `05_scripts/pruebas/fixtures/output-default.txt` (v8.17.1) |
 
 ### §10 bis — Citas literales (regla de la firma §D de CUAD-0)
 

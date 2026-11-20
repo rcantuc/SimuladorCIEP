@@ -94,7 +94,7 @@ Las siguientes herramientas son útiles para uso personal y no están prohibidas
 
 > **Ninguna credencial de producción vive en una carpeta sincronizada**, esté o no bajo control de versiones. Ni llaves TLS, ni `.env`, ni `wp-config.php`, ni tokens. El archivo con el valor real vive en el servidor que lo usa; su respaldo, en el gestor de secretos institucional — nunca en una carpeta que se replica a las máquinas del equipo.
 
-Regla añadida el 2026-08-01 (Entrega 1.5, boceto Paquete 2027). El hallazgo que la motivó no fue de git —el repositorio y su historia estaban limpios— sino de Dropbox: una llave privada TLS, dos `wp-config.php` con credenciales de MySQL y dos `.env` en carpetas sincronizadas con quince años de historia y rotación de personal, donde el alcance del acceso es incognoscible. La sección 3 del verificador `05_scripts/verify_gitignore.sh` escanea el árbol real como red de seguridad para git, pero el escaneo no sustituye esta regla: que un archivo de credenciales esté ignorado no significa que deba estar ahí.
+Regla añadida el 2026-08-01 (Entrega 1.5, boceto Paquete 2027). El hallazgo que la motivó no fue de git —el repositorio y su historia estaban limpios— sino de Dropbox: una llave privada TLS, dos `wp-config.php` con credenciales de MySQL y dos `.env` en carpetas sincronizadas con quince años de historia y rotación de personal, donde el alcance del acceso es incognoscible. La sección 3 del verificador `05_scripts/pruebas/verificar-gitignore.sh` escanea el árbol real como red de seguridad para git, pero el escaneo no sustituye esta regla: que un archivo de credenciales esté ignorado no significa que deba estar ahí.
 
 ### 3.4 Excepción única: tokens de cortesía
 

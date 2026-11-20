@@ -1,5 +1,5 @@
 {
- "regla": "Catálogo de celdas del ISR por rango de ingreso del contribuyente en los Informes Trimestrales de la SHCP (anexo de finanzas públicas itanfp02, hoja I.II RecGobFed a) ISR). Lo genera 05_scripts/itan-catalogo.py sobre los .xlsx congelados en raw/ITAN/ (asset itan-congelado.zip, manifest.json); AccesoITAN.ado lee SOLO estas celdas, verifica el sha256 de cada archivo y el texto de cada rótulo, y produce master/itan-isr-rangos.dta. Se regenera solo con refrescar-scn.sh --itan --congelar (PR de datos).",
+ "regla": "Catálogo de celdas del ISR por rango de ingreso del contribuyente en los Informes Trimestrales de la SHCP (anexo de finanzas públicas itanfp02, hoja I.II RecGobFed a) ISR). Lo genera 05_scripts/datos/itan-catalogo.py sobre los .xlsx congelados en raw/ITAN/ (asset itan-congelado.zip, manifest.json); AccesoITAN.ado lee SOLO estas celdas, verifica el sha256 de cada archivo y el texto de cada rótulo, y produce master/itan-isr-rangos.dta. Se regenera solo con refrescar-scn.sh --itan --congelar (PR de datos).",
  "fuente": "SHCP, Informes sobre la Situación Económica, las Finanzas Públicas y la Deuda Pública (informes trimestrales al Congreso), anexo de finanzas públicas; cifras del SAT, preliminares sujetas a revisión.",
  "url_prefijo": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/",
  "url_patron": "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/<AAAA>/<it|iit|iiit|ivt>/04afp/itanfp02_<AAAA>0<T>.xlsx",
@@ -38,7 +38,7 @@
   "2013-2018": "itanfp02_<AAAA><TT>.xlsx existe para 2013/3-2015/4 pero es otro anexo (donativos otorgados, calendario de presupuesto) y en 2016-2018 no existe con ese nombre; ningún anexo .xlsx de los IV trimestres 2015-2018 trae la tabla de ISR por rango (revisados itanfp01-21 de 2015, 2016, 2017 y 2018). La tabla por rango en .xlsx empieza en 2019/1. Para 2012-2018 la captura manual ISRInformesTrimestrales.xlsx (asset) sigue siendo la única fuente en el repo."
  },
  "generado": {
-  "script": "05_scripts/itan-catalogo.py",
+  "script": "05_scripts/datos/itan-catalogo.py",
   "fecha": "2026-11-07",
   "archivos": 31,
   "primero": "2019-1",

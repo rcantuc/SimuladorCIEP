@@ -276,8 +276,8 @@ Base gravable del motor = la variable micro que define la incidencia; celda SCN 
 | `master/<año>/consumption_categ_pc.dta`, `consumption_categ_iva_pc.dta`, `consumption_categ_ieps_pc.dta` | gasto per cápita por categoría pre-ancla (`gas_pc_*`, `ogas_pc_*`, `gas_hog*`, `gas_ind*`) | `Expenditure.do` §4–§6; `TasasEfectivasMicro` | sin protección automática — gate humano (caché: se recalcula solo si falta) |
 | `master/<año>/expenditures.dta`, `categ_iva.dta`, `consumption_categ_iva.dta`, `consumption_categ_ieps.dta`, `deducciones.dta` | consumo anclado (`gas_pc_* × TT`), IVA e IEPS por persona, deducciones personales | `Households.do` §1.6, §12; `NTA.do`; `PerfilesSim.do` | ídem |
 | Escalares `TT*`, `E*PIB`, `EE*PIB`, `gini*`, `IVAHHSPIB`, `DifIVA`, `IEPSNP*` | anclas y diagnósticos de consumo | log; `scalarlatex` | `scalarlatex-baseline.txt` (deriva) |
-| `users/<id>/ingresos.dta` (`*_Sim`), `isr_mod.dta` | recaudación por persona por impuesto | `INCI.ado` → `INCD*` de `output.txt`; `aportaciones.dta`; 32 entidades | `gate-numeros.sh` (en sesión); `contrato-32.sh` |
-| `output.txt`: `INGRESOS` (LIF `anioPE` % PIB), `INGRESOSTEF` (TE), `IVA`, `ISRTASA`, `INCD/INCD2/INCD3` | lo que el sitio muestra | sitio; sidecar | `gate-numeros.sh` byte a byte (sesión); `test-web-batch.sh` 47/47 |
+| `users/<id>/ingresos.dta` (`*_Sim`), `isr_mod.dta` | recaudación por persona por impuesto | `INCI.ado` → `INCD*` de `output.txt`; `aportaciones.dta`; 32 entidades | `compuerta-numeros.sh` (en sesión); `contrato-32.sh` |
+| `output.txt`: `INGRESOS` (LIF `anioPE` % PIB), `INGRESOSTEF` (TE), `IVA`, `ISRTASA`, `INCD/INCD2/INCD3` | lo que el sitio muestra | sitio; sidecar | `compuerta-numeros.sh` byte a byte (sesión); `prueba-web-batch.sh` 47/47 |
 
 ## §7 Identidades que 8.16 debe cerrar
 

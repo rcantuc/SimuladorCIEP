@@ -1,6 +1,6 @@
 <?php
 // plantilla-metodo.php — cabecera y pie de las páginas de MÉTODO del sitio (hasta 8.18 vivía en metodo/plantilla.php;
-// se movió a la raíz porque /metodo es ahora la sección generada por 05_scripts/metodo.py: índice, cap0 y un capítulo por
+// se movió a la raíz porque /metodo es ahora la sección generada por 05_scripts/publicar/metodo.py: índice, cap0 y un capítulo por
 // módulo, en español). /NTA fue la primera; /entidades y sus 32 páginas /entidades/<ABREV> desde v8.13.0. Páginas estáticas de lectura:
 // sin «Calcular», sin selector, sin sesión; los datos los sirve un PHP de solo
 // lectura que lee en runtime lo que el motor ya exporta (jsonSankeyNTA.php, …).
@@ -13,7 +13,7 @@
 //        metodo_pie(array('sankeys' => array(array('renderAt' => '…', 'url' => '/json….php?…'))));
 //   2. su entrada en $METODO_PAGINAS (orden = orden de la sección);
 //   3. su ruta en SITE_SMOKE_ASSETS de publicar-vps.sh (y la copia de
-//      verify_sitio_autocontenido.sh) para que el esqueleto del deploy la cubra.
+//      verificar-sitio-autocontenido.sh) para que el esqueleto del deploy la cubra.
 // Las rutas de activos son absolutas (/css, /js, /plugins) porque la página vive
 // un nivel abajo del docroot.
 
@@ -227,7 +227,7 @@ function metodo_pie(array $p = array()) {
 	if ($meta['version_html'] !== '') $copy .= ($es ? ' | Versi&oacute;n ' : ' | Version ') . $meta['version_html'];
 	// Footer (8.19): mismo contenido y colores que el del simulador grande (index.php / index-en.php), sin el banner del libro,
 	// en el idioma de la página (los nombres de los micrositios son nombres propios y no se traducen). Sin literales de 4+
-	// dígitos (test-sitio-nta.sh y test-sitio-entidades.sh): por eso la dirección no lleva código postal.
+	// dígitos (prueba-sitio-nta.sh y prueba-sitio-entidades.sh): por eso la dirección no lleva código postal.
 	$inicio = htmlspecialchars(metodo_url('/'));
 	$tit_sim = $es ? 'Simuladores:' : 'Simulators:';
 	$tit_mic = $es ? 'Micrositios:' : 'Microsites:';

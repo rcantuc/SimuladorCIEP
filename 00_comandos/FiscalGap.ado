@@ -9,7 +9,7 @@
 *   | master/PEF.dta (colapso PEF_<by>_<ifkey>.dta de Precache), PIBDeflactor, SHRFSP | SHCP, INEGI | vintage del asset / en vivo | gasto histórico, PIB, deuda | anio | verde / amarillo |
 * §6 Salidas (procedencia: §4.5 «Outputs» de este archivo (llaves PROY*); 01_modulos/output.do header; runbook §14.1 lección 7):
 *   | Archivo / JSON / figura | Qué contiene | Quién lo consume | Check de CI que lo protege |
-*   | output.txt: PROYLABOR, PROYCONSU, PROYCAPIT, PROYORGAN, PROYEDUCA y las demás PROY* (vía log output) | trayectoria proyectada por componente, en % del PIB | sitio (cargaDefault.php); sidecar datos-<v>.zip | gate-numeros.sh byte a byte (sesión); test-web-batch.sh web = batch |
+*   | output.txt: PROYLABOR, PROYCONSU, PROYCAPIT, PROYORGAN, PROYEDUCA y las demás PROY* (vía log output) | trayectoria proyectada por componente, en % del PIB | sitio (cargaDefault.php); sidecar datos-<v>.zip | compuerta-numeros.sh byte a byte (sesión); prueba-web-batch.sh web = batch |
 program define FiscalGap
 quietly {
 

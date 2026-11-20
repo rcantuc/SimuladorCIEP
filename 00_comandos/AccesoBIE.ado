@@ -163,7 +163,7 @@ program define AccesoBIE
 					if "$SCN_SOLO_ASSET" != "" {
 						if "$rawwip" == "" {
 							noisily display as error "AccesoBIE: la serie `serie' no esta en el asset congelado raw/SCN/bie/ y UpdateSCN lee SOLO el asset (CUAD-0 §4 bis)."
-							noisily display as error "  Receta: bash 05_scripts/refrescar-scn.sh --congelar --todas (PR de datos); con global rawwip (modo WIP de raw) se baja en caliente y se declara."
+							noisily display as error "  Receta: bash 05_scripts/datos/refrescar-scn.sh --congelar --todas (PR de datos); con global rawwip (modo WIP de raw) se baja en caliente y se declara."
 							exit 198
 						}
 						noisily display as text "  Serie `serie': sin asset congelado; descarga en caliente (rawwip, sello amarillo)"

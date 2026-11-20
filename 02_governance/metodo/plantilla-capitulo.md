@@ -1,6 +1,6 @@
 # `/metodo` — Plantilla de capítulo por módulo
 
-*Vigente desde v8.18.0 (sesión 8.18). Un capítulo por módulo, en el orden de `SIM.do`. El capítulo se **genera** del repo por `05_scripts/metodo.py` (headers de los `.do`/`.ado`, `SIM.do` §0.8, memos `CUAD-*`, `scn-celdas.md`, manifest, fixtures); nada se redacta a mano en el sitio. Regla: ninguna frase del método nace fuera del repo. Los títulos de las secciones 1–10 de esta plantilla son los que la página muestra (el generador los lee de aquí).*
+*Vigente desde v8.18.0 (sesión 8.18). Un capítulo por módulo, en el orden de `SIM.do`. El capítulo se **genera** del repo por `05_scripts/publicar/metodo.py` (headers de los `.do`/`.ado`, `SIM.do` §0.8, memos `CUAD-*`, `scn-celdas.md`, manifest, fixtures); nada se redacta a mano en el sitio. Regla: ninguna frase del método nace fuera del repo. Los títulos de las secciones 1–10 de esta plantilla son los que la página muestra (el generador los lee de aquí).*
 
 ---
 
@@ -64,7 +64,7 @@ Regla (`arquitectura.md` §6.3.1): **todo valor en pantalla tiene origen en un a
 
 ## 7. Identidades verificadas
 
-Lista de las igualdades que el gate del módulo comprueba y con qué tolerancia (p. ej. `nta-identidad.txt`: Σ entradas − Σ salidas = 0 a 1e-6; `gate-numeros.sh`: `output.txt` byte a byte y sankeys a 1e-9; `test-web-batch.sh`: llaves 46/46). Resultado de la última corrida, con hash.
+Lista de las igualdades que el gate del módulo comprueba y con qué tolerancia (p. ej. `nta-identidad.txt`: Σ entradas − Σ salidas = 0 a 1e-6; `compuerta-numeros.sh`: `output.txt` byte a byte y sankeys a 1e-9; `prueba-web-batch.sh`: llaves 46/46). Resultado de la última corrida, con hash.
 
 ## 8. Límites conocidos
 
@@ -114,7 +114,7 @@ El header es el bloque de comentarios anterior al primer comando del archivo (`.
 
 ## Reglas de generación
 
-1. `05_scripts/metodo.py` lee headers, `SIM.do` §0.8, memos, inventarios y fixtures y emite `04_1_simuladorfiscal.ciep.mx/metodo/metodo.json` (un objeto por capítulo con el esquema de arriba, más `cap0` y `bibliografia`) y un cascarón PHP por página (`index.php`, `cap0/index.php`, `<Modulo>/index.php`); `js/metodo-capitulo.js` pinta todo desde el JSON.
-2. Check de CI (`test-sitio-metodo.sh`, job `/metodo: capítulos generados del repo = publicados`): regenera y exige bytes idénticos a lo commiteado; cada página carga y pinta; cero literales de 4+ dígitos en PHP/JS/CSS; enlaces internos resuelven. Mismo patrón que `/NTA` y `/entidades`.
+1. `05_scripts/publicar/metodo.py` lee headers, `SIM.do` §0.8, memos, inventarios y fixtures y emite `04_1_simuladorfiscal.ciep.mx/metodo/metodo.json` (un objeto por capítulo con el esquema de arriba, más `cap0` y `bibliografia`) y un cascarón PHP por página (`index.php`, `cap0/index.php`, `<Modulo>/index.php`); `js/metodo-capitulo.js` pinta todo desde el JSON.
+2. Check de CI (`prueba-sitio-metodo.sh`, job `/metodo: capítulos generados del repo = publicados`): regenera y exige bytes idénticos a lo commiteado; cada página carga y pinta; cero literales de 4+ dígitos en PHP/JS/CSS; enlaces internos resuelven. Mismo patrón que `/NTA` y `/entidades`.
 3. Si un header, un memo, este documento, `cap0-requerimientos.md`, `fuentes/README.md`, `scn-celdas.md`, `manifest.json` o un fixture cambian, el check falla hasta regenerar y commitear `metodo/` en el mismo PR: **todo header nuevo pasa por el generador** (runbook §16). El generador registra el sha256 de cada archivo fuente del capítulo en el encabezado (`archivo`), así que un cambio del código del módulo también exige regenerar.
 4. Sin literales numéricos a mano en el HTML/JS; todo número viene de `metodo.json` (misma regla que `/NTA`). Una sección que no existe en ningún documento se publica vacía con FLAG «header incompleto»: no se inventa texto. Sello del capítulo: rojo con FLAG; si no, el peor de §2 y §5; «sin sello» si ninguna fila lo declara.

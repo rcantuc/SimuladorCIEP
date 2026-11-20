@@ -57,7 +57,7 @@ verifica cada descarga. Reglas:
   (`shasum -a 256 archivo`) y actualizarse aquí, o la verificación
   post-Release fallará.
 
-**`05_scripts/manifest-endpoint.toml`** — qué archivos de CÓDIGO viajan al
+**`05_scripts/endpoint/manifiesto-endpoint.toml`** — qué archivos de CÓDIGO viajan al
 endpoint Stata (.ado, .sthlp, .pkg). Solo se toca si se agrega/quita un
 comando publicado. El Gate 4 verifica que todos existan.
 
@@ -168,7 +168,7 @@ es commit nuevo y (si amerita) versión nueva — el tag no se mueve.
 El sitio enlaza al Release tag, que debe existir primero.
 
 ```bash
-bash 05_scripts/publicar.sh vX.Y.Z
+bash 05_scripts/publicar/publicar.sh vX.Y.Z
 ```
 
 Hace: gates 1-11 → Release en GitHub + **los 27 assets del data sidecar**
@@ -183,9 +183,9 @@ los assets que falten.
 el tamaño), aborta y dice cómo repararlo. Reparación de una Release creada a
 mano o interrumpida:
 ```bash
-bash 05_scripts/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
+bash 05_scripts/publicar/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
 ```
-Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z --check`
+Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar/publicar.sh vX.Y.Z --check`
 debe decir "los 11 gates pasaron" (el 8 consulta GitHub; el 9 exige el sidecar de datos).
 
 **Modo fuente remota (desde v8.8.0).** `publicar.sh` ya no exige `raw/` local
@@ -197,7 +197,7 @@ dos lados. El Gate 8 y la verificación post-Release también comparan ese diges
 (descargan únicamente los assets de Releases antiguas sin digest). Para volver a
 tener los archivos en la máquina:
 ```bash
-bash 05_scripts/publicar.sh vX.Y.Z --poblar-raw     # baja a raw/ los assets del manifest que falten, verifica SHA; sin tag, sin push
+bash 05_scripts/publicar/publicar.sh vX.Y.Z --poblar-raw     # baja a raw/ los assets del manifest que falten, verifica SHA; sin tag, sin push
 ```
 Prueba 2026-10-06: 26/26 assets de v8.7.2 coinciden por digest con el manifest;
 un digest adulterado se detecta; `--poblar-raw` restauró `LIFs.xlsx` y
@@ -211,9 +211,9 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 1 | CHANGELOG + manifest (`version`, `release_tag`, `release_url_prefix`) en el PR | §1 pre-flight | autor del cambio |
 | 2 | Merge a `master` | GitHub | Ricardo |
 | 3 | Tag anotado + push del tag | §2 | Ricardo |
-| 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
-| 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
-| 5b | Endpoint fresco y usable por un externo | el gate de frescura de `publicar-endpoint.sh` en verde (si falla: purga y `--verificar`, «Caché del endpoint») y `bash 05_scripts/test-maquina-virgen.sh --net-install --endpoint https://ciep.mx/simuladorfiscal/` | Ricardo |
+| 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
+| 5 | Prueba de la promesa pública | `bash 05_scripts/pruebas/prueba-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
+| 5b | Endpoint fresco y usable por un externo | el gate de frescura de `publicar-endpoint.sh` en verde (si falla: purga y `--verificar`, «Caché del endpoint») y `bash 05_scripts/pruebas/prueba-maquina-virgen.sh --net-install --endpoint https://ciep.mx/simuladorfiscal/` | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
 | 7 | «Calcular» de humo automático (Fase 6) + gate humano de lo que el humo no prueba | §6 | pipeline + Ricardo |
 | 8 | Pull en la Carpeta de investigadores (Dropbox) | manual | Ricardo |
@@ -224,7 +224,7 @@ contrato de v8.0 es "código + datos + endpoint reproducibles en la misma
 versión" (`git checkout vX.Y.Z` basta), y el modo *pinned* de `ensure_asset`
 lee el manifest del tag instalado — una Release de datos aparte añade un
 segundo eje de versiones (datos vs código) que hoy nadie gobierna y que
-`publicar.sh` (gate de prefix, post-verify), `test-maquina-virgen.sh` y el
+`publicar.sh` (gate de prefix, post-verify), `prueba-maquina-virgen.sh` y el
 endpoint tendrían que aprender; (ii) el costo real es ~10 min de subida
 idempotente por release y GitHub no cobra ni limita el almacenamiento de
 assets (2 GB por archivo); (iii) el fallo no fue de diseño sino de proceso: el
@@ -236,7 +236,7 @@ nuevas, >5 GB) se reabre con una propuesta formal: campo
 Verificación:
 ```bash
 curl -sI https://ciep.mx/simuladorfiscal/PEF.ado | head -1     # HTTP 200
-bash 05_scripts/test-maquina-virgen.sh --download              # N/N assets desde la Release, SHA ok
+bash 05_scripts/pruebas/prueba-maquina-virgen.sh --download              # N/N assets desde la Release, SHA ok
 ```
 El segundo comando es la promesa pública del endpoint hecha prueba: SITE
 falso en `/tmp`, `raw/` vacío, y las invocaciones reales de `ensure_asset`
@@ -249,8 +249,8 @@ corre como Gate 6 dentro de `publicar.sh`; en v8.3.0 habría atrapado el
 aún no existe — el huevo-y-gallina del 2026-10-16) o para poblar el `raw/` de
 un worktree sin copiar nada de otro clon:
 ```bash
-bash 05_scripts/test-maquina-virgen.sh --download --from v8.9.0               # prueba: ¿los assets de la Release anterior siguen siendo los del manifest?
-bash 05_scripts/test-maquina-virgen.sh --download --from v8.9.0 --into "$PWD"  # además los deja en raw/<local_path> del worktree
+bash 05_scripts/pruebas/prueba-maquina-virgen.sh --download --from v8.9.0               # prueba: ¿los assets de la Release anterior siguen siendo los del manifest?
+bash 05_scripts/pruebas/prueba-maquina-virgen.sh --download --from v8.9.0 --into "$PWD"  # además los deja en raw/<local_path> del worktree
 ```
 Sin Stata (usa `gh`); cada asset se deposita en su `local_path` del manifest y
 se verifica con el SHA del manifest **local**: un asset que cambió entre la
@@ -266,8 +266,8 @@ remoto NO contiene versión…») era solo un `WARN` y el deploy se dio por buen
 
 **Las dos defensas.**
 
-1. **`.htaccess` de la carpeta del endpoint**, versionado en `05_scripts/endpoint.htaccess` (`[package] htaccess`
-   de `manifest-endpoint.toml`; `publicar-endpoint.sh` lo sube y el Gate 4 de `publicar.sh` exige que exista):
+1. **`.htaccess` de la carpeta del endpoint**, versionado en `05_scripts/endpoint/endpoint.htaccess` (`[package] htaccess`
+   de `manifiesto-endpoint.toml`; `publicar-endpoint.sh` lo sube y el Gate 4 de `publicar.sh` exige que exista):
    `Cache-Control: no-cache, no-store, must-revalidate, max-age=0` para `.ado`, `.toc`, `.pkg` y `.sthlp`.
    **Verificado el 2026-11-19 en el servidor real** (carpeta de prueba, borrada después): con el `.htaccess`, cada
    GET sale `x-cache: MISS` y un cambio en disco se ve en el GET siguiente; sin él, la misma prueba dio `HIT` y la
@@ -283,14 +283,14 @@ remoto NO contiene versión…») era solo un `WARN` y el deploy se dio por buen
 **Si el gate falla por caché, la purga es obligatoria antes de cerrar el release** (una URL a la vez, desde el
 propio servidor; el VCL de Cloudways acepta `URLPURGE` desde localhost):
 ```bash
-source 05_scripts/endpoint-credentials.sh
+source 05_scripts/publicar/credenciales-endpoint.sh
 ssh "$SSH_ALIAS" "cd '$REMOTE_PATH' && for f in stata.toc *.ado *.pkg *.sthlp; do curl -s -o /dev/null -X URLPURGE -H 'Host: ciep.mx' -H 'X-Application: wordpress' \"http://127.0.0.1:8080/simuladorfiscal/\$f\"; done"
-bash 05_scripts/publicar-endpoint.sh --verificar vX.Y.Z    # solo el gate, sin backup ni rsync: debe decir 3/3
+bash 05_scripts/publicar/publicar-endpoint.sh --verificar vX.Y.Z    # solo el gate, sin backup ni rsync: debe decir 3/3
 ```
 Alternativa sin SSH: panel de Cloudways → aplicación de `ciep.mx` → **Purge Varnish** (purga TODO el sitio
 `ciep.mx`, no solo el endpoint). Después, el mismo `--verificar`.
 
-**La prueba del usuario externo.** Tras publicar, `bash 05_scripts/test-maquina-virgen.sh --net-install --endpoint
+**La prueba del usuario externo.** Tras publicar, `bash 05_scripts/pruebas/prueba-maquina-virgen.sh --net-install --endpoint
 https://ciep.mx/simuladorfiscal/`: un Stata limpio (sin `SIMROOT`, sin `profile.do`, sin token) instala
 `AccesoBIE` por `net install` y baja una serie real con el token de cortesía. Sin `--endpoint` corre contra un
 endpoint local armado con el árbol de la rama (antes de publicar). Contra el endpoint de v8.19.0 falla con
@@ -332,7 +332,7 @@ apunta a otro sitio, el Gate 7 solo verifica existencia y lo avisa.
 ### 4a. Patch (mismo deployment)
 
 ```bash
-bash 05_scripts/publicar-vps.sh vA.B      # el deployment vigente, p. ej. v8.1
+bash 05_scripts/publicar/publicar-vps.sh vA.B      # el deployment vigente, p. ej. v8.1
 ```
 Password al pedirlo; **de corrido, sin interrumpir** (una interrupción a media
 Fase 3 deja permisos rotos → 403). El swap preguntará `current: vA.B → vA.B`
@@ -354,7 +354,7 @@ Salta al Paso 2.
 la contraseña NO se comparte ni se guarda en credentials):*
 ```bash
 # desde el clon de desarrollo: sube el script a tu home del VPS
-scp 05_scripts/vps/crear-deployment 05_scripts/vps/ciepmx-deploy.sudoers ciepmx@66.179.250.191:~/
+scp 05_scripts/publicar/vps/crear-deployment 05_scripts/publicar/vps/ciepmx-deploy.sudoers ciepmx@66.179.250.191:~/
 
 ssh ciepmx@66.179.250.191
 sudo install -o root -g root -m 0755 ~/crear-deployment /usr/local/sbin/crear-deployment
@@ -390,7 +390,7 @@ exit
 tarda mucho más que un patch; no interrumpir):
 
 ```bash
-bash 05_scripts/publicar-vps.sh vA.B
+bash 05_scripts/publicar/publicar-vps.sh vA.B
 ```
 
 **Paso 3 — El cutover.** El swap preguntará
@@ -417,9 +417,9 @@ la banda que declara `NL/sankey-quintil.json`). Los dos archivos suben a la Rele
 `release_post_verify` los verifica por digest sha256 como a los 26 crudos.
 
 ```bash
-bash 05_scripts/publicar.sh vX.Y.Z --empaquetar-datos   # solo el sidecar (tras SIM.do + contrato-32.sh); lo exige --check
-bash 05_scripts/publicar.sh vX.Y.Z --check              # Gate 9: existe y cuadra (manifest ↔ zip ↔ users/ricardo); Gate 10: CITATION.cff
-bash 05_scripts/publicar.sh --citation                  # regenera CITATION.cff desde el manifest (version, data_updated); commitear
+bash 05_scripts/publicar/publicar.sh vX.Y.Z --empaquetar-datos   # solo el sidecar (tras SIM.do + contrato-32.sh); lo exige --check
+bash 05_scripts/publicar/publicar.sh vX.Y.Z --check              # Gate 9: existe y cuadra (manifest ↔ zip ↔ users/ricardo); Gate 10: CITATION.cff
+bash 05_scripts/publicar/publicar.sh --citation                  # regenera CITATION.cff desde el manifest (version, data_updated); commitear
 ```
 
 Reglas: el Gate 9 aplica desde v8.14.0 y se omite en `--ci` (sin `users/`); si `users/ricardo/` cambia después de
@@ -451,11 +451,11 @@ done
 ## 6. Gate humano (navegador) — desde v8.12.1 el «Calcular» lo da el pipeline
 
 **El clic «Calcular» ya es automático**: la Fase 6 de `publicar-vps.sh` corre
-`05_scripts/humo-calcular.sh` tras el swap (y tras 125 s de espera por el caché de
+`05_scripts/pruebas/humo-calcular.sh` tras el swap (y tras 125 s de espera por el caché de
 realpath de PHP): POST del escenario default a `calculaStata.php` como lo hace el
 JS, números en la respuesta (el `output.txt` de la sesión) y los 5 `jsonSankey*.php`
 de ESA sesión (no el fallback `ciepmx`); y, desde v8.17.1, **un GET a cada endpoint del
-default que las páginas piden** (`05_scripts/manifiesto-default.py --endpoints --entidades NL`:
+default que las páginas piden** (`05_scripts/datos/manifiesto-default.py --endpoints --entidades NL`:
 `cargaDefault.php`, los 5 `jsonSankey*.php`, `jsonSankeyNTA.php?corte=v4-economia|v3-grupoedad`
 y `?cuenta=grupoedad|panel-grupoedad-sexo|identidad`, `jsonEntidad.php?producto=indice` y los 9
 productos de NL) más el default de `jsonSankeyNTA.php`: cada uno 200 con el archivo de
@@ -540,7 +540,7 @@ re-desplegar), no rollback.
   libro cambiaron; pasada de prosa donde las cifras se movieron.
 - Comunicado/nota de corrección si aplica (decisión institucional).
 - Bitácora del endpoint: `02_governance/deploys/endpoint-stata.log`, **local** (`*.log` no se versiona; `publicar.sh` y `publicar-endpoint.sh` crean la carpeta al escribir).
-- Museo `/anteriores/` (cuarto canal, ciclo de vida propio, fuera de `current`; decisión 2026-10-01): solo si cambió `04_3_anteriores/`, `bash 05_scripts/publicar-anteriores.sh [--dry-run]` (credenciales del VPS; su Gate 2 es `05_scripts/verify_anteriores.py`: 0 recursos rotos y 0 hosts de desarrollo). Un release del motor no lo toca.
+- Museo `/anteriores/` (cuarto canal, ciclo de vida propio, fuera de `current`; decisión 2026-10-01): solo si cambió `04_3_anteriores/`, `bash 05_scripts/publicar/publicar-anteriores.sh [--dry-run]` (credenciales del VPS; su Gate 2 es `05_scripts/pruebas/verificar-anteriores.py`: 0 recursos rotos y 0 hosts de desarrollo). Un release del motor no lo toca.
 
 ---
 
@@ -562,7 +562,7 @@ se corrió, y no se garantiza regenerarlo al byte después.
 
 Entre v8.2 y v8.9 existió un mecanismo de "fuentes congeladas" (`global fuentes`,
 asset `fuentes-AAAA-MM-DD.zip`, `05_scripts/ancla-reproducibilidad.json`, modo
-`test-maquina-virgen.sh --reproducibilidad`, Gate 9 de `publicar.sh`) que fijaba esas
+`prueba-maquina-virgen.sh --reproducibilidad`, Gate 9 de `publicar.sh`) que fijaba esas
 descargas a una fecha para reproducir el ancla publicada. Se retiró por decisión de
 Ricardo (minimalismo); el SCN volvió a congelarse en v8.15b por otro camino (asset del
 manifest, no `global fuentes`). El asset
@@ -583,7 +583,7 @@ Los toggles de `SIM.do` §0.4 (`nographs`, `output`, `update`, `entidad`, `hasta
 corren en batch **no tocan `SIM.do`**: generan una copia `SIM_run.do` con (a) la ruta
 de la copia/clon en la línea `global SIMROOT` y (b) los globals que necesitan
 insertados justo después de `macro drop _all` (así sobreviven al borrado de macros y
-mandan sobre los `//global` comentados). Lo hacen `test-maquina-virgen.sh` (`sim_run`,
+mandan sobre los `//global` comentados). Lo hacen `prueba-maquina-virgen.sh` (`sim_run`,
 modo `--zip`) y `compuertas-entidad.sh`. (Hasta 2026-10-15 esto se hacía con un
 `SIM-local.do` gitignored que `SIM.do` §0.5 ejecutaba; se retiró.)
 
@@ -632,8 +632,8 @@ selloTop1, vintages, celdas:[{celda, n, hog, pob}]}` y, en cada enlace micro, `n
 de la celda de la entidad en el total nacional de la familia × total nacional vigente).
 
 Compuertas de salida del PR (evidencia en `diag-pivote-entidad-2026-10-10/F1/`):
-1. paridad nacional con `entidad` vacío: `test-maquina-virgen.sh --zip`;
-2. aditividad: Σ de los 32 Sankeys de entidad = Sankey nacional (`05_scripts/compuertas-entidad.sh`, que corre
+1. paridad nacional con `entidad` vacío: `prueba-maquina-virgen.sh --zip`;
+2. aditividad: Σ de los 32 Sankeys de entidad = Sankey nacional (`05_scripts/pruebas/compuertas-entidad.sh`, que corre
    `SIM.do` + `compuertas-entidad.do` en una sesión y verifica con `compuertas-entidad.py`);
 3. testigo: NL por quintil estatal reproduce las participaciones selladas del sprint (`dis<fam>nle<dec>` del
    `statajson_entidad-nl.json`, 90 celdas, reldif ~1e-15);
@@ -651,9 +651,9 @@ la vez** — de ahí el baile.
 
 | Árbol | Dónde | Qué tiene extraído | Para qué sirve | Qué NO se hace ahí |
 |---|---|---|---|---|
-| **Clon de Dropbox — la casa de `master`** | `~/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP` (el repo principal: su `.git` es el de todos los worktrees) | la rama `master`, siempre | ser la copia de referencia que Dropbox mantiene sincronizada (la que abre el IDE y la opción 1 «master, Dropbox» del `sysprofile.do`); `git pull --ff-only` después de cada merge; leer, buscar, consultar | **ninguna operación pesada**: Dropbox sube en vivo cada archivo que cambia (una corrida de `SIM.do` escribe GB en `users/`, `publicar.sh` baja/sube assets, los worktrees de sesión generan logs). Tampoco credenciales (`publicar-vps-credentials.sh`, `endpoint-credentials.sh`, `set_token.do` con token real): Dropbox las copiaría a la nube. Tampoco commits de trabajo ni `git add -A` (archivos `conflicted copy`, `.DS_Store`). |
-| **Worktree de publicación** | fuera de Dropbox: `~/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.Z` | **HEAD desprendido** (`detached`) en el commit de `master` que se publica, o en el tag | correr los rituales que necesitan Stata, assets o credenciales: `SIM.do` completo, `publicar.sh vX.Y.Z` (`--check` y real), `publicar-vps.sh`, `test-maquina-virgen.sh --download`, `perfilar-web.sh`, `compuertas-entidad.sh`. Tiene el marker `.clon-desarrollo`, los dos `*-credentials.sh`, `raw/`, `master/` y `users/ricardo/` (bootstraps, `*RECprom.dta`). Es el único árbol que habla con el VPS y con Cloudways. | extraer `master` (está en Dropbox: git lo rechaza, y así debe ser); editar código a mano (si hay que corregir, es un PR desde un worktree de sesión). |
-| **Worktrees de sesión** (agentes y ramas de Ricardo) | fuera de Dropbox: `~/CIEP_Simuladores/SimuladorCIEP-<tema>` | una rama propia (`perf/...`, `fix/...`, `ci/...`) creada desde `origin/master` | desarrollar, probar, abrir el PR. Desechables: no tienen `raw/` ni `users/` ni credenciales; si la sesión necesita assets, los pide con `test-maquina-virgen.sh --download --into "$PWD"` o apunta `--root` al worktree de publicación (como hace `perfilar-web.sh`). | tocar `master`; publicar; copiar credenciales. Se borran al mergear (`git worktree remove`). |
+| **Clon de Dropbox — la casa de `master`** | `~/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP` (el repo principal: su `.git` es el de todos los worktrees) | la rama `master`, siempre | ser la copia de referencia que Dropbox mantiene sincronizada (la que abre el IDE y la opción 1 «master, Dropbox» del `sysprofile.do`); `git pull --ff-only` después de cada merge; leer, buscar, consultar | **ninguna operación pesada**: Dropbox sube en vivo cada archivo que cambia (una corrida de `SIM.do` escribe GB en `users/`, `publicar.sh` baja/sube assets, los worktrees de sesión generan logs). Tampoco credenciales (`credenciales-vps.sh`, `credenciales-endpoint.sh`, `set_token.do` con token real): Dropbox las copiaría a la nube. Tampoco commits de trabajo ni `git add -A` (archivos `conflicted copy`, `.DS_Store`). |
+| **Worktree de publicación** | fuera de Dropbox: `~/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.Z` | **HEAD desprendido** (`detached`) en el commit de `master` que se publica, o en el tag | correr los rituales que necesitan Stata, assets o credenciales: `SIM.do` completo, `publicar.sh vX.Y.Z` (`--check` y real), `publicar-vps.sh`, `prueba-maquina-virgen.sh --download`, `perfilar-web.sh`, `compuertas-entidad.sh`. Tiene el marker `.clon-desarrollo`, los dos `*-credentials.sh`, `raw/`, `master/` y `users/ricardo/` (bootstraps, `*RECprom.dta`). Es el único árbol que habla con el VPS y con Cloudways. | extraer `master` (está en Dropbox: git lo rechaza, y así debe ser); editar código a mano (si hay que corregir, es un PR desde un worktree de sesión). |
+| **Worktrees de sesión** (agentes y ramas de Ricardo) | fuera de Dropbox: `~/CIEP_Simuladores/SimuladorCIEP-<tema>` | una rama propia (`perf/...`, `fix/...`, `ci/...`) creada desde `origin/master` | desarrollar, probar, abrir el PR. Desechables: no tienen `raw/` ni `users/` ni credenciales; si la sesión necesita assets, los pide con `prueba-maquina-virgen.sh --download --into "$PWD"` o apunta `--root` al worktree de publicación (como hace `perfilar-web.sh`). | tocar `master`; publicar; copiar credenciales. Se borran al mergear (`git worktree remove`). |
 
 > Pendiente (FLAG, 2026-10-18): `Web.Stata.do` §0.1 y el `sysprofile.do` de la Mac todavía apuntan
 > el SITE de Stata al clon de Dropbox; mientras no se muevan al worktree de publicación, una corrida
@@ -665,7 +665,7 @@ mueve en GitHub, por PR (branch protection); ningún árbol local hace `git push
 
 **El cuarto árbol: `-datos`.** `~/CIEP_Simuladores/SimuladorCIEP-datos` es el clon con los **datos
 canónicos**: `raw/` (12 GB), `master/` (5 GB, con los 32 `PIBDeflactor<ABREV>.{dta,meta}` del sello pibe-32)
-y `users/ricardo/` de la última corrida completa que reprodujo el baseline (`gate-numeros.sh` verde ahí).
+y `users/ricardo/` de la última corrida completa que reprodujo el baseline (`compuerta-numeros.sh` verde ahí).
 Las corridas de evidencia de una sesión **no** se hacen en Dropbox ni en `-datos`: se hacen en worktrees
 desechables que **clonan** `raw/` y `master/` de `-datos` con `cp -Rc` (clon APFS, gratis) y copian
 `set_token.do` y `.clon-desarrollo`; `users/` nace vacío. Máximo tres corridas a la vez (30 min cada
@@ -711,7 +711,7 @@ git worktree list                                          # inventario: qué á
 4. **Minor con deployment nuevo**: en vez de reutilizar el worktree anterior, se crea uno
    (`git worktree add --detach "$HOME/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.0" origin/master`)
    y se le copian a mano, **una vez**, `.clon-desarrollo` y los dos `*-credentials.sh` del
-   anterior (gitignored; no viajan solos). `raw/` se puebla con `test-maquina-virgen.sh --download --into "$PWD"`;
+   anterior (gitignored; no viajan solos). `raw/` se puebla con `prueba-maquina-virgen.sh --download --into "$PWD"`;
    `master/` y `users/ricardo/` los produce `SIM.do`. El worktree viejo se queda como rollback
    local hasta que el deployment nuevo esté verificado (§5–§6); después, `git worktree remove`.
 5. **Worktrees de sesión** abiertos: no se tocan; cada rama se rebasa o se vuelve a crear desde
@@ -724,7 +724,7 @@ Síntomas y causa:
 | `fatal: 'master' is already checked out at '…/Dropbox-CIEP/…'` | `master` quedó extraído en el clon de Dropbox y `ritual.sh baile` intenta extraerlo en `-datos` | el ritual no toca Dropbox (firma §C): Ricardo mueve el clon de Dropbox a otra rama o a HEAD desprendido cuando quiera; mientras, `-datos` puede correr en `git checkout --detach <hash>` a mano |
 | `git pull` en Dropbox dice "Not possible to fast-forward" | alguien commiteó en el clon de Dropbox | `git log origin/master..master` para ver qué es; moverlo a una rama (`git branch rescate/<tema>`) y `git reset --hard origin/master` |
 | `publicar.sh` aborta "NO está marcado como clon de desarrollo" | se corrió desde Dropbox o desde un worktree de sesión | ir al worktree de publicación; si es uno nuevo, `touch .clon-desarrollo` (10.3.4) |
-| El sitio o `raw/` están incompletos en el worktree de publicación | se creó el worktree y se copió a mano | `git checkout -- 04_1_simuladorfiscal.ciep.mx` (nunca copiar de Dropbox); `test-maquina-virgen.sh --download --into "$PWD"` |
+| El sitio o `raw/` están incompletos en el worktree de publicación | se creó el worktree y se copió a mano | `git checkout -- 04_1_simuladorfiscal.ciep.mx` (nunca copiar de Dropbox); `prueba-maquina-virgen.sh --download --into "$PWD"` |
 
 ### 10.4 Lo obligatorio, en cinco líneas (v8.14)
 
@@ -741,7 +741,7 @@ Síntomas y causa:
    (rollback instantáneo); patch = el mismo.
 4. **El candado del ritual** (v8.14): `publicar.sh` (también `--check`) y `publicar-vps.sh` abortan si hay
    una corrida viva (`pgrep`: `correr-sim.sh`, `contrato-32.sh`, `compuertas-entidad.sh`, `pibe-32.sh`,
-   `test-maquina-virgen.sh`, `vintage-aportaciones`, cualquier `stata-se|mp -b`) o si el `wrap*.log` /
+   `prueba-maquina-virgen.sh`, `vintage-aportaciones`, cualquier `stata-se|mp -b`) o si el `wrap*.log` /
    `SIM*.log` más reciente bajo `SIM_EVIDENCIA` (default `~/CIEP_Simuladores`, profundidad 3) o en la raíz
    del repo **no termina en «end of do-file»** (una corrida que murió termina en `r(###);`; una viva no ha
    cerrado). No hay bandera para saltarlo: se espera a la corrida o se repite. Antes del ritual, cierra o
@@ -787,19 +787,19 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 
 | Gate | En CI | Fuera de CI (sesión / ritual) | Por qué |
 |---|---|---|---|
-| `shellcheck` de `05_scripts/*.sh` | **sí**, severidad `error` bloquea; `warning` se imprime y no bloquea (17 avisos heredados, la mayoría falsos positivos: comas dentro de `--chmod=…`, `do` literal en strings) | — | estático |
-| `verify_gitignore.sh` (85 casos) | **sí** | — | estático |
+| `shellcheck` de `05_scripts/*/*.sh` (el nombre del check conserva `05_scripts/*.sh`: es el check requerido) | **sí**, severidad `error` bloquea; `warning` se imprime y no bloquea (17 avisos heredados, la mayoría falsos positivos: comas dentro de `--chmod=…`, `do` literal en strings) | — | estático |
+| `verificar-gitignore.sh` (85 casos) | **sí** | — | estático |
 | `php -l` de los PHP del sitio | **sí** | — | estático |
-| Harness de seguridad del sitio (`test-sitio-seguridad.sh`: `php -S` + Stata falso; payloads de inyección/traversal → 400, válido → 200 con `.do` limpio) | **sí** | — | no necesita Stata: el falso registra la llamada y el `.do` nunca se ejecuta |
-| Sitio auto-contenido (`verify_sitio_autocontenido.sh`: docroot == `git ls-files 04_1/`, sin fantasmas, activos referenciados existen; roturas conocidas en `05_scripts/sitio-referencias-rotas-conocidas.txt`) | **sí** | el Gate 7 de `publicar-vps.sh` lo repite sobre el worktree de publicación antes del rsync | estático; en CI protege contra el enlace a un archivo que no viaja en git |
-| `/NTA` (`test-sitio-nta.sh`: `php -S` + el Sankey v2 y la cuenta del motor como fixtures; la ruta responde, `jsonSankeyNTA.php` sirve el v2 por default y valida `corte`/`cuenta`, mismo conteo de nodos/enlaces que el origen (52/174 con el fixture), la página no trae números, lo que FusionCharts dibuja es idéntico, como cadena, al JSON de origen y las cifras de «Anchoring and residual» se llenan desde `?cuenta=grupoedad`; `--png` exporta la captura) | **sí** (Chrome headless) | sin argumentos toma `users/ricardo/SankeyNTA/sankey-v2-grupoedad.json` y `users/ricardo/NTA/nta-grupoedad.json` de la corrida local (o `--json`/`--cuenta`), antes de desplegar | no necesita Stata: lee los JSON ya emitidos |
-| `/metodo` (`test-sitio-metodo.sh`, 8.18: `metodo.py --check` regenera del repo y exige bytes idénticos a `04_1/metodo/`; `php -l`; `php -S`: índice, cap0, `metodo.json` y cada capítulo responden 200; cero literales de 4+ dígitos en PHP/JS/CSS; Chrome headless: cada página pinta desde `metodo.json`, 10 secciones por capítulo con tabla o párrafo o su FLAG, índice con el sello del JSON, cap0 con la columna «Otro país» vacía, sin errores de JS, enlaces internos 200) | **sí** (Chrome headless) | lo mismo, localmente, antes del PR; `metodo.py --reporte` para leer sellos y secciones vacías | no necesita Stata: lee el repo (§16) |
+| Harness de seguridad del sitio (`prueba-sitio-seguridad.sh`: `php -S` + Stata falso; payloads de inyección/traversal → 400, válido → 200 con `.do` limpio) | **sí** | — | no necesita Stata: el falso registra la llamada y el `.do` nunca se ejecuta |
+| Sitio auto-contenido (`verificar-sitio-autocontenido.sh`: docroot == `git ls-files 04_1/`, sin fantasmas, activos referenciados existen; roturas conocidas en `05_scripts/pruebas/fixtures/sitio-referencias-rotas-conocidas.txt`) | **sí** | el Gate 7 de `publicar-vps.sh` lo repite sobre el worktree de publicación antes del rsync | estático; en CI protege contra el enlace a un archivo que no viaja en git |
+| `/NTA` (`prueba-sitio-nta.sh`: `php -S` + el Sankey v2 y la cuenta del motor como fixtures; la ruta responde, `jsonSankeyNTA.php` sirve el v2 por default y valida `corte`/`cuenta`, mismo conteo de nodos/enlaces que el origen (52/174 con el fixture), la página no trae números, lo que FusionCharts dibuja es idéntico, como cadena, al JSON de origen y las cifras de «Anchoring and residual» se llenan desde `?cuenta=grupoedad`; `--png` exporta la captura) | **sí** (Chrome headless) | sin argumentos toma `users/ricardo/SankeyNTA/sankey-v2-grupoedad.json` y `users/ricardo/NTA/nta-grupoedad.json` de la corrida local (o `--json`/`--cuenta`), antes de desplegar | no necesita Stata: lee los JSON ya emitidos |
+| `/metodo` (`prueba-sitio-metodo.sh`, 8.18: `metodo.py --check` regenera del repo y exige bytes idénticos a `04_1/metodo/`; `php -l`; `php -S`: índice, cap0, `metodo.json` y cada capítulo responden 200; cero literales de 4+ dígitos en PHP/JS/CSS; Chrome headless: cada página pinta desde `metodo.json`, 10 secciones por capítulo con tabla o párrafo o su FLAG, índice con el sello del JSON, cap0 con la columna «Otro país» vacía, sin errores de JS, enlaces internos 200) | **sí** (Chrome headless) | lo mismo, localmente, antes del PR; `metodo.py --reporte` para leer sellos y secciones vacías | no necesita Stata: lee el repo (§16) |
 | `publicar.sh` Gate 1 (CHANGELOG tiene la versión del manifest) | **sí** (`--ci`) | — | estático |
 | `publicar.sh` Gate 2 (tag anotado) | **no** | `publicar.sh vX.Y.Z --check` en el worktree de publicación, tras crear el tag | el tag lo crea el ritual; un PR de release lleva el manifest bumpeado antes del tag |
 | `publicar.sh` Gate 3 (manifest sincronizado) | **sí** | — | estático |
 | `publicar.sh` Gate 4 (archivos del manifest-endpoint existen) | **sí** | — | estático |
 | `publicar.sh` Gate 5 (raw declarado) | **parcial**: solo `SIM.do` sin `global rawwip` activo | SHA de cada asset presente en `raw/`: `--check` en el worktree de publicación | en CI no hay `raw/` |
-| `publicar.sh` Gate 6 (cobertura de assets, `test-maquina-virgen.sh --cobertura`) | **sí** | — | estático (grep de `ensure_asset`) |
+| `publicar.sh` Gate 6 (cobertura de assets, `prueba-maquina-virgen.sh --cobertura`) | **sí** | — | estático (grep de `ensure_asset`) |
 | `publicar.sh` Gate 7 (clausura transitiva de los `.pkg`) | **sí** | — | estático |
 | `publicar.sh` Gate 8 (Release remota completa) | **sí** (solo lectura con `gh` y el token del workflow) | — | red, sin descarga; si la Release aún no existe, pasa |
 | `publicar.sh` Gate 9 (corte de datos citable existe y cuadra, §4c) | **no** | `--empaquetar-datos` + `--check` en el worktree de publicación, tras `SIM.do` + `contrato-32.sh` | exige `users/ricardo/` |
@@ -807,37 +807,37 @@ credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: li
 | `publicar.sh` Gate 11 (`baseline` declarado y existe como tag; desde v8.15.0, `CUAD-0.md` §4 ter) | **sí** | — | estático |
 | Corridas: `SIM.do`, `Web.Stata.do`, `perfilar-web.sh`, `compuertas-entidad.sh` | **no** | worktree de publicación | Stata |
 | Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
-| Identidad NTA por individuo (`test-nta-identidad.sh`, NTA-1/1b/1c): sobre `users/<id>/NTA/nta-persona.dta`, identidad **sin ancla** `C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0` por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, residual = `S_ajuste` declarado), Σ intra-hogar = 0 nacional y por hogar, Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla multiplicativa Σ S = B.8n), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31, Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759, Σ `YA_base` = B.2n + ⅓B.3n + D.4 neto; escalares de `SCN.ado`), JSON por grupo = base; y, sin Stata, conservación de flujo en todo nodo del Sankey v2.1 (`SankeyNTA/sankey-v2-grupoedad.json`, nodos del contrato, conteo nodos/enlaces) | **no** (la mitad Stata exige `master/SCN.dta` y la base por persona, que no están en git; la mitad Python se puede correr con `--sin-stata` sobre una corrida local) | después de `SIM.do` hasta §3 (o de `NTA.do` suelto), antes de abrir el PR: `bash 05_scripts/test-nta-identidad.sh` | Stata + `users/` |
-| `test-maquina-virgen.sh --download` (1.3 GB desde la Release) | **no** | después de `publicar.sh`, antes de anunciar | assets |
+| Identidad NTA por individuo (`prueba-nta-identidad.sh`, NTA-1/1b/1c): sobre `users/<id>/NTA/nta-persona.dta`, identidad **sin ancla** `C − YL − ImpProd − (τ⁺ − τ⁻) − (YA − YA_ajuste − S_sinancla) − intra = 0` por grupo de edad y por quinquenio × sexo (1e-9 relativo; con ancla, residual = `S_ajuste` declarado), Σ intra-hogar = 0 nacional y por hogar, Σ S sin ancla vs B.8n S.14 (factor y brecha; con ancla multiplicativa Σ S = B.8n), anclas S.14 por construcción (Σ `CpubInd` = D.63, Σ `ImpProd` = D.21 − D.31, Σ `YA_d8` = D.8, Σ τ⁺ efectivo = D.62 + D.759, Σ `YA_base` = B.2n + ⅓B.3n + D.4 neto; escalares de `SCN.ado`), JSON por grupo = base; y, sin Stata, conservación de flujo en todo nodo del Sankey v2.1 (`SankeyNTA/sankey-v2-grupoedad.json`, nodos del contrato, conteo nodos/enlaces) | **no** (la mitad Stata exige `master/SCN.dta` y la base por persona, que no están en git; la mitad Python se puede correr con `--sin-stata` sobre una corrida local) | después de `SIM.do` hasta §3 (o de `NTA.do` suelto), antes de abrir el PR: `bash 05_scripts/pruebas/prueba-nta-identidad.sh` | Stata + `users/` |
+| `prueba-maquina-virgen.sh --download` (1.3 GB desde la Release) | **no** | después de `publicar.sh`, antes de anunciar | assets |
 | `publicar-vps.sh` (gates con VPS, rsync, health) | **no** | ritual de deploy | credenciales, SSH, producción |
-| «Calcular» de humo (`humo-calcular.sh`, Fase 6 de `publicar-vps.sh`) | rojo/verde con Stata falso (`test-humo-calcular.sh`, job `sitio-seguridad`) | el real, contra el VPS, en cada deploy | Stata + producción |
+| «Calcular» de humo (`humo-calcular.sh`, Fase 6 de `publicar-vps.sh`) | rojo/verde con Stata falso (`prueba-humo-calcular.sh`, job `sitio-seguridad`) | el real, contra el VPS, en cada deploy | Stata + producción |
 | Gate humano del navegador (§6, lo que el humo no prueba) | **no** | Ricardo | humano |
 
 **Gates de sesión (con Stata; v8.14, lo que un PR que toca el motor debe traer en su descripción):**
 
 | Gate de sesión | Qué exige | Cómo se corre |
 |---|---|---|
-| `gate-numeros.sh` | `output.txt` byte-idéntico al baseline y los 10 sankeys ≤ 1e-9 | sobre `users/ricardo` de una corrida completa (`05_scripts/correr-sim.sh`; en el ritual, el paso `sim` de `ritual.sh`) |
+| `compuerta-numeros.sh` | `output.txt` byte-idéntico al baseline y los 10 sankeys ≤ 1e-9 | sobre `users/ricardo` de una corrida completa (`05_scripts/pruebas/correr-sim.sh`; en el ritual, el paso `sim` de `ritual.sh`) |
 | Dos caminos | `output.txt` y los 11 JSON byte-idénticos entre una corrida con `master/SCN.dta` enriquecido y otra con las 18 series S.14 borradas (`strip-s14.do`) | dos worktrees desechables, `comparar.py` |
-| `test-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **47/47 llaves** (46 + `CUADRATURA`, v8.15.0; v8.15.1: `Web.Stata.do` §7.3 carga `master/<anioenigh>/cuadratura.do`) de `output.txt` como cadena | `bash 05_scripts/test-web-batch.sh --root <worktree con la corrida>` (~2 min) |
-| `test-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/test-nta-identidad.sh --dir <worktree>/users/ricardo` |
-| `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/fixtures/statajson_entidad-nl.json`, v8.14; regenerado v8.16.0), ciclo de vida Σ32 = `aportaciones-nacional.json` (sin redondear, 8.16b), sellos, banda en las 32 (exige `users/ricardo-v<t>/`: sin las 5 bases aborta, 8.16b) | §13 |
-| `test-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
-| `test-precache-manifest.sh` (regresión del hotfix v8.15.0) | `_precache_manifest.ado` lee `version`/`data_updated`/`baseline` del manifest real y de uno con texto hostil (acentos graves, comillas) sin r(132) | `bash 05_scripts/test-precache-manifest.sh`, obligatorio si el PR toca texto libre de `05_scripts/manifest.json` o `_precache_manifest.ado` |
-| `verify_nodo.sh` (nodos de `01_modulos/nodos/`, Paquete Económico y ciep.mx) | las seis reglas del nodo (página sin números, contrato con procedencia, determinismo con dos corridas de Stata, raíz sin `.md`) | `bash 05_scripts/verify_nodo.sh [deuda-publica\|portada\|indicadores]` antes de publicar un nodo; no es del ritual del Simulador |
-| `test-sitio-nta.sh --png`, `test-sitio-entidades.sh --png` | lo mismo que CI pero sobre los JSON de la corrida (no los fixtures) y con la captura que se adjunta al PR | `--json/--cuenta/--panel`, `--users` |
+| `prueba-web-batch.sh` (v8.14, FLAG-5) | el «Calcular» default (Web.Stata.do con las llaves de `users/ricardo/output.txt`) reproduce las **47/47 llaves** (46 + `CUADRATURA`, v8.15.0; v8.15.1: `Web.Stata.do` §7.3 carga `master/<anioenigh>/cuadratura.do`) de `output.txt` como cadena | `bash 05_scripts/pruebas/prueba-web-batch.sh --root <worktree con la corrida>` (~2 min) |
+| `prueba-nta-identidad.sh` | identidad NTA sin ancla a 1e-9, anclas S.14 por construcción, conservación del v2 y del v3 en ambas unidades, panel | `bash 05_scripts/pruebas/prueba-nta-identidad.sh --dir <worktree>/users/ricardo` |
+| `contrato-32.sh` → `compuertas-entidad.py` / `contrato-32.py` | paridad nacional, Σ32 = nacional, testigo NL (`05_scripts/pruebas/fixtures/statajson_entidad-nl.json`, v8.14; regenerado v8.16.0), ciclo de vida Σ32 = `aportaciones-nacional.json` (sin redondear, 8.16b), sellos, banda en las 32 (exige `users/ricardo-v<t>/`: sin las 5 bases aborta, 8.16b) | §13 |
+| `prueba-maquina-virgen.sh --download --vintages` | la receta de las cinco bases de la banda (DoD 1, v8.14) deja `users/<usuario>-v<t>/aportaciones.dta` | §13, bases precedentes |
+| `prueba-precache-manifest.sh` (regresión del hotfix v8.15.0) | `_precache_manifest.ado` lee `version`/`data_updated`/`baseline` del manifest real y de uno con texto hostil (acentos graves, comillas) sin r(132) | `bash 05_scripts/pruebas/prueba-precache-manifest.sh`, obligatorio si el PR toca texto libre de `05_scripts/manifest.json` o `_precache_manifest.ado` |
+| `verificar-nodo.sh` (nodos de `01_modulos/nodos/`, Paquete Económico y ciep.mx) | las seis reglas del nodo (página sin números, contrato con procedencia, determinismo con dos corridas de Stata, raíz sin `.md`) | `bash 05_scripts/pruebas/verificar-nodo.sh [deuda-publica\|portada\|indicadores]` antes de publicar un nodo; no es del ritual del Simulador |
+| `prueba-sitio-nta.sh --png`, `prueba-sitio-entidades.sh --png` | lo mismo que CI pero sobre los JSON de la corrida (no los fixtures) y con la captura que se adjunta al PR | `--json/--cuenta/--panel`, `--users` |
 
-**`test-sitio-transitorios.sh` local vs CI.** Desde 2026-10-29 el gate falla a veces en local («ReferenceError:
-$ is not defined» en la portada, `test-sitio-transitorios.js:34`) sobre ramas que en CI (ubuntu) pasan con la
+**`prueba-sitio-transitorios.sh` local vs CI.** Desde 2026-10-29 el gate falla a veces en local («ReferenceError:
+$ is not defined» en la portada, `prueba-sitio-transitorios.js:34`) sobre ramas que en CI (ubuntu) pasan con la
 misma portada byte a byte; no se encontró la causa (¿carga del equipo con Stata + Chrome?). **El veredicto lo da
 CI**: un rojo local de ese gate no implica regresión; si CI también falla, mirar el orden de carga de
 `plugins/jquery` y la espera `networkidle2` + 2.5 s de `abrir()`.
 
 Correr lo mismo que CI, localmente, antes de abrir el PR (todo en segundos):
 ```bash
-shellcheck -S error 05_scripts/*.sh && bash 05_scripts/verify_gitignore.sh && \
+shellcheck -S error 05_scripts/*/*.sh && bash 05_scripts/pruebas/verificar-gitignore.sh && \
 for f in 04_1_simuladorfiscal.ciep.mx/*.php; do php -l "$f" >/dev/null || echo "ERR $f"; done && \
-bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh && bash 05_scripts/test-sitio-transitorios.sh && bash 05_scripts/test-sitio-nta.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
+bash 05_scripts/pruebas/prueba-sitio-seguridad.sh && bash 05_scripts/pruebas/prueba-humo-calcular.sh && bash 05_scripts/pruebas/prueba-sitio-transitorios.sh && bash 05_scripts/pruebas/prueba-sitio-nta.sh && bash 05_scripts/pruebas/verificar-sitio-autocontenido.sh && bash 05_scripts/publicar/publicar.sh --ci
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
@@ -864,7 +864,7 @@ JSON
 gh api repos/rcantuc/SimuladorCIEP/branches/master/protection/required_status_checks --jq '.contexts[]'
 ```
 
-**Efectos transitorios (v8.12.3):** un efecto de ~1 s (el parpadeo `blink-1` de las tablas tras «Calcular», el refresco de los 5 Sankeys, «Finalizando…») no deja rastro en el DOM final, así que una captura del estado final no lo ve. `bash 05_scripts/test-sitio-transitorios.sh` los muestrea cada ~100 ms con Chrome headless y corre en CI (job `sitio-transitorios`). Todo cambio al cierre del «Calcular» (`complete`/`success` en `stataCalcula*.js`) debe pasarlo; ojo con las claves duplicadas en el objeto de `$.ajax` (la última gana en silencio).
+**Efectos transitorios (v8.12.3):** un efecto de ~1 s (el parpadeo `blink-1` de las tablas tras «Calcular», el refresco de los 5 Sankeys, «Finalizando…») no deja rastro en el DOM final, así que una captura del estado final no lo ve. `bash 05_scripts/pruebas/prueba-sitio-transitorios.sh` los muestrea cada ~100 ms con Chrome headless y corre en CI (job `sitio-transitorios`). Todo cambio al cierre del «Calcular» (`complete`/`success` en `stataCalcula*.js`) debe pasarlo; ojo con las claves duplicadas en el objeto de `$.ajax` (la última gana en silencio).
 
 ---
 
@@ -882,7 +882,7 @@ probado en el worktree del agente, nunca contra el layout del deployment.
 (motor), 3b (`master/`), 3b-bis (`users/ricardo/bootstraps`, `users/ricardo/cache`) y 3b-ter
 (`users/ciepmx`) de `publicar-vps.sh` embarcan. Lo que no embarca, **se embarca** (se añade a la
 fase y a `MOTOR_LECTURAS_VPS`) **o no se lee**. Para `users/ciepmx/` (v8.17.1) no hay lista que
-añadir: la Fase 3b-ter y `MOTOR_LECTURAS_VPS` la derivan con `05_scripts/manifiesto-default.py` de lo
+añadir: la Fase 3b-ter y `MOTOR_LECTURAS_VPS` la derivan con `05_scripts/datos/manifiesto-default.py` de lo
 que las páginas piden; una página que pide un producto nuevo lo mete sola (lección 20). El **Gate 5-remoto** de `publicar-vps.sh` comprueba
 en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y que
 `05_scripts/manifest.json` es idéntico al local); la Fase 6 da el clic «Calcular» real.
@@ -900,9 +900,9 @@ en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y q
 | `01_modulos/{Expenditure,Households,PerfilesSim,…}.do`, `visualizations/{Graphs_*,CicloEntidad}.do`, `nodos/*.do` | `SIM.do`, batch | batch | embarcado por `01_modulos/***`; no se leen en web |
 | `set_token.do`, `simulador.stpr` | `SIM.do`, `profile.do` | batch / GUI local | **no se lee** en web; `set_token.do` es secreto y no viaja (correcto) |
 | `01_raw/CONEVAL/2022/Base` | `Expenditure.do` | batch | no se lee en web (FLAG: ruta `01_raw/`, ¿alias viejo de `raw/`?) |
-| `05_scripts/fixtures/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
-| `05_scripts/compuertas-entidad.do` | sesión `compuertas-entidad.sh` | sesión | no se lee en web |
-| `users/ciepmx/SankeyNTA/sankey-{v4-economia,v3-grupoedad}.json`, `users/ciepmx/NTA/{nta-grupoedad.json, nta-panel-grupoedad-sexo.json, nta-identidad.txt}` (los escribe `01_modulos/NTA.do`, `SIM.do` §3.2b, en `users/ricardo/`), `users/ciepmx/<ABREV>/{sankey-<5 cortes>, ciclo-vida, tasas-efectivas, neto-pibe, meta}.json` ×32 y `users/ciepmx/entidades.json` (`contrato-32.sh`) | `jsonSankeyNTA.php` (`/NTA`: `?corte=v4-economia` default desde v8.17.0, `?corte=v3-grupoedad`, `?cuenta=…`) y `jsonEntidad.php` (`/entidades`, `/entidades/<ABREV>`) | **web** (lectura PHP, sin Stata) | **embarcar**: Fase 3b-ter y `MOTOR_LECTURAS_VPS` lo DERIVAN con `05_scripts/manifiesto-default.py` de lo que `NTA/index.php`, `entidades/index.php`, `_entidad.php` y `js/stataCalcula.js` piden (v8.17.1; antes `DEFAULT_MANIFEST` a mano, que no supo del v4). Lo que ninguna página pide no viaja aunque el endpoint lo admita (v2, v1 `?corte=grupoedad`, `nta-quinquenio-sexo.json`: 404 con pista) |
+| `05_scripts/pruebas/fixtures/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
+| `05_scripts/pruebas/compuertas-entidad.do` | sesión `compuertas-entidad.sh` | sesión | no se lee en web |
+| `users/ciepmx/SankeyNTA/sankey-{v4-economia,v3-grupoedad}.json`, `users/ciepmx/NTA/{nta-grupoedad.json, nta-panel-grupoedad-sexo.json, nta-identidad.txt}` (los escribe `01_modulos/NTA.do`, `SIM.do` §3.2b, en `users/ricardo/`), `users/ciepmx/<ABREV>/{sankey-<5 cortes>, ciclo-vida, tasas-efectivas, neto-pibe, meta}.json` ×32 y `users/ciepmx/entidades.json` (`contrato-32.sh`) | `jsonSankeyNTA.php` (`/NTA`: `?corte=v4-economia` default desde v8.17.0, `?corte=v3-grupoedad`, `?cuenta=…`) y `jsonEntidad.php` (`/entidades`, `/entidades/<ABREV>`) | **web** (lectura PHP, sin Stata) | **embarcar**: Fase 3b-ter y `MOTOR_LECTURAS_VPS` lo DERIVAN con `05_scripts/datos/manifiesto-default.py` de lo que `NTA/index.php`, `entidades/index.php`, `_entidad.php` y `js/stataCalcula.js` piden (v8.17.1; antes `DEFAULT_MANIFEST` a mano, que no supo del v4). Lo que ninguna página pide no viaja aunque el endpoint lo admita (v2, v1 `?corte=grupoedad`, `nta-quinquenio-sexo.json`: 404 con pista) |
 
 FLAG (hallazgo del humo): `checkStataStatus.php` solo reporta `completed` cuando existe
 `<id>.done`, y nada en el motor ni en `Web.Stata.do` lo escribe; el JS no lo consulta (el POST a
@@ -917,12 +917,12 @@ FLAG (hallazgo del humo): `checkStataStatus.php` solo reporta `completed` cuando
 cambia un byte), los productos de ESA entidad en `users/$id/<ABREV>/`: `sankey-{quintil,grupoedad,
 sexo,rural,escol}.json` (§8.2), `ciclo-vida.json` (§8.2), `tasas-efectivas.json` (§4.7, v8.13a:
 `TasasEfectivasEntidad.do` → `TasasEfectivasMicro`), más Población y PIB/Deflactor por entidad
-(§1–2; el PIB solo si existe `master/PIBDeflactor<ABREV>.dta`). `05_scripts/contrato-32.sh` hace lo
+(§1–2; el PIB solo si existe `master/PIBDeflactor<ABREV>.dta`). `05_scripts/pruebas/contrato-32.sh` hace lo
 mismo para las 32 en una sola sesión y corre los gates por script.
 
 **Cómo (una noche; en el worktree de publicación o en uno con `master/`, `raw/` y `users/ricardo/`):**
 ```bash
-nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-v8.13a-<fecha> \
+nohup bash 05_scripts/pruebas/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-v8.13a-<fecha> \
      --refs <carpeta con output.txt y sankey-*.json de la última release> > corrida.out 2>&1 &
 ```
 Tiempos medidos (2026-10-19, StataNow 19.5, Mac, 1 procesador): SIM.do ≈ 32 min; `compuertas-entidad.do`
@@ -936,9 +936,9 @@ Tolerante a fallos: si una entidad truena en un paso, queda su rc en la tabla y 
 
 | Base | La exige | Si falta | Receta |
 |---|---|---|---|
-| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | **Receta ejecutable (v8.14, DoD 1):** `bash 05_scripts/test-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" --into "$PWD"` corre `05_scripts/vintage-aportaciones.do` por vintage (SIM.do §0–§5 y §7 con `anioPE = aniovp = anioenigh = t`, calibración contemporánea sin los parámetros del Paquete, `bootstrap 1`), construye las cachés `master/<t>/` y baja de la Release los assets que falten; imprime el tiempo por vintage (**medido 2026-10-30:** 28–32 min por vintage sin cachés `master/<t>/`, 16 min con ellas, StataNow 19.5 SE a 1 procesador; con `nohup`, máximo tres a la vez, una invocación por vintage). Límite heredado: sin los escalares de §5.1, `GastoPC` deja `Salud` y `Pensiones` en cero (como en las bases del 8-oct), así que la banda del lado gasto cubre Educación, Transferencias e Inversión. **Desde v8.14b las cinco bases vigentes son las de la receta** (2026-10-30, motor v8.14) y viven en `-datos/users/ricardo-v<t>/` (los worktrees de corrida las clonan con `cp -c` junto con `raw/` y `master/`); las del 8-oct (`SimuladorCIEP-NL`, motor v8.8.1) quedan como histórico: mismos totales nacionales, participaciones de NL distintas en el segundo decimal (CHANGELOG v8.14.0, punto 17) |
-| `05_scripts/fixtures/statajson_entidad-nl.json` (testigo NL, **v8.14**: regenerado con el motor actual, post-v8.12.4) | el gate 3 de `compuertas-entidad.py` (15 celdas quintil×familia a 1e-12 y 90 celdas `dis<fam>nle<dec>` a 1e-13) | el gate queda "no verificable" (declarado) | lo escribe `compuertas-entidad.do` §2 en `<evidencia>/statajson_entidad-nl.json` (esquema `ciep.testigo.entidad-nl/v1`, con el commit y el año en `procedencia`); `contrato-32.sh` y `compuertas-entidad.sh` leen el fixture por default (`--statajson` lo sustituye). Se regenera solo con una corrección de datos declarada en el CHANGELOG, copiando el de la corrida de evidencia al fixture en el mismo PR. El testigo del sprint NL (2026-10-08, sha `ca453062…`) quedó obsoleto con v8.12.4 (reldif 6.6e-2) |
-| `master/PIBDeflactor<ABREV>.dta` (las 32 desde v8.13a-2) | PIB/Deflactor por entidad (§2) y el «% del PIBE» de v8.13b | la entidad va `PIB sin base` en la tabla (y `contrato-32.py` §4b falla) | `05_scripts/pibe-32.sh` (§13.1): `PIBDeflactor if entidad == "<nombre>", update` por entidad; BISE con token |
+| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | **Receta ejecutable (v8.14, DoD 1):** `bash 05_scripts/pruebas/prueba-maquina-virgen.sh --download --vintages "2016 2018 2020 2022 2024" --into "$PWD"` corre `05_scripts/datos/vintage-aportaciones.do` por vintage (SIM.do §0–§5 y §7 con `anioPE = aniovp = anioenigh = t`, calibración contemporánea sin los parámetros del Paquete, `bootstrap 1`), construye las cachés `master/<t>/` y baja de la Release los assets que falten; imprime el tiempo por vintage (**medido 2026-10-30:** 28–32 min por vintage sin cachés `master/<t>/`, 16 min con ellas, StataNow 19.5 SE a 1 procesador; con `nohup`, máximo tres a la vez, una invocación por vintage). Límite heredado: sin los escalares de §5.1, `GastoPC` deja `Salud` y `Pensiones` en cero (como en las bases del 8-oct), así que la banda del lado gasto cubre Educación, Transferencias e Inversión. **Desde v8.14b las cinco bases vigentes son las de la receta** (2026-10-30, motor v8.14) y viven en `-datos/users/ricardo-v<t>/` (los worktrees de corrida las clonan con `cp -c` junto con `raw/` y `master/`); las del 8-oct (`SimuladorCIEP-NL`, motor v8.8.1) quedan como histórico: mismos totales nacionales, participaciones de NL distintas en el segundo decimal (CHANGELOG v8.14.0, punto 17) |
+| `05_scripts/pruebas/fixtures/statajson_entidad-nl.json` (testigo NL, **v8.14**: regenerado con el motor actual, post-v8.12.4) | el gate 3 de `compuertas-entidad.py` (15 celdas quintil×familia a 1e-12 y 90 celdas `dis<fam>nle<dec>` a 1e-13) | el gate queda "no verificable" (declarado) | lo escribe `compuertas-entidad.do` §2 en `<evidencia>/statajson_entidad-nl.json` (esquema `ciep.testigo.entidad-nl/v1`, con el commit y el año en `procedencia`); `contrato-32.sh` y `compuertas-entidad.sh` leen el fixture por default (`--statajson` lo sustituye). Se regenera solo con una corrección de datos declarada en el CHANGELOG, copiando el de la corrida de evidencia al fixture en el mismo PR. El testigo del sprint NL (2026-10-08, sha `ca453062…`) quedó obsoleto con v8.12.4 (reldif 6.6e-2) |
+| `master/PIBDeflactor<ABREV>.dta` (las 32 desde v8.13a-2) | PIB/Deflactor por entidad (§2) y el «% del PIBE» de v8.13b | la entidad va `PIB sin base` en la tabla (y `contrato-32.py` §4b falla) | `05_scripts/datos/pibe-32.sh` (§13.1): `PIBDeflactor if entidad == "<nombre>", update` por entidad; BISE con token |
 
 **Gates que corren por script y su estado:** paridad (sha256 de `output.txt` y 5 sankeys
 nacionales vs `--refs`), aditividad de Sankeys (Σ32 = nacional, 1e-9) y del ciclo de vida (Σ32
@@ -950,7 +950,7 @@ tasas efectivas no son aditivas: el reporte PROPONE el gate de consistencia (Σ3
 
 **Receta (un comando, en un worktree con `master/`, `raw/` y `set_token.do`; `master/*.dta` es gitignored):**
 ```bash
-nohup bash 05_scripts/pibe-32.sh --evidencia ~/CIEP_Simuladores/diag-<fecha> > pibe-32.out 2>&1 &
+nohup bash 05_scripts/datos/pibe-32.sh --evidencia ~/CIEP_Simuladores/diag-<fecha> > pibe-32.out 2>&1 &
 # subconjunto: --entidades "NL Jal"   pausa entre entidades: --pausa 5 (s, default)   sin reintento: --sin-reintento
 ```
 Hace, en orden: (1) compuerta de arranque (catálogo `SIMentidad` con 32, `set_token.do` presente y una
@@ -983,25 +983,25 @@ de sesión al de publicación: `rsync -a master/PIBDeflactor*.{dta,meta} <worktr
 
 ---
 
-## 14. El ritual de publicación: `05_scripts/ritual.sh` (desde 8.18a-1)
+## 14. El ritual de publicación: `05_scripts/publicar/ritual.sh` (desde 8.18a-1)
 
 El ritual que v8.14.0–v8.15.2 corrieron a mano, un comando por mensaje, es un script con paradas: cada paso es gate del siguiente y, si falla, el script se detiene con la razón, la salida completa y el comando para reanudar. Corre en el **worktree de publicación** (`~/CIEP_Simuladores/SimuladorCIEP-datos`) y escribe la evidencia en `~/CIEP_Simuladores/diag-<v>-<fecha>/`. **No publica**: nunca llama a `publicar.sh <v>` sin `--check` o `--empaquetar-datos`, ni a `publicar-vps.sh`. Eso lo corre Ricardo cuando el script imprime «listo para publicar».
 
 ```bash
 # tras el merge del PR (el hash COMPLETO, copiado literal: lección 2)
-bash 05_scripts/ritual.sh v8.15.3 --hash <40 hex>
+bash 05_scripts/publicar/ritual.sh v8.15.3 --hash <40 hex>
 # reanudar donde paró (la evidencia es la diag-v8.15.3-* más reciente, aunque haya cambiado el día)
-bash 05_scripts/ritual.sh v8.15.3 --desde web
+bash 05_scripts/publicar/ritual.sh v8.15.3 --desde web
 # solo los gates finales sobre lo que ya está hecho (no recalcula nada; 10 s)
-bash 05_scripts/ritual.sh v8.15.3 --desde check
+bash 05_scripts/publicar/ritual.sh v8.15.3 --desde check
 ```
 
 | # | Paso | Qué hace | Gate | Evidencia |
 |---|---|---|---|---|
 | 1 | `merge` | **no fusiona**: `git fetch` y compara | `origin/master` = `--hash`; árbol limpio | `ritual.hash` |
 | 2 | `baile` | `-datos` `fetch` + `checkout master` + `pull --ff-only` (**solo `-datos`**: el clon de Dropbox es intocable, firma CUAD-1-2 §C, 8.16b) | HEAD = hash; árbol limpio | — |
-| 3 | `sim` | `05_scripts/correr-sim.sh` (~33 min) | «end of do-file»; 0 `r(#);`; `commit.txt` = hash sin cambios locales; `gate-numeros` VERDE (ROJO solo con `--baseline-nuevo`, que exige `manifest.baseline` = `<v>` y que `[<v>]` del CHANGELOG lo declare) | `01-ritual/` |
-| 4 | `web` | `test-web-batch.sh --root <clon>` | N/N llaves, con N = las llaves de `output.txt` (no se fija en 47) | `02-test-web-batch/` |
+| 3 | `sim` | `05_scripts/pruebas/correr-sim.sh` (~33 min) | «end of do-file»; 0 `r(#);`; `commit.txt` = hash sin cambios locales; `gate-numeros` VERDE (ROJO solo con `--baseline-nuevo`, que exige `manifest.baseline` = `<v>` y que `[<v>]` del CHANGELOG lo declare) | `01-ritual/` |
+| 4 | `web` | `prueba-web-batch.sh --root <clon>` | N/N llaves, con N = las llaves de `output.txt` (no se fija en 47) | `02-test-web-batch/` |
 | 5 | `c32` | `contrato-32.sh --evidencia c32 --refs 01-ritual` (~42 min) | PASÓ y 32 `meta.json` | `c32/` |
 | 6 | `precache` | `Precache` suelto, solo si `users/<id>/cache/sello.txt` ≠ manifest (`data_updated`, `baseline`) | sello = manifest | `04-precache/` |
 | 7 | `sidecar` | `publicar.sh <v> --empaquetar-datos` | `manifest-datos.json` con el commit del hash | `users/_sidecar/<v>/` |
@@ -1024,10 +1024,10 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las d
 1. **`-datos` al hash del merge antes de todo.** La corrida, el `--check` y el deploy salen del mismo commit; un `-datos` atrasado da un baseline viejo. (`baile`, `sim`)
 2. **Tag al hash literal, nunca a una variable.** `git tag -a vX $H` con `$H` vacío tagea `HEAD` sin avisar: copia el hash a mano. (`ritual.sh` exige 40 hex y verifica el tag en `origin`)
 3. **Un paso a la vez hasta `--check` verde.** Cada salida se lee antes del siguiente paso; el script se detiene en el primer rojo y no encadena nada después.
-4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere». `gate-numeros.sh` igual: sin archivos da NO EVALUABLE (exit 2), no «los números cambiaron».
+4. **`--refs` plano o `SankeySF/`.** `contrato-32.sh --refs` acepta los dos layouts (v8.15a); una referencia que falta dice «referencia ausente: <ruta>», no «difiere». `compuerta-numeros.sh` igual: sin archivos da NO EVALUABLE (exit 2), no «los números cambiaron».
 5. **Minor = deployment nuevo (Gate 6) y tarda ~1 h** por la copia de `master/`. Se reserva el tiempo y no se interrumpe (§4b).
 6. **No filtrar la salida de scripts interactivos.** Desde v8.15a la pregunta del cutover y la línea de rollback van a `/dev/tty`, pero la regla sigue: un `| grep` puede esconder cualquier otro aviso.
-7. **Todo cambio en `output.do` exige `test-web-batch.sh` verde antes de cerrar la rama** (v8.15.1). v8.15.0 añadió la llave `CUADRATURA` con diez escalares que solo calcula `Households.do`; `gate-numeros.sh` (batch) quedó verde y nadie corrió el web: `publicar-vps.sh` v8.15 revirtió en la Fase 6 por `CuadYLPIB not found` r(111). Lo que `output.do` imprime lo tienen que producir los dos flujos; lo que es invariante al usuario se escribe como producto de `master/` (hoy `master/<anioenigh>/cuadratura.do`) y se entra a `MOTOR_LECTURAS_VPS` (§12).
+7. **Todo cambio en `output.do` exige `prueba-web-batch.sh` verde antes de cerrar la rama** (v8.15.1). v8.15.0 añadió la llave `CUADRATURA` con diez escalares que solo calcula `Households.do`; `compuerta-numeros.sh` (batch) quedó verde y nadie corrió el web: `publicar-vps.sh` v8.15 revirtió en la Fase 6 por `CuadYLPIB not found` r(111). Lo que `output.do` imprime lo tienen que producir los dos flujos; lo que es invariante al usuario se escribe como producto de `master/` (hoy `master/<anioenigh>/cuadratura.do`) y se entra a `MOTOR_LECTURAS_VPS` (§12).
 8. **Release commit antes del tag, en el mismo PR del fix** (v8.15.1). El PR del hotfix lleva ya `CHANGELOG [vX.Y.Z]`, `manifest.json` (`version`, `release_tag`, `release_url_prefix`) y `CITATION.cff` (`publicar.sh --citation`); así el hash que se mergea es el que se tagea y `--check` no encuentra un manifest a medias. `baseline` no se toca en un patch que no mueve números. (`release-commit`)
 9. **`gh pr merge --delete-branch` borra también el worktree local de la rama** (v8.15.2), carpeta incluida, con sus `raw/` y `master/` gitignored. Lo que haya que conservar de un worktree (un asset congelado, un `.dta` reconstruido) se copia a la carpeta diag **antes** del merge.
 10. **Dos PR seguidos: el segundo queda `BEHIND`** (rama protegida estricta). `gh pr update-branch <n>`, esperar los checks y fusionar; nunca `--admin`. El hash del ritual es el del último merge.
@@ -1040,19 +1040,19 @@ Lo que mordió, en el orden en que importa. El script cubre 1–4, 8 y 15; las d
 17. **Los cuadros del log siguen el estándar §D de la firma CUAD-1-2** (8.16b): rótulo INEGI sin paréntesis, código y sector en columnas, notas al pie `^n` / `Nota n:` para todo comentario o parámetro, columnas de ancho fijo, separador de miles, gates debajo una línea cada uno (`_tabla_anclas.ado` v2). Un cuadro nuevo que no lo siga es un defecto de la sesión.
 18. **Una versión que mueve el baseline trae sus fixtures en dos tiempos** (8.16b, decisión de Ricardo 2026-11-08). Los que no dependen de las bases de vintages (`output-default.txt`, `sankeys-default/`, los de NTA y el testigo NL `statajson_entidad-nl.json`) salen de la corrida de la sesión y entran en el mismo PR: así `gate-numeros` sale VERDE en el `sim` del ritual contra el baseline nuevo (`--baseline-nuevo` cubre el ROJO) y `c32` no tropieza con el testigo. Los de `/entidades` llevan la banda `bmin`/`bmax`, que solo existe donde están las 5 bases `users/<id>-v{2016…2024}/aportaciones.dta` (`-datos`, no el worktree): salen del paso `c32` del ritual, entran en un PR corto `fixtures/entidades-vX.Y.Z` y el ritual se reanuda con el hash nuevo. Por eso el ritual se lanza **`--hasta c32`** (completo etiquetaría vX.Y.Z sobre el hash del PR de código y el tag ya no se mueve); tras el merge del PR corto: `ritual.sh vX.Y.Z --hash <merge nuevo> --desde baile --hasta baile` (deja `-datos` en el hash nuevo) y `ritual.sh vX.Y.Z --hash <merge nuevo> --desde precache --si` (`precache` se salta solo si el sello del cache ya es el del manifest; `sidecar` y `check` exigen HEAD de `-datos` = hash). `correr-sim.sh` y `contrato-32.sh` abortan sin las 5 bases (antes seguían sin banda, en silencio; receta: `cp -Rc` desde `-datos`). (`sim`, `c32`)
 19. **Un gate que compara contra texto redondeado se queda sin tolerancia** (8.16b): `contrato-32.py` §2 comparaba Σ32 `pct_nac` contra los `APORT*` de `output.txt` a `%8.3f` con tolerancia 0.0005, que es exactamente el error máximo de ese redondeo; cinco corridas en 0.000499 y la de 8.16b en 0.000501 sin que la aditividad cambiara. Desde v8.16.0 `Simulador.ado` escribe `users/<id>/aportaciones-nacional.json` (los mismos vectores sin redondear) y el gate lee ese archivo; `output.txt` no cambia. Regla: el comparando de un gate es el escalar, no el texto formateado. (`c32`)
-20. **Una lista a mano de lo que viaja al VPS envejece en silencio; el manifiesto se deriva de lo que las páginas piden** (v8.17.1, 2026-11-08). La Fase 3b-ter de `publicar-vps.sh` embarcaba `users/ricardo/` → `users/ciepmx/` con `DEFAULT_MANIFEST` escrito a mano; v8.17.0 cambió el default de `/NTA` al v4 (`SankeyNTA/sankey-v4-economia.json`) y la lista no se tocó: el ritual (11/11), `test-sitio-nta.sh` y `test-sitio-seguridad.sh` estaban verdes porque prueban el sitio con sus propios archivos, no el layout del deployment, y el deploy habría dejado `/NTA` en 404 (tercera vez: v8.10 sitio sin css/js, v8.12 motor sin `manifest.json`, v8.17 el v4). Desde v8.17.1 la lista vive en un solo lugar, `05_scripts/manifiesto-default.py`, que la deriva del código del sitio (qué endpoint pide cada página y a qué `users/ciepmx/<archivo>` cae cada endpoint) y la leen la Fase 3b-ter, el Gate 5-remoto y `humo-calcular.sh` (un GET por endpoint tras el swap, entidades solo NL; rojo → rollback). `test-manifiesto-default.sh` (CI) prueba que es derivación: una página que pide un corte más lo mete sola, una URL en un comentario no cuenta, un corte que el endpoint rechaza aborta. Regla: todo producto nuevo que una página pida se prueba contra el layout del deployment (`manifiesto-default.py --tsv` lo lista; `humo-calcular.sh http://localhost:8000` contra `php -S` del docroot con `users/ciepmx/` armado como la Fase 3b-ter), no solo contra el harness. Consecuencia declarada: lo que ninguna página pide deja de viajar (v2 y v1 del Sankey NTA, `nta-quinquenio-sexo.json`). (`publicar-vps.sh`) **Corolario (v8.18.1, 2026-11-09): todo cambio de las páginas de método (`plantilla-metodo.php`, `NTA/`, `entidades/`, y su reparto en cuerpos `_cuerpo-*.php`) corre también `05_scripts/test-manifiesto-default.sh`, que NO es parte de los `test-sitio-*.sh`.** El PR #76 movió el cuerpo de `/NTA` a `NTA/_cuerpo-{en,es}.php` y `_entidad.php` dejó de declarar `$cortes = array(…)` en forma literal: los cinco `test-sitio-*` y `verify_sitio_autocontenido` pasaron en local y el CI de seguridad falló porque `manifiesto-default.py` dejó de ver `nta-identidad.txt` (el ritual y el sidecar lo habrían empaquetado sin el archivo que `/NTA` pide). Ahora la derivación lee también los cuerpos; si una página reparte lo que pide en otros archivos, hay que enseñárselo a `manifiesto-default.py` y a la copia mínima de su test. Antes de abrir el PR de una página de método: `for t in test-manifiesto-default test-humo-calcular test-sitio-seguridad test-sitio-nta test-sitio-entidades test-sitio-metodo verify_sitio_autocontenido; do bash 05_scripts/$t.sh; done` (el workflow `gates-sin-stata.yml` es la lista autoritativa).
+20. **Una lista a mano de lo que viaja al VPS envejece en silencio; el manifiesto se deriva de lo que las páginas piden** (v8.17.1, 2026-11-08). La Fase 3b-ter de `publicar-vps.sh` embarcaba `users/ricardo/` → `users/ciepmx/` con `DEFAULT_MANIFEST` escrito a mano; v8.17.0 cambió el default de `/NTA` al v4 (`SankeyNTA/sankey-v4-economia.json`) y la lista no se tocó: el ritual (11/11), `prueba-sitio-nta.sh` y `prueba-sitio-seguridad.sh` estaban verdes porque prueban el sitio con sus propios archivos, no el layout del deployment, y el deploy habría dejado `/NTA` en 404 (tercera vez: v8.10 sitio sin css/js, v8.12 motor sin `manifest.json`, v8.17 el v4). Desde v8.17.1 la lista vive en un solo lugar, `05_scripts/datos/manifiesto-default.py`, que la deriva del código del sitio (qué endpoint pide cada página y a qué `users/ciepmx/<archivo>` cae cada endpoint) y la leen la Fase 3b-ter, el Gate 5-remoto y `humo-calcular.sh` (un GET por endpoint tras el swap, entidades solo NL; rojo → rollback). `prueba-manifiesto-default.sh` (CI) prueba que es derivación: una página que pide un corte más lo mete sola, una URL en un comentario no cuenta, un corte que el endpoint rechaza aborta. Regla: todo producto nuevo que una página pida se prueba contra el layout del deployment (`manifiesto-default.py --tsv` lo lista; `humo-calcular.sh http://localhost:8000` contra `php -S` del docroot con `users/ciepmx/` armado como la Fase 3b-ter), no solo contra el harness. Consecuencia declarada: lo que ninguna página pide deja de viajar (v2 y v1 del Sankey NTA, `nta-quinquenio-sexo.json`). (`publicar-vps.sh`) **Corolario (v8.18.1, 2026-11-09): todo cambio de las páginas de método (`plantilla-metodo.php`, `NTA/`, `entidades/`, y su reparto en cuerpos `_cuerpo-*.php`) corre también `05_scripts/pruebas/prueba-manifiesto-default.sh`, que NO es parte de los `test-sitio-*.sh`.** El PR #76 movió el cuerpo de `/NTA` a `NTA/_cuerpo-{en,es}.php` y `_entidad.php` dejó de declarar `$cortes = array(…)` en forma literal: los cinco `test-sitio-*` y `verify_sitio_autocontenido` pasaron en local y el CI de seguridad falló porque `manifiesto-default.py` dejó de ver `nta-identidad.txt` (el ritual y el sidecar lo habrían empaquetado sin el archivo que `/NTA` pide). Ahora la derivación lee también los cuerpos; si una página reparte lo que pide en otros archivos, hay que enseñárselo a `manifiesto-default.py` y a la copia mínima de su test. Antes de abrir el PR de una página de método: `for t in test-manifiesto-default test-humo-calcular test-sitio-seguridad test-sitio-nta test-sitio-entidades test-sitio-metodo verify_sitio_autocontenido; do bash 05_scripts/$t.sh; done` (el workflow `gates-sin-stata.yml` es la lista autoritativa).
 
-21. **El log se lee en 110 columnas y toda impresión pasa por `_log.ado`** (sesión log-legible, 2026-11-09; §15). El `wrap.log` de v8.17.1 tenía 2,743 líneas de más de 110 columnas y 463 continuaciones «>»: la mitad eran el eco de `SIM.do` (comentarios de 150 columnas, matrices con `///`) y la otra mitad cuadros de 130-180 columnas, regresiones volcadas y los JSON de los Sankeys. Desde esta sesión `correr-sim.sh` corre `SIM_run.do` con `run` (sin eco), `SIM.do` imprime el cuadro de parámetros firmados (§0.9) y `test-log-ancho.sh` es gate de `correr-sim.sh`: ninguna línea > 110, ningún «> » (exentas solo las 47 llaves del contrato `output.txt`).
+21. **El log se lee en 110 columnas y toda impresión pasa por `_log.ado`** (sesión log-legible, 2026-11-09; §15). El `wrap.log` de v8.17.1 tenía 2,743 líneas de más de 110 columnas y 463 continuaciones «>»: la mitad eran el eco de `SIM.do` (comentarios de 150 columnas, matrices con `///`) y la otra mitad cuadros de 130-180 columnas, regresiones volcadas y los JSON de los Sankeys. Desde esta sesión `correr-sim.sh` corre `SIM_run.do` con `run` (sin eco), `SIM.do` imprime el cuadro de parámetros firmados (§0.9) y `prueba-log-ancho.sh` es gate de `correr-sim.sh`: ninguna línea > 110, ningún «> » (exentas solo las 47 llaves del contrato `output.txt`).
 
 22. **`--desde <paso> --hash <nuevo>` no hace `baile`: `-datos` tiene que estar en el hash antes** (ritual v8.17.2, 2026-11-09). Tras el merge del PR corto de fixtures, el ritual relanzado `--desde c32 --hash <nuevo>` corrió `c32` sobre el `-datos` viejo (testigo NL anterior) porque solo `sidecar` y `check` exigían HEAD = hash. Desde 8.18 `ritual.sh` verifica HEAD = `--hash` al entrar a **cada** paso salvo `merge` y `baile` (`exige_head`): si `-datos` está atrasado, para con la receta (`git pull --ff-only` o el paso `baile`). (`sim`, `web`, `c32`, `precache`, `sidecar`, `release-commit`, `tag`, `check`, `listo`)
 
-23. **El «rollback manual» que imprime `publicar-vps.sh` en un redeploy dentro del mismo minor apunta al mismo deployment** (v8.17 → v8.17, 2026-11-08). El symlink `current` ya apuntaba a `v8.17` y el deploy rehizo ese mismo directorio: `ln -sfn … v8.17 current` no deshace nada. En ese caso el rollback real es el respaldo de la fase previa (Fase 0 `backup-vps.sh`: config Apache; y lo que la Fase 2 sobrescribió solo se recupera volviendo a publicar la Release anterior con `publicar-vps.sh`). Desde 8.18 el mensaje final lo dice cuando `PREVIOUS_DEPLOYMENT` = deployment desplegado, en vez de imprimir un `ln -sfn` inútil. (`publicar-vps.sh`)
+23. **El «rollback manual» que imprime `publicar-vps.sh` en un redeploy dentro del mismo minor apunta al mismo deployment** (v8.17 → v8.17, 2026-11-08). El symlink `current` ya apuntaba a `v8.17` y el deploy rehizo ese mismo directorio: `ln -sfn … v8.17 current` no deshace nada. En ese caso el rollback real es el respaldo de la fase previa (Fase 0 `respaldar-vps.sh`: config Apache; y lo que la Fase 2 sobrescribió solo se recupera volviendo a publicar la Release anterior con `publicar-vps.sh`). Desde 8.18 el mensaje final lo dice cuando `PREVIOUS_DEPLOYMENT` = deployment desplegado, en vez de imprimir un `ln -sfn` inútil. (`publicar-vps.sh`)
 
 **Regla de gobernanza explícita (8.18): todo cambio al repo entra por PR, también los documentos.** La rama protegida ya lo impone (`versionado-y-git.md` §2.1); los prompts de sesión no vuelven a pedir «commit sobre master» y el release commit viaja en el PR de la versión (lección 8).
 
 ### Anexo 14.A — el ritual a mano (lo que `ritual.sh` automatiza)
 
-Para depurar un paso o si el script no está disponible en el clon (versiones anteriores a 8.18a-1): merge del PR → `-datos` al hash del merge (`git checkout master && git pull --ff-only`; el clon de Dropbox no se toca: firma §C) → `bash 05_scripts/correr-sim.sh <-datos> diag-vX.Y.Z-<fecha>/01-ritual` (`gate-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0; `commit.txt` = hash) → **`test-web-batch.sh --root -datos`** (N/N llaves, web = batch byte a byte) → `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/01-ritual` → PASÓ → `Precache` suelto solo si el sello difiere del manifest → `publicar.sh vX.Y.Z --empaquetar-datos` → release commit verificado (CHANGELOG, manifest, CITATION) → `git tag -a vX.Y.Z <hash literal>` + `git push origin vX.Y.Z` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
+Para depurar un paso o si el script no está disponible en el clon (versiones anteriores a 8.18a-1): merge del PR → `-datos` al hash del merge (`git checkout master && git pull --ff-only`; el clon de Dropbox no se toca: firma §C) → `bash 05_scripts/pruebas/correr-sim.sh <-datos> diag-vX.Y.Z-<fecha>/01-ritual` (`compuerta-numeros.sh` VERDE si no cambian números; `grep -c 'r([0-9][0-9]*);' wrap.log` = 0; `commit.txt` = hash) → **`prueba-web-batch.sh --root -datos`** (N/N llaves, web = batch byte a byte) → `contrato-32.sh --evidencia <diag>/c32 --refs <diag>/01-ritual` → PASÓ → `Precache` suelto solo si el sello difiere del manifest → `publicar.sh vX.Y.Z --empaquetar-datos` → release commit verificado (CHANGELOG, manifest, CITATION) → `git tag -a vX.Y.Z <hash literal>` + `git push origin vX.Y.Z` → `publicar.sh vX.Y.Z --check` → 11/11 → «listo para publicar» (lo que sigue, `publicar.sh` y `publicar-vps.sh`, lo corre Ricardo).
 
 ---
 
@@ -1090,10 +1090,10 @@ tabla completa: `master/<año>/formal_*.ster`), `Tiempo …`.
 | LIF, PEF, GastoPC, SHRFSP, FiscalGap, TasasEfectivas | sus cuadros, misma forma | runbook §9; `/metodo` |
 
 **Regla de gobernanza.** Toda impresión nueva del motor pasa por `_log` (`modulo`, `seccion`, `linea`, `aviso`, `gate`, `modelo`, `tiempo`,
-`cuadro`, `anclas`); un `noisily di` nuevo es un defecto de revisión. `05_scripts/test-log-ancho.sh <wrap.log>` lo mide (gate de
-`correr-sim.sh`); `05_scripts/check-solo-display.py` verifica que un cambio al log no toque una línea de cálculo. Las 47 llaves del
+`cuadro`, `anclas`); un `noisily di` nuevo es un defecto de revisión. `05_scripts/pruebas/prueba-log-ancho.sh <wrap.log>` lo mide (gate de
+`correr-sim.sh`); `05_scripts/pruebas/verificar-solo-display.py` verifica que un cambio al log no toque una línea de cálculo. Las 47 llaves del
 contrato web (`INCD`, `APORT*`, `PROY*`, `GASTOS`…) son la única excepción al ancho: su forma la fija `cargaDefault.php` y la vigila
-`gate-numeros.sh`. Los JSON de los Sankeys (`SankeySumSim`, `SankeySumLoop`) se escriben con `file write` (hasta v8.17.1 nacían de un log propio
+`compuerta-numeros.sh`. Los JSON de los Sankeys (`SankeySumSim`, `SankeySumLoop`) se escriben con `file write` (hasta v8.17.1 nacían de un log propio
 con `noisily di`, que en batch volcaba el JSON al log con «>»: `log off` no pausa el log batch); los bytes del JSON son los mismos.
 Stata lee los do-files por tramos: no se edita un `.do`/`.ado` mientras una corrida del mismo árbol lo está ejecutando (una
 edición a medias produjo un `_log cug` y un «' invalid name» irreproducibles en los humos de esta sesión).
@@ -1102,13 +1102,13 @@ edición a medias produjo un `_log cug` y un «' invalid name» irreproducibles 
 
 ## 16. Cómo se genera y verifica `/metodo` (sesión 8.18, v8.18.0)
 
-`/metodo` es la sección del método del sitio: el índice, el capítulo 0 (requerimientos para replicar) y un capítulo por módulo del motor, en el orden en que `SIM.do` los invoca, con las diez secciones de `02_governance/metodo/plantilla-capitulo.md`. **Nada de la sección se redacta en el sitio: se genera del repo.** `05_scripts/metodo.py` lee el header de cada módulo (secciones «§N Título»), `SIM.do` §0.8–§0.8c, los memos `CUAD-*.md`, `scn-celdas.md`, `scn-cuentas.csv`, `manifest.json`, `itan-catalogo.json`, los fixtures `nta-identidad.txt` y `gate-numeros.txt` (resultado de la última corrida completa, con su commit), `manifiesto-default.py --tsv` y el código de cada módulo (secciones numeradas, `ensure_asset`/`use master/`, `save`/`file open`/`SankeySumSim`), y emite `04_1_simuladorfiscal.ciep.mx/metodo/metodo.json` más un cascarón PHP por página; `js/metodo-capitulo.js` pinta todo desde el JSON (cero literales de 4+ dígitos en PHP/JS, la regla de `/NTA`). La sección 10 de cada capítulo dice de qué archivo y qué líneas salió cada sección.
+`/metodo` es la sección del método del sitio: el índice, el capítulo 0 (requerimientos para replicar) y un capítulo por módulo del motor, en el orden en que `SIM.do` los invoca, con las diez secciones de `02_governance/metodo/plantilla-capitulo.md`. **Nada de la sección se redacta en el sitio: se genera del repo.** `05_scripts/publicar/metodo.py` lee el header de cada módulo (secciones «§N Título»), `SIM.do` §0.8–§0.8c, los memos `CUAD-*.md`, `scn-celdas.md`, `scn-cuentas.csv`, `manifest.json`, `itan-catalogo.json`, los fixtures `nta-identidad.txt` y `gate-numeros.txt` (resultado de la última corrida completa, con su commit), `manifiesto-default.py --tsv` y el código de cada módulo (secciones numeradas, `ensure_asset`/`use master/`, `save`/`file open`/`SankeySumSim`), y emite `04_1_simuladorfiscal.ciep.mx/metodo/metodo.json` más un cascarón PHP por página; `js/metodo-capitulo.js` pinta todo desde el JSON (cero literales de 4+ dígitos en PHP/JS, la regla de `/NTA`). La sección 10 de cada capítulo dice de qué archivo y qué líneas salió cada sección.
 
 ```bash
-python3 -I 05_scripts/metodo.py            # regenera metodo.json y las páginas (escribe en el repo)
-python3 -I 05_scripts/metodo.py --check    # regenera a un temporal y exige bytes idénticos (exit 1 si difiere)
-python3 -I 05_scripts/metodo.py --reporte  # capítulos, sello, secciones vacías y FLAGs, sin escribir
-bash 05_scripts/test-sitio-metodo.sh       # el gate completo: --check, php -l, HTTP, cero literales, Chrome headless
+python3 -I 05_scripts/publicar/metodo.py            # regenera metodo.json y las páginas (escribe en el repo)
+python3 -I 05_scripts/publicar/metodo.py --check    # regenera a un temporal y exige bytes idénticos (exit 1 si difiere)
+python3 -I 05_scripts/publicar/metodo.py --reporte  # capítulos, sello, secciones vacías y FLAGs, sin escribir
+bash 05_scripts/pruebas/prueba-sitio-metodo.sh       # el gate completo: --check, php -l, HTTP, cero literales, Chrome headless
 ```
 
 - **Sello de un capítulo:** rojo si le falta una sección obligatoria del header (§1 Propósito, §3 Procedimiento, §6 Salidas, §9 Específico de México; FLAG «header incompleto: §n»); si no, el peor sello declarado en sus entradas (§2) y anclas (§5); «sin sello» si ninguna fila lo declara. Una sección que no está en ningún documento se publica vacía con su FLAG: no se inventa texto.

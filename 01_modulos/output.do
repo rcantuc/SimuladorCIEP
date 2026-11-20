@@ -1,16 +1,16 @@
 * output.do — las llaves de output.txt (header añadido en la sesión 8.18 para /metodo; texto tomado de los documentos que se citan)
 * §1 Propósito (procedencia: README.md «SIM.do»; runbook §14.1 lección 7; comentario de este archivo l. 3–13): escribe users/<id>/output.txt, el
 *   contrato de 47 llaves del sitio: el «Calcular» del sitio (Web.Stata.do) debe reproducir con los valores default exactamente el output.txt del
-*   flujo canónico SIM.do (gate test-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al
+*   flujo canónico SIM.do (gate prueba-web-batch.sh), así que lo que output.do imprime lo tienen que producir los dos flujos y lo invariante al
 *   usuario se escribe como producto de master/ (master/<anioenigh>/cuadratura.do) que Web.Stata.do carga.
 * §2 Entradas (procedencia: runbook §12 inventario; comentario de este archivo l. 38–40): los escalares y globals vivos al final de la corrida (SIM.do §2
 *   CRECPIB/CRECDEF/DEUDA0, LIF, PEF, FiscalGap, Simulador, TasasEfectivas) y master/<anioenigh>/cuadratura.do (los diez Cuad*/Cuad*PIB de Households.do §9.1).
-* §6 Salidas (procedencia: CUAD-0 §6 fila «users/<id>/output.txt»; runbook §14.1 lección 7; 05_scripts/gate-numeros.sh header):
+* §6 Salidas (procedencia: CUAD-0 §6 fila «users/<id>/output.txt»; runbook §14.1 lección 7; 05_scripts/pruebas/compuerta-numeros.sh header):
 *   | Archivo / JSON / figura | Qué contiene | Quién lo consume | Check de CI que lo protege |
-*   | users/<id>/output.txt (INCD*, APORT*, PROY*, INGRESOS*, GASTOS*, PIBY, CRECPIB*, CRECDEF*, DEUDA*, CUADRATURA, …: 47 llaves) | default del sitio: lo que cargaDefault.php devuelve y Web.Stata.do reproduce | sitio (cargaDefault.php, checkStataStatus.php); sidecar datos-<v>.zip | gate-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); test-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso |
+*   | users/<id>/output.txt (INCD*, APORT*, PROY*, INGRESOS*, GASTOS*, PIBY, CRECPIB*, CRECDEF*, DEUDA*, CUADRATURA, …: 47 llaves) | default del sitio: lo que cargaDefault.php devuelve y Web.Stata.do reproduce | sitio (cargaDefault.php, checkStataStatus.php); sidecar datos-<v>.zip | compuerta-numeros.sh byte a byte contra fixtures/output-default.txt (sesión); prueba-web-batch.sh N/N llaves web = batch; sitio-transitorios lo usa como Stata falso |
 * §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md §0.3 fila «Gates»):
 *   | Elemento | Qué requiere genéricamente | Por qué México lo resuelve así |
-*   | Gates | Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados | gate-numeros.sh, identidad NTA, contrato-N, paridad web = batch |
+*   | Gates | Al menos: identidad contable por módulo, paridad de dos caminos, protección de números publicados | compuerta-numeros.sh, identidad NTA, contrato-N, paridad web = batch |
 quietly log on output
 
 * Horizonte macro 2026-2032 (v8.3.0): mismos 7 anios que el marco del sitio
@@ -21,7 +21,7 @@ quietly log on output
 * de 1.4127 y con la tasa efectiva redondeada, y 5 de 46 llaves de output.txt diferian
 * del batch. %12.0g conserva los globals tal como se escriben en SIM.do §2 (hasta 12
 * cifras significativas) y %20.0g devuelve la tasa efectiva (double) sin perder un bit.
-* Gate: 05_scripts/test-web-batch.sh (47/47 llaves identicas desde v8.15.0). Todo cambio en este archivo exige correrlo antes
+* Gate: 05_scripts/pruebas/prueba-web-batch.sh (47/47 llaves identicas desde v8.15.0). Todo cambio en este archivo exige correrlo antes
 * de cerrar la rama (runbook §14, leccion 7): v8.15.0 anadio CUADRATURA sin correrlo y publicar-vps.sh v8.15 revirtio
 * (r(111) en el web: los Cuad*PIB los calcula Households.do; desde v8.15.1 Web.Stata.do §7.3 los carga de master/<anio>/cuadratura.do).
 noisily di in w "CRECPIB: ["  ///
@@ -49,7 +49,7 @@ noisily di in w "DEUDAPARAM: [" ///
 "]"
 
 * v8.15b (CUAD-0 firma 13; Households.do §9.1): identidad de sectores del PIB BIE en % del PIB: YL, YA, circuito D.442, B.5n S.11+S.12,
-* B.5n S.13, B.5n S.15, CCF, renta primaria neta al exterior, vintage BIE−CSI y la suma (= 100 a 1e-9: gate de Households). gate-numeros.sh
+* B.5n S.13, B.5n S.15, CCF, renta primaria neta al exterior, vintage BIE−CSI y la suma (= 100 a 1e-9: gate de Households). compuerta-numeros.sh
 * compara output.txt byte a byte, asi que una llave que se mueva sin que la firma lo explique se ve aqui. *
 noisily di in w "CUADRATURA: [" ///
 	%8.3f scalar(CuadYLPIB) "," /// YL = D.1 S.14 + 2/3 B.3n - 0

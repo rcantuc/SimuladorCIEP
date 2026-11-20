@@ -16,7 +16,7 @@
 
 ## 3. Ritual
 
-`bash 05_scripts/ritual.sh v<X.Y.Z> --hash <$H literal> --si` en `-datos` (runbook §14). Corre merge → baile → sim → web → c32 → precache → sidecar → release-commit → tag → check → listo y se detiene en el primer rojo.
+`bash 05_scripts/publicar/ritual.sh v<X.Y.Z> --hash <$H literal> --si` en `-datos` (runbook §14). Corre merge → baile → sim → web → c32 → precache → sidecar → release-commit → tag → check → listo y se detiene en el primer rojo.
 
 - **El clon de Dropbox es intocable** (firma CUAD-1-2 §C, 8.16b): el paso `baile` solo mueve `-datos` (`fetch`, `checkout master`, `pull --ff-only`); ninguna orden del ritual ni de la sesión toca Dropbox. Si `master` quedó extraído ahí, lo resuelve Ricardo.
 

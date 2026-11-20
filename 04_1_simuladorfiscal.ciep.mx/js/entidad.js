@@ -22,7 +22,7 @@
 //      la razón nacional, meta.json (nacional.neto_pct_pib, transcrita de entidades-pibe32.json). Los <span data-neto="ruta">
 //      llevan {abrev} como comodín del sufijo del escalar.
 // entidadIndice(cfg)   cfg = {url, tabla}: llena la tabla de /entidades desde entidades.json.
-// Todo lo recibido queda en window.entidadData (lo lee el gate 05_scripts/test-sitio-entidades.js).
+// Todo lo recibido queda en window.entidadData (lo lee el gate 05_scripts/pruebas/prueba-sitio-entidades.js).
 window.entidadData = window.entidadData || {meta: null, ciclo: null, tasas: null, neto: null, sankeys: {}, cicloSeries: {}, indice: null, notas: {}, corte: null};
 
 // Idioma (8.19): el de <html lang> (plantilla-metodo.php lo resuelve con ?lang=; default inglés en /entidades).

@@ -1,7 +1,7 @@
 <?php
 // entidades/_entidad.php — la plantilla ÚNICA de las 32 páginas /entidades/<ABREV> (v8.13.0, «template estatal»).
 //
-// Cada entidades/<ABREV>/index.php (GENERADO por 05_scripts/generar-entidades.py desde SIMentidad.ado) fija
+// Cada entidades/<ABREV>/index.php (GENERADO por 05_scripts/publicar/generar-entidades.py desde SIMentidad.ado) fija
 // $ENTIDAD_ABREV y carga este archivo: las 32 páginas son iguales por construcción (decisión de Ricardo, 29-oct:
 // las 32 iguales, con sellos). Página estática de lectura sobre plantilla-metodo.php (misma cabecera, notas
 // numeradas y pie que /NTA). Orden: encabezado (nombre, clave, n ENIGH, vintage) → párrafo de método (qué es
@@ -33,7 +33,7 @@ $h = function ($s) { return htmlspecialchars($s); };
 $ep = '/jsonEntidad.php?abrev=' . rawurlencode($abrev) . '&producto=';
 require_once dirname(__DIR__) . '/plantilla-metodo.php';
 metodo_lang('en');   // 8.19: la página es bilingüe; default inglés, ?lang=es la cambia
-// Los cortes se declaran con la forma `$cortes = array(…)` (05_scripts/manifiesto-default.py los lee de aquí para derivar qué
+// Los cortes se declaran con la forma `$cortes = array(…)` (05_scripts/datos/manifiesto-default.py los lee de aquí para derivar qué
 // archivos viajan al VPS); las etiquetas en español sustituyen a las de inglés, con las mismas claves.
 $cortes = array(
 	'quintil' => 'Income quintile (state)',

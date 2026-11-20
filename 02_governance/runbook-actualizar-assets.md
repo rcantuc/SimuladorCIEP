@@ -89,7 +89,7 @@ git push origin master
 
 # 7. Reemplazar el asset en el Release vigente y verificar los 27
 gh release delete-asset "<tag>" "<nombre>" -y || true
-bash 05_scripts/publicar.sh "<tag>"
+bash 05_scripts/publicar/publicar.sh "<tag>"
 
 # 8. Avisar a Ricardo: pull en la Carpeta de investigadores (solo él, §6.7)
 ```
@@ -110,7 +110,7 @@ Notas sobre el paso 7:
   nuevo (así nació v8.2.2).
 - Si en vez de reemplazar vas a cortar versión nueva: CHANGELOG con la
   entrada `## [vX.Y.Z] — AAAA-MM-DD`, manifest con `version`, `release_tag`
-  y `release_url_prefix` nuevos, `bash 05_scripts/publicar.sh --check vX.Y.Z`
+  y `release_url_prefix` nuevos, `bash 05_scripts/publicar/publicar.sh --check vX.Y.Z`
   (Gates 1, 3, 4 en verde), y Ricardo crea el tag anotado y lanza
   `publicar.sh vX.Y.Z` (Gate 2). Ver `runbook-deploys-ciep.md`.
 
@@ -154,13 +154,13 @@ Reglas del modo:
 
 ## 2d. El asset del SCN (`raw/SCN/scn-congelado-<anio>.zip`) no se edita a mano
 
-El SCN no se vacía en un `.xlsx`: lo escribe `05_scripts/refrescar-scn.sh` (política CUAD-0 §4 bis).
+El SCN no se vacía en un `.xlsx`: lo escribe `05_scripts/datos/refrescar-scn.sh` (política CUAD-0 §4 bis).
 Es el único asset que se **regenera** en vez de editarse, y el único cuyo manifest (`scn_vintage`)
 registra por serie el sha256, la fecha de consulta, la etiqueta INEGI del último dato y la vía.
 
 ```bash
-bash 05_scripts/refrescar-scn.sh --comparar --todas --csi                 # 1. ¿INEGI revisó algo ≤ anioenigh? exit 0 = no
-bash 05_scripts/refrescar-scn.sh --congelar --todas --desde vX.Y.Z        # 2. reescribe raw/SCN/, el zip y scn_vintage + assets
+bash 05_scripts/datos/refrescar-scn.sh --comparar --todas --csi                 # 1. ¿INEGI revisó algo ≤ anioenigh? exit 0 = no
+bash 05_scripts/datos/refrescar-scn.sh --congelar --todas --desde vX.Y.Z        # 2. reescribe raw/SCN/, el zip y scn_vintage + assets
 #    --desde = la versión en que el zip nuevo entra a la Release (Gate 8 no lo exige en Releases anteriores)
 #    Siempre --todas: UpdateSCN lee SOLO el asset y fusiona las 525 series (sin asset aborta). El asset trae la
 #    serie completa con la etiqueta INEGI («2025 p1»); las anclas usan anioenigh y el marco 2027 parte del
@@ -168,7 +168,7 @@ bash 05_scripts/refrescar-scn.sh --congelar --todas --desde vX.Y.Z        # 2. r
 # 3. reconstruir la base del motor y verificar que nada cambió salvo lo que INEGI revisó:
 #    Stata: SCN, anio(`=anioenigh') update nographs   (sello verde)
 #    python3 -I diag-scn-2026-11-01/cmp-scn.py master/SCN-antes.dta master/SCN.dta 2070   # todos los años
-# 4. corrida completa + gate-numeros.sh + test-web-batch.sh; CHANGELOG con el Δ (si INEGI revisó); PR de datos.
+# 4. corrida completa + compuerta-numeros.sh + prueba-web-batch.sh; CHANGELOG con el Δ (si INEGI revisó); PR de datos.
 # 5. al fusionar: copiar raw/SCN/ y master/SCN.dta a -datos y al clon Dropbox (Gate 5 del ritual).
 ```
 
@@ -184,9 +184,9 @@ Los Informes Trimestrales de la SHCP (ISR por rango de ingreso × tipo de contri
 solo el asset y produce `master/itan-isr-rangos.dta`.
 
 ```bash
-bash 05_scripts/refrescar-scn.sh --itan                                  # 1. ¿hay trimestre nuevo o cambió el último? exit 0 = no
-bash 05_scripts/refrescar-scn.sh --itan --congelar --desde vX.Y.Z        # 2. baja lo nuevo a raw/ITAN/, regenera el catálogo
-#    (05_scripts/itan-catalogo.py), reempaqueta el zip y actualiza su sha256/size en manifest.json (--desde = versión del Release)
+bash 05_scripts/datos/refrescar-scn.sh --itan                                  # 1. ¿hay trimestre nuevo o cambió el último? exit 0 = no
+bash 05_scripts/datos/refrescar-scn.sh --itan --congelar --desde vX.Y.Z        # 2. baja lo nuevo a raw/ITAN/, regenera el catálogo
+#    (05_scripts/datos/itan-catalogo.py), reempaqueta el zip y actualiza su sha256/size en manifest.json (--desde = versión del Release)
 # 3. Stata: AccesoITAN, validar     (sello verde; tabla capturado vs extraído contra ISRInformesTrimestrales.xlsx)
 # 4. CHANGELOG con el trimestre nuevo; PR de datos; al fusionar, copiar raw/ITAN/ y master/itan-isr-rangos.dta a -datos y al clon Dropbox.
 ```
