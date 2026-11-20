@@ -8,7 +8,7 @@
 *!***    Última actualización: 03jul2026 ****
 *!***                                    ****
 *!*******************************************
-* §1 Propósito (procedencia: 03_help/Stata/SCN.sthlp «Descripción»; 02_governance/scn-celdas.md encabezado): `SCN` descarga, procesa y proyecta el Sistema
+* §1 Propósito (procedencia: 00_comandos/SCN.sthlp «Descripción»; 02_governance/scn-celdas.md encabezado): `SCN` descarga, procesa y proyecta el Sistema
 *   de Cuentas Nacionales (SCN) de México integrando dos fuentes oficiales del INEGI: BIE (ingreso, producción bruta, consumo de hogares, gasto de
 *   gobierno y PIB por actividad económica) y CSI (cuentas por sectores institucionales: ingreso mixto, cuotas de seguridad social, subsidios y
 *   excedentes de operación). Permite descomponer el PIB por sus tres métodos y obtener la distribución funcional del ingreso entre trabajo, capital y

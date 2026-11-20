@@ -204,6 +204,7 @@ else
 	cat > "$TMP/det.do" <<EOF
 sysdir set SITE "$REPO"
 adopath ++ "$REPO"
+adopath ++ "$REPO/00_comandos"
 cd "$REPO"
 run "$REPO/profile.do"
 global nographs "nographs"

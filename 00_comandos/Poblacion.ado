@@ -10,11 +10,11 @@
 *!***    Sintaxis:                       ****
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 *!*******************************************
-* §1 Propósito (procedencia: 03_help/Stata/Poblacion.sthlp «Descripción»; README.md «Programas disponibles» 1): `Poblacion` procesa las proyecciones
+* §1 Propósito (procedencia: 00_comandos/Poblacion.sthlp «Descripción»; README.md «Programas disponibles» 1): `Poblacion` procesa las proyecciones
 *   demográficas del Consejo Nacional de Población (CONAPO): Conciliación Demográfica de México 1970–2019 y Proyecciones de la población de México
 *   y de las entidades federativas 2020–2070 (pry23, publicadas el 11 de septiembre de 2023): estimación de habitantes a mitad de cada año
 *   (1970–2070), por entidad federativa, sexo y edad simple. También genera gráficos de la pirámide y transición demográfica para el año de interés.
-* §2 Entradas (procedencia: 03_help/Stata/Poblacion.sthlp «Descripción»; CUAD-0 §2 fila «Población a mitad de año»; manifest.json assets):
+* §2 Entradas (procedencia: 00_comandos/Poblacion.sthlp «Descripción»; CUAD-0 §2 fila «Población a mitad de año»; manifest.json assets):
 *   | Base | Fuente / institución | Vintage usado | Variables clave | Llave única | Sello |
 *   | Poblacion_Estimada_Mitad_Anio.zip (CSV) | CONAPO, redistribuido por la Dirección General de Información en Salud (DGIS); los CSV de conapo.segob.gob.mx dejaron de servirse en septiembre de 2026 | pry23 (11-sep-2023); un vintage fijo por versión; asset verificado por SHA-256 (ensure_asset) | población a mitad de año por entidad, sexo y edad simple 1970–2070 | anio edad sexo entidad | verde |
 * §9 Específico de México (procedencia: 02_governance/metodo/cap0-requerimientos.md fila 1):

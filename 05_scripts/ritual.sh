@@ -233,8 +233,8 @@ paso_precache() {
     pe="$(sed -nE 's/^scalar anioPE = ([0-9]+).*/\1/p' "$sim" | head -n 1)"
     en="$(sed -nE 's/^scalar anioenigh = ([0-9]+).*/\1/p' "$sim" | head -n 1)"
     [[ -n "$bs" && -n "$vp" && -n "$pe" && -n "$en" ]] || { falla "no pude leer bootstrap/aniovp/anioPE/anioenigh de SIM.do"; return 1; }
-    printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\nglobal id "%s"\nglobal idbase "%s"\nglobal bootstrap "%s"\nscalar aniovp = %s\nscalar anioPE = %s\nscalar anioenigh = %s\nnoisily Precache, aniope(%s) aniovp(%s)\n' \
-        "$ROOT" "$ROOT" "$ROOT" "$ID" "$ID" "$bs" "$vp" "$pe" "$en" "$pe" "$vp" > "$d/wrap.do"
+    printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nsysdir set SITE "%s/"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\ncd "%s"\nglobal id "%s"\nglobal idbase "%s"\nglobal bootstrap "%s"\nscalar aniovp = %s\nscalar anioPE = %s\nscalar anioenigh = %s\nnoisily Precache, aniope(%s) aniovp(%s)\n' \
+        "$ROOT" "$ROOT" "$ROOT" "$ROOT" "$ID" "$ID" "$bs" "$vp" "$pe" "$en" "$pe" "$vp" > "$d/wrap.do"
     ( cd "$d" && "$STATA" -b "do" "$d/wrap.do" < /dev/null )
     cat "$d/wrap.log" >> "$OUT" 2>/dev/null
     log_cerrado "$d/wrap.log" || return 1

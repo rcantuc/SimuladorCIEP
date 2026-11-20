@@ -48,11 +48,12 @@ cat > "$TMP/hostil/05_scripts/manifest.json" <<'JSON'
 }
 JSON
 rojo=0
-correr() {   # $1 nombre, $2 SIMROOT, $3 adopath extra (vacío = el repo), $4 rc esperado
+correr() {   # $1 nombre, $2 SIMROOT, $3 adopath extra (vacío = 00_comandos del repo), $4 rc esperado
     local nombre="$1" root="$2" ado="$3" esperado="$4"
     local dir="$TMP/$nombre"; mkdir -p "$dir"
+    # sin-00_comandos: el %s del adopath es ${ado:-$REPO_ROOT/00_comandos}
     printf 'capture set processors 1\nset linesize 200\nglobal SIMROOT "%s"\nadopath ++ "%s"\ncapture noisily _precache_manifest\ndi "rc = " _rc\ndi "version = [`r(version)'"'"']"\ndi "data_updated = [`r(data_updated)'"'"']"\ndi "baseline = [`r(baseline)'"'"']"\n' \
-        "$root" "${ado:-$REPO_ROOT}" > "$dir/wrap.do"
+        "$root" "${ado:-$REPO_ROOT/00_comandos}" > "$dir/wrap.do"
     ( cd "$dir" && "$STATA" -b do "$dir/wrap.do" < /dev/null )
     local rc; rc="$(grep -E '^rc = ' "$dir/wrap.log" | head -1 | sed 's/rc = //')"
     if [[ "$rc" != "$esperado" ]]; then

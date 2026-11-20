@@ -79,7 +79,7 @@ stat -f%z "<archivo>"
 #    y, si cambiaron los datos, arriba: "data_updated": "AAAA-MM-DD"
 
 # 5. El candado debe pasar en silencio (batch, sin abrir Stata):
-printf 'sysdir set SITE "%s"\nadopath ++SITE\nensure_asset "<nombre>"\n' "$PWD" > /tmp/ea.do
+printf 'sysdir set SITE "%s"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\nensure_asset "<nombre>"\n' "$PWD" "$PWD" > /tmp/ea.do
 /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do /tmp/ea.do < /dev/null; tail -5 ea.log
 
 # 6. Commit + push (solo el manifest)

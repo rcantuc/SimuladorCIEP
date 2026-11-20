@@ -90,7 +90,7 @@ open(dst, "w", encoding="utf-8").write(t)
 PYEOF
 WRAP="$EVID/wrap-contrato-32.do"
 {
-    printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\n' "$REPO_ROOT" "$REPO_ROOT"
+    printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\nadopath ++ "%s/00_comandos"\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\n' "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT"
     if [[ "$SIN_SIM" == "true" ]]; then
         printf 'global SIMROOT "%s"\nglobal id "%s"\n' "$REPO_ROOT" "$ID"
         printf '%s\n' "${GLOBALS[@]}"

@@ -14,6 +14,7 @@ timer on 1
 ***
 global SIMROOT "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"				// CARPETA DEL REPOSITORIO
 adopath ++ "${SIMROOT}"
+adopath ++ "${SIMROOT}/00_comandos"
 set scheme ciep
 
 ** 0.1 Token del BIE/INEGI (opcional)

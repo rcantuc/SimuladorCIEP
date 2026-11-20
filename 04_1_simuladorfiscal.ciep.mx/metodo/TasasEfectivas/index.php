@@ -1,5 +1,5 @@
 <?php
-// /metodo/TasasEfectivas — capítulo «TasasEfectivas» del método (TasasEfectivas.ado).
+// /metodo/TasasEfectivas — capítulo «TasasEfectivas» del método (00_comandos/TasasEfectivas.ado).
 // GENERADO por 05_scripts/metodo.py: no editar a mano (test-sitio-metodo.sh regenera y exige bytes idénticos).
 // Todo el contenido lo pinta /js/metodo-capitulo.js desde /metodo/metodo.json; aquí no hay números ni frases del método.
 require_once dirname(__DIR__, 2) . '/plantilla-metodo.php';

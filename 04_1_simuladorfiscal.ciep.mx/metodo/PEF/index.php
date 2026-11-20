@@ -1,5 +1,5 @@
 <?php
-// /metodo/PEF — capítulo «PEF» del método (PEF.ado).
+// /metodo/PEF — capítulo «PEF» del método (00_comandos/PEF.ado).
 // GENERADO por 05_scripts/metodo.py: no editar a mano (test-sitio-metodo.sh regenera y exige bytes idénticos).
 // Todo el contenido lo pinta /js/metodo-capitulo.js desde /metodo/metodo.json; aquí no hay números ni frases del método.
 require_once dirname(__DIR__, 2) . '/plantilla-metodo.php';

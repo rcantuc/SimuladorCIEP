@@ -176,7 +176,7 @@ def main():
     for c in cortes_pag:
         if c not in cortes_ent_validos:
             fallo("/entidades/<ABREV> pide corte=%s y jsonEntidad.php no lo admite (%s)" % (c, "|".join(cortes_ent_validos)))
-    ado = leer(os.path.join(root, "SIMentidad.ado"))
+    ado = leer(os.path.join(root, "00_comandos", "SIMentidad.ado"))
     m_cat = re.search(r'^\s*global entidadesC "([^"]*)"', ado, re.M)
     if not m_cat:
         fallo("SIMentidad.ado: no encontré global entidadesC (el catálogo de las 32)")

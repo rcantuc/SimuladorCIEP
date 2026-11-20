@@ -45,7 +45,7 @@ scalar vint_anio = real("`1'")		// sobrevive a macro drop _all (clear all ya pas
 macro drop _all					// como SIM.do
 global SIMROOT = substr("`c(sysdir_site)'", 1, length("`c(sysdir_site)'") - 1)	// sin diagonal final
 local anio = scalar(vint_anio)
-adopath ++ "${SIMROOT}"				// Expenditure.do hace cd a raw/ENIGH/: sin esto "." deja de ver los .ado del motor (ensure_asset)
+adopath ++ "${SIMROOT}/00_comandos"		// Expenditure.do hace cd a raw/ENIGH/: sin esto "." deja de ver los .ado del motor (ensure_asset)
 set scheme ciep
 timer clear 1
 timer on 1

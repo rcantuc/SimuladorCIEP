@@ -170,8 +170,8 @@ echo "=========================================================="
 
 echo "--- Código del Simulador ---"
 assert_not_ignored "SIM.do" "Master do-file"
-assert_not_ignored "FiscalGap.ado" "Ado-file principal"
-assert_not_ignored "AccesoBIE.ado" "Ado de acceso BIE"
+assert_not_ignored "00_comandos/FiscalGap.ado" "Ado-file principal"
+assert_not_ignored "00_comandos/AccesoBIE.ado" "Ado de acceso BIE"
 assert_not_ignored "Stata net/SIM.ado" "Stata net (legacy)"
 assert_not_ignored "01_modulos/IVA_Mod.do" "Módulo de impuesto"
 
@@ -207,16 +207,16 @@ assert_not_ignored "05_scripts/manifest.json" "Manifest del Catálogo de datos a
 
 echo "--- Help y docs ---"
 assert_not_ignored "03_help/FiscalGap.md" "Help file Markdown"
-assert_not_ignored "03_help/Stata/AccesoBIE.sthlp" "Help Stata sthlp"
+assert_not_ignored "00_comandos/AccesoBIE.sthlp" "Help Stata sthlp"
 assert_not_ignored "README.md" "README"
 
 echo "--- Archivos con caracteres del falso character class [Recovered] ---"
 # Estos paths contienen R, e, c, o, v, r, d (el character class roto).
 # Verificación de regresión del bug de 2026-05-09: con el patrón mal escapado,
 # todos estos quedaban marcados como ignorados.
-assert_not_ignored "scheme-ciep.scheme" "Scheme color"
+assert_not_ignored "00_comandos/scheme-ciep.scheme" "Scheme color"
 assert_not_ignored "01_modulos/visualizations/SankeySF.do" "Sankey SF"
-assert_not_ignored "PIBDeflactor.ado" "Deflactor PIB"
+assert_not_ignored "00_comandos/PIBDeflactor.ado" "Deflactor PIB"
 
 echo ""
 

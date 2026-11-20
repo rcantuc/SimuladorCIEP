@@ -15,6 +15,7 @@ if _rc == 0 {
 if `"`sim_root_dir'"' == "" local sim_root_dir `"`c(pwd)'"'
 global SIMROOT `"`sim_root_dir'"'
 adopath ++ `"${SIMROOT}"'
+adopath ++ `"${SIMROOT}/00_comandos"'
 
 *********************
 ***               ***
@@ -248,17 +249,17 @@ noisily di _newline in g "  Información Económica:  " _col(30) in y "$paqueteE
 	_newline in g "  User: " _col(30) in y "$id"
 
 noisily di _newline in g " Comandos principales:"
-noisily di `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs] {view "03_help/Stata/Poblacion.sthlp":({it:help})}"'
-noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010) aniomax(2031)":PIBDeflactor} [, ANIOvp(int) ANIOMAX(int) NOGraphs] {view "03_help/Stata/PIBDeflactor.sthlp":({it:help})}"'
-noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs] {view "03_help/Stata/SCN.sthlp":({it:help})}"'
-noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "03_help/Stata/LIF.sthlp":({it:help})}"'
-noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "03_help/Stata/PEF.sthlp":({it:help})}"'
-noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs] {view "03_help/Stata/SHRFSP.sthlp":({it:help})}"' 
-noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs DESDE(real)] {view "03_help/Stata/DatosAbiertos.sthlp":({it:help})}"' 
-noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "03_help/Stata/TasasEfectivas.sthlp":({it:help})}"' 
-noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "03_help/Stata/GastoPC.sthlp":({it:help})}"'
-noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "03_help/Stata/AccesoBIE.sthlp":({it:help})}"' 
-noisily di `" {stata "sim_changelog":sim_changelog} [, VERsion(str)] {view "03_help/Stata/sim_changelog.sthlp":({it:help})}"'
+noisily di `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs] {view "${SIMROOT}/00_comandos/Poblacion.sthlp":({it:help})}"'
+noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010) aniomax(2031)":PIBDeflactor} [, ANIOvp(int) ANIOMAX(int) NOGraphs] {view "${SIMROOT}/00_comandos/PIBDeflactor.sthlp":({it:help})}"'
+noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs] {view "${SIMROOT}/00_comandos/SCN.sthlp":({it:help})}"'
+noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "${SIMROOT}/00_comandos/LIF.sthlp":({it:help})}"'
+noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "${SIMROOT}/00_comandos/PEF.sthlp":({it:help})}"'
+noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs] {view "${SIMROOT}/00_comandos/SHRFSP.sthlp":({it:help})}"' 
+noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs DESDE(real)] {view "${SIMROOT}/00_comandos/DatosAbiertos.sthlp":({it:help})}"' 
+noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "${SIMROOT}/00_comandos/TasasEfectivas.sthlp":({it:help})}"' 
+noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "${SIMROOT}/00_comandos/GastoPC.sthlp":({it:help})}"'
+noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "${SIMROOT}/00_comandos/AccesoBIE.sthlp":({it:help})}"' 
+noisily di `" {stata "sim_changelog":sim_changelog} [, VERsion(str)] {view "${SIMROOT}/00_comandos/sim_changelog.sthlp":({it:help})}"'
 
 if `sim_python_missing' {
 	noisily di _newline in g "  Nota: Python no est{c a'} configurado en Stata. AccesoBIE, los comandos"

@@ -13,33 +13,33 @@ endpoint_url = "https://ciep.mx/simuladorfiscal/"
 description = "Sub-canal Stata del Simulador Fiscal CIEP — instalación remota vía net install"
 
 [package]
-# Archivos del repo root que forman parte del paquete público.
-# Todos deben existir en el root del repo al momento de publicar.
+# Archivos del repo que forman parte del paquete público (rutas relativas a la raíz;
+# desde la limpieza de 2026-11 viven en 00_comandos/). El endpoint los publica planos.
 
 ado_files = [
-    "AccesoBIE.ado",
-    "AccesoINPCEntidad.ado",
-    "DatosAbiertos.ado",
-    "LIF.ado",
-    "PEF.ado",
-    "PIBDeflactor.ado",
-    "Poblacion.ado",
-    "SCN.ado",
-    "SHRFSP.ado",
-    "_tabla_anclas.ado",
-    "ensure_asset.ado",
-    "escalar.ado",
+    "00_comandos/AccesoBIE.ado",
+    "00_comandos/AccesoINPCEntidad.ado",
+    "00_comandos/DatosAbiertos.ado",
+    "00_comandos/LIF.ado",
+    "00_comandos/PEF.ado",
+    "00_comandos/PIBDeflactor.ado",
+    "00_comandos/Poblacion.ado",
+    "00_comandos/SCN.ado",
+    "00_comandos/SHRFSP.ado",
+    "00_comandos/_tabla_anclas.ado",
+    "00_comandos/ensure_asset.ado",
+    "00_comandos/escalar.ado",
 ]
 
 sthlp_files = [
-    "03_help/Stata/AccesoBIE.sthlp",
-    "03_help/Stata/DatosAbiertos.sthlp",
-    "03_help/Stata/LIF.sthlp",
-    "03_help/Stata/PEF.sthlp",
-    "03_help/Stata/PIBDeflactor.sthlp",
-    "03_help/Stata/Poblacion.sthlp",
-    "03_help/Stata/SCN.sthlp",
-    "03_help/Stata/SHRFSP.sthlp",
+    "00_comandos/AccesoBIE.sthlp",
+    "00_comandos/DatosAbiertos.sthlp",
+    "00_comandos/LIF.sthlp",
+    "00_comandos/PEF.sthlp",
+    "00_comandos/PIBDeflactor.sthlp",
+    "00_comandos/Poblacion.sthlp",
+    "00_comandos/SCN.sthlp",
+    "00_comandos/SHRFSP.sthlp",
 ]
 
 # .htaccess de la carpeta del endpoint (v8.19.1): cabeceras de no-caché para .ado/.toc/.pkg/.sthlp.
@@ -82,5 +82,5 @@ SHRFSP = "Saldo Histórico de los Requerimientos Financieros del Sector Público
 manifest_json = "05_scripts/manifest.json — manifiesto del data sidecar, no del sub-canal Stata"
 sim_do = "SIM.do — entrada del simulador local, no se distribuye vía net install"
 set_token_template_do = "set_token.template.do — plantilla local, no del paquete público"
-gastopc_ado = "GastoPC.ado y 03_help/Stata/GastoPC.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
-tasasefectivas_ado = "TasasEfectivas.ado y 03_help/Stata/TasasEfectivas.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
+gastopc_ado = "00_comandos/GastoPC.ado y 00_comandos/GastoPC.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
+tasasefectivas_ado = "00_comandos/TasasEfectivas.ado y 00_comandos/TasasEfectivas.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
