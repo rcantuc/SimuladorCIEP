@@ -69,7 +69,7 @@ Además de facilitar la descarga de indicadores económicos, el simulador tiene 
 **1. Pre-análisis:** Destaca automáticamente la información más relevante en un formato estructurado, claro y comprensible.
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="03_help/images/Ventana de Resultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
+    <img src="03_help/images/VentanaResultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
 </div>
 
 
@@ -219,6 +219,8 @@ Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo re
 <h2 style="color: #ff7020;">Documentación Técnica</h2>
 
 Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura.md`](02_governance/arquitectura.md).
+
+La numeración de las carpetas `04_*` salta a propósito: `04_2`, `04_4` y `04_5` son carpetas locales que no se versionan (`04_2_documentos_latex/`, `04_4_libro.ciep.mx/` y `04_5_ciep.mx/`, en `.gitignore`); en el repo solo están `04_1_simuladorfiscal.ciep.mx/` (el sitio) y `04_3_anteriores/` (las versiones anteriores).
 
 ### Archivos principales
 

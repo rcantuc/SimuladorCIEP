@@ -86,7 +86,8 @@ if ($deployed_version !== "") {
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
 	<link href="plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="plugins/font-awesome/css/all.min.css" rel="stylesheet">
+	<link href="plugins/font-awesome/css/fontawesome.min.css" rel="stylesheet">
+	<link href="plugins/font-awesome/css/solid.min.css" rel="stylesheet">
 
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,200;0,300;0,400;0,600;0,700;1,200;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
 
@@ -2533,7 +2534,7 @@ if ($deployed_version !== "") {
 							<div class="col-xl-4 pr-5 fc-toolbar">
 								<h4><b>Public</b> obligations</h4>
                                 <p class="card-text">
-									Expenditures on <a href="images/Salud_2025.png" data-toggle="lightbox">health</a>, <a href="images/Educación_2025.png" data-toggle="lightbox">education</a>, <a href="images/Pensiones_2025.png" data-toggle="lightbox">pensions</a>, <a href="images/Pensión_AM_2025.png" data-toggle="lightbox">senior citizen pensions</a> and other social programs are heavily influenced by the demographic composition of the population. Meanwhile, amortization and the financial cost of public debt depend on financial variables such as accumulated balances, current interest rates, and exchange rates.
+									Expenditures on <a href="images/Salud_2025.png" data-toggle="lightbox">health</a>, <a href="images/Educacion_2025.png" data-toggle="lightbox">education</a>, <a href="images/Pensiones_2025.png" data-toggle="lightbox">pensions</a>, <a href="images/Pension_AM_2025.png" data-toggle="lightbox">senior citizen pensions</a> and other social programs are heavily influenced by the demographic composition of the population. Meanwhile, amortization and the financial cost of public debt depend on financial variables such as accumulated balances, current interest rates, and exchange rates.
                                 </p>
 
 								<p>

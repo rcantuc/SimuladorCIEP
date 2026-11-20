@@ -774,7 +774,8 @@ Dos cosas de la raíz son estado de **un** clon, no del proyecto, y cada una se 
   Si `master` trae un `.stpr` nuevo, `git pull` se queja de que el archivo local cambiaría: `--no-skip-worktree`,
   `git checkout -- simulador.stpr`, `pull`, y de nuevo `--skip-worktree`. Los worktrees de sesión y de corrida no lo
   necesitan (no abren el Project Manager). No usar `assume-unchanged` para esto: es una pista de rendimiento, no una
-  promesa, y git la descarta cuando le conviene.
+  promesa, y git la descarta cuando le conviene. Un PR que mueve o renombra archivos actualiza sus rutas en el panel
+  en el mismo PR, y el Gate 12 de `publicar.sh` lo verifica: `versionado-y-git.md` §2.5.
 
 ---
 
@@ -901,7 +902,7 @@ en el destino, antes del swap, que cada ruta de `MOTOR_LECTURAS_VPS` existe (y q
 | `01_modulos/{Expenditure,Households,PerfilesSim,…}.do`, `visualizations/{Graphs_*,CicloEntidad}.do`, `nodos/*.do` | `SIM.do`, batch | batch | embarcado por `01_modulos/***`; no se leen en web |
 | `set_token.do`, `simulador.stpr` | `SIM.do`, `profile.do` | batch / GUI local | **no se lee** en web; `set_token.do` es secreto y no viaja (correcto) |
 | `01_raw/CONEVAL/2022/Base` | `Expenditure.do` | batch | no se lee en web (FLAG: ruta `01_raw/`, ¿alias viejo de `raw/`?) |
-| `02_governance/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
+| `05_scripts/fixtures/scalarlatex-baseline.txt` | `scalarlatex.ado` | solo con `$textbook` (documentación) | **no se lee** en web |
 | `05_scripts/compuertas-entidad.do` | sesión `compuertas-entidad.sh` | sesión | no se lee en web |
 | `users/ciepmx/SankeyNTA/sankey-{v4-economia,v3-grupoedad}.json`, `users/ciepmx/NTA/{nta-grupoedad.json, nta-panel-grupoedad-sexo.json, nta-identidad.txt}` (los escribe `01_modulos/NTA.do`, `SIM.do` §3.2b, en `users/ricardo/`), `users/ciepmx/<ABREV>/{sankey-<5 cortes>, ciclo-vida, tasas-efectivas, neto-pibe, meta}.json` ×32 y `users/ciepmx/entidades.json` (`contrato-32.sh`) | `jsonSankeyNTA.php` (`/NTA`: `?corte=v4-economia` default desde v8.17.0, `?corte=v3-grupoedad`, `?cuenta=…`) y `jsonEntidad.php` (`/entidades`, `/entidades/<ABREV>`) | **web** (lectura PHP, sin Stata) | **embarcar**: Fase 3b-ter y `MOTOR_LECTURAS_VPS` lo DERIVAN con `05_scripts/manifiesto-default.py` de lo que `NTA/index.php`, `entidades/index.php`, `_entidad.php` y `js/stataCalcula.js` piden (v8.17.1; antes `DEFAULT_MANIFEST` a mano, que no supo del v4). Lo que ninguna página pide no viaja aunque el endpoint lo admita (v2, v1 `?corte=grupoedad`, `nta-quinquenio-sexo.json`: 404 con pista) |
 
