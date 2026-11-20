@@ -1,6 +1,7 @@
 <?php
 $version = "5.1";
 include_once("config.php");
+include_once __DIR__ . '/sellos.php';
 $idSession = generaId();
 
 // Versión del MOTOR (modelo Stata) para el hero y el footer: se lee de la línea
@@ -96,11 +97,11 @@ if ($deployed_version !== "") {
 	<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@500;700&display=swap" rel="stylesheet">
 
 	<!-- Theme Styles -->
-	<link href="css/connect.min.css" rel="stylesheet">
+	<link href="<?= sello_url('css/connect.min.css') ?>" rel="stylesheet">
 	<!--link href="css/admin2.css?v=14" rel="stylesheet"-->
-	<link href="css/admin2.css?v=17" rel="stylesheet">
-	<link href="css/animations.css?v=1" rel="stylesheet">
-	<link href="css/custom.css" rel="stylesheet">
+	<link href="<?= sello_url('css/admin2.css') ?>" rel="stylesheet">
+	<link href="<?= sello_url('css/animations.css') ?>" rel="stylesheet">
+	<link href="<?= sello_url('css/custom.css') ?>" rel="stylesheet">
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -3619,13 +3620,13 @@ if ($deployed_version !== "") {
         <script src="plugins/flot/jquery.flot.resize.min.js"></script>
         <script src="plugins/flot/jquery.flot.tooltip.min.js"></script>
 		<script src="plugins/apexcharts/dist/apexcharts.min.js"></script>
-        <script src="js/connect.js"></script>
-        <script src="js/pages/dashboard.js"></script>
-		<script src="js/pages/blockui.js"></script>
+        <script src="<?= sello_url('js/connect.js') ?>"></script>
+        <script src="<?= sello_url('js/pages/dashboard.js') ?>"></script>
+		<script src="<?= sello_url('js/pages/blockui.js') ?>"></script>
 
 		<!-- script src="js/pages/charts-v2.js?v=2"></script> <!--  aqui se calculan las graficas-->
-		<script src="js/config-tiempos.js"></script><!-- segundos de la cuenta regresiva: una constante por flujo (v8.12.2) -->
-		<script src="js/stataCalcula.js"></script><!--  aqui se calculan las graficas-->
+		<script src="<?= sello_url('js/config-tiempos.js') ?>"></script><!-- segundos de la cuenta regresiva: una constante por flujo (v8.12.2) -->
+		<script src="<?= sello_url('js/stataCalcula.js') ?>"></script><!--  aqui se calculan las graficas-->
 
 
 		<script>

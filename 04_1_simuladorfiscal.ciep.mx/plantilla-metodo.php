@@ -16,6 +16,9 @@
 //      verify_sitio_autocontenido.sh) para que el esqueleto del deploy la cubra.
 // Las rutas de activos son absolutas (/css, /js, /plugins) porque la página vive
 // un nivel abajo del docroot.
+// Sellos de versión: todo CSS, JS y JSON propio de estas páginas sale con `?v=` (sellos.php); lo que piden los scripts
+// (js/metodo-sankey.js, js/entidad.js, js/metodo-capitulo.js) lo sella selloUrl() con el mapa window.CIEP_SELLOS.
+require_once __DIR__ . '/sellos.php';
 
 // Índice de la sección, en el orden en que se leerá. Solo páginas que existen. 'lang' es el idioma en que se escribió la
 // sección (el default de su URL sin ?lang=); 'titulo' va en los dos idiomas (8.19: el sitio de método es bilingüe).
@@ -96,6 +99,10 @@ function metodo_cabecera(array $p) {
 	$act_es = ($lang === 'es') ? ' active' : '';
 	$inicio = htmlspecialchars(metodo_url('/'));
 	$alt_logo = 'Simulador Fiscal CIEP';
+	$css_admin = sello_url('/css/admin2.css');
+	$css_custom = sello_url('/css/custom.css');
+	$css_metodo = sello_url('/css/metodo.css');
+	$mapa_sellos = sello_mapa_js();
 	echo <<<HTML
 <!DOCTYPE html>
 <html lang="{$lang}">
@@ -109,9 +116,10 @@ function metodo_cabecera(array $p) {
 	<title>{$t} · Simulador Fiscal CIEP</title>
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 	<link href="/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="/css/admin2.css?v=17" rel="stylesheet">
-	<link href="/css/custom.css" rel="stylesheet">
-	<link href="/css/metodo.css" rel="stylesheet">
+	<link href="{$css_admin}" rel="stylesheet">
+	<link href="{$css_custom}" rel="stylesheet">
+	<link href="{$css_metodo}" rel="stylesheet">
+	<script>window.CIEP_SELLOS = {$mapa_sellos};</script>
 </head>
 <body class="metodo">
 	<header class="metodo-header">
@@ -311,14 +319,16 @@ HTML;
 	$panel = isset($p['panel']) ? "\n\t<script>metodoPanel(" . json_encode($p['panel'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ");</script>" : '';
 	$scripts = '';
 	foreach ($p['scripts'] ?? array() as $src) {
+		$src = strpos($src, '/plugins/') === 0 ? $src : sello_url($src);
 		$scripts .= "\n\t<script src=\"" . htmlspecialchars($src) . "\"></script>";
 	}
+	$js_sankey = sello_url('/js/metodo-sankey.js');
 	$init = isset($p['init']) ? "\n\t<script>" . $p['init'] . "</script>" : '';
 	echo <<<HTML
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
 	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
 	<script src="/plugins/jquery/jquery-3.4.1.min.js"></script>
-	<script src="/js/metodo-sankey.js"></script>{$scripts}
+	<script src="{$js_sankey}"></script>{$scripts}
 	<script>metodoSankeys({$sankeys});</script>{$cifras}{$panel}{$init}
 </body>
 </html>
