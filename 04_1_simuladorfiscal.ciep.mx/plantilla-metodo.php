@@ -128,8 +128,9 @@ function metodo_cabecera(array $p) {
 			<div class="metodo-header-der">
 				<a href="https://ciep.mx/" target="_blank" rel="noopener" class="metodo-header-ciep" aria-label="CIEP"><img src="/images/ciep-logo1.png" alt="CIEP" width="107" height="26"></a>
 				<ul class="metodo-social">
-					<li><a href="http://facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img src="/images/f-icon-facebook.svg" alt=""></a></li>
+					<li><a href="https://www.facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img src="/images/f-icon-facebook.svg" alt=""></a></li>
 					<li><a href="https://twitter.com/ciepmx" target="_blank" rel="noopener" aria-label="X"><img src="/images/f-icon-twitter.svg" alt=""></a></li>
+					<li><a href="https://www.instagram.com/ciep.mx/" target="_blank" rel="noopener" aria-label="Instagram"><img src="/images/f-icon-instagram.svg" alt=""></a></li>
 					<li><a href="https://www.youtube.com/user/CIEPMX" target="_blank" rel="noopener" aria-label="YouTube"><img src="/images/f-icon-youtube.svg" alt=""></a></li>
 				</ul>
 				<div class="metodo-lang" aria-label="Language / Idioma">

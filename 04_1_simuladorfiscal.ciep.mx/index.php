@@ -867,13 +867,16 @@ if ($deployed_version !== "") {
 						</div>
 						<ul class="navbar-nav nav-social">
                             <li class="nav-item">
-                                <a href="http://facebook.com/ciepmx" target="_blank"><img class="social-icon i-face" src="images/f-icon-facebook.svg"></a>
+                                <a href="https://www.facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img class="social-icon i-face" src="images/f-icon-facebook.svg" alt=""></a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://twitter.com/ciepmx" target="_blank"><img class="social-icon" src="images/f-icon-twitter.svg"></a>
+                                <a href="https://twitter.com/ciepmx" target="_blank" rel="noopener" aria-label="X"><img class="social-icon" src="images/f-icon-twitter.svg" alt=""></a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://www.youtube.com/user/CIEPMX" target="_blank"><img class="social-icon" src="images/f-icon-youtube.svg"></a>
+                                <a href="https://www.instagram.com/ciep.mx/" target="_blank" rel="noopener" aria-label="Instagram"><img class="social-icon" src="images/f-icon-instagram.svg" alt=""></a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://www.youtube.com/user/CIEPMX" target="_blank" rel="noopener" aria-label="YouTube"><img class="social-icon" src="images/f-icon-youtube.svg" alt=""></a>
                             </li>
                         </ul>
 
