@@ -41,6 +41,20 @@ window.metodoCuentaData = window.metodoCuentaData || null;
 window.metodoPanelData = window.metodoPanelData || null;
 window.metodoPanelSources = window.metodoPanelSources || {};
 
+// Sello de versión (sellos.php): window.CIEP_SELLOS = {build, archivos: {ruta: sello}} lo escribe la plantilla en el <head>.
+// selloUrl(url) agrega `v=` al URL propio que se le pase: el sello de contenido de ese archivo si el mapa lo trae y, si no, el
+// del build. El prefiltro lo aplica a todo GET de $.ajax a este origen (js/entidad.js y los de este archivo), de modo que un
+// dato nuevo queda sellado sin tocar su llamada; js/metodo-capitulo.js lo usa en su fetch.
+function selloUrl(url) {
+	var S = window.CIEP_SELLOS || {};
+	var v = (S.archivos || {})[String(url).split('?')[0]] || S.build;
+	if (!v || /[?&]v=/.test(url)) return url;
+	return url + (String(url).indexOf('?') < 0 ? '?' : '&') + 'v=' + encodeURIComponent(v);
+}
+$.ajaxPrefilter(function (opciones) {
+	if (String(opciones.type || 'GET').toUpperCase() === 'GET' && !opciones.crossDomain) opciones.url = selloUrl(opciones.url);
+});
+
 // Idioma (8.19): el de <html lang> (plantilla-metodo.php lo resuelve con ?lang=). Solo los rótulos de unidad y los avisos;
 // las etiquetas de los nodos son las que emite el motor (en español) y no se traducen: FusionCharts identifica el nodo por ella.
 var METODO_T = (document.documentElement.getAttribute('lang') || 'en').toLowerCase() === 'es'
