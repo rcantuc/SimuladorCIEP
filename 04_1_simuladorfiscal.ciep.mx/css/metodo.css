@@ -300,6 +300,21 @@ body.metodo {
 	filter: none;
 	opacity: 1;
 }
+/* Pie a anchos intermedios: las cuatro columnas solo caben desde el corte xl de Bootstrap (75em); entre sm (36em) y xl
+   bajan de renglón (logo y Simuladores, luego Micrositios, luego Contacto). Debajo de sm ya iba apilado; desde xl no cambia. */
+@media (min-width: 36em) and (max-width: 74.99em) {
+	.metodo-pie-col-logo,
+	.metodo-pie-col-sim {
+		flex: 0 0 50%;
+		max-width: 50%;
+	}
+	.metodo-pie-col-mic,
+	.metodo-pie-col-con {
+		flex: 0 0 100%;
+		max-width: 100%;
+		margin-top: 1.5rem !important;
+	}
+}
 
 /* Notas al pie numeradas (metodo_nota_ref / metodo_notas en plantilla-metodo.php): tamaño menor,
    mismo ancho de columna que el texto, enlace de ida (superíndice) y vuelta (↩). */

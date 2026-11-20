@@ -16,6 +16,23 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.19.3] — 2026-11-20
+
+### [v8.19.3] — El pie del sitio queda como el de `ciep.mx`, sus columnas bajan de renglón antes de encimarse y los iconos de redes del encabezado igualan a los del pie (PR #95, rama `feat/pie-actualizado`, 2026-11-20)
+
+**Baseline sin cambio: `v8.17.2`. Parche: ninguna cifra cambia ni ninguna línea de cálculo.** Publica la Release y el endpoint Stata `net from`, y despliega el sitio sobre el mismo deployment `v8.19` (el `current` sigue en `v8.19`): cambian el contenido y el acomodo del pie, los iconos de redes del encabezado, el `?v=` de `css/admin2.css` y `css/metodo.css`, y un icono nuevo. Visto bueno de aspecto de Ricardo al PR #95 con sus tres commits.
+
+- **Sitio — contenido del pie (portada en español e inglés, `/NTA`, `/entidades` y `/metodo`):** el pie queda como el de `ciep.mx`.
+  - Simuladores: Tenencia, IEPS al Tabaco y Hospedaje, en ese orden; el sitio ya no se liga a sí mismo.
+  - Micrositios: las once entradas de antes sin cambio de texto, liga ni orden, y «Vacuna contra la Desigualdad» (`vacuna.ciep.mx`) al final.
+  - Redes: Facebook (`https://www.facebook.com/ciepmx`), X, Instagram (`https://www.instagram.com/ciep.mx/`, cuenta `ciep.mx`, confirmada por Ricardo; icono nuevo `images/f-icon-instagram.svg`, del mismo estilo y tamaño que los otros) y YouTube.
+  - Logo, colores, tipografía, contacto y línea final de versión no cambian.
+- **Sitio — acomodo del pie:** entre 576 y 1199 px las columnas se encimaban (los títulos sobre el logo, las dos columnas de micrositios entre sí y con el contacto). Ahora bajan de renglón antes de encimarse: logo y Simuladores, luego Micrositios, luego Contacto. A partir de 1200 px y por debajo de 576 px el acomodo es el de antes. Las reglas viven en `css/admin2.css` (portada) y `css/metodo.css` (`/NTA`, `/entidades` y `/metodo`); «Simulador de Hospedaje» lleva `white-space: nowrap` para que el icono de liga no quede solo en un segundo renglón.
+- **Sitio — pie en inglés:** «Lodging Simulator» para Hospedaje; «Vacuna contra la Desigualdad» se queda en español, sin traducir, por ser nombre de proyecto.
+- **Sitio — encabezado:** los iconos de redes de la portada (español e inglés) y de las páginas de método igualan a los del pie: Facebook con la liga nueva, Instagram entre X y YouTube con el mismo icono y del tamaño de los demás, y los cuatro con `rel="noopener"`, `aria-label` y `alt=""`. No cambia nada más del encabezado.
+- **Institucional — dónde se genera el pie:** en dos lugares, no en uno. La portada lo trae escrito en `index.php` e `index-en.php`; `/NTA`, `/entidades` y `/metodo` lo generan desde `plantilla-metodo.php` (`metodo_pie()`). Los tres archivos se cambiaron juntos; unificar la portada con la plantilla cambiaría su aspecto y queda fuera de esta versión.
+- **Sin cambio, a propósito:** el motor y los módulos de cálculo, los fixtures, `manifest.json` salvo `version`, `release_tag` y `release_url_prefix` (`baseline`, `data_updated` y los assets no se tocan), el `viewport` de `index.php` y el traslape del botón «Metodología» con los iconos de redes del encabezado de la portada a 900 px o menos, que ya existía en `v8.19.2` y queda como estaba. `metodo.json` y `metodo-en.json` solo cambian en la versión que citan.
+
 ## [v8.19.2] — 2026-11-20
 
 ### [v8.19.2] — Limpieza del árbol: los comandos a `00_comandos/`, `05_scripts/` por clase con nombres en español, y menos peso muerto (PR #88, #90 y #91; rama `sesion/limpieza-3`, 2026-11-20)

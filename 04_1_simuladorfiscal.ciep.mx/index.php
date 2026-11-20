@@ -867,13 +867,16 @@ if ($deployed_version !== "") {
 						</div>
 						<ul class="navbar-nav nav-social">
                             <li class="nav-item">
-                                <a href="http://facebook.com/ciepmx" target="_blank"><img class="social-icon i-face" src="images/f-icon-facebook.svg"></a>
+                                <a href="https://www.facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img class="social-icon i-face" src="images/f-icon-facebook.svg" alt=""></a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://twitter.com/ciepmx" target="_blank"><img class="social-icon" src="images/f-icon-twitter.svg"></a>
+                                <a href="https://twitter.com/ciepmx" target="_blank" rel="noopener" aria-label="X"><img class="social-icon" src="images/f-icon-twitter.svg" alt=""></a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://www.youtube.com/user/CIEPMX" target="_blank"><img class="social-icon" src="images/f-icon-youtube.svg"></a>
+                                <a href="https://www.instagram.com/ciep.mx/" target="_blank" rel="noopener" aria-label="Instagram"><img class="social-icon" src="images/f-icon-instagram.svg" alt=""></a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://www.youtube.com/user/CIEPMX" target="_blank" rel="noopener" aria-label="YouTube"><img class="social-icon" src="images/f-icon-youtube.svg" alt=""></a>
                             </li>
                         </ul>
 
@@ -2721,22 +2724,22 @@ if ($deployed_version !== "") {
 					<div class="main-wrapper container">
 						<div class="col-12 px-0">
 							<div class="row row-2">
-								<div class="col-sm-2">
+								<div class="col-sm-2 pie-col-logo">
 									<a class="internalLink logo-box" id="footer-logo">
 										<img src="images/logo-sim-fiscal-ciep-b.png" width="138" height="146" alt="Simulador Fiscal v3">
 									</a>
 								</div>
 
-								<div class="col-sm-2 my-sm-0 mt-5">
+								<div class="col-sm-2 my-sm-0 mt-5 pie-col-sim">
 									<p class="footer_title"><small>Simuladores:</small></p>
 									<ul class="list-unstyled mb-0">
-										<li><a class="icon-link" href="https://simuladorfiscal.ciep.mx/" target="_blank" rel="noopener">Simulador Fiscal</a></li>
 										<li><a class="icon-link" href="https://tenencia.ciep.mx/" target="_blank" rel="noopener">Simulador de Tenencia</a></li>
 										<li><a class="icon-link" href="https://iepsaltabaco.ciep.mx/" target="_blank" rel="noopener">IEPS al Tabaco</a></li>
+										<li><a class="icon-link" href="https://simuladorhospedaje.ciep.mx/" target="_blank" rel="noopener">Simulador de Hospedaje</a></li>
 									</ul>
 								</div>
 
-								<div class="col-sm-5 my-sm-0 mt-5 footer-micrositios">
+								<div class="col-sm-5 my-sm-0 mt-5 footer-micrositios pie-col-mic">
 									<p class="footer_title"><small>Micrositios:</small></p>
 									<div class="row">
 										<div class="col-sm-6">
@@ -2756,12 +2759,13 @@ if ($deployed_version !== "") {
 												<li><a class="icon-link" href="https://inversion.ciep.mx/" target="_blank" rel="noopener">Inversión en México</a></li>
 												<li><a class="icon-link" href="https://desarrollosostenible.ciep.mx/" target="_blank" rel="noopener">Desarrollo Sostenible</a></li>
 												<li><a class="icon-link" href="https://cuidados.ciep.mx/" target="_blank" rel="noopener">Cuidados</a></li>
+												<li><a class="icon-link" href="https://vacuna.ciep.mx/" target="_blank" rel="noopener">Vacuna contra la Desigualdad</a></li>
 											</ul>
 										</div>
 									</div>
 								</div>
 
-								<div class="col-sm-3 my-sm-0 mt-5">
+								<div class="col-sm-3 my-sm-0 mt-5 pie-col-con">
 									<p class="footer_title"><small>Contacto:</small></p>
 									<ul class="list-unstyled mb-0">
 										<li>Puebla 151 Letra O, Col. Roma Norte,</li>
@@ -2789,13 +2793,16 @@ if ($deployed_version !== "") {
 
 								<ul class="navbar-nav nav-social mr-3">
 									<li class="nav-item">
-										<a href="http://facebook.com/ciepmx" target="_blank"><img class="social-icon i-face" src="images/f-icon-facebook.svg"></a>
+										<a href="https://www.facebook.com/ciepmx" target="_blank" rel="noopener" aria-label="Facebook"><img class="social-icon i-face" src="images/f-icon-facebook.svg" alt=""></a>
 									</li>
 									<li class="nav-item">
-										<a href="https://twitter.com/ciepmx" target="_blank"><img class="social-icon" src="images/f-icon-twitter.svg"></a>
+										<a href="https://twitter.com/ciepmx" target="_blank" rel="noopener" aria-label="X"><img class="social-icon" src="images/f-icon-twitter.svg" alt=""></a>
 									</li>
 									<li class="nav-item">
-										<a href="https://www.youtube.com/user/CIEPMX" target="_blank"><img class="social-icon" src="images/f-icon-youtube.svg"></a>
+										<a href="https://www.instagram.com/ciep.mx/" target="_blank" rel="noopener" aria-label="Instagram"><img class="social-icon" src="images/f-icon-instagram.svg" alt=""></a>
+									</li>
+									<li class="nav-item">
+										<a href="https://www.youtube.com/user/CIEPMX" target="_blank" rel="noopener" aria-label="YouTube"><img class="social-icon" src="images/f-icon-youtube.svg" alt=""></a>
 									</li>
 								</ul>
 
