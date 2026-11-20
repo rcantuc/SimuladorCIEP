@@ -11,7 +11,7 @@
 //     users/ciepmx/, que viaja con el deployment: nuevo deployment, nuevo sello. Sin DEPLOYED_COMMIT (desarrollo local)
 //     el sello se deriva de la fecha de este archivo y de index.php.
 // Quedan sin sello a propósito: plugins/ (terceros, versionados por su carpeta), los POST de la portada (no se cachean),
-// imágenes, fuentes e íconos. 05_scripts/test-sitio-sellos.sh (CI) falla si una página carga un recurso propio de datos,
+// imágenes, fuentes e íconos. 05_scripts/pruebas/prueba-sitio-sellos.sh (CI) falla si una página carga un recurso propio de datos,
 // CSS o JS sin sello, o con uno que no corresponde.
 
 // Sello del build: el mismo para todo dato servido por un PHP.

@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 # =============================================================================
-# test-sitio-sellos.sh — todo recurso propio de datos, CSS y JavaScript lleva sello de versión
+# prueba-sitio-sellos.sh — todo recurso propio de datos, CSS y JavaScript lleva sello de versión
 # =============================================================================
 # Un recurso sin sello (`?v=…`) lo guarda el navegador o el proxy con el contenido de la visita anterior: tras un deploy, la
 # página nueva puede armarse con un CSS, un JS o un JSON viejos. Este gate abre con Chrome headless la portada, /metodo
-# (índice, cap0 y un capítulo), /NTA, /entidades y una entidad, en español y en inglés (test-sitio-sellos.js), anota cada
+# (índice, cap0 y un capítulo), /NTA, /entidades y una entidad, en español y en inglés (prueba-sitio-sellos.js), anota cada
 # petición propia y exige:
 #   1. cada GET propio de datos, CSS o JavaScript lleva `?v=`;
 #   2. el sello corresponde: archivo estático del docroot → sha1 de su contenido (10 hex); dato servido por un PHP →
 #      sha1 de DEPLOYED_COMMIT (10 hex, el build). Un sello a mano («?v=17») no pasa.
 # Quedan fuera plugins/ (terceros), las peticiones que no son GET (los POST de la portada: no se cachean), imágenes, fuentes e íconos.
 #   3. control negativo: en una copia del sitio con un CSS y un JSON propios sin sello, el gate SÍ falla y los nombra.
-#   bash 05_scripts/test-sitio-sellos.sh [--puerto N] [--conservar] [--json salida.json] [--sin-control]
+#   bash 05_scripts/pruebas/prueba-sitio-sellos.sh [--puerto N] [--conservar] [--json salida.json] [--sin-control]
 # Sin Stata. Requiere php, curl, node, npm y Chrome (CHROME_PATH o ruta por defecto); instala puppeteer-core fijo en un
 # directorio temporal si no está disponible (red solo para eso).
 # =============================================================================
 set -uo pipefail
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SITE="$REPO_ROOT/04_1_simuladorfiscal.ciep.mx"
-FIX="$REPO_ROOT/05_scripts/fixtures"
+FIX="$REPO_ROOT/05_scripts/pruebas/fixtures"
 PUERTO=8493; CONSERVAR=false; JSON=""; CONTROL=true
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -86,7 +86,7 @@ arma_sitio "$H/a"
 BUILD="$(python3 -I -c 'import hashlib,sys; print(hashlib.sha1(open(sys.argv[1],"rb").read()).hexdigest()[:10])' "$H/a/site/DEPLOYED_COMMIT")"
 levanta "$H/a/site"
 ARGS_JSON=(); [[ -n "$JSON" ]] && ARGS_JSON=(--json "$JSON")
-node "$REPO_ROOT/05_scripts/test-sitio-sellos.js" "$U" "$H/a/site" "$BUILD" ${ARGS_JSON[@]+"${ARGS_JSON[@]}"} || fallos=$((fallos+1))
+node "$REPO_ROOT/05_scripts/pruebas/prueba-sitio-sellos.js" "$U" "$H/a/site" "$BUILD" ${ARGS_JSON[@]+"${ARGS_JSON[@]}"} || fallos=$((fallos+1))
 detener
 
 if $CONTROL; then
@@ -103,7 +103,7 @@ if t.count('</head>') != 1:
 open(p, 'w', encoding='utf-8', newline='').write(t.replace('</head>', inyeccion))
 PYEOF
     levanta "$H/b/site"
-    node "$REPO_ROOT/05_scripts/test-sitio-sellos.js" "$U" "$H/b/site" "$BUILD" --solo /metodo/PEF > "$H/control.txt" 2>&1; rc=$?
+    node "$REPO_ROOT/05_scripts/pruebas/prueba-sitio-sellos.js" "$U" "$H/b/site" "$BUILD" --solo /metodo/PEF > "$H/control.txt" 2>&1; rc=$?
     detener
     if [[ $rc -ne 0 ]] && grep -q 'SIN SELLO' "$H/control.txt" && grep -q '/css/animations.css' "$H/control.txt" && grep -q '/metodo/metodo-en.json' "$H/control.txt"; then
         echo "OK     el control negativo falla (rc=$rc) y nombra /css/animations.css y /metodo/metodo-en.json"

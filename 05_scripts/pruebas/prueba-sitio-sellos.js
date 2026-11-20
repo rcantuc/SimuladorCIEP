@@ -1,4 +1,4 @@
-// test-sitio-sellos.js <urlBase> <siteDir> <buildSello> [--json salida.json] [--solo <fragmento de ruta>] — sellos de versión del sitio (Chrome headless).
+// prueba-sitio-sellos.js <urlBase> <siteDir> <buildSello> [--json salida.json] [--solo <fragmento de ruta>] — sellos de versión del sitio (Chrome headless).
 // Abre la portada, /metodo (índice, cap0 y un capítulo), /NTA, /entidades y una entidad, en español y en inglés, registra TODA petición
 // propia (mismo origen) y exige que cada recurso propio de datos, CSS y JavaScript lleve un sello `?v=`:
 //   - archivo estático del docroot (CSS, JS, JSON): v = primeros 10 hex del sha1 de SU contenido (un `?v=17` a mano no pasa);
