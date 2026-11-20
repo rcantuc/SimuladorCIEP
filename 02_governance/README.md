@@ -12,6 +12,7 @@ Esta carpeta contiene las normas vivas del Simulador Fiscal CIEP (arquitectura, 
 | **Quien va a escribir el prompt de una sesión** | `prompts/README.md` y la plantilla que toque (`memo.md`, `implementacion.md`, `ritual.md`). |
 | **Quien tocó un archivo de `raw/` y el candado lo detuvo** | `runbook-actualizar-assets.md`. |
 | **Quien maneja credenciales del CIEP** | `politicas-institucionales.md` Parte I. |
+| **Agente (Devin, Claude) o colaborador que va a trabajar en el repo** | [`../AGENTS.md`](../AGENTS.md): resumen del repo y las reglas de operación vigentes (quién hace qué, encargos, terminal y repositorio, estándares de salida). |
 
 ## Documentos de norma (vivos)
 
@@ -25,6 +26,7 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 | `runbook-deploys-ciep.md` | Comandos para publicar un release a las tres caras (Git → endpoint Stata → VPS web), por tipo de release, con rollback. |
 | `runbook-actualizar-assets.md` | Qué es el manifiesto, por qué existe el candado `ensure_asset` y los pasos exactos para actualizar un archivo de datos sin romperlo. |
 | `checklist-adopcion-simulador.md` | El mínimo que debe cumplir cualquier otro simulador de la familia (Tabaco, Tenencia, HEEI…): repo privado sin secretos, README con datos externos, SemVer, token de cortesía, deploy verificado, validación de entrada, bitácora, precisión y baseline; con el estado de cada uno. |
+| [`../AGENTS.md`](../AGENTS.md) | Las reglas de operación de la familia de simuladores: quién hace qué, los encargos, cuándo hace falta el visto bueno de Ricardo, qué es intocable y los estándares de salida. Es copia fechada del texto único que mantiene Ricardo; cuando él lo cambia, un PR actualiza la copia. |
 
 ## Registro y datos operativos
 
