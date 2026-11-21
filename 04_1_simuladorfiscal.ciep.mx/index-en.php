@@ -2,6 +2,7 @@
 $version = "5.1";
 include_once("config.php");
 include_once __DIR__ . '/sellos.php';
+include_once __DIR__ . '/terceros.php';
 $idSession = generaId();
 
 // ENGINE (Stata model) version for the hero and footer: read from the
@@ -3583,8 +3584,7 @@ if ($deployed_version !== "") {
 
 
 
-		<script src='https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js'></script>
-		<script src='https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js'></script>
+		<?= fusioncharts_scripts("\t\t") ?>
 
 		<!-- Javascripts -->
         <script src="plugins/jquery/jquery-3.4.1.min.js"></script>

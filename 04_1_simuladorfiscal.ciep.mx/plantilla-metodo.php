@@ -19,6 +19,8 @@
 // Sellos de versión: todo CSS, JS y JSON propio de estas páginas sale con `?v=` (sellos.php); lo que piden los scripts
 // (js/metodo-sankey.js, js/entidad.js, js/metodo-capitulo.js) lo sella selloUrl() con el mapa window.CIEP_SELLOS.
 require_once __DIR__ . '/sellos.php';
+// FusionCharts: versión fija y SRI desde su CDN (terceros.php).
+require_once __DIR__ . '/terceros.php';
 
 // Índice de la sección, en el orden en que se leerá. Solo páginas que existen. 'lang' es el idioma en que se escribió la
 // sección (el default de su URL sin ?lang=); 'titulo' va en los dos idiomas (8.19: el sitio de método es bilingüe).
@@ -326,9 +328,9 @@ HTML;
 	}
 	$js_sankey = sello_url('/js/metodo-sankey.js');
 	$init = isset($p['init']) ? "\n\t<script>" . $p['init'] . "</script>" : '';
+	$fusioncharts = fusioncharts_scripts();
 	echo <<<HTML
-	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
-	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
+	{$fusioncharts}
 	<script src="/plugins/jquery/jquery-3.4.1.min.js"></script>
 	<script src="{$js_sankey}"></script>{$scripts}
 	<script>metodoSankeys({$sankeys});</script>{$cifras}{$panel}{$init}
