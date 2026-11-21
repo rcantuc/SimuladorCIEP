@@ -3917,6 +3917,7 @@ if ($deployed_version !== "") {
 
 
 		<script>
+		var OSName = "";
 		if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
 
 			var isOpera = !!window.opera || navigator.userAgent.indexOf('Opera') >= 0;
