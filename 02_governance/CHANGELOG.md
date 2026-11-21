@@ -16,6 +16,20 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.19.4] — 2026-11-20
+
+### [v8.19.4] — Los scripts de terceros del sitio quedan con versión fija y SRI: FusionCharts 4.2.3, nunca «latest» (PR #96, rama `fix/terceros-versiones-fijas`, 2026-11-20)
+
+**Baseline sin cambio: `v8.17.2`. Parche: ninguna cifra cambia ni ninguna línea de cálculo.** Publica la Release y el endpoint Stata `net from`, y despliega el sitio sobre el mismo deployment `v8.19` (el `current` sigue en `v8.19`). Motivo: el 2026-11-20 el `download.js` de danml.com que cargaba el simulador de tabaco traía código malicioso; este sitio cargaba FusionCharts desde `…/fusioncharts/latest/…` sin `integrity`, el mismo tipo de riesgo. Visto bueno de Ricardo al PR #96.
+
+- **Sitio — FusionCharts (portada en español e inglés, `/NTA`, `/entidades` y `/metodo`):** pasa de `cdn.fusioncharts.com/fusioncharts/latest/` a la versión fija `4.2.3` (la que `latest` servía el 2026-11-20, byte a byte igual al paquete npm `fusioncharts@4.2.3`), con `integrity` sha384 y `crossorigin="anonymous"`: si el CDN sirve un byte distinto, el navegador no lo ejecuta. Se queda en el CDN y no en el repo porque su licencia (FusionCharts Master Software License Agreement, Idera, ver. 010126) no permite redistribuirlo y el repo es público. `fusioncharts.powercharts.js` (el módulo del Sankey), que FusionCharts pedía solo y sin `integrity`, se carga explícito con su hash. Versión y hashes en un solo lugar: `04_1/terceros.php`, con el procedimiento para cambiar de versión.
+- **Sitio — jQuery UI 1.12.1 y ekko-lightbox 5.3.0 (portada):** dejan `code.jquery.com` y `cdnjs.cloudflare.com` y se sirven desde `plugins/` (MIT, con su licencia), con sello `?v=` como los demás recursos. Cada archivo se comparó contra una segunda fuente (npm, cdnjs).
+- **Sitio — html5shiv y respond (portada):** se quita el bloque `<!--[if lt IE 9]>` que los pedía a `oss.maxcdn.com`; ningún navegador vigente lo ejecutaba.
+- **Sitio — `OSName` (portada):** el script final de la portada asignaba `OSName` solo en Mac; en Linux, Windows o Android lanzaba `ReferenceError: OSName is not defined` en la consola de cada visitante. Ahora se declara antes. Sin cambio visible. Lo encontró la prueba nueva en CI.
+- **Institucional — prueba nueva `05_scripts/pruebas/prueba-sitio-terceros.sh`** (job `sitio-terceros` de `gates-sin-stata.yml`; fila en el runbook §11): ningún `/latest/` ni `<!--[if` en el docroot; en Chrome headless, cero peticiones `/latest/`, todo script o CSS de otro origen con `integrity` + `crossorigin` (salvo Google Tag Manager y el CSS de Google Fonts), hosts en lista cerrada, a `cdn.fusioncharts.com` solo lo que fija `terceros.php`, sin errores de JS y FusionCharts dibujando; con control negativo (un hash alterado y la versión `latest` sí fallan).
+- **Terceros que quedan:** FusionCharts 4.2.3 (versión fija + SRI), Google Tag Manager y Google Analytics (sin SRI, decisión de Ricardo), Google Fonts (sin SRI: el CSS cambia por navegador).
+- **Sin cambio, a propósito:** el motor y los módulos de cálculo, los fixtures, `manifest.json` salvo `version`, `release_tag` y `release_url_prefix`, y `/anteriores/` (`04_3_anteriores/`), que sigue cargando Google Charts con `"current"` en v1–v3: queda para otro PR. `metodo.json` y `metodo-en.json` solo cambian en la versión que citan. Las gráficas se dibujan igual que en `v8.19.3`: SVG idéntico en las 17 gráficas de prueba, capturas idénticas salvo un ruido de rasterizado de la sombra de los títulos de la portada.
+
 ## [v8.19.3] — 2026-11-20
 
 ### [v8.19.3] — El pie del sitio queda como el de `ciep.mx`, sus columnas bajan de renglón antes de encimarse y los iconos de redes del encabezado igualan a los del pie (PR #95, rama `feat/pie-actualizado`, 2026-11-20)
