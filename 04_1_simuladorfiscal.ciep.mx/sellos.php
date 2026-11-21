@@ -10,7 +10,8 @@
 //     DEPLOYED_COMMIT (lo escribe la Fase 4 de publicar-vps.sh en cada deploy, junto a este archivo). Esos PHP leen
 //     users/ciepmx/, que viaja con el deployment: nuevo deployment, nuevo sello. Sin DEPLOYED_COMMIT (desarrollo local)
 //     el sello se deriva de la fecha de este archivo y de index.php.
-// Quedan sin sello a propósito: plugins/ (terceros, versionados por su carpeta), los POST de la portada (no se cachean),
+// Quedan sin sello a propósito: plugins/ (terceros, versionados por su carpeta; jQuery UI y ekko-lightbox, traídos del CDN
+// al repo el 2026-11-20, llevan además `?v=`), los POST de la portada (no se cachean),
 // imágenes, fuentes e íconos. 05_scripts/pruebas/prueba-sitio-sellos.sh (CI) falla si una página carga un recurso propio de datos,
 // CSS o JS sin sello, o con uno que no corresponde.
 

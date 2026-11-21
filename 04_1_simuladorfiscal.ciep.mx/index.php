@@ -2,6 +2,7 @@
 $version = "5.1";
 include_once("config.php");
 include_once __DIR__ . '/sellos.php';
+include_once __DIR__ . '/terceros.php';
 $idSession = generaId();
 
 // Versión del MOTOR (modelo Stata) para el hero y el footer: se lee de la línea
@@ -90,7 +91,7 @@ if ($deployed_version !== "") {
 
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,200;0,300;0,400;0,600;0,700;1,200;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
 
-	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="<?= sello_url('plugins/jquery-ui-1.12.1/jquery-ui.css') ?>">
 
 	<!-- FONTS -->
 	<link rel="preconnect" href="https://fonts.gstatic.com">
@@ -102,13 +103,6 @@ if ($deployed_version !== "") {
 	<link href="<?= sello_url('css/admin2.css') ?>" rel="stylesheet">
 	<link href="<?= sello_url('css/animations.css') ?>" rel="stylesheet">
 	<link href="<?= sello_url('css/custom.css') ?>" rel="stylesheet">
-
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-	<!--[if lt IE 9]>
-	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-	<![endif]-->
 
 	<style>
 		.img-slider img {
@@ -3607,8 +3601,7 @@ if ($deployed_version !== "") {
 
 
 
-		<script src='https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js'></script>
-		<script src='https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js'></script>
+		<?= fusioncharts_scripts("\t\t") ?>
 
 		<!-- Javascripts -->
         <script src="plugins/jquery/jquery-3.4.1.min.js"></script>
@@ -3705,9 +3698,9 @@ if ($deployed_version !== "") {
 
 		</script>
 
-		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+		<script src="<?= sello_url('plugins/jquery-ui-1.12.1/jquery-ui.js') ?>"></script>
 
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js"></script>
+		<script src="<?= sello_url('plugins/ekko-lightbox-5.3.0/ekko-lightbox.min.js') ?>"></script>
 
 		<script>
     // julio-24 Daniel // Inicializar las pestañas
@@ -3924,6 +3917,7 @@ if ($deployed_version !== "") {
 
 
 		<script>
+		var OSName = "";
 		if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
 
 			var isOpera = !!window.opera || navigator.userAgent.indexOf('Opera') >= 0;
